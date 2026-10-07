@@ -58,10 +58,27 @@ the `.html` file is what ships.
 
 ## 3. How "private access" works
 
-- Login uses **email magic links**: you type your email and click the link that
-  arrives. No passwords to manage.
-- **Sign-ups are disabled.** The DM (or you) invites each player's email from the
-  Supabase dashboard, so only your group can get in.
+- **An admin creates every account; there's no public sign-up.** The admin
+  page creates a user with a **temporary password**, the admin sends it to the
+  player however the group talks (Discord, text), and the player must choose
+  their own password at first login. Password resets work the same way: the
+  admin issues a new temporary password.
+- **Why passwords instead of email links:** the free plan's built-in email
+  sender is limited to a handful of emails per hour and only reaches the
+  project's own team addresses. Admin-issued temporary passwords don't depend on
+  email at all. (Email links can be added later with a free email-sending
+  service if wanted.)
+- Creating users needs a secret key that must never reach a browser, so it runs
+  in a small server-side function (Supabase Edge Function) that first checks the
+  caller is an admin.
+- **Roles:** *admin* (manages accounts; probably you), *DM*, *player*. Per
+  character: the *owner* edits it; the DM can edit any sheet; a *stand-in*
+  chosen by the DM or owner can play a character for a session (declare,
+  roll, track HP) without changing its stats or gear.
+- **The cloud copy is the single source of truth.** The DM Helper reads sheets
+  directly; JSON export stays as a backup and import is for moving in.
+- **Version history per character** (the last 20–30 saves, restorable), so a
+  bad edit or bug can be undone. Every change records who made it.
 - Permissions are enforced **in the database**, not just hidden in the UI
   (Supabase calls this *Row Level Security*). Even if someone fiddles with the
   page, the database itself refuses:
@@ -276,7 +293,10 @@ whole time as a backup.
 file-passing workflow, before any backend exists.
 
 ### Phase 3 — Accounts and cloud saves
-- Supabase project, tables, permission rules, magic-link login, invite the group.
+- Supabase project, tables, permission rules, password login.
+- Admin page: create users with temporary passwords, reset passwords, assign
+  roles; forced password change at first login.
+- Version history for characters; stand-in access for absent players.
 - The sheet gets a "My characters" list. `gatherData()`/`applyData()` save to the
   cloud as well as locally.
 - Players import their current JSON once to move over.
@@ -297,7 +317,11 @@ file-passing workflow, before any backend exists.
 - HP and conditions sync between the DM tracker and sheets, stored as damage and
   healing events so simultaneous edits never overwrite each other.
 
-### Phase 6 — Nice-to-haves
+### Phase 6 — Reference library
+A shared, searchable library of game reference data that the sheet and DM
+Helper pick from (see section 9).
+
+### Phase 7 — Nice-to-haves
 - Edit history / undo, shared dice log, installable on phones, XP awards from
   encounters straight to sheets.
 
@@ -321,11 +345,40 @@ file-passing workflow, before any backend exists.
 
 ---
 
-## 9. Risks and safeguards
+## 9. Reference library (PHB and supplements)
+
+**What it is:** one shared library of weapons, armor, spells, proficiencies,
+kits, magic items, and monsters. The sheet picks from it (choose "Charm Person"
+and its level, range, duration, and casting time fill in). The DM Helper uses it
+for spell casting times in initiative and for monster stats when adding foes.
+
+**Structure:** the same pattern as the weapon list. A *core* layer (PHB), a
+layer per *supplement* the group uses, and a *campaign* layer for house rules
+and homebrew that can be based on a core entry and override only what differs.
+Every entry records its source and page ("PHB p. 132") so anyone can check the
+book.
+
+**Copyright, practically:** game mechanics (numbers, tables, levels, ranges) are
+generally fine to store. The books' descriptive text is copyrighted and isn't
+under an open license, so the library shouldn't copy it in bulk, even in a
+private app. Instead, each entry carries the mechanics, a short summary in the
+group's own words, the book and page, and an optional link (as the sheet's
+wiki links do today). Not legal advice; this is the cautious, common approach.
+
+**Effort:** the data entry is the real cost (the PHB alone has hundreds of
+spells). Build it in order of what the tools calculate with: weapons (started)
+→ armor → proficiencies → spells (casting time matters for initiative) →
+monsters (the DM's foe list) → magic items. Group-editable, DM-approved, so it
+can grow over time.
+
+## 10. Risks and safeguards
 
 | Risk | Safeguard |
 |---|---|
-| Lost data | Daily DB backups (Supabase), plus JSON export stays a permanent feature |
+| Lost data | Version history per character; a nightly backup we run ourselves (the free plan has no daily backups), saved to a private location; JSON export stays a permanent feature |
+| Free-plan email limits | Admin-issued temporary passwords; no email needed |
+| Someone edits a sheet while it's open elsewhere | "Changed since you opened it" check before saving, and an indicator showing who else has it open |
+| One user's text breaks another's page | User text is always displayed as text, never as HTML; checked before launch |
 | Permission mistakes expose DM secrets | Rules enforced in the database, with a test checklist per role before each release |
 | Edit collisions mid-combat | Three-owner data split (section 5) plus field-level updates |
 | Rules extraction changes the sheet's numbers | Tests compare before/after for every sample save before shipping |
@@ -334,7 +387,7 @@ file-passing workflow, before any backend exists.
 
 ---
 
-## 10. Status
+## 11. Status
 
 - [x] Character sheet received and reviewed
 - [x] DM Helper received and reviewed
