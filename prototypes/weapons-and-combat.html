@@ -105,21 +105,24 @@ button { cursor: pointer; }
 .whead .wname { font-family: var(--font-display); font-weight: 600; }
 .whead .wmeta { font-family: var(--font-data); font-size: 0.75rem; color: var(--ink-muted); flex: 1 1 12em; min-width: 0; }
 .whead .edit { margin-left: auto; }
-.arow { width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) 3.2em 8.5em 3.2em; gap: 8px; align-items: center; text-align: left; background: none; border: none; border-top: 1px solid var(--rule); padding: 6px 12px; }
+.arow { width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) 4.2em 8.8em 4.2em; gap: 10px; align-items: center; text-align: left; background: none; border: none; border-top: 1px solid var(--rule); padding: 6px 12px; }
 .arow:first-of-type { border-top: none; }
 .arow:hover { background: var(--sunk); }
 .arow[aria-expanded="true"] { background: var(--accent-soft); }
 .arow .aname { min-width: 0; }
 .arow .aname small { color: var(--ink-muted); font-size: 0.82rem; }
-.arow .t0 { font-family: var(--font-data); font-size: 1.1rem; font-weight: 500; text-align: right; }
-.arow .dm { font-family: var(--font-data); font-size: 0.82rem; color: var(--ink-muted); text-align: right; white-space: nowrap; }
-.arow .apr { font-family: var(--font-data); font-size: 0.82rem; text-align: right; }
-.colhead { display: grid; grid-template-columns: minmax(0, 1fr) 3.2em 8.5em 3.2em; gap: 8px; padding: 0 12px; font-family: var(--font-display); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint); }
-.colhead span:not(:first-child) { text-align: right; }
+.cell { display: grid; justify-items: end; gap: 1px; line-height: 1.15; min-width: 0; }
+.cell .lbl { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-display); font-size: 0.64rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-muted); white-space: nowrap; }
+.cell .lbl svg { width: 12px; height: 12px; flex: none; color: var(--accent); }
+.labels-text .cell .lbl svg { display: none; }
+.cell .val { font-family: var(--font-data); white-space: nowrap; }
+.arow .t0 .val { font-size: 1.1rem; font-weight: 500; }
+.arow .dm .val { font-size: 0.82rem; color: var(--ink-muted); }
+.arow .apr .val { font-size: 0.82rem; }
 @container (max-width: 520px) {
-  .arow, .colhead { grid-template-columns: minmax(0, 1fr) 3em 3em; }
-  .arow .dm { grid-column: 1; grid-row: 2; text-align: left; }
-  .colhead .c-dm { display: none; }
+  .arow { grid-template-columns: minmax(0, 1fr) 4em 4em; row-gap: 2px; }
+  .arow .dm { grid-column: 1; grid-row: 2; justify-items: start; }
+  .arow .dm .lbl { order: 0; }
 }
 .math { padding: 4px 12px 10px 24px; border-top: 1px dashed var(--rule); background: var(--accent-soft); font-size: 0.92rem; }
 .math table { border-collapse: collapse; width: 100%; }
@@ -222,6 +225,7 @@ footer { color: var(--ink-faint); font-size: 0.88rem; }
   <div class="controls" role="group" aria-label="Prototype controls">
     <span><span class="ctl-label">Width</span><span class="seg" id="widths"></span></span>
     <span><span class="ctl-label">Data</span><span class="seg" id="datamode"></span></span>
+    <span><span class="ctl-label">Row labels</span><span class="seg" id="labelmode"></span></span>
     <label class="toggle"><input type="checkbox" id="notes-toggle" checked> Show design notes</label>
     <button class="btn quiet" type="button" id="reset">Reset prototype</button>
   </div>
@@ -2698,12 +2702,18 @@ const { resolveWeapon, PHB_WEAPONS } = Weapons;
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const sign = n => (n > 0 ? `+${n}` : `${n}`);
+// Small inline icons for the row labels (decorative; the words carry the meaning)
+const ICON = {
+  target: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="8" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="8" cy="8" r="1.1" fill="currentColor"/></svg>',
+  die: '<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="2" width="12" height="12" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="5.5" cy="5.5" r="1.1" fill="currentColor"/><circle cx="8" cy="8" r="1.1" fill="currentColor"/><circle cx="10.5" cy="10.5" r="1.1" fill="currentColor"/></svg>',
+  repeat: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M12.8 6.2A5 5 0 1 0 13 9.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M13.2 2.6v3.8H9.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+};
 const pin = l => `<span class="pin" aria-hidden="true">${l}</span>`;
 const clone = o => JSON.parse(JSON.stringify(o));
 
 const NOTES = [
   ['A', 'Read by default, edit one card at a time', "The sheet reads like a reference card. Each weapon (and each combat ability) has its own Edit, which opens just that card. Nothing else on the sheet becomes editable, so mid-session clicks can't change stats by accident."],
-  ['B', 'Compact rows, THAC0 first', 'One row per attack: name and mode, THAC0 (largest, since it gets read most), damage vs S/M · L, and attacks per round. Weapons with melee and thrown get a row for each. At phone width damage drops under the name.'],
+  ['B', 'Compact rows with inline labels', 'One row per attack: name and mode, THAC0 (largest, since it gets read most), damage vs S/M · L, and attacks per round. Each number carries its own small label (with an icon: target, die, repeat) instead of a column header far above it. Weapons with melee and thrown get a row for each. At phone width damage drops under the name. Compare "Icons + labels" and "Labels only" above.'],
   ['C', 'Tap a row to see the math', 'Every number can explain itself: base THAC0 for class and level, then each bonus with where it came from. It settles "why is it 13?" without a separate screen.'],
   ['D', 'Combat abilities are written once', "Signature Weapon, Duelist's Precision, Handle Weapons and so on are listed once and applied automatically to the attacks they cover (by weapon type, hand, or melee/thrown). Per-round choices like Bladesong live in the Combat view, not here."],
   ['E', 'Upgraded saves: summary + inline flags', 'Switch Data to "Freshly upgraded save" to see option D: a summary at the top linking to each weapon, a collapsed "things to check" row on each weapon card (expand to confirm one at a time, or Confirm all), and a "needs review" tag on affected attacks. The sheet stays usable throughout.'],
@@ -2746,14 +2756,17 @@ function renderControls() {
   $('widths').innerHTML = WIDTHS.map(([l, w]) => `<button type="button" data-w="${w}" aria-pressed="${S.width === w}">${l} <span class="num" style="font-size:.75rem">${w}</span></button>`).join('');
   $('widths').querySelectorAll('button').forEach(b => b.onclick = () => { S.width = +b.dataset.w; render(); });
   $('datamode').innerHTML = [['reviewed', 'Reviewed sheet'], ['upgraded', 'Freshly upgraded save']].map(([k, l]) => `<button type="button" data-k="${k}" aria-pressed="${S.dataMode === k}">${l}</button>`).join('');
-  $('datamode').querySelectorAll('button').forEach(b => b.onclick = () => { const w = S.width, n = S.notes, t = S.tab; S = freshState(b.dataset.k); S.width = w; S.notes = n; S.tab = t; render(); });
+  $('datamode').querySelectorAll('button').forEach(b => b.onclick = () => { const w = S.width, n = S.notes, t = S.tab, l = S.labels; S = freshState(b.dataset.k); Object.assign(S, { width: w, notes: n, tab: t, labels: l }); render(); });
+  $('labelmode').innerHTML = [['icons', 'Icons + labels'], ['text', 'Labels only']].map(([k, l]) => `<button type="button" data-l="${k}" aria-pressed="${(S.labels || 'icons') === k}">${l}</button>`).join('');
+  $('labelmode').querySelectorAll('button').forEach(b => b.onclick = () => { S.labels = b.dataset.l; render(); });
+  $('frame').classList.toggle('labels-text', S.labels === 'text');
   $('frame').style.maxWidth = S.width + 'px';
   $('frame').classList.toggle('show-notes', S.notes);
   $('frame-label').textContent = `Jaque's sheet · ${WIDTHS.find(w => w[1] === S.width)[0].toLowerCase()} (${S.width}px)`;
   $('notes').innerHTML = NOTES.map(([l, t, d]) => `<div class="note"><b><span class="pin">${l}</span>${esc(t)}</b><p>${esc(d)}</p></div>`).join('');
 }
 $('notes-toggle').onchange = e => { S.notes = e.target.checked; render(); };
-$('reset').onclick = () => { const w = S.width, n = S.notes; S = freshState(); S.width = w; S.notes = n; render(); };
+$('reset').onclick = () => { const w = S.width, n = S.notes, l = S.labels; S = freshState(); Object.assign(S, { width: w, notes: n, labels: l }); render(); };
 
 // ── App ──
 function render() {
@@ -2784,7 +2797,6 @@ function renderSheet() {
       <div class="section-head"><h2 id="h-wpn">Weapons &amp; attacks ${pin('A')}${pin('B')}</h2>
         <button class="btn secondary" type="button" id="add-weapon" aria-expanded="${S.adding}">+ Add weapon</button>${pin('F')}</div>
       ${S.adding ? pickerHtml() : ''}
-      <div class="colhead" aria-hidden="true"><span>Attack</span><span>THAC0</span><span class="c-dm">Dmg S/M · L</span><span>/rd</span></div>
       ${S.sheet.__weapons.map(w => S.editing === w.id ? editCard(w) : readCard(w)).join('')}
     </div>
     <div class="section" aria-labelledby="h-ab">
@@ -2810,9 +2822,9 @@ function readCard(raw) {
     const flags = reviewFor(a.id);
     rows += `<button type="button" class="arow" data-open="${key}" aria-expanded="${open}">
       <span class="aname">${esc(custom && a.name ? a.name : cap(c.mode))}${handTag}${custom && a.name ? ` <small>${c.mode}</small>` : ''}${flags.length ? ' <span class="tag warn">needs review</span>' : ''}${c.needsReview.length ? ' <span class="tag warn">?</span>' : ''}</span>
-      <span class="t0">${c.thac0}</span>
-      <span class="dm">${esc(c.damage.sm ?? '?')} · ${esc(c.damage.l ?? '?')}</span>
-      <span class="apr">${c.attacksPerRound}</span>
+      <span class="cell t0"><span class="lbl">${ICON.target}THAC0</span><span class="val">${c.thac0}</span></span>
+      <span class="cell dm"><span class="lbl">${ICON.die}Dmg S/M · L</span><span class="val">${esc(c.damage.sm ?? '?')} · ${esc(c.damage.l ?? '?')}</span></span>
+      <span class="cell apr"><span class="lbl">${ICON.repeat}Per rd</span><span class="val">${c.attacksPerRound}</span></span>
     </button>`;
     if (open) rows += mathHtml(c);
   }
