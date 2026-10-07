@@ -95,7 +95,8 @@
         {
           "id": "atk-1",
           "mode": "melee",
-          "name": "Dagger Attack (Specialized)"
+          "name": "Dagger Attack (Specialized)",
+          "active": true
         },
         {
           "id": "atk-2",

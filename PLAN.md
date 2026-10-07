@@ -284,7 +284,9 @@ whole time as a backup.
   every attack is calculable: mode, attacks per round, labeled modifiers, and
   per-round combat options. See [`docs/combat-data-spec.md`](docs/combat-data-spec.md).
   Includes an automatic migration for existing saves.
-- Write the `toDMHelperCharacter` adapter, with tests against current DM Helper values.
+- ✅ Write the sheet → DM Helper converter (`src/adapters/dm-helper.js`), with tests.
+  It produces one paste-in block per party (`scripts/dm-helper-config.mjs`),
+  checked by loading the DM Helper with Jaque's generated block.
 - Add an **"Import party"** button to the DM Helper: the DM selects the players'
   exported JSON files, and the config is generated from them. Hand-typed config
   stays as a fallback.

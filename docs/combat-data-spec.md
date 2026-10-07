@@ -421,7 +421,7 @@ Old JSON files keep importing.
    ✅ Migration logic done (`src/rules/migrate.js`): converts v1 saves, keeps every
    attack's THAC0, follows PHB damage, and writes the `__review` list.
 3. **Sheet UI** for combined weapons/attacks, bonuses, and toggles, from your designs.
-4. **Adapter → DM Helper:** generated config from sheet saves ("Import party").
+4. ✅ **Adapter → DM Helper:** generated config from sheet saves (`src/adapters/dm-helper.js`).
 5. **Backend + realtime:** declarations, HP events, shared dice log.
 
 Steps 1–4 need no backend.

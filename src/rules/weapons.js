@@ -58,7 +58,7 @@ export const PHB_WEAPONS = {
 
 const MERGED_FIELDS = [
   'name', 'size', 'damageTypes', 'speed', 'modes', 'range', 'rateOfFire',
-  'hitBonus', 'dmgBonus', 'magicPlus', 'conditional', 'unknown', 'carried', 'notes',
+  'hitBonus', 'dmgBonus', 'magicPlus', 'conditional', 'unknown', 'carried', 'notes', 'material',
 ];
 
 // Look up a weapon by key in the PHB list, then in the campaign list.
