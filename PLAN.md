@@ -144,7 +144,7 @@ movement, situational modifiers) is effectively the `combat_state` this plan
 proposed.
 
 That's a strong signal for Phase 5. With live sync, **each player's tab moves
-onto their own phone.** Players declare their own action and roll their own
+onto their own screen.** Players declare their own action and roll their own
 initiative, and the DM's tracker fills in automatically, instead of the device
 being passed around or the DM entering everything.
 
@@ -292,7 +292,7 @@ file-passing workflow, before any backend exists.
 ### Phase 5 — Live table play
 - `combat_state` with realtime sync.
 - The DM Helper's per-character tab becomes **the player's own combat view on
-  their phone**: declare action, roll initiative, see if they hit.
+  their own screen**: declare action, roll initiative, see if they hit.
 - The DM's tracker updates as players declare.
 - HP and conditions sync between the DM tracker and sheets, stored as damage and
   healing events so simultaneous edits never overwrite each other.
