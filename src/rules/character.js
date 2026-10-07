@@ -109,9 +109,12 @@ const THIEF_BASE = {
   bard:  { pp: 10, ol: 0, frt: 0, ms: 0, hs: 0, dn: 20, cw: 50, rl: 5 },
   blade: { pp: 0, ol: 0, frt: 0, ms: 10, hs: 5, dn: 20, cw: 50, rl: 0 },
 };
-// Skills a subclass doesn't have at all (Blade: revised kit). Pick Pockets
-// for Blades is an open table question; it's shown, matching the sheet.
-const NO_SKILL = { blade: ['rl'] };
+// Skills a subclass actually has (missing = all). Blades (revised kit) have
+// Climb Walls, Detect Noise, Hide in Shadows, Move Silently. A proficiency can
+// grant another: Locksmithing gives full Open Locks. Race and Dex only adjust
+// skills the character has. Matches the character sheet.
+const SUBCLASS_SKILLS = { blade: ['ms', 'hs', 'dn', 'cw'] };
+const NWP_GRANTS = { locksmithing: ['ol'] };
 const RANGER_TABLE = { 1: [10, 15], 2: [15, 21], 3: [20, 27], 4: [25, 33], 5: [31, 40], 6: [37, 47], 7: [43, 55], 8: [49, 62], 9: [56, 70], 10: [63, 78], 11: [70, 86], 12: [77, 94], 13: [85, 99], 14: [93, 99], 15: [99, 99] };   // [hs, ms]
 const THIEF_RACIAL = {
   dwarf:      { ol: 10, frt: 15, cw: -10, rl: -5 },
@@ -139,9 +142,11 @@ export function thiefSkills(sheet) {
   const alloc = sheet.__thiefSkillAlloc || {};
   const race = THIEF_RACIAL[sheet['race-group']] || {};
   const dex = THIEF_DEX[num(sheet.dex)] || {};
+  const own = SUBCLASS_SKILLS[sub];
+  const available = own && [...own, ...(sheet.__nwps || []).flatMap(n => NWP_GRANTS[(n.name || '').trim().toLowerCase()] || [])];
   const out = [];
   for (const skill of THIEF_SKILLS) {
-    if ((NO_SKILL[sub] || []).includes(skill.id)) continue;
+    if (available && !available.includes(skill.id)) continue;
     if (isRanger && !['ms', 'hs'].includes(skill.id)) continue;
     let base;
     if (isRanger) base = (RANGER_TABLE[Math.min(level, 15)] || [0, 0])[skill.id === 'hs' ? 0 : 1];

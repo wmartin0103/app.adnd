@@ -152,9 +152,7 @@ Object.assign(SKILLS, {
 });
 Object.assign(THIEF, {
   "Jaque": {
-    "Pick Pockets": 20,
     "Open Locks": 55,
-    "Find/Remove Traps": 10,
     "Move Silently": 50,
     "Hide in Shadows": 60,
     "Detect Noise": 25,

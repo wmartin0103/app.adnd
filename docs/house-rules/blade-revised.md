@@ -89,14 +89,12 @@ If Strength would give a better result in either case, use Strength.
   attack is exempt and can be either.
 - **Flanked = the table's Flanking chip.** Turning on Flanking (+2 to hit) also
   counts the target as flanked for Duelist's Precision damage.
-- **No Read Languages.** The character sheet hides it for Blades.
-
-## Open questions (waiting on the table)
-
-- **Pick Pockets from race and Dex.** "No Pick Pockets" could mean the Blade
-  has no Pick Pockets at all (standard 2e: race and Dex only adjust skills the
-  class has), or only that he can't spend points on it, so race and Dex still
-  apply (Jaque: elf +5, Dex +15 = 20%). The sheet shows the row for now.
+- **Thief skills a Blade has:** Climb Walls, Detect Noise, Hide in Shadows,
+  Move Silently. Race and Dex adjust only skills he has, so there's no Pick
+  Pockets, Read Languages, or Find/Remove Traps from race or Dex alone.
+- **Locksmithing grants full Open Locks** (points, race, Dex, and misc
+  bonuses all apply). Locksmithing and thieves' tools each add +10%.
+  The character sheet and the converter both follow this.
 - **Signature Weapon thrown rate (from Jaque's sheet):** 3/1, 4/1 at 7th,
   5/1 at 13th.
 
@@ -113,4 +111,5 @@ If Strength would give a better result in either case, use Strength.
 | Defensive Spin | Toggle: no attack, AC better by half his level (rounded up) |
 | Offensive Spin, Weapon Display | Toggles: no attack this round |
 | Trick Throw | A custom thrown attack with −2 |
-| Thief skills, delayed spellcasting | Already handled by the current character sheet |
+| Thief skills | Only the four Blade skills, plus Open Locks with Locksmithing |
+| Delayed spellcasting | Already handled by the current character sheet |

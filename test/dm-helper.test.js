@@ -36,9 +36,14 @@ test('the player\'s own save modifiers carry over with the DM Helper\'s sign', (
   assert.equal(s.mods['Breath Weapon'], 2);
 });
 
-test('Jaque\'s thief skills, with the corrected Kit/Misc column', () => {
+test('Jaque\'s thief skills: Blade skills plus Open Locks from Locksmithing', () => {
   const t = Object.fromEntries(thiefSkills(jaque).map(s => [s.name, s.value]));
-  assert.deepEqual(t, { 'Pick Pockets': 20, 'Open Locks': 55, 'Find/Remove Traps': 10, 'Move Silently': 50, 'Hide in Shadows': 60, 'Detect Noise': 25, 'Climb Walls': 55 });
+  assert.deepEqual(t, { 'Open Locks': 55, 'Move Silently': 50, 'Hide in Shadows': 60, 'Detect Noise': 25, 'Climb Walls': 55 });
+});
+
+test('without Locksmithing, a Blade has no Open Locks', () => {
+  const noLocks = { ...jaque, __nwps: jaque.__nwps.filter(n => n.name !== 'Locksmithing') };
+  assert.ok(!thiefSkills(noLocks).some(s => s.id === 'ol'));
 });
 
 test('rangers get only Move Silently and Hide in Shadows, from their level', () => {

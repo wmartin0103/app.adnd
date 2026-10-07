@@ -5262,6 +5262,19 @@
       return 0;
     }
 
+    // Skills a subclass actually has. null = all of them.
+    // Blades (revised kit) have Climb Walls, Detect Noise, Hide in Shadows,
+    // and Move Silently. A proficiency can grant another: Locksmithing gives
+    // full Open Locks. Race and Dex only adjust skills the character has.
+    const SUBCLASS_THIEF_SKILLS = { blade: ['ms', 'hs', 'dn', 'cw'] };
+    const NWP_THIEF_SKILL_GRANTS = { locksmithing: ['ol'] };
+    function getAvailableThiefSkills() {
+      const own = SUBCLASS_THIEF_SKILLS[thiefSubclass];
+      if (!own) return null;
+      const granted = nwps.flatMap(n => NWP_THIEF_SKILL_GRANTS[(n.name || '').trim().toLowerCase()] || []);
+      return [...own, ...granted];
+    }
+
     function getRogueClasses() {
       return characterClasses.filter(c => THAC0_GROUPS[c.group]?.isRogue);
     }
@@ -5295,6 +5308,7 @@
       const DEX_SKILLS = ['pp', 'ol', 'frt', 'ms', 'hs'];
 
       const isRanger     = thiefSubclass === 'ranger';
+      const availableSkills = getAvailableThiefSkills();
       const poolSubclass = thiefSubclass === 'bard' ? 'bard' : thiefSubclass === 'blade' ? 'blade' : 'thief';
       const rogueLevel   = getEffectiveLevel() || 1;
       const poolTotal    = isRanger ? 0 : getTotalPoints(poolSubclass, rogueLevel);
@@ -5309,7 +5323,7 @@
       function refreshPool() {
         if (isRanger) return;
         const spent = THIEF_SKILLS
-          .filter(s => !s.notPercent)
+          .filter(s => !s.notPercent && (!availableSkills || availableSkills.includes(s.id)))
           .reduce((sum, s) => sum + (thiefSkillAlloc.points?.[s.id] || 0), 0);
         const rem = poolTotal - spent;
         poolSummary.innerHTML = `
@@ -5345,9 +5359,8 @@
       THIEF_SKILLS.forEach(skill => {
         // Ranger only has MS and HS — skip all other skills
         if (isRanger && !['ms', 'hs'].includes(skill.id) && !skill.notPercent) return;
-        // Blades (revised kit) have no Read Languages. Pick Pockets: open
-        // question (see docs/house-rules/blade-revised.md), shown for now.
-        if (thiefSubclass === 'blade' && skill.id === 'rl') return;
+        // Skip skills this character doesn't have (e.g. a Blade's Pick Pockets)
+        if (availableSkills && !skill.notPercent && !availableSkills.includes(skill.id)) return;
 
         const row = document.createElement('div');
         row.className = 'thief-row' + (skill.notPercent ? ' thief-row-special' : '');
@@ -6335,6 +6348,7 @@
         delBtn.addEventListener('click', () => {
           nwps = nwps.filter(n => n.id !== nwp.id);
           renderNWPs();
+          renderThievingAbilities();   // e.g. removing Locksmithing removes Open Locks for a Blade
           saveToItems();
         });
         top.appendChild(delBtn);
@@ -6347,7 +6361,7 @@
         nameInp.value = nwp.name;
         nameInp.placeholder = 'Proficiency name';
         nameInp.addEventListener('input',  () => { nwp.name = nameInp.value; });
-        nameInp.addEventListener('change', () => saveToItems());
+        nameInp.addEventListener('change', () => { saveToItems(); renderThievingAbilities(); });
         card.appendChild(nameInp);
 
         // ── Description ───────────────────────────────────────
