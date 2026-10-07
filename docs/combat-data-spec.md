@@ -163,6 +163,21 @@ category. See section 4.
 
 ---
 
+### Sheet UI decisions (from the design prototype)
+
+- **Edit per item:** the sheet reads like a reference card; each weapon and
+  each combat ability has its own Edit.
+- **A dedicated Combat view,** with the full sheet one tab away.
+- **Compact attack rows.** Each number carries its own **icon + label**
+  (target = THAC0, die = damage S/M · L, repeat = attacks per round), repeated
+  on every row instead of a column header. That's more accessible: every value
+  is labeled where it's read, including by screen readers.
+- **The weapon subtitle shows type, speed, and bonuses,** but not the base
+  weapon; players know what their weapons are. (The base weapon is still set
+  in Edit.)
+
+Prototype: `prototypes/weapons-and-combat.template.html`.
+
 ## 4. Modifiers: four layers
 
 The modifiers that matter differ in **how often they change**. Each layer gets a

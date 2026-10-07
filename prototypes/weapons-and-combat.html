@@ -114,7 +114,6 @@ button { cursor: pointer; }
 .cell { display: grid; justify-items: end; gap: 1px; line-height: 1.15; min-width: 0; }
 .cell .lbl { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-display); font-size: 0.64rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-muted); white-space: nowrap; }
 .cell .lbl svg { width: 12px; height: 12px; flex: none; color: var(--accent); }
-.labels-text .cell .lbl svg { display: none; }
 .cell .val { font-family: var(--font-data); white-space: nowrap; }
 .arow .t0 .val { font-size: 1.1rem; font-weight: 500; }
 .arow .dm .val { font-size: 0.82rem; color: var(--ink-muted); }
@@ -225,7 +224,6 @@ footer { color: var(--ink-faint); font-size: 0.88rem; }
   <div class="controls" role="group" aria-label="Prototype controls">
     <span><span class="ctl-label">Width</span><span class="seg" id="widths"></span></span>
     <span><span class="ctl-label">Data</span><span class="seg" id="datamode"></span></span>
-    <span><span class="ctl-label">Row labels</span><span class="seg" id="labelmode"></span></span>
     <label class="toggle"><input type="checkbox" id="notes-toggle" checked> Show design notes</label>
     <button class="btn quiet" type="button" id="reset">Reset prototype</button>
   </div>
@@ -2713,7 +2711,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
 
 const NOTES = [
   ['A', 'Read by default, edit one card at a time', "The sheet reads like a reference card. Each weapon (and each combat ability) has its own Edit, which opens just that card. Nothing else on the sheet becomes editable, so mid-session clicks can't change stats by accident."],
-  ['B', 'Compact rows with inline labels', 'One row per attack: name and mode, THAC0 (largest, since it gets read most), damage vs S/M · L, and attacks per round. Each number carries its own small label (with an icon: target, die, repeat) instead of a column header far above it. Weapons with melee and thrown get a row for each. At phone width damage drops under the name. Compare "Icons + labels" and "Labels only" above.'],
+  ['B', 'Compact rows with inline labels', 'One row per attack: name and mode, THAC0 (largest, since it gets read most), damage vs S/M · L, and attacks per round. Each number carries its own small icon and label (target, die, repeat) instead of a column header far above it; repeating them on every row is the accessible choice. The weapon subtitle skips the base weapon, since players already know it. Weapons with melee and thrown get a row for each. At phone width damage drops under the name.'],
   ['C', 'Tap a row to see the math', 'Every number can explain itself: base THAC0 for class and level, then each bonus with where it came from. It settles "why is it 13?" without a separate screen.'],
   ['D', 'Combat abilities are written once', "Signature Weapon, Duelist's Precision, Handle Weapons and so on are listed once and applied automatically to the attacks they cover (by weapon type, hand, or melee/thrown). Per-round choices like Bladesong live in the Combat view, not here."],
   ['E', 'Upgraded saves: summary + inline flags', 'Switch Data to "Freshly upgraded save" to see option D: a summary at the top linking to each weapon, a collapsed "things to check" row on each weapon card (expand to confirm one at a time, or Confirm all), and a "needs review" tag on affected attacks. The sheet stays usable throughout.'],
@@ -2756,17 +2754,14 @@ function renderControls() {
   $('widths').innerHTML = WIDTHS.map(([l, w]) => `<button type="button" data-w="${w}" aria-pressed="${S.width === w}">${l} <span class="num" style="font-size:.75rem">${w}</span></button>`).join('');
   $('widths').querySelectorAll('button').forEach(b => b.onclick = () => { S.width = +b.dataset.w; render(); });
   $('datamode').innerHTML = [['reviewed', 'Reviewed sheet'], ['upgraded', 'Freshly upgraded save']].map(([k, l]) => `<button type="button" data-k="${k}" aria-pressed="${S.dataMode === k}">${l}</button>`).join('');
-  $('datamode').querySelectorAll('button').forEach(b => b.onclick = () => { const w = S.width, n = S.notes, t = S.tab, l = S.labels; S = freshState(b.dataset.k); Object.assign(S, { width: w, notes: n, tab: t, labels: l }); render(); });
-  $('labelmode').innerHTML = [['icons', 'Icons + labels'], ['text', 'Labels only']].map(([k, l]) => `<button type="button" data-l="${k}" aria-pressed="${(S.labels || 'icons') === k}">${l}</button>`).join('');
-  $('labelmode').querySelectorAll('button').forEach(b => b.onclick = () => { S.labels = b.dataset.l; render(); });
-  $('frame').classList.toggle('labels-text', S.labels === 'text');
+  $('datamode').querySelectorAll('button').forEach(b => b.onclick = () => { const w = S.width, n = S.notes, t = S.tab; S = freshState(b.dataset.k); Object.assign(S, { width: w, notes: n, tab: t }); render(); });
   $('frame').style.maxWidth = S.width + 'px';
   $('frame').classList.toggle('show-notes', S.notes);
   $('frame-label').textContent = `Jaque's sheet · ${WIDTHS.find(w => w[1] === S.width)[0].toLowerCase()} (${S.width}px)`;
   $('notes').innerHTML = NOTES.map(([l, t, d]) => `<div class="note"><b><span class="pin">${l}</span>${esc(t)}</b><p>${esc(d)}</p></div>`).join('');
 }
 $('notes-toggle').onchange = e => { S.notes = e.target.checked; render(); };
-$('reset').onclick = () => { const w = S.width, n = S.notes, l = S.labels; S = freshState(); Object.assign(S, { width: w, notes: n, labels: l }); render(); };
+$('reset').onclick = () => { const w = S.width, n = S.notes; S = freshState(); Object.assign(S, { width: w, notes: n }); render(); };
 
 // ── App ──
 function render() {
@@ -2811,7 +2806,6 @@ function renderSheet() {
 function readCard(raw) {
   const w = resolveWeapon(raw);
   const bonus = [w.hitBonus ? `hit ${sign(w.hitBonus)}` : '', w.dmgBonus ? `dmg ${sign(w.dmgBonus)}` : '', w.magicPlus ? `magic +${w.magicPlus}` : ''].filter(Boolean).join(' ');
-  const base = w.category ? PHB_WEAPONS[w.category].name.replace(/\s*\(.*\)$/, '') : 'no base weapon';
   let rows = '';
   for (const a of attacksOf(raw)) {
     const c = calc(raw.id, a.id);
@@ -2831,7 +2825,7 @@ function readCard(raw) {
   const wflags = [raw.id, ...attacksOf(raw).map(a => a.id)].flatMap(reviewFor);
   return `<article class="wcard" id="card-${raw.id}">
     <div class="whead"><span class="wname">${esc(w.name)}</span>
-      <span class="wmeta">${w.damageTypes.join('/')} · spd ${w.speed} · based on ${esc(base)}${bonus ? ' · ' + bonus : ''}${w.unknown ? ' · unidentified' : ''}${w.conditional.length ? ` · ${esc(w.conditional[0].label)} +½ (not automatic)` : ''}</span>
+      <span class="wmeta">${w.damageTypes.join('/')} · spd ${w.speed}${bonus ? ' · ' + bonus : ''}${w.unknown ? ' · unidentified' : ''}${w.conditional.length ? ` · ${esc(w.conditional[0].label)} +½ (not automatic)` : ''}</span>
       <button class="btn quiet edit" type="button" data-edit="${raw.id}" aria-label="Edit ${esc(w.name)}">Edit</button>
     </div>
     ${wflags.length ? `<details class="flags"><summary>${pin('E')}<b>Needs review</b><span>${wflags.length} thing${wflags.length === 1 ? '' : 's'} to check on this weapon</span></summary>${wflags.map(flagHtml).join('')}<div class="flag"><button type="button" class="linkbtn" data-confirmall="${raw.id}">Confirm all for this weapon</button></div></details>` : ''}
