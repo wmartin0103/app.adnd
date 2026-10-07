@@ -225,7 +225,7 @@ full setup is in [`docs/house-rules/blade-revised.md`](house-rules/blade-revised
 
 | Field | Meaning | Example |
 |---|---|---|
-| `appliesTo.hand` | Main or off hand only | Signature Weapon: main hand only |
+| `appliesTo.hand` | Main or off hand only | Handle Weapons: −2 on the off hand |
 | `appliesTo.anyOf` | Any one of several filters | Duelist's damage: melee *or* crossbow |
 | `when` | Only while a situation chip is on | Duelist's damage needs "Target flanked or unaware" |
 | `preferBetter` | Swap the ability only if it gives more | Duelist's Precision falls back to Strength |

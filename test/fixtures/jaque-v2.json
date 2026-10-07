@@ -586,8 +586,7 @@
     {
       "label": "Signature Weapon",
       "appliesTo": {
-        "category": "dagger",
-        "hand": "main"
+        "category": "dagger"
       },
       "hit": 1,
       "dmg": 2,

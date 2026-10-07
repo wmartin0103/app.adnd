@@ -80,8 +80,10 @@ If Strength would give a better result in either case, use Strength.
 
 - **Multi-weapon fighting stays.** A Blade fighting with two weapons gets **one
   extra off-hand attack per round**, on top of the Signature Weapon's attacks
-  per round. Handle Weapons sets its penalty (−2) and it never gets the
-  Signature Weapon bonus.
+  per round. Handle Weapons sets its penalty (−2).
+- **Signature Weapon covers the whole proficiency.** Every dagger gets +1 to
+  hit and +2 damage, off-hand included. The off-hand attack is still just the
+  one extra attack; it never gets the Signature Weapon's extra attacks per round.
 - **No mixing melee and ranged within the Signature Weapon's attacks** in the
   same round: all of them are melee, or all are thrown. The extra off-hand
   attack is exempt and can be either.
@@ -92,11 +94,11 @@ If Strength would give a better result in either case, use Strength.
 
 | Rule | In the app |
 |---|---|
-| Signature Weapon +1/+2 | Combat bonus on the weapon category, main hand only |
+| Signature Weapon +1/+2 | Combat bonus on the weapon category (every dagger, either hand) |
 | Signature attacks per round | On the Signature Weapon bonus, so every main-hand dagger gets it, by level: melee 3/2 → 2/1 (7th) → 5/2 (13th); thrown 3/1 → 4/1 → 5/1 |
 | Duelist's Precision (to hit) | Melee uses Dex missile adj. instead of Str, unless Str is better |
 | Duelist's Precision (damage) | With the "Target flanked or unaware" chip on: Int replaces Str for damage in melee or with a crossbow, unless Str is better; capped at +2 |
-| Handle Weapons | Off-hand attacks at −2, no Signature bonus |
+| Handle Weapons | Off-hand attacks at −2 |
 | Multi-weapon fighting | One extra off-hand attack per round (`__combatRules.offHandAttack`) |
 | Defensive Spin | Toggle: no attack, AC better by half his level (rounded up) |
 | Offensive Spin, Weapon Display | Toggles: no attack this round |

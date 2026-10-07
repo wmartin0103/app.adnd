@@ -179,11 +179,11 @@ test('Int damage caps at +2 and never uses exceptional strength', () => {
   assert.ok(a.lines.some(l => l.label === "Duelist's Precision: Intelligence 19" && l.dmg === 2));
 });
 
-test('off-hand dagger: −2, no Signature Weapon, still Duelist\'s Precision', () => {
+test('off-hand dagger: −2, still gets Signature Weapon and Duelist\'s Precision', () => {
   const a = computeAttack({ sheet: jaque, weaponId: 'wpn-5', attackId: 'atk-6' });
-  assert.equal(a.thac0, 17);   // 18 − Dex 3 + 2 off-hand
-  assert.deepEqual(a.damage, { sm: '1d4', l: '1d3' });
-  assert.ok(!a.lines.some(l => l.label === 'Signature Weapon'));
+  assert.equal(a.thac0, 16);   // 18 − Dex 3 − Signature 1 + off-hand 2
+  assert.deepEqual(a.damage, { sm: '1d4+2', l: '1d3+2' });
+  assert.equal(a.attacksPerRound, '1');   // the Signature rate never applies to the extra attack
 });
 
 test('every main-hand dagger gets the Signature rate; the off-hand gets one attack', () => {
