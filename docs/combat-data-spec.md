@@ -324,8 +324,28 @@ removes a second app at the table, and it can tie rolls directly to actions.
   "at": "2026-10-07T20:14:03Z" }
 ```
 
-**Current roller:** the group uses a Roll Dice With Friends room. Features to
-match are still to be confirmed (see section 8).
+### What the group uses today: Roll Dice With Friends ("Roll Deep" room)
+
+From a screenshot of the room:
+- A free-text **name** field (people type their character name).
+- **Dice palette**: d4, d6, d8, d10, d12, d20, percentile. Click dice into a
+  tray to build a pool (e.g. 3d6), then **Roll It!**
+- One **shared feed, newest first**: name, **Total**, and each die's result
+  ("d6: 3, 1, 2").
+- A dice-style dropdown.
+
+It has no modifiers, no record of what a roll was for, no private rolls, and
+no manual entry.
+
+**Plan: keep the familiar part, add context.**
+- The **free-form roller** copies Roll Deep's pattern: click dice into a tray,
+  Roll, shared feed newest first with each die's result. No learning curve.
+- **Name comes from the login**, not a text field.
+- **In-context roll buttons** post richer entries to the same feed:
+  `Jaque · Attack, Dagger → Orc 1 · d20: 16 · rolled`. Modifiers are shown with
+  the dice, e.g. `Damage · 1d4+3 · d4: 2 → 5`.
+- **Entered** rolls (physical dice) are tagged as such.
+- **DM private rolls** appear to players only as "DM rolled".
 
 ---
 
@@ -359,7 +379,7 @@ Old JSON files keep importing.
    text "Needs review" marker with Confirm/edit. Items are grouped by weapon, with
    "Confirm all" per weapon, because one character can have 15+ (Jaque does).
    The DM sees "unverified" on attacks with open items. Nothing blocks use.
-5. **Dice roller features** the group relies on in Roll Dice With Friends (screenshots welcome).
+5. ~~**Dice roller features**~~ **Decided:** match Roll Deep's tray-and-feed pattern, add context (section 6).
 
 ---
 
