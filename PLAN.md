@@ -263,6 +263,10 @@ whole time as a backup.
 *(Moved earlier. This gives the biggest win without needing a database.)*
 - Extract the sheet's calculations into `src/rules/` and point the sheet at them,
   with no visible change to the sheet.
+- **Restructure the sheet's Weapons and Combat Scenarios data** (sheet v2) so
+  every attack is calculable: mode, attacks per round, labeled modifiers, and
+  per-round combat options. See [`docs/combat-data-spec.md`](docs/combat-data-spec.md).
+  Includes an automatic migration for existing saves.
 - Write the `toDMHelperCharacter` adapter, with tests against current DM Helper values.
 - Add an **"Import party"** button to the DM Helper: the DM selects the players'
   exported JSON files, and the config is generated from them. Hand-typed config
@@ -290,10 +294,10 @@ file-passing workflow, before any backend exists.
 - The DM Helper's per-character tab becomes **the player's own combat view on
   their phone**: declare action, roll initiative, see if they hit.
 - The DM's tracker updates as players declare.
-- If wanted (section 8): HP and conditions sync between the DM tracker and sheets.
+- HP and conditions sync between the DM tracker and sheets, stored as damage and
+  healing events so simultaneous edits never overwrite each other.
 
 ### Phase 6 — Nice-to-haves
-- Structured "combat toggles" on the sheet (Parry, Armor spell, Virtue, Quickness).
 - Edit history / undo, shared dice log, installable on phones, XP awards from
   encounters straight to sheets.
 
@@ -301,17 +305,15 @@ file-passing workflow, before any backend exists.
 
 ## 8. Decisions for you (UX/product)
 
-1. **Repo visibility.** Make it private? (Strongly recommended, and needed before
-   committing saves or DM tables.)
+1. ~~**Repo visibility.**~~ **Decided:** private.
 2. **Do all players use the sheet tool?** The DM Helper lists 8 PCs, 3 marked
    legacy. The adapter only helps for characters that have a sheet save.
 3. **Source of truth when they disagree.** When generated numbers differ from
    the DM's hand-entered ones, who decides? (Suggest: the DM, then fix the
    sheet's rule.)
-4. **HP in the DM tool.** It doesn't track HP today. Add it (Phase 5), or keep HP
-   player-managed on the sheet?
-5. **Player combat view.** Players declare actions on their own phones, or the
-   DM keeps entering everything?
+4. ~~**HP in the DM tool.**~~ **Decided:** yes, synced in real time between the DM and the player.
+5. ~~**Player combat view.**~~ **Decided:** players declare their own actions.
+   This requires the sheet v2 weapon/attack data (Phase 2).
 6. **Party visibility.** Can players see each other's full sheets, a summary, or nothing?
 7. **Devices at the table.** Phones, laptops, a shared screen? This drives layout priorities.
 
@@ -335,7 +337,9 @@ file-passing workflow, before any backend exists.
 - [x] Character sheet received and reviewed
 - [x] DM Helper received and reviewed
 - [x] One character save received (Jaque)
-- [ ] Repo made private, then files committed to `legacy/` and `samples/`
+- [x] Repo made private, then files committed to `legacy/` and `samples/`
+- [x] Combat data spec drafted (`docs/combat-data-spec.md`)
+- [ ] Combat data spec reviewed: UX questions in its section 6
 - [ ] Saves from the other active players
 - [ ] Answers to section 8
 - [ ] Accounts: Netlify or Cloudflare, Supabase (free; owned by you)
