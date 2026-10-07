@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 
 import { parseDice, formatDice } from '../src/rules/dice.js';
 import { resolveWeapon } from '../src/rules/weapons.js';
-import { baseTHAC0, strengthMods, computeAttack, listAttacks } from '../src/rules/attacks.js';
+import { baseTHAC0, strengthMods, computeAttack, listAttacks, planRound } from '../src/rules/attacks.js';
 
 const jaque = JSON.parse(readFileSync(new URL('./fixtures/jaque-v2.json', import.meta.url)));
 
@@ -106,7 +106,7 @@ test('unidentified weapons are flagged for review', () => {
 
 test('weapons without an attack list get one attack per mode', () => {
   const ids = listAttacks({ sheet: jaque }).map(a => a.attackId);
-  assert.deepEqual(ids, ['atk-1', 'atk-2', 'wpn-3:melee', 'wpn-3:thrown', 'wpn-4:melee', 'wpn-4:thrown', 'atk-5']);
+  assert.deepEqual(ids, ['atk-1', 'atk-2', 'wpn-3:melee', 'wpn-3:thrown', 'wpn-4:melee', 'wpn-4:thrown', 'atk-5', 'atk-6', 'atk-7', 'atk-8']);
 });
 
 // ── Round layers ──
@@ -151,4 +151,76 @@ test('a racial trait switched off on the sheet is not applied', () => {
     __weapons: [{ id: 'w', basedOn: 'long-bow' }],
   };
   assert.equal(computeAttack({ sheet, weaponId: 'w', attackId: 'w:missile' }).thac0, 20);
+});
+
+// ── Blade (revised) ──
+test('Duelist\'s Precision uses Strength instead when Strength is better', () => {
+  const strong = { ...jaque, str: '17', dex: '13' };   // Str +1 hit, Dex missile 0
+  const a = computeAttack({ sheet: strong, weaponId: 'wpn-1', attackId: 'atk-1' });
+  assert.equal(a.lines[0].label, 'Strength 17');
+  assert.equal(a.thac0, 18 - 1 - 1 - 1);   // Str, Superior, Signature
+});
+
+test('vs a flanked or unaware target, Jaque adds Int to damage (1d4+4)', () => {
+  const a = computeAttack({ sheet: jaque, weaponId: 'wpn-1', attackId: 'atk-1', round: { situation: ['targetExposed'] } });
+  assert.deepEqual(a.damage, { sm: '1d4+4', l: '1d3+4' });
+  assert.ok(a.lines.some(l => l.label === "Duelist's Precision: Intelligence 16" && l.dmg === 1));
+  assert.equal(a.thac0, 13);   // the condition chip itself adds nothing to hit
+});
+
+test('Int damage swap does not apply to thrown daggers', () => {
+  const a = computeAttack({ sheet: jaque, weaponId: 'wpn-1', attackId: 'atk-2', round: { situation: ['targetExposed'] } });
+  assert.deepEqual(a.damage, { sm: '1d4+3', l: '1d3+3' });
+});
+
+test('Int damage caps at +2 and never uses exceptional strength', () => {
+  const genius = { ...jaque, int: '19' };
+  const a = computeAttack({ sheet: genius, weaponId: 'wpn-1', attackId: 'atk-1', round: { situation: ['targetExposed'] } });
+  assert.ok(a.lines.some(l => l.label === "Duelist's Precision: Intelligence 19" && l.dmg === 2));
+});
+
+test('off-hand dagger: −2, no Signature Weapon, still Duelist\'s Precision', () => {
+  const a = computeAttack({ sheet: jaque, weaponId: 'wpn-5', attackId: 'atk-6' });
+  assert.equal(a.thac0, 17);   // 18 − Dex 3 + 2 off-hand
+  assert.deepEqual(a.damage, { sm: '1d4', l: '1d3' });
+  assert.ok(!a.lines.some(l => l.label === 'Signature Weapon'));
+});
+
+test('every main-hand dagger gets the Signature rate; the off-hand gets one attack', () => {
+  const apr = id => listAttacks({ sheet: jaque }).find(a => a.attackId === id).attacksPerRound;
+  assert.deepEqual(['wpn-3:melee', 'wpn-4:thrown', 'atk-6', 'atk-7'].map(apr), ['3/2', '3/1', '1', '1']);
+});
+
+test('signature attacks per round improve at 7th and 13th level', () => {
+  const at = lvl => computeAttack({ sheet: { ...jaque, __classes: [{ group: 'rogue', level: String(lvl) }] }, weaponId: 'wpn-1', attackId: 'atk-1' }).attacksPerRound;
+  assert.deepEqual([at(5), at(7), at(13)], ['3/2', '2/1', '5/2']);
+});
+
+test('a round is one primary attack type plus one off-hand attack', () => {
+  const melee = planRound({ sheet: jaque, primary: { weaponId: 'wpn-1', attackId: 'atk-1' }, offHand: { weaponId: 'wpn-5', attackId: 'atk-6' } });
+  assert.deepEqual(melee.errors, []);
+  assert.equal(melee.perRound, 2.5);
+  assert.equal(melee.summary, '3/2 Dagger Attack (Specialized) + 1 Off-hand dagger');
+  // Melee primary with a thrown off-hand dagger is allowed.
+  const mixed = planRound({ sheet: jaque, primary: { weaponId: 'wpn-1', attackId: 'atk-1' }, offHand: { weaponId: 'wpn-5', attackId: 'atk-7' } });
+  assert.deepEqual(mixed.errors, []);
+  assert.equal(mixed.perRound, 2.5);
+});
+
+test('a round rejects a main-hand attack in the off-hand slot', () => {
+  const bad = planRound({ sheet: jaque, primary: { weaponId: 'wpn-1', attackId: 'atk-1' }, offHand: { weaponId: 'wpn-5', attackId: 'atk-5' } });
+  assert.ok(bad.errors.includes('The off-hand attack must be an off-hand attack.'));
+});
+
+test('Defensive Spin: no attack, AC better by half his level rounded up', () => {
+  const a = computeAttack({ sheet: jaque, weaponId: 'wpn-1', attackId: 'atk-1', round: { toggles: { 'opt-2': true } } });
+  assert.equal(a.noAttack, true);
+  assert.equal(a.acImprovement, 3);   // level 5 → 3
+  const plan = planRound({ sheet: jaque, primary: { weaponId: 'wpn-1', attackId: 'atk-1' }, round: { toggles: { 'opt-2': true } } });
+  assert.equal(plan.summary, 'No attack this round');
+});
+
+test('Trick Throw is a custom attack at −2', () => {
+  const a = computeAttack({ sheet: jaque, weaponId: 'wpn-5', attackId: 'atk-8' });
+  assert.equal(a.thac0, 16);   // 18 − Dex 3 − Signature 1 + Trick Throw 2
 });

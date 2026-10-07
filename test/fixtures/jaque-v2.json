@@ -95,13 +95,11 @@
         {
           "id": "atk-1",
           "mode": "melee",
-          "name": "Dagger Attack (Specialized)",
-          "attacksPerRound": "3/2"
+          "name": "Dagger Attack (Specialized)"
         },
         {
           "id": "atk-2",
-          "mode": "thrown",
-          "attacksPerRound": "3/1"
+          "mode": "thrown"
         }
       ]
     },
@@ -134,8 +132,30 @@
         {
           "id": "atk-5",
           "mode": "thrown",
-          "name": "Thrown Dagger Attack",
-          "attacksPerRound": "3/1"
+          "name": "Thrown Dagger Attack"
+        },
+        {
+          "id": "atk-6",
+          "mode": "melee",
+          "hand": "off",
+          "name": "Off-hand dagger"
+        },
+        {
+          "id": "atk-7",
+          "mode": "thrown",
+          "hand": "off",
+          "name": "Off-hand dagger, thrown"
+        },
+        {
+          "id": "atk-8",
+          "mode": "thrown",
+          "name": "Trick Throw",
+          "mods": [
+            {
+              "label": "Trick Throw (called shot)",
+              "hit": -2
+            }
+          ]
         }
       ]
     }
@@ -566,11 +586,24 @@
     {
       "label": "Signature Weapon",
       "appliesTo": {
-        "category": "dagger"
+        "category": "dagger",
+        "hand": "main"
       },
       "hit": 1,
       "dmg": 2,
-      "sourceId": "abc-15"
+      "sourceId": "abc-15",
+      "attacksPerRound": {
+        "melee": {
+          "1": "3/2",
+          "7": "2/1",
+          "13": "5/2"
+        },
+        "thrown": {
+          "1": "3/1",
+          "7": "4/1",
+          "13": "5/1"
+        }
+      }
     },
     {
       "label": "Duelist's Precision",
@@ -578,7 +611,36 @@
         "mode": "melee"
       },
       "hitAbility": "dex-missile",
+      "preferBetter": true,
       "sourceId": "abc-16"
+    },
+    {
+      "label": "Duelist's Precision",
+      "when": "targetExposed",
+      "appliesTo": {
+        "anyOf": [
+          {
+            "mode": "melee"
+          },
+          {
+            "categories": [
+              "light-crossbow",
+              "heavy-crossbow"
+            ]
+          }
+        ]
+      },
+      "dmgAbility": "int-as-str",
+      "preferBetter": true,
+      "sourceId": "abc-16"
+    },
+    {
+      "label": "Handle Weapons: off-hand",
+      "appliesTo": {
+        "hand": "off"
+      },
+      "hit": -2,
+      "sourceId": "abc-2"
     }
   ],
   "__combatOptions": [
@@ -607,7 +669,40 @@
       "name": "Defensive Spin",
       "sticks": false,
       "noAttack": true,
+      "ac": "halfLevel",
+      "note": "Attackers save vs. paralyzation or take half his level (round up) in damage. Ends if he's hit; lasts up to Con rounds.",
       "sourceId": "abc-4"
+    },
+    {
+      "id": "opt-3",
+      "name": "Offensive Spin",
+      "sticks": false,
+      "noAttack": true,
+      "note": "Next round's hit forces a morale check.",
+      "sourceId": "abc-5"
+    },
+    {
+      "id": "opt-4",
+      "name": "Weapon Display",
+      "sticks": false,
+      "choice": [
+        {
+          "label": "Intimidation",
+          "noAttack": true
+        },
+        {
+          "label": "Fascination",
+          "noAttack": true
+        },
+        {
+          "label": "Inspire Allies",
+          "noAttack": true
+        }
+      ],
+      "sourceId": "abc-1"
     }
-  ]
+  ],
+  "__combatRules": {
+    "offHandAttack": true
+  }
 }

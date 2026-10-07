@@ -17,10 +17,13 @@ import { resolveWeapon } from './weapons.js';
 import { parseDice, formatDice } from './dice.js';
 
 // Shared situational chips, from the DM Helper's MODS. Campaign-wide, not per character.
+// A chip with no bonus of its own (targetExposed) is a condition that
+// character abilities can react to, via `when` on a combat bonus.
 export const SITUATIONS = {
-  flanking:     { label: 'Flanking',      hit: 2 },
-  charging:     { label: 'Charging',      hit: 2 },
-  higherGround: { label: 'Higher ground', hit: 1 },
+  flanking:      { label: 'Flanking',                  hit: 2 },
+  charging:      { label: 'Charging',                  hit: 2 },
+  higherGround:  { label: 'Higher ground',             hit: 1 },
+  targetExposed: { label: 'Target flanked or unaware', hit: 0 },
 };
 
 const num = v => {
@@ -71,17 +74,60 @@ function abilityDmg(sheet, ability) {
     const s = strengthMods(sheet);
     return { label: s.label, dmg: s.dmg };
   }
+  // Intelligence read on the Strength damage column: no exceptional strength,
+  // so it caps at +2 for Int 18 (Blade's Duelist's Precision).
+  if (ability === 'int-as-str') {
+    const int = Math.min(num(sheet.int), 18);
+    return { label: `Intelligence ${num(sheet.int)}`, dmg: (STR_TABLE[int] || { dmg: 0 }).dmg };
+  }
   return null;
 }
 
-// Does a bonus's `appliesTo` match this weapon + attack?
-function applies(appliesTo, weapon, attack) {
-  if (!appliesTo) return true;
+// Does a bonus's `appliesTo` match this weapon + attack? All listed fields
+// must match; `anyOf` matches if any one of its entries does.
+function matches(appliesTo, weapon, attack) {
   const cats = appliesTo.categories || (appliesTo.category ? [appliesTo.category] : null);
   const modes = appliesTo.modes || (appliesTo.mode ? [appliesTo.mode] : null);
   if (cats && !cats.includes(weapon.category)) return false;
   if (modes && !modes.includes(attack.mode)) return false;
+  if (appliesTo.hand && appliesTo.hand !== (attack.hand || 'main')) return false;
+  if (appliesTo.anyOf && !appliesTo.anyOf.some(a => matches(a, weapon, attack))) return false;
   return true;
+}
+
+// A bonus applies when its weapon/attack filter matches and, if it has a
+// `when` condition, that situation chip is on this round.
+function applies(bonus, weapon, attack, round) {
+  if (bonus.when && !(round.situation || []).includes(bonus.when)) return false;
+  return !bonus.appliesTo || matches(bonus.appliesTo, weapon, attack);
+}
+
+// Attacks per round, either fixed ("3/2") or by level ({ 1: '3/2', 7: '2/1' }).
+function attacksAtLevel(apr, level) {
+  if (!apr || typeof apr !== 'object') return apr;
+  const keys = Object.keys(apr).map(Number).filter(k => k <= level).sort((a, b) => b - a);
+  return apr[keys[0]] ?? Object.values(apr)[0];
+}
+
+// Attacks per round, first match wins:
+//   1. an off-hand attack is always the one extra attack
+//   2. set on the attack itself
+//   3. set by a combat bonus for this mode (e.g. Signature Weapon specialization)
+//   4. melee 1; thrown and missile use the weapon's rate of fire
+function attacksPerRoundFor(attack, weapon, bonuses, level) {
+  if (attack.hand === 'off') return '1';
+  if (attack.attacksPerRound) return attacksAtLevel(attack.attacksPerRound, level);
+  for (const b of bonuses) {
+    const byMode = b.attacksPerRound?.[attack.mode];
+    if (byMode) return attacksAtLevel(byMode, level);
+  }
+  return attack.mode === 'melee' ? '1' : weapon.rateOfFire || '1';
+}
+
+// "3/2" → 1.5
+function aprValue(apr) {
+  const [a, b] = String(apr).split('/').map(Number);
+  return b ? a / b : a;
 }
 
 function traitActive(sheet, traitId) {
@@ -119,21 +165,25 @@ export function computeAttack({ sheet, weaponId, attackId, campaignWeapons = {},
   };
 
   // ── Layer 1: built-in ──
-  const bonuses = (sheet.__combatBonuses || []).filter(b => applies(b.appliesTo, weapon, attack));
+  const bonuses = (sheet.__combatBonuses || []).filter(b => applies(b, weapon, attack, round));
 
   // Which ability adds to hit and damage. Defaults by mode; an attack or a
-  // combat bonus (e.g. Duelist's Precision) can swap it.
-  let hitAbility = attack.hitAbility || (attack.mode === 'melee' ? 'str' : 'dex-missile');
-  let hitAbilitySource = null;
-  let dmgAbility = attack.dmgAbility || (attack.mode === 'missile' ? 'none' : 'str');
-  for (const b of bonuses) {
-    if (b.hitAbility) { hitAbility = b.hitAbility; hitAbilitySource = b.label; }
-    if (b.dmgAbility) dmgAbility = b.dmgAbility;
-  }
-  const ah = abilityHit(sheet, hitAbility);
-  if (ah) add('built-in', hitAbilitySource ? `${hitAbilitySource}: ${ah.label}` : ah.label, ah.hit, 0);
-  const ad = abilityDmg(sheet, dmgAbility);
-  if (ad) add('built-in', ad.label, 0, ad.dmg);
+  // combat bonus (e.g. Duelist's Precision) can swap it. With `preferBetter`,
+  // the swap only happens when it gives a bigger bonus.
+  const pickAbility = (defaultKey, field, read) => {
+    let chosen = { key: defaultKey, source: null, value: read(defaultKey) };
+    for (const b of bonuses) {
+      if (!b[field]) continue;
+      const value = read(b[field]);
+      const better = (value?.hit ?? value?.dmg ?? 0) > (chosen.value?.hit ?? chosen.value?.dmg ?? 0);
+      if (!b.preferBetter || better) chosen = { key: b[field], source: b.label, value };
+    }
+    return chosen;
+  };
+  const hitPick = pickAbility(attack.hitAbility || (attack.mode === 'melee' ? 'str' : 'dex-missile'), 'hitAbility', k => abilityHit(sheet, k));
+  if (hitPick.value) add('built-in', hitPick.source ? `${hitPick.source}: ${hitPick.value.label}` : hitPick.value.label, hitPick.value.hit, 0);
+  const dmgPick = pickAbility(attack.dmgAbility || (attack.mode === 'missile' ? 'none' : 'str'), 'dmgAbility', k => abilityDmg(sheet, k));
+  if (dmgPick.value) add('built-in', dmgPick.source ? `${dmgPick.source}: ${dmgPick.value.label}` : dmgPick.value.label, 0, dmgPick.value.dmg);
 
   add('built-in', weapon.name || 'Weapon', weapon.hitBonus, weapon.dmgBonus);
   if (weapon.magicPlus) add('built-in', `Magic +${weapon.magicPlus}`, weapon.magicPlus, weapon.magicPlus);
@@ -148,6 +198,7 @@ export function computeAttack({ sheet, weaponId, attackId, campaignWeapons = {},
 
   // ── Layer 2: toggles ──
   let noAttack = false;
+  const acLines = [];
   for (const opt of sheet.__combatOptions || []) {
     const picked = (round.toggles || {})[opt.id];
     if (!picked) continue;
@@ -156,6 +207,9 @@ export function computeAttack({ sheet, weaponId, attackId, campaignWeapons = {},
     if (effect.noAttack || opt.noAttack) noAttack = true;
     const label = opt.choice ? `${opt.name}: ${effect.label}` : opt.name;
     add('toggle', label, effect.hit || 0, effect.dmg || 0);
+    // AC improvement: a number, or "halfLevel" (half the character's level, rounded up)
+    const ac = effect.ac === 'halfLevel' ? Math.ceil((effectiveLevel(sheet) || 1) / 2) : effect.ac || 0;
+    if (ac) acLines.push({ label, ac });
   }
 
   // ── Layer 3: situation ──
@@ -193,9 +247,11 @@ export function computeAttack({ sheet, weaponId, attackId, campaignWeapons = {},
     damageTypes: weapon.damageTypes || [],
     speed: weapon.speed ?? null,
     magicPlus: weapon.magicPlus,
-    attacksPerRound: attack.attacksPerRound || (attack.mode === 'melee' ? '1' : weapon.rateOfFire || '1'),
+    attacksPerRound: attacksPerRoundFor(attack, weapon, bonuses, effectiveLevel(sheet) || 1),
     range: attack.mode === 'melee' ? null : weapon.range || null,
     noAttack,
+    acImprovement: acLines.reduce((s, l) => s + l.ac, 0),
+    acLines,
     lines,
     conditional: weapon.conditional,
     needsReview,
@@ -213,4 +269,31 @@ export function listAttacks({ sheet, campaignWeapons = {}, round = {} }) {
     }
   }
   return out;
+}
+
+// Plan one round of attacks: a primary attack plus, for characters who fight
+// with two weapons, one off-hand attack.
+//   • The primary attack's attacks-per-round all use that one attack, so
+//     melee and ranged primary attacks can't be mixed in a round.
+//   • The off-hand attack is one extra attack, any mode, outside that rule.
+// Returns { attacks, perRound, summary, errors }.
+export function planRound({ sheet, primary, offHand, campaignWeapons = {}, round = {} }) {
+  const errors = [];
+  const attacks = [];
+  const main = computeAttack({ sheet, ...primary, campaignWeapons, round });
+  if (main.hand === 'off') errors.push('The primary attack must be a main-hand attack.');
+  attacks.push(main);
+  let perRound = aprValue(main.attacksPerRound);
+  let summary = `${main.attacksPerRound} ${main.name}`;
+  if (offHand) {
+    const off = computeAttack({ sheet, ...offHand, campaignWeapons, round });
+    if (!(sheet.__combatRules || {}).offHandAttack) errors.push('This character has no extra off-hand attack.');
+    if (off.hand !== 'off') errors.push('The off-hand attack must be an off-hand attack.');
+    if (offHand.weaponId === primary.weaponId) errors.push('The off-hand attack needs a second weapon.');
+    attacks.push(off);
+    perRound += 1;
+    summary += ` + 1 ${off.name}`;
+  }
+  if (main.noAttack) return { attacks: [], perRound: 0, summary: 'No attack this round', errors };
+  return { attacks, perRound, summary, errors };
 }

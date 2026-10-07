@@ -218,6 +218,32 @@ actually changed.
 
 ---
 
+### Bonus options added for the revised Blade
+
+Real house rules needed a few more ways to say when a bonus applies. Jaque's
+full setup is in [`docs/house-rules/blade-revised.md`](house-rules/blade-revised.md).
+
+| Field | Meaning | Example |
+|---|---|---|
+| `appliesTo.hand` | Main or off hand only | Signature Weapon: main hand only |
+| `appliesTo.anyOf` | Any one of several filters | Duelist's damage: melee *or* crossbow |
+| `when` | Only while a situation chip is on | Duelist's damage needs "Target flanked or unaware" |
+| `preferBetter` | Swap the ability only if it gives more | Duelist's Precision falls back to Strength |
+| `dmgAbility: "int-as-str"` | Intelligence read on Strength's damage column, max +2 | Duelist's damage |
+| `attacksPerRound` on a bonus, by mode and level | `{ "melee": { "1": "3/2", "7": "2/1", "13": "5/2" } }` | Signature Weapon: every main-hand dagger gets it |
+| toggle `ac: "halfLevel"` | AC better by half the level, rounded up | Defensive Spin |
+| `__combatRules.offHandAttack` | One extra off-hand attack per round (always 1 attack) | Multi-weapon fighting |
+
+A new situation chip, **Target flanked or unaware**, adds nothing by itself; it
+exists so abilities like Duelist's Precision can react to it.
+
+### A round of attacks
+
+A player declares **one primary attack** (its attacks per round all use that
+attack, so melee and ranged primary attacks can't be mixed) and, if the
+character fights with two weapons, **one off-hand attack** of any mode. Example:
+3/2 Dagger (melee) + 1 off-hand dagger (thrown) = 2.5 attacks per round.
+
 ## 5. Declaring an action: the proposed flow
 
 **Context:** sessions run over a video call. Each player has the app open in a
