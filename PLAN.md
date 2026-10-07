@@ -352,6 +352,11 @@ kits, magic items, and monsters. The sheet picks from it (choose "Charm Person"
 and its level, range, duration, and casting time fill in). The DM Helper uses it
 for spell casting times in initiative and for monster stats when adding foes.
 
+**Books (decided):** the **Player's Handbook** and the **Monstrous Manual**
+(the 2e monster book). Rules the group uses from elsewhere (e.g. Quickness,
+Bladesong, kits) go in the campaign layer as house rules. The DMG tables the DM
+Helper already uses (reactions, crits, item saves) stay as they are.
+
 **Structure:** the same pattern as the weapon list. A *core* layer (PHB), a
 layer per *supplement* the group uses, and a *campaign* layer for house rules
 and homebrew that can be based on a core entry and override only what differs.
@@ -368,7 +373,10 @@ wiki links do today). Not legal advice; this is the cautious, common approach.
 **Effort:** the data entry is the real cost (the PHB alone has hundreds of
 spells). Build it in order of what the tools calculate with: weapons (started)
 → armor → proficiencies → spells (casting time matters for initiative) →
-monsters (the DM's foe list) → magic items. Group-editable, DM-approved, so it
+monsters (the DM's foe list) → magic items. Monsters can move earlier if the DM
+wants the foe list sooner; a monster entry is small (AC, HD, THAC0, attacks,
+damage, size, movement, morale, XP) and the DM can add the ones the campaign
+actually meets first. Group-editable, DM-approved, so it
 can grow over time.
 
 ## 10. Risks and safeguards
