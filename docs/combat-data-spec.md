@@ -227,14 +227,14 @@ full setup is in [`docs/house-rules/blade-revised.md`](house-rules/blade-revised
 |---|---|---|
 | `appliesTo.hand` | Main or off hand only | Handle Weapons: −2 on the off hand |
 | `appliesTo.anyOf` | Any one of several filters | Duelist's damage: melee *or* crossbow |
-| `when` | Only while a situation chip is on | Duelist's damage needs "Target flanked or unaware" |
+| `when` | Only while a situation chip (or any of a list) is on | Duelist's damage needs "Flanking" or "Target unaware" |
 | `preferBetter` | Swap the ability only if it gives more | Duelist's Precision falls back to Strength |
 | `dmgAbility: "int-as-str"` | Intelligence read on Strength's damage column, max +2 | Duelist's damage |
 | `attacksPerRound` on a bonus, by mode and level | `{ "melee": { "1": "3/2", "7": "2/1", "13": "5/2" } }` | Signature Weapon: every main-hand dagger gets it |
 | toggle `ac: "halfLevel"` | AC better by half the level, rounded up | Defensive Spin |
 | `__combatRules.offHandAttack` | One extra off-hand attack per round (always 1 attack) | Multi-weapon fighting |
 
-A new situation chip, **Target flanked or unaware**, adds nothing by itself; it
+A new situation chip, **Target unaware**, adds nothing by itself; it
 exists so abilities like Duelist's Precision can react to it.
 
 ### A round of attacks

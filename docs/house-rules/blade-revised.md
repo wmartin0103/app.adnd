@@ -87,6 +87,9 @@ If Strength would give a better result in either case, use Strength.
 - **No mixing melee and ranged within the Signature Weapon's attacks** in the
   same round: all of them are melee, or all are thrown. The extra off-hand
   attack is exempt and can be either.
+- **Flanked = the table's Flanking chip.** Turning on Flanking (+2 to hit) also
+  counts the target as flanked for Duelist's Precision damage.
+- **No Pick Pockets or Read Languages.** The character sheet now hides both for Blades.
 - **Signature Weapon thrown rate (from Jaque's sheet):** 3/1, 4/1 at 7th,
   5/1 at 13th.
 
@@ -97,7 +100,7 @@ If Strength would give a better result in either case, use Strength.
 | Signature Weapon +1/+2 | Combat bonus on the weapon category (every dagger, either hand) |
 | Signature attacks per round | On the Signature Weapon bonus, so every main-hand dagger gets it, by level: melee 3/2 → 2/1 (7th) → 5/2 (13th); thrown 3/1 → 4/1 → 5/1 |
 | Duelist's Precision (to hit) | Melee uses Dex missile adj. instead of Str, unless Str is better |
-| Duelist's Precision (damage) | With the "Target flanked or unaware" chip on: Int replaces Str for damage in melee or with a crossbow, unless Str is better; capped at +2 |
+| Duelist's Precision (damage) | With the "Flanking" or "Target unaware" chip on: Int replaces Str for damage in melee or with a crossbow, unless Str is better; capped at +2 |
 | Handle Weapons | Off-hand attacks at −2 |
 | Multi-weapon fighting | One extra off-hand attack per round (`__combatRules.offHandAttack`) |
 | Defensive Spin | Toggle: no attack, AC better by half his level (rounded up) |

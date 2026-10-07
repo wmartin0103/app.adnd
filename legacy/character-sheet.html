@@ -5345,6 +5345,8 @@
       THIEF_SKILLS.forEach(skill => {
         // Ranger only has MS and HS — skip all other skills
         if (isRanger && !['ms', 'hs'].includes(skill.id) && !skill.notPercent) return;
+        // Blades (revised kit) have no Pick Pockets or Read Languages
+        if (thiefSubclass === 'blade' && ['pp', 'rl'].includes(skill.id)) return;
 
         const row = document.createElement('div');
         row.className = 'thief-row' + (skill.notPercent ? ' thief-row-special' : '');

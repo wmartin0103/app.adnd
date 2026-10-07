@@ -17,13 +17,14 @@ import { resolveWeapon } from './weapons.js';
 import { parseDice, formatDice } from './dice.js';
 
 // Shared situational chips, from the DM Helper's MODS. Campaign-wide, not per character.
-// A chip with no bonus of its own (targetExposed) is a condition that
+// A chip with no bonus of its own (targetUnaware) is a condition that
 // character abilities can react to, via `when` on a combat bonus.
+// Flanking also means the target is flanked (table ruling for the Blade).
 export const SITUATIONS = {
-  flanking:      { label: 'Flanking',                  hit: 2 },
-  charging:      { label: 'Charging',                  hit: 2 },
-  higherGround:  { label: 'Higher ground',             hit: 1 },
-  targetExposed: { label: 'Target flanked or unaware', hit: 0 },
+  flanking:      { label: 'Flanking',       hit: 2 },
+  charging:      { label: 'Charging',       hit: 2 },
+  higherGround:  { label: 'Higher ground',  hit: 1 },
+  targetUnaware: { label: 'Target unaware', hit: 0 },
 };
 
 const num = v => {
@@ -96,9 +97,10 @@ function matches(appliesTo, weapon, attack) {
 }
 
 // A bonus applies when its weapon/attack filter matches and, if it has a
-// `when` condition, that situation chip is on this round.
+// `when` condition, that situation chip (or any one of a list) is on this round.
 function applies(bonus, weapon, attack, round) {
-  if (bonus.when && !(round.situation || []).includes(bonus.when)) return false;
+  const when = bonus.when ? [].concat(bonus.when) : null;
+  if (when && !when.some(k => (round.situation || []).includes(k))) return false;
   return !bonus.appliesTo || matches(bonus.appliesTo, weapon, attack);
 }
 

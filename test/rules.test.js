@@ -161,21 +161,27 @@ test('Duelist\'s Precision uses Strength instead when Strength is better', () =>
   assert.equal(a.thac0, 18 - 1 - 1 - 1);   // Str, Superior, Signature
 });
 
-test('vs a flanked or unaware target, Jaque adds Int to damage (1d4+4)', () => {
-  const a = computeAttack({ sheet: jaque, weaponId: 'wpn-1', attackId: 'atk-1', round: { situation: ['targetExposed'] } });
+test('vs an unaware target, Jaque adds Int to damage (1d4+4)', () => {
+  const a = computeAttack({ sheet: jaque, weaponId: 'wpn-1', attackId: 'atk-1', round: { situation: ['targetUnaware'] } });
   assert.deepEqual(a.damage, { sm: '1d4+4', l: '1d3+4' });
   assert.ok(a.lines.some(l => l.label === "Duelist's Precision: Intelligence 16" && l.dmg === 1));
   assert.equal(a.thac0, 13);   // the condition chip itself adds nothing to hit
 });
 
+test('Flanking counts as a flanked target: +2 to hit and Int to damage', () => {
+  const a = computeAttack({ sheet: jaque, weaponId: 'wpn-1', attackId: 'atk-1', round: { situation: ['flanking'] } });
+  assert.equal(a.thac0, 11);
+  assert.deepEqual(a.damage, { sm: '1d4+4', l: '1d3+4' });
+});
+
 test('Int damage swap does not apply to thrown daggers', () => {
-  const a = computeAttack({ sheet: jaque, weaponId: 'wpn-1', attackId: 'atk-2', round: { situation: ['targetExposed'] } });
+  const a = computeAttack({ sheet: jaque, weaponId: 'wpn-1', attackId: 'atk-2', round: { situation: ['targetUnaware'] } });
   assert.deepEqual(a.damage, { sm: '1d4+3', l: '1d3+3' });
 });
 
 test('Int damage caps at +2 and never uses exceptional strength', () => {
   const genius = { ...jaque, int: '19' };
-  const a = computeAttack({ sheet: genius, weaponId: 'wpn-1', attackId: 'atk-1', round: { situation: ['targetExposed'] } });
+  const a = computeAttack({ sheet: genius, weaponId: 'wpn-1', attackId: 'atk-1', round: { situation: ['targetUnaware'] } });
   assert.ok(a.lines.some(l => l.label === "Duelist's Precision: Intelligence 19" && l.dmg === 2));
 });
 

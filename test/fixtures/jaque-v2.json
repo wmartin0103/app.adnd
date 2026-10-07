@@ -78,8 +78,8 @@
     },
     "kit": {
       "rl": 0,
-      "frt": 10,
-      "ol": 10
+      "frt": 0,
+      "ol": 20
     },
     "armor": {}
   },
@@ -615,7 +615,10 @@
     },
     {
       "label": "Duelist's Precision",
-      "when": "targetExposed",
+      "when": [
+        "flanking",
+        "targetUnaware"
+      ],
       "appliesTo": {
         "anyOf": [
           {
