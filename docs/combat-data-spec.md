@@ -344,8 +344,12 @@ Old JSON files keep importing.
 1. ~~Hit/miss visibility~~ **Decided:** the DM announces it (section 5).
 2. ~~Initiative order visibility~~ **Decided:** visible, with per-foe hiding (section 5).
 3. ~~**Weapon list scope**~~ **Decided:** PHB + campaign list, every weapon based on a PHB category (section 3).
-4. **"Needs review" after migration:** summary + inline markers recommended (discussion in progress).
-5. **Dice roller features** the group relies on in Roll Dice With Friends.
+4. ~~**"Needs review" after migration**~~ **Decided:** option D. A summary at the top
+   of the sheet lists every item as a link to its field, and each field shows a
+   text "Needs review" marker with Confirm/edit. Items are grouped by weapon, with
+   "Confirm all" per weapon, because one character can have 15+ (Jaque does).
+   The DM sees "unverified" on attacks with open items. Nothing blocks use.
+5. **Dice roller features** the group relies on in Roll Dice With Friends (screenshots welcome).
 
 ---
 
@@ -355,6 +359,8 @@ Old JSON files keep importing.
    plain functions with tests. Jaque is the first test case, with expected
    numbers confirmed with you and the DM.
 2. **Sheet v2 data + migration**, with the current UI adapted minimally so nothing breaks.
+   ✅ Migration logic done (`src/rules/migrate.js`): converts v1 saves, keeps every
+   attack's THAC0, follows PHB damage, and writes the `__review` list.
 3. **Sheet UI** for combined weapons/attacks, bonuses, and toggles, from your designs.
 4. **Adapter → DM Helper:** generated config from sheet saves ("Import party").
 5. **Backend + realtime:** declarations, HP events, shared dice log.

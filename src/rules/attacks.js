@@ -114,8 +114,8 @@ export function computeAttack({ sheet, weaponId, attackId, campaignWeapons = {},
 
   // Every line that adds to hit or damage, in display order.
   const lines = [];
-  const add = (layer, label, hit = 0, dmg = 0) => {
-    if (hit || dmg) lines.push({ layer, label, hit, dmg });
+  const add = (layer, label, hit = 0, dmg = 0, kind) => {
+    if (hit || dmg) lines.push({ layer, label, hit, dmg, ...(kind && { kind }) });
   };
 
   // ── Layer 1: built-in ──
@@ -140,7 +140,7 @@ export function computeAttack({ sheet, weaponId, attackId, campaignWeapons = {},
 
   for (const r of RACIAL_WEAPON_BONUSES[sheet['race-group']] || []) {
     const matches = (r.categories || []).includes(weapon.category) || (r.modes || []).includes(attack.mode);
-    if (matches && traitActive(sheet, r.traitId)) add('built-in', r.label, r.hit, 0);
+    if (matches && traitActive(sheet, r.traitId)) add('built-in', r.label, r.hit, 0, 'racial');
   }
 
   for (const b of bonuses) add('built-in', b.label, b.hit || 0, b.dmg || 0);
