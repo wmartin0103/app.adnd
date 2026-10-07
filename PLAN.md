@@ -70,162 +70,272 @@ the `.html` file is what ships.
   - The DM can read every character in the campaign and edit **combat state**.
   - Only the DM can see encounters, monster stats, and DM notes.
 
+- The **source code repository should be private too.** This GitHub repo is
+  currently public, so anything committed here (character saves, the DM's
+  encounter tables) is readable by anyone. Netlify and Cloudflare Pages both
+  deploy from private repos on their free plans, so making it private costs
+  nothing.
+
 ---
 
-## 4. Data model
+## 4. What the existing tools tell us
+
+Findings from reviewing `Character Sheet 2e Beta` (index.html, ~7,000 lines),
+`DM Helper` (~3,200 lines), and Jaque's save file. These change the plan's
+priorities.
+
+### 4a. The character sheet is well set up for the move
+
+- **Save/load is already isolated.** Two functions do the work: `gatherData()`
+  collects the whole sheet into one JSON object, and `applyData()` puts one back.
+  Right now they talk to the browser's local storage and to import/export files.
+  For cloud saves, we add a third destination (the database) behind the same two
+  functions. The rest of the sheet doesn't need to change.
+- **Versioning already exists.** The file stamps `__version` and has a
+  `migrateData()` step that upgrades old saves. That's the mechanism section 6
+  needed, so we keep it.
+- **The sheet calculates most of what combat needs**: THAC0 per attack scenario,
+  effective AC (base + Dex), saving throws (class + level + race + Con), thief
+  skills, proficiency targets, and XP.
+
+### 4b. …but its calculations are tangled into the page
+
+Each calculation reads its inputs **straight from form fields on the screen**,
+for example "get the value of the `ability-str` input". In UX terms, the logic
+and the UI are welded together, so the math only works when the sheet page is
+open. The DM tool can't reuse it as written.
+
+The fix is to pull each calculation out into a plain function that takes
+character data in and hands numbers back, with no page involved. The sheet then
+calls those functions, and so can the DM tool. This is the **shared rules
+module**, and it's now the most important engineering step in the plan.
+
+### 4c. The DM Helper doesn't read character sheets at all
+
+Every PC is typed in by hand in a config block at the top of the file:
+
+| DM Helper block | What it holds | Can the sheet supply it? |
+|---|---|---|
+| `CHARACTERS` | Level, AC (normal / shieldless / surprised), base THAC0, ability scores, THAC0 + speed per weapon and mode, extra attacks | Mostly yes. Ability scores, level, base AC, Dex adjustment, weapons, speed, and THAC0 scenarios are all on the sheet. |
+| `SKILLS` | Proficiency check targets per character | Yes, from the sheet's proficiencies (ability score + adjustment) |
+| `THIEF` | Thief skill percentages | Yes, the sheet calculates these |
+| `SAVES` | Save targets, plus modifiers like dwarf +4 vs poison | Yes, the sheet calculates these |
+| `CRIT_TYPES` | Damage type per weapon | Yes, the sheet stores damage type per weapon |
+| `SETUP_ORDER`, `LIGHT_SPEED`, `legacy` flags | Table order, default speed, retired PCs | No. These are DM settings, not character data. |
+| `parry`, `armorSpell`, `virtue`, `quickness` | Kit/class combat abilities that change AC, to-hit, or initiative | Not as numbers. The sheet has them only as text ability cards. |
+
+The hand-copied data has **already drifted** from the sheet:
+
+- Jaque's weapons are "Magic Dagger +1" and "Dagger" in the DM Helper, but
+  "Superior Dagger", "Leprechaun Dagger", "Wave Dagger", and "Dagger x6" on the sheet.
+- Jaque's Intimidation proficiency is on the sheet but missing from the DM Helper's
+  skills list.
+- One entry has the comment "THAC0 19 assumed (JSON has none)". The DM was
+  reading JSON saves by eye and filling gaps by hand.
+
+That's exactly the work the app should remove.
+
+### 4d. The DM Helper already has a "player view"
+
+Its top tabs show **DM** plus **one tab per character**. A character's tab shows
+just that PC's combat card: initiative roll, chosen action, moving, charging,
+and so on. The per-round state the DM Helper saves (initiative, selected action,
+movement, situational modifiers) is effectively the `combat_state` this plan
+proposed.
+
+That's a strong signal for Phase 5. With live sync, **each player's tab moves
+onto their own phone.** Players declare their own action and roll their own
+initiative, and the DM's tracker fills in automatically, instead of the device
+being passed around or the DM entering everything.
+
+### 4e. The DM Helper does not track HP
+
+The sheet tracks current and max HP. The DM Helper has nothing for HP, damage
+taken, or conditions on PCs. So "DM applies damage → player's sheet updates" is a
+new feature, not a migration. Worth confirming you want it (section 8).
+
+### 4f. Data-quality notes
+
+- Numbers are stored as text (`"str": "13"`, `"level": "5"`). That's harmless
+  but needs careful handling when converting.
+- Some fields are free-form on purpose: `hitAdj: "*+1/2"`, `dmgAdj: "?"`, and
+  proficiency slots of `"1"`, `"kit"`, `"Kit"`, `"Class"`. The DM tool needs a clear
+  "can't calculate this, check the sheet" display rather than guessing.
+- Reference tables (Str/Dex/Con tables, THAC0 progressions, save tables) exist in
+  both files. They should live once in the shared rules module.
+
+---
+
+## 5. Data model
 
 Think of these as the "nouns" of the app. Each one is a table.
 
 ```
 campaigns          one row per campaign (name, house-rule settings)
 campaign_members   who's in which campaign, and their role: "dm" or "player"
-characters         owner, campaign, data (← your existing character JSON), schema_version
-encounters         campaign, name, status, data (← your existing encounter JSON)
-combat_state       per-character live combat values: current HP, conditions,
-                   initiative, spell slots used this fight
+characters         owner, campaign, data (← the sheet's JSON, unchanged), version
+character_dm_notes DM-owned settings per PC: table order, retired/hidden flag,
+                   default speed, crit overrides (DM Helper's non-sheet config)
+encounters         campaign, name, status, baddies, round number
+combat_state       per-combatant per-encounter: initiative roll, chosen action,
+                   movement, situational mods, (new) current HP and conditions
 ```
 
-### Why split out `combat_state`?
+### Three kinds of data, three owners
 
-This is the main design decision, and it's worth your attention as the UX owner.
+The most important design decision. Each piece of data gets **one owner**, so
+two people never overwrite each other:
 
-If the DM's tool and a player's sheet both edit the same character record at
-the same time, one of them overwrites the other ("last write wins"). Example:
-the DM applies 6 damage while the player updates their inventory, and the
-damage silently disappears.
+1. **Character sheet**: owned by the **player**. Everything the sheet saves today.
+2. **DM settings per PC**: owned by the **DM**. The DM Helper config items the
+   sheet can't supply (table order, retired flag, crit overrides). The DM doesn't
+   edit the player's sheet to set these.
+3. **Combat state**: **shared during a fight**. Small, separate records for each
+   combatant, updated field by field. A player sets their own action and
+   initiative, and the DM sets baddies and applies damage.
 
-The fix is to give each piece of data **one clear owner**:
-
-- **Character sheet (`characters`)**: owned by the player. Stats, gear, spells known, notes.
-- **Combat state (`combat_state`)**: shared during a fight. The DM writes damage
-  and conditions. The player can also write their own HP and slot usage (house-rule
-  dependent). Edits are small field-level updates, not whole-sheet saves, so they
-  don't clobber each other.
-
-The character sheet then *displays* combat state ("HP 14 / 22") without owning it.
+**Kit combat abilities** (Parry, Armor spell, Virtue, Quickness) are the open
+question. They're character abilities, so in the long run they belong on the
+sheet as structured "combat toggles" (e.g., "+2 AC when active"). The sheet only
+has them as text cards today. Short term, they live in the DM settings, as they
+do now. Moving them to the sheet is a Phase 6 sheet feature.
 
 ### Encounters reference characters instead of copying them
 
-Today the encounter tool probably holds its own copy of each PC's numbers. In the
-app, an encounter stores **character IDs**. When the DM opens it, the tool loads
-the current AC, THAC0, saves, and HP from the live sheets. If a player swaps
-armor before the fight, the DM sees the change. Monsters and NPCs still live
-inside the encounter's own data.
-
-### Versioning the JSON
-
-Each save gets a `schema_version` number. When the shape of the character data
-changes (new house rule, new field), a small upgrade function converts old saves
-on load. This also keeps old exported files importable for good.
+An encounter stores **character IDs**. When the DM opens it, the tool calculates
+AC, THAC0, saves, and skill targets from the current sheets. If a player swaps
+weapons before the fight, the DM sees it. Baddies still live inside the
+encounter, as they do now.
 
 ---
 
-## 5. Shared rules module
+## 6. Shared rules module
 
-Both tools almost certainly calculate the same things, such as THAC0, saving
-throws, AC adjustments, ability modifiers, and your house rules. Today that logic
-is probably duplicated in each page.
+A folder of plain JavaScript functions (`src/rules/`) that take character data
+in and return numbers, with no page or form fields involved:
 
-We'll move it into one shared file (`src/rules/`) that both tools import. Change
-a house rule once and both tools pick it up. It's also the easiest place to add
-automated tests, so a math change can't quietly break a sheet.
+```
+abilityMods(sheet)         → Str/Dex/Con/… adjustments
+effectiveAC(sheet)         → normal / shieldless / surprised
+attackProfiles(sheet)      → one THAC0 + speed + damage type per weapon/scenario
+savingThrows(sheet)        → five save targets, with racial bonuses
+proficiencyTargets(sheet)  → check target per proficiency
+thiefSkills(sheet)         → percentages
+```
+
+Then a single "adapter" turns a sheet into exactly the shape the DM Helper's
+config block uses today:
+
+```
+toDMHelperCharacter(sheet, dmSettings) → { CHARACTERS entry, SKILLS, SAVES, THIEF, CRIT_TYPES }
+```
+
+That adapter is the trick that keeps the migration safe. **The DM Helper's 3,000
+lines of combat logic don't need rewriting.** We swap its hand-typed config for
+generated config, and everything downstream keeps working.
+
+We'll add automated tests that check the generated numbers against the
+DM Helper's current hand-entered values (e.g., Jaque's rogue THAC0 18 at level 5,
+AC 4 from leather + Dex 19). Where they disagree, either the sheet or the DM
+Helper has a bug, and the DM decides which is right.
 
 ---
 
-## 6. Phased roadmap
+## 7. Phased roadmap (revised)
 
-Every phase ships something usable. Nothing forces a big-bang switchover, and
-JSON import/export keeps working the whole time as a backup.
+Every phase ships something usable, and JSON import/export keeps working the
+whole time as a backup.
 
-### Phase 0 — Gather and organize (one sitting)
-- Commit both existing HTML pages to this repo, unchanged, under `legacy/`.
-- Commit **sample JSON saves**: at least one character and one encounter.
-- Write down the house rules that affect any calculation.
-- Set up Vite so the pages run locally with `npm run dev`.
-
-**Result:** one home for all the work, with version history.
+### Phase 0 — Gather and organize
+- Make this repo **private** (Settings → General → Danger Zone → Change visibility).
+- Commit both tools unchanged under `legacy/`, plus sample saves under `samples/`.
+- Collect a JSON save from **every active player**, not just Jaque. The adapter
+  needs real data to test against.
+- Set up Vite so the pages run locally.
 
 ### Phase 1 — Put it online (no logins yet)
-- Connect the repo to Netlify/Cloudflare Pages.
-- Both tools reachable at one URL with a simple landing page/nav.
-- Import/export works exactly as today.
+- Connect the repo to Netlify or Cloudflare Pages.
+- A landing page linking to both tools at one address.
+- To keep it hidden before logins exist: Cloudflare Access (free) puts an email
+  gate in front of the whole site.
 
-**Result:** nobody has to pass HTML files around. Updates ship by pushing to GitHub.
-(If you want it hidden right away, Cloudflare Access can put an email gate in
-front of the site for free until Phase 2's logins land.)
+### Phase 2 — Shared rules module + "Import party" in the DM Helper
+*(Moved earlier. This gives the biggest win without needing a database.)*
+- Extract the sheet's calculations into `src/rules/` and point the sheet at them,
+  with no visible change to the sheet.
+- Write the `toDMHelperCharacter` adapter, with tests against current DM Helper values.
+- Add an **"Import party"** button to the DM Helper: the DM selects the players'
+  exported JSON files, and the config is generated from them. Hand-typed config
+  stays as a fallback.
 
-### Phase 2 — Accounts and cloud saves
-- Create the Supabase project, tables, and permission rules.
-- Add magic-link login and invite the group.
-- Character sheet gets a **"My characters"** list, plus Save / Load from the cloud
-  alongside the existing import/export.
-- **Migration path:** each player logs in once and imports their current JSON
-  save. It becomes their cloud character. Done.
+**Result:** the DM stops re-typing character data. It works with today's
+file-passing workflow, before any backend exists.
 
-**Result:** sheets live in one place and are reachable from any device.
+### Phase 3 — Accounts and cloud saves
+- Supabase project, tables, permission rules, magic-link login, invite the group.
+- The sheet gets a "My characters" list. `gatherData()`/`applyData()` save to the
+  cloud as well as locally.
+- Players import their current JSON once to move over.
+- The DM Helper's "Import party" reads from the database instead of files.
 
-### Phase 3 — Shared rules + data cleanup
-- Extract calculation logic into `src/rules/`, used by both tools.
-- Add `schema_version` and the upgrade function.
-- Add basic automated tests for the rules math.
+**Result:** sheets live in one place. The DM always has current data.
 
-**Result:** one source of truth for game math. Lower risk for every later phase.
+### Phase 4 — Encounters in the cloud + DM settings
+- Encounters and baddies save to the database (DM-only).
+- DM settings per PC move out of the config block into `character_dm_notes`.
+- The DM can run the same encounter from any device and resume after a refresh.
 
-### Phase 4 — DM tool reads the party
-- Encounter tool lists the campaign's characters. "Add party to encounter" pulls
-  in live PCs.
-- Encounters are saved to the cloud (DM-only).
-- Introduce `combat_state`: the DM applies damage and conditions there.
+### Phase 5 — Live table play
+- `combat_state` with realtime sync.
+- The DM Helper's per-character tab becomes **the player's own combat view on
+  their phone**: declare action, roll initiative, see if they hit.
+- The DM's tracker updates as players declare.
+- If wanted (section 8): HP and conditions sync between the DM tracker and sheets.
 
-**Result:** the DM stops re-typing PC stats. The main efficiency win.
-
-### Phase 5 — Live sync at the table
-- Turn on realtime: when the DM applies damage, the player's sheet updates on
-  their phone within a second, and the reverse when a player spends a spell slot.
-- Optional **player-facing combat view**: initiative order, whose turn it is, and
-  visible conditions. Read-only, with no monster HP or DM secrets.
-
-**Result:** the collaborative session experience.
-
-### Phase 6 — Nice-to-haves (pick as wanted)
-- Edit history / undo (keep previous versions of each sheet).
-- Shared dice log.
-- Installable on phones (PWA) with basic offline viewing.
-- Campaign notes, loot tracking, XP awards from encounters straight to sheets.
+### Phase 6 — Nice-to-haves
+- Structured "combat toggles" on the sheet (Parry, Armor spell, Virtue, Quickness).
+- Edit history / undo, shared dice log, installable on phones, XP awards from
+  encounters straight to sheets.
 
 ---
 
-## 7. Decisions for you (UX/product)
+## 8. Decisions for you (UX/product)
 
-These change how things get built, so they're worth settling before Phase 2–4:
-
-1. **Party visibility.** Can players see each other's full sheets, a summary, or nothing?
-2. **Who edits HP in combat?** DM only, player only, or both? (Both is doable with `combat_state`.)
-3. **Player combat view.** Do players get a live initiative screen, or does only the DM see it?
-4. **Devices at the table.** Phones, laptops, or a shared TV? This drives layout priorities.
-5. **Multiple campaigns/characters.** Will anyone run more than one? (The model supports it; the UI needs to show it.)
-6. **DM override.** Should the DM be able to edit anything on a player's sheet?
+1. **Repo visibility.** Make it private? (Strongly recommended, and needed before
+   committing saves or DM tables.)
+2. **Do all players use the sheet tool?** The DM Helper lists 8 PCs, 3 marked
+   legacy. The adapter only helps for characters that have a sheet save.
+3. **Source of truth when they disagree.** When generated numbers differ from
+   the DM's hand-entered ones, who decides? (Suggest: the DM, then fix the
+   sheet's rule.)
+4. **HP in the DM tool.** It doesn't track HP today. Add it (Phase 5), or keep HP
+   player-managed on the sheet?
+5. **Player combat view.** Players declare actions on their own phones, or the
+   DM keeps entering everything?
+6. **Party visibility.** Can players see each other's full sheets, a summary, or nothing?
+7. **Devices at the table.** Phones, laptops, a shared screen? This drives layout priorities.
 
 ---
 
-## 8. Risks and safeguards
+## 9. Risks and safeguards
 
 | Risk | Safeguard |
 |---|---|
 | Lost data | Daily DB backups (Supabase), plus JSON export stays a permanent feature |
 | Permission mistakes expose DM secrets | Rules enforced in the database, with a test checklist per role before each release |
-| Edit collisions mid-combat | `combat_state` split plus field-level updates (section 4) |
-| Old saves stop loading after changes | `schema_version` plus upgrade functions |
+| Edit collisions mid-combat | Three-owner data split (section 5) plus field-level updates |
+| Rules extraction changes the sheet's numbers | Tests compare before/after for every sample save before shipping |
+| Old saves stop loading after changes | Existing `__version` + `migrateData()` mechanism |
 | Free tier pauses | Weekly play keeps it active; restore is one click |
 
 ---
 
-## 9. What's needed to start
+## 10. Status
 
-- [ ] The current character sheet HTML file
-- [ ] The current encounter tool HTML file
-- [ ] One or more sample character JSON saves
-- [ ] One or more sample encounter JSON saves (if the tool exports them)
-- [ ] House rules that affect calculations (a list is fine)
-- [ ] Answers to section 7 when convenient (not blocking Phases 0–1)
-- [ ] Accounts: GitHub (have it), Netlify or Cloudflare, Supabase (all free; you own them, and I'll walk you through setup)
+- [x] Character sheet received and reviewed
+- [x] DM Helper received and reviewed
+- [x] One character save received (Jaque)
+- [ ] Repo made private, then files committed to `legacy/` and `samples/`
+- [ ] Saves from the other active players
+- [ ] Answers to section 8
+- [ ] Accounts: Netlify or Cloudflare, Supabase (free; owned by you)
