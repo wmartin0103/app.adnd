@@ -5794,16 +5794,11 @@
       return result;
     }
 
-    // CON-based bonus for Dwarves, Gnomes, and Halflings (PHB Table 1).
+    // CON-based bonus for Dwarves, Gnomes, and Halflings (PHB): +1 for every
+    // 3½ points of Constitution (Con 4–6 +1, 7–10 +2, 11–13 +3, 14–17 +4, 18+ +5).
     // Returned as a negative modifier (lowers the save target = improves it).
     function getDwarfGnomeSaveBonus(con) {
-      if (con >= 19) return -6;
-      if (con >= 18) return -5;
-      if (con >= 17) return -4;
-      if (con >= 16) return -3;
-      if (con >= 14) return -2;
-      if (con >=  7) return -1;
-      return 0;
+      return -Math.floor((con || 0) / 3.5);
     }
 
     function getRacialSaveMods(raceGroup, con) {

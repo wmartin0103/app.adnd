@@ -1113,8 +1113,7 @@ const WIS_MAGIC_DEFENSE = { 1: -6, 2: -4, 3: -3, 4: -2, 5: -1, 6: -1, 15: 1, 16:
 const CON_POISON = { 1: -2, 2: -1, 19: 1, 20: 1, 21: 2, 22: 2, 23: 3, 24: 3, 25: 4 };
 
 // Dwarf, gnome, and halfling Constitution save bonus: +1 per 3½ points of Con
-// (PHB). NOTE: the legacy character sheet's table runs one step low
-// (Con 16 → +3 instead of +4).
+// (PHB). Matches the character sheet.
 function stoutSaveBonus(con) {
   return Math.floor(num(con) / 3.5);
 }
