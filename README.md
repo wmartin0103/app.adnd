@@ -50,6 +50,12 @@ converter couldn't work out is listed at the end under **NEEDS REVIEW**.
 `generated/dm-helper-jaque.js` is Jaque's block, made from his sheet updated to
 the revised Blade.
 
+## Design prototypes
+
+`prototypes/*.template.html` are clickable design drafts that run the real
+rules on Jaque's data. Build them with `node scripts/build-prototype.mjs`; the
+output (`prototypes/*.html`) opens straight in a browser.
+
 ## After changing anything in `src/`
 
 The DM Helper carries its own copy of the converter so it still opens straight
