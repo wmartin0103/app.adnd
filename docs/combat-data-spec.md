@@ -236,13 +236,19 @@ A proposed default, for you to react to:
 
 A Ready player can change their mind until the DM locks the round.
 
-### Things to decide in this flow
+### Visibility rules (decided)
 
-- **Does the player see hit/miss?** Monster AC is usually DM-secret. Options:
-  the player sees only "rolled 17", the DM announces the result; or the app shows
-  Hit/Miss without revealing the AC.
-- **Do players see the initiative order?** All of it, or only "you're next"?
-- **Can the DM declare for a player** who's away from their phone? (Recommended: yes.)
+- **Hit/miss: the DM announces it.** The player's phone shows "You rolled 17 —
+  waiting on the DM" and never shows the target's AC or the hit/miss result. The
+  suspense stays at the table. The DM's screen shows hit/miss as it does today.
+  The DM can optionally tap **Reveal** to post the outcome to the log afterward.
+- **Initiative order is visible to everyone**, with DM control over foes:
+  - **Hidden foe:** not shown to players at all (an unseen ambusher).
+    The DM taps **Reveal** when it's spotted.
+  - **Hidden initiative:** the foe is visible, but its slot in the order shows
+    as "?" until it acts.
+  - Each is a per-baddy toggle in the DM tracker, defaulting to visible.
+- **The DM can declare for a player** who's away from their phone.
 
 ### Data shape
 
@@ -294,8 +300,8 @@ removes a second app at the table, and it can tie rolls directly to actions.
   "at": "2026-10-07T20:14:03Z" }
 ```
 
-**Question:** which shared roller do you use now? If it has features the group
-relies on (roll macros, sounds, a particular way results display), I'll match them.
+**Current roller:** the group uses a Roll Dice With Friends room. Features to
+match are still to be confirmed (see section 8).
 
 ---
 
@@ -321,11 +327,12 @@ Old JSON files keep importing.
 
 ## 8. Open UX questions
 
-1. **Hit/miss visibility** for players (section 5).
-2. **Initiative order visibility** for players (section 5).
-3. **Weapon list:** PHB only, or include weapons from other books your table uses?
-4. **"Needs review" after migration:** inline markers, or a checklist at the top of the sheet?
-5. **Which dice roller** you use today (section 6).
+1. ~~Hit/miss visibility~~ **Decided:** the DM announces it (section 5).
+2. ~~Initiative order visibility~~ **Decided:** visible, with per-foe hiding (section 5).
+3. **Weapon list scope:** core PHB list plus a campaign list, or also Player's
+   Option weapon stats? (Discussion in progress.)
+4. **"Needs review" after migration:** summary + inline markers recommended (discussion in progress).
+5. **Dice roller features** the group relies on in Roll Dice With Friends.
 
 ---
 
