@@ -190,6 +190,18 @@ button { cursor: pointer; }
 .stepper button { border: none; background: var(--sunk); width: 2em; height: 1.9em; }
 .stepper output { min-width: 2.6em; text-align: center; font-family: var(--font-data); }
 .summary { position: sticky; top: 8px; }
+.combat.declared { grid-template-columns: 1fr; }
+.slots { display: grid; gap: 8px; }
+.slot { border: 1px solid var(--rule); border-radius: var(--radius); padding: 8px 10px; display: grid; gap: 8px; background: var(--surface); }
+.slot.active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.slot.done { background: var(--sunk); }
+.slot-head { display: flex; flex-wrap: wrap; gap: 4px 10px; justify-content: space-between; align-items: baseline; }
+.slot-line { font-size: 0.92rem; }
+.slot-body { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: start; }
+@container (max-width: 520px) { .slot-body { grid-template-columns: 1fr; } .slot-num { justify-items: start; } }
+.slot-ctrls { display: grid; gap: 8px; min-width: 0; }
+.slot-num { display: grid; gap: 6px; justify-items: end; }
+.slot-num .val.big { font-size: 1.7rem; color: var(--accent); line-height: 1; }
 .declbar { display: none; position: sticky; bottom: 0; z-index: 2; background: var(--surface); border-top: 2px solid var(--accent); padding: 8px 12px; gap: 6px 12px; align-items: center; flex-wrap: wrap; }
 .declbar .what { flex: 1 1 14em; min-width: 0; font-size: 0.92rem; }
 .declbar .t0s { font-family: var(--font-data); color: var(--accent); }
@@ -271,7 +283,7 @@ const NOTES = [
   ['D', 'Combat abilities are written once', "Signature Weapon, Duelist's Precision, Handle Weapons and so on are listed once and applied automatically to the attacks they cover (by weapon type, hand, or melee/thrown). Per-round choices like Bladesong live in the Combat view, not here."],
   ['E', 'Upgraded saves: summary + inline flags', 'Switch Data to "Freshly upgraded save" to see option D: a summary at the top linking to each weapon, a collapsed "things to check" row on each weapon card (expand to confirm one at a time, or Confirm all), and a "needs review" tag on affected attacks. The sheet stays usable throughout.'],
   ['F', 'Add from the PHB list', 'Adding a weapon starts from a PHB weapon (search, pick), which fills in damage, speed, type, and melee/thrown. Then you rename it and add only what differs ("Superior": +1/+1).'],
-  ['G', 'Combat view: only what a round needs', 'Primary attack (current weapon and named attacks first, the rest under "More attacks"), off-hand attack for two-weapon fighters, target, this round\'s toggles and situation, then Declare. "What the DM sees" summarizes it. In narrow windows a Declare bar stays pinned to the bottom. Toggles marked "stays on" carry into the next round.'],
+  ['G', 'Combat view: declare the round, then each attack', 'Declaring sets only what you are doing this round: primary attack, off-hand, and stances (Bladesong applies to every attack). Each attack is then its own card with its own target, situation, and adjustment, made when the DM calls it, so three thrown daggers can go at three targets at three moments. A new attack starts with the previous one\'s target and situation. Fractional rates alternate (3/2: 1, then 2). Upcoming attacks can be planned ahead.'],
   ['H', 'Built for a half-width window', "Layout responds to the window, not the device. At half-window the sheet is one column. At tablet width combat abilities move beside the weapons and the Combat summary sits beside the choices. At phone width rows tighten. Use Width above to compare."],
 ];
 
@@ -292,13 +304,12 @@ function freshState(dataMode = 'reviewed') {
     dataMode, sheet, tab: 'sheet', width: S?.width ?? 720, notes: S?.notes ?? true,
     open: null, editing: null, draft: null, adding: false, query: '', confirmDelete: false, editingAbility: null, abDraft: null,
     confirmed: new Set(),
-    round: { toggles: { 'opt-1': '+1 hit' }, situation: ['flanking'], adjust: 0 },
-    decl: { primary: active, offHand: null, target: 'orc-1', status: 'choosing', rolls: {}, log: [] },
+    round: { toggles: { 'opt-1': '+1 hit' } },
+    decl: { round: 3, primary: active, offHand: null, status: 'choosing', slots: [], active: -1, log: [] },
   };
 }
 S = freshState();
 
-const roundOpts = () => ({ toggles: S.round.toggles, situation: S.round.situation, adjust: S.round.adjust ? { hit: S.round.adjust, label: 'Quick adjust' } : undefined });
 const calc = (weaponId, attackId, round = {}) => computeAttack({ sheet: S.sheet, weaponId, attackId, round });
 const attacksOf = raw => weaponAttacks({ ...raw, modes: resolveWeapon(raw).modes });
 const reviewFor = id => (S.sheet.__review || []).filter(r => r.target.id === id && !S.confirmed.has(r.id));
@@ -584,103 +595,167 @@ function startEdit(id) {
 }
 
 // ── Combat tab ──
+// Round level: what you're doing this round (primary attack, off-hand, stances).
+// Attack level: each attack is its own event with its own target, situation,
+// adjustment, and roll, made when the DM calls it.
+const SLOT_NAMES = ['First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth'];
+function slotRound(slot) {
+  return { toggles: S.round.toggles, situation: slot.situation, adjust: slot.adjust ? { hit: slot.adjust, label: 'Quick adjust' } : undefined };
+}
+function newSlots(plan) {
+  return plan.slots.map(x => ({ ...x, target: null, situation: [], adjust: 0, roll: null, source: null, open: false }));
+}
+
 function renderCombat() {
   const body = $('body');
-  const sheet = S.sheet; const d = S.decl; const r = roundOpts();
-  const all = sheet.__weapons.filter(w => resolveWeapon(w).carried !== false).flatMap(w => attacksOf(w).map(a => ({ w, a, c: computeAttack({ sheet, weaponId: w.id, attackId: a.id, round: r }) })));
+  const sheet = S.sheet; const d = S.decl; const rw = { toggles: S.round.toggles };
+  const all = sheet.__weapons.filter(w => resolveWeapon(w).carried !== false).flatMap(w => attacksOf(w).map(a => ({ w, a, c: computeAttack({ sheet, weaponId: w.id, attackId: a.id, round: rw }) })));
   const mains = all.filter(x => x.c.hand === 'main');
-  // Show the current weapon's attacks and named attacks first; the rest on request
+  const offs = all.filter(x => x.c.hand === 'off');
   const featured = mains.filter(x => (x.w.attacks || []).some(a => a.active) || x.a.name || (d.primary && d.primary.weaponId === x.w.id && d.primary.attackId === x.a.id));
   const shown = S.moreAttacks || featured.length === mains.length ? mains : featured;
-  const offs = all.filter(x => x.c.hand === 'off');
-  const plan = d.primary ? planRound({ sheet, primary: d.primary, offHand: d.offHand || undefined, round: r }) : null;
-  const locked = d.status !== 'choosing';
+  const plan = d.primary ? planRound({ sheet, primary: d.primary, offHand: d.offHand || undefined, round: rw, roundNumber: d.round }) : null;
+  const choosing = d.status === 'choosing';
   const hp = [parseInt(sheet['hp-current'], 10) || 0, parseInt(sheet['hp-max'], 10) || 0];
+
   const choice = (x, slot) => {
     const on = d[slot] && d[slot].weaponId === x.w.id && d[slot].attackId === x.a.id;
     const label = x.a.name ? x.a.name : `${resolveWeapon(x.w).name}, ${x.c.mode}`;
-    return `<button type="button" class="choice" data-slot="${slot}" data-w="${x.w.id}" data-a="${x.a.id}" aria-pressed="${!!on}" ${locked ? 'disabled' : ''}><span>${esc(label)}</span><small>THAC0 ${x.c.thac0} · ${esc(x.c.damage.sm)}${slot === 'primary' ? ` · ${x.c.attacksPerRound}/rd` : ''}</small></button>`;
+    const count = slot === 'primary' ? Rules.attacksThisRound(x.c.attacksPerRound, d.round) : 1;
+    return `<button type="button" class="choice" data-slot="${slot}" data-w="${x.w.id}" data-a="${x.a.id}" aria-pressed="${!!on}" ${choosing ? '' : 'disabled'}><span>${esc(label)}</span><small>${count} attack${count === 1 ? '' : 's'} this round · THAC0 ${x.c.thac0}</small></button>`;
   };
   const opts = (sheet.__combatOptions || []).map(o => {
     const cur = S.round.toggles[o.id];
     const choices = o.choice ? ['Off', ...o.choice.map(c => c.label)] : ['Off', 'On'];
     return `<div class="optrow"><span class="label">${esc(o.name)} <span class="tag">${o.sticks ? 'stays on' : 'resets each round'}</span></span>
-      <span class="seg" role="group" aria-label="${esc(o.name)}">${choices.map(c => { const on = c === 'Off' ? !cur : (o.choice ? cur === c : cur === true); return `<button type="button" data-opt="${o.id}" data-val="${esc(c)}" aria-pressed="${on}" ${locked ? 'disabled' : ''}>${esc(c)}</button>`; }).join('')}</span></div>`;
+      <span class="seg" role="group" aria-label="${esc(o.name)}">${choices.map(c => { const on = c === 'Off' ? !cur : (o.choice ? cur === c : cur === true); return `<button type="button" data-opt="${o.id}" data-val="${esc(c)}" aria-pressed="${on}" ${choosing ? '' : 'disabled'}>${esc(c)}</button>`; }).join('')}</span></div>`;
   }).join('');
-  const sit = Object.entries(SITUATIONS).map(([k, s]) => `<button type="button" class="chip" data-sit="${k}" aria-pressed="${S.round.situation.includes(k)}" ${locked ? 'disabled' : ''}>${esc(s.label)}${s.hit ? ' ' + sign(s.hit) : ''}</button>`).join('');
-  const target = FOES.map(f => `<button type="button" class="chip" data-target="${f.id}" aria-pressed="${d.target === f.id}" ${locked ? 'disabled' : ''}>${esc(f.name)}</button>`).join('');
 
-  let sumAttacks = '';
-  if (plan) {
-    if (plan.summary === 'No attack this round') sumAttacks = `<p>No attack this round.</p>`;
-    for (const a of plan.attacks) {
-      const roll = d.rolls[a.attackId];
-      sumAttacks += `<div class="sumrow"><span><strong>${esc(a.name)}</strong><br><span class="muted num" style="font-size:.8rem">${a.hand === 'off' ? '1 off-hand' : a.attacksPerRound + '/rd'} · ${esc(a.damage.sm)} vs S/M · ${esc(a.damage.l)} vs L</span></span><span class="big">${a.thac0}</span></div>`;
-      if (d.status === 'locked') {
-        sumAttacks += roll ? `<div class="muted" style="font-size:.9rem">Rolled <span class="num">${roll.value}</span> <span class="tag">${roll.source}</span>. The DM will announce the result.</div>`
-          : `<div class="rollrow"><button type="button" class="btn" data-roll="${a.attackId}">Roll d20</button><span class="muted">or</span><input inputmode="numeric" aria-label="Type your d20 for ${esc(a.name)}" id="in-${a.attackId}" placeholder="d20"><button type="button" class="btn quiet" data-enter="${a.attackId}">Enter</button></div>`;
-      }
-    }
-  }
-  const acUp = plan && plan.attacks[0] ? plan.attacks[0].acImprovement : (d.primary ? computeAttack({ sheet, ...d.primary, round: r }).acImprovement : 0);
-  body.innerHTML = `<div class="combat">
-    <div class="panel" aria-labelledby="h-decl">
-      <div class="roundhead"><h2 id="h-decl">Round 3 ${pin('G')}</h2><span class="pill ${locked ? 'ok' : ''}">${d.status === 'choosing' ? 'Declare your action' : d.status === 'declared' ? 'Declared · waiting for the DM' : 'Round locked · roll'}</span></div>
+  // Attack cards
+  const slots = choosing ? (plan ? newSlots(plan) : []) : d.slots;
+  const cards = slots.map((sl, i) => slotCard(sl, i, slots.length, choosing)).join('');
+  const statusText = choosing ? 'Choose and declare'
+    : d.status === 'done' ? 'Round finished'
+    : d.active < 0 ? 'Declared · waiting for the DM'
+    : `${SLOT_NAMES[d.active] || 'Next'} attack · your turn`;
+
+  // Once declared, the round's choices collapse to one line so the attacks get the room
+  const stances = (sheet.__combatOptions || []).filter(o => S.round.toggles[o.id]).map(o => o.choice ? `${o.name}: ${S.round.toggles[o.id]}` : o.name);
+  const declared = `<div class="panel" aria-labelledby="h-decl">
+      <div class="roundhead"><h2 id="h-decl">Round ${d.round} ${pin('G')}</h2><span class="pill ok">${esc(statusText)}</span></div>
+      <p>${plan ? esc(plan.summary) : ''}${stances.length ? ` · <span class="muted">${stances.map(esc).join(', ')}</span>` : ''}</p>
+      <div class="formbar">
+        ${d.status === 'declared' && d.active < 0 ? `<button type="button" class="btn quiet" id="change">Change</button>` : ''}
+        ${d.status === 'done' ? `<button type="button" class="btn" id="next-round">Start round ${d.round + 1}</button>` : ''}
+      </div>
+    </div>`;
+  body.innerHTML = `<div class="combat${choosing ? '' : ' declared'}">
+    ${choosing ? '' : declared}
+    ${choosing ? `<div class="panel" aria-labelledby="h-decl">
+      <div class="roundhead"><h2 id="h-decl">Round ${d.round} ${pin('G')}</h2><span class="pill ${choosing ? '' : 'ok'}">${esc(statusText)}</span></div>
+      <p class="muted" style="font-size:.9rem">Declare what you're doing this round. Targets and conditions are picked for each attack when it happens.</p>
       <div class="optrow"><span class="label">Attack</span><div class="choices">${shown.map(x => choice(x, 'primary')).join('')}
         ${shown.length < mains.length ? `<button type="button" class="linkbtn more" id="more-atk">More attacks (${mains.length - shown.length})</button>` : ''}</div></div>
       ${(sheet.__combatRules || {}).offHandAttack && offs.length ? `<div class="optrow"><span class="label">Off-hand attack <span class="tag">+1 attack</span></span><div class="choices">
-        <button type="button" class="choice" data-slot="offHand" data-w="" data-a="" aria-pressed="${!d.offHand}" ${locked ? 'disabled' : ''}><span>None</span><small></small></button>${offs.map(x => choice(x, 'offHand')).join('')}</div></div>` : ''}
-      <div class="optrow"><span class="label">Target</span><div class="chips">${target}</div></div>
-      <h3>This round</h3>
+        <button type="button" class="choice" data-slot="offHand" data-w="" data-a="" aria-pressed="${!d.offHand}" ${choosing ? '' : 'disabled'}><span>None</span><small></small></button>${offs.map(x => choice(x, 'offHand')).join('')}</div></div>` : ''}
+      <h3>All attacks this round</h3>
       ${opts}
-      <div class="optrow"><span class="label">Situation <span class="muted" style="font-weight:400">shared list</span></span><div class="chips">${sit}</div></div>
-      <div class="optrow"><span class="label">Quick adjust</span><span class="stepper"><button type="button" id="adj-dn" aria-label="Lower to-hit adjustment" ${locked ? 'disabled' : ''}>−</button><output aria-live="polite">${S.round.adjust ? sign(S.round.adjust) : 0}</output><button type="button" id="adj-up" aria-label="Raise to-hit adjustment" ${locked ? 'disabled' : ''}>+</button></span></div>
-    </div>
-    <div class="panel summary" aria-labelledby="h-sum">
-      <div class="roundhead"><h2 id="h-sum">What the DM sees</h2><span class="num muted">HP ${hp[0]}/${hp[1]} <span class="hpbar" aria-hidden="true"><span style="width:${hp[1] ? Math.round(hp[0] / hp[1] * 100) : 0}%"></span></span></span></div>
-      <p class="muted" style="font-size:.92rem">${plan ? esc(plan.summary) : 'Pick an attack'} → ${esc((FOES.find(f => f.id === d.target) || {}).name || '—')}${acUp ? ` · AC ${acUp} better this round` : ''}</p>
-      ${plan && plan.errors.length ? `<p class="tag warn">${plan.errors.map(esc).join(' ')}</p>` : ''}
-      ${sumAttacks}
       <div class="formbar">
-        ${d.status === 'choosing' ? `<button type="button" class="btn" id="declare" ${plan && !plan.errors.length ? '' : 'disabled'}>Declare</button>` : ''}
-        ${d.status === 'declared' ? `<button type="button" class="btn quiet" id="change">Change</button><span class="spacer"></span><button type="button" class="btn secondary" id="demo-lock">Demo: DM locks the round</button>` : ''}
-        ${d.status === 'locked' ? `<span class="spacer"></span><button type="button" class="btn quiet" id="next-round">Start next round</button>` : ''}
+        ${choosing ? `<button type="button" class="btn" id="declare" ${plan && !plan.errors.length && plan.slots.length ? '' : 'disabled'}>Declare</button>` : ''}
       </div>
+    </div>` : ''}
+    <div class="panel summary" aria-labelledby="h-atk">
+      <div class="roundhead"><h2 id="h-atk">Attacks this round</h2><span class="num muted">HP ${hp[0]}/${hp[1]} <span class="hpbar" aria-hidden="true"><span style="width:${hp[1] ? Math.round(hp[0] / hp[1] * 100) : 0}%"></span></span></span></div>
+      ${plan && plan.errors.length ? `<p class="tag warn">${plan.errors.map(esc).join(' ')}</p>` : ''}
+      ${plan && plan.summary === 'No attack this round' ? '<p>No attack this round.</p>' : ''}
+      <div class="slots">${cards || '<p class="muted">Pick an attack to see this round\'s attacks.</p>'}</div>
+      ${!choosing && d.status !== 'done' ? `<div class="formbar"><span class="spacer"></span><button type="button" class="btn secondary" id="demo-call" ${d.active >= 0 && !d.slots[d.active].roll ? 'disabled' : ''}>Demo: DM calls the ${(SLOT_NAMES[d.active + 1] || 'next').toLowerCase()} attack</button></div>` : ''}
       <div class="log" aria-label="Shared dice log"><h3>Shared dice log</h3>${d.log.length ? d.log.slice().reverse().map(l => `<div><span>${esc(l.what)}</span><span><span class="num">${l.value}</span> <span class="tag">${l.source}</span></span></div>`).join('') : '<span class="muted">No rolls yet this round</span>'}</div>
     </div>
   </div>
-  <div class="declbar" aria-label="Declaration summary">
-    <span class="what">${plan ? esc(plan.summary) : 'Pick an attack'} → ${esc((FOES.find(f => f.id === d.target) || {}).name || '—')} · THAC0 <span class="t0s">${plan ? plan.attacks.map(a => a.thac0).join(' / ') : '—'}</span></span>
-    ${d.status === 'choosing' ? `<button type="button" class="btn" data-declare ${plan && !plan.errors.length ? '' : 'disabled'}>Declare</button>` : `<span class="pill ${d.status === 'locked' ? 'ok' : ''}">${d.status === 'declared' ? 'Declared' : 'Locked · roll above'}</span>`}
+  <div class="declbar" aria-label="Round status">
+    <span class="what">Round ${d.round} · ${plan ? esc(plan.summary) : 'pick an attack'}</span>
+    ${choosing ? `<button type="button" class="btn" data-declare ${plan && !plan.errors.length && plan.slots.length ? '' : 'disabled'}>Declare</button>` : `<span class="pill ok">${esc(statusText)}</span>`}
   </div>`;
   wireCombat();
+}
+
+function slotCard(sl, i, total, preview) {
+  const d = S.decl;
+  const c = computeAttack({ sheet: S.sheet, weaponId: sl.weaponId, attackId: sl.attackId, round: slotRound(sl) });
+  const active = !preview && d.active === i && !sl.roll;
+  const state = preview ? 'preview' : sl.roll ? 'done' : active ? 'active' : 'upcoming';
+  const tgt = sl.target ? FOES.find(f => f.id === sl.target).name : 'target not picked';
+  const head = `<div class="slot-head"><span><b>${SLOT_NAMES[i] || `#${i + 1}`} attack</b> <span class="muted">of ${total}</span> · ${esc(sl.name)}${sl.hand === 'off' ? ' <span class="tag">off-hand</span>' : ''}</span>
+    ${state === 'done' ? `<span class="pill ok">Rolled ${sl.roll} · ${sl.source}</span>` : state === 'active' ? '<span class="pill">Your turn</span>' : state === 'upcoming' ? '<span class="pill" style="background:var(--sunk);color:var(--ink-muted)">Upcoming</span>' : ''}</div>`;
+  const expanded = active || (!preview && sl.open && !sl.roll);
+  if (!expanded) {
+    const line = preview ? `<span class="muted">Target and conditions are picked when this attack happens.</span>`
+      : sl.roll ? `<span class="muted">→ ${esc(tgt)}${sl.situation.length ? ' · ' + sl.situation.map(k => SITUATIONS[k].label).join(', ') : ''} · THAC0 ${c.thac0}. The DM announces the result.</span>`
+      : `<span class="muted">→ ${esc(tgt)}${sl.situation.length ? ' · ' + sl.situation.map(k => SITUATIONS[k].label).join(', ') : ''}</span> <button type="button" class="linkbtn" data-plan="${i}">Plan ahead</button>`;
+    return `<div class="slot ${state}">${head}<div class="slot-line">${line}</div></div>`;
+  }
+  const targets = FOES.map(f => `<button type="button" class="chip" data-st="${i}" data-target="${f.id}" aria-pressed="${sl.target === f.id}">${esc(f.name)}</button>`).join('');
+  const sit = Object.entries(SITUATIONS).map(([k, s]) => `<button type="button" class="chip" data-st="${i}" data-sit="${k}" aria-pressed="${sl.situation.includes(k)}">${esc(s.label)}${s.hit ? ' ' + sign(s.hit) : ''}</button>`).join('');
+  return `<div class="slot ${state}">${head}
+    <div class="slot-body">
+      <div class="slot-ctrls">
+        <div class="optrow"><span class="label">Target</span><div class="chips">${targets}</div></div>
+        <div class="optrow"><span class="label">Situation <span class="muted" style="font-weight:400">this attack</span></span><div class="chips">${sit}</div></div>
+        <div class="optrow"><span class="label">Quick adjust</span><span class="stepper"><button type="button" data-st="${i}" data-adj="-1" aria-label="Lower to-hit adjustment">−</button><output aria-live="polite">${sl.adjust ? sign(sl.adjust) : 0}</output><button type="button" data-st="${i}" data-adj="1" aria-label="Raise to-hit adjustment">+</button></span></div>
+      </div>
+      <div class="slot-num"><span class="cell t0"><span class="lbl">${ICON.target}THAC0</span><span class="val big">${c.thac0}</span></span>
+        <span class="cell dm"><span class="lbl">${ICON.die}Dmg S/M · L</span><span class="val">${esc(c.damage.sm)} · ${esc(c.damage.l)}</span></span></div>
+    </div>
+    ${active ? `<div class="rollrow"><button type="button" class="btn" data-roll="${i}" ${sl.target ? '' : 'disabled'}>Roll d20</button><span class="muted">or</span><input inputmode="numeric" aria-label="Type your d20 for the ${(SLOT_NAMES[i] || '').toLowerCase()} attack" id="in-slot-${i}" placeholder="d20"><button type="button" class="btn quiet" data-enter="${i}" ${sl.target ? '' : 'disabled'}>Enter</button>${sl.target ? '' : '<span class="muted" style="font-size:.85rem">Pick a target first</span>'}</div>`
+      : `<div class="formbar"><button type="button" class="linkbtn" data-planclose="${i}">Done planning</button></div>`}
+  </div>`;
 }
 
 function wireCombat() {
   const body = $('body'); const d = S.decl;
   body.querySelectorAll('[data-slot]').forEach(b => b.onclick = () => { d[b.dataset.slot] = b.dataset.w ? { weaponId: b.dataset.w, attackId: b.dataset.a } : null; renderCombat(); });
-  body.querySelectorAll('[data-target]').forEach(b => b.onclick = () => { d.target = b.dataset.target; renderCombat(); });
   body.querySelectorAll('[data-opt]').forEach(b => b.onclick = () => {
     const o = S.sheet.__combatOptions.find(x => x.id === b.dataset.opt); const v = b.dataset.val;
     if (v === 'Off') delete S.round.toggles[o.id]; else S.round.toggles[o.id] = o.choice ? v : true; renderCombat();
   });
-  body.querySelectorAll('[data-sit]').forEach(b => b.onclick = () => { const k = b.dataset.sit; S.round.situation = S.round.situation.includes(k) ? S.round.situation.filter(x => x !== k) : [...S.round.situation, k]; renderCombat(); });
-  const up = $('adj-up'); if (up) up.onclick = () => { S.round.adjust++; renderCombat(); };
-  const dn = $('adj-dn'); if (dn) dn.onclick = () => { S.round.adjust--; renderCombat(); };
-  const dec = $('declare'); if (dec) dec.onclick = () => { d.status = 'declared'; renderCombat(); };
-  body.querySelectorAll('[data-declare]').forEach(b => b.onclick = () => { d.status = 'declared'; renderCombat(); });
   const more = $('more-atk'); if (more) more.onclick = () => { S.moreAttacks = true; renderCombat(); };
-  const ch = $('change'); if (ch) ch.onclick = () => { d.status = 'choosing'; renderCombat(); };
-  const lk = $('demo-lock'); if (lk) lk.onclick = () => { d.status = 'locked'; renderCombat(); };
-  const roll = (id, value, source) => { const a = computeAttack({ sheet: S.sheet, ...(d.primary.attackId === id ? d.primary : d.offHand), round: roundOpts() }); d.rolls[id] = { value, source }; d.log.push({ what: `d20 · ${a.name}`, value, source }); renderCombat(); };
-  body.querySelectorAll('[data-roll]').forEach(b => b.onclick = () => roll(b.dataset.roll, Math.floor(Math.random() * 20) + 1, 'rolled'));
+  const declare = () => {
+    const plan = planRound({ sheet: S.sheet, primary: d.primary, offHand: d.offHand || undefined, round: { toggles: S.round.toggles }, roundNumber: d.round });
+    d.slots = newSlots(plan); d.active = -1; d.status = 'declared'; renderCombat();
+  };
+  const dec = $('declare'); if (dec) dec.onclick = declare;
+  body.querySelectorAll('[data-declare]').forEach(b => b.onclick = declare);
+  const ch = $('change'); if (ch) ch.onclick = () => { d.status = 'choosing'; d.slots = []; renderCombat(); };
+  // Per-attack controls
+  const slotOf = el => d.slots[+el.dataset.st];
+  body.querySelectorAll('[data-st][data-target]').forEach(b => b.onclick = () => { const sl = slotOf(b); sl.target = b.dataset.target; sl.touched = true; renderCombat(); });
+  body.querySelectorAll('[data-st][data-sit]').forEach(b => b.onclick = () => { const sl = slotOf(b); const k = b.dataset.sit; sl.situation = sl.situation.includes(k) ? sl.situation.filter(x => x !== k) : [...sl.situation, k]; sl.touched = true; renderCombat(); });
+  body.querySelectorAll('[data-st][data-adj]').forEach(b => b.onclick = () => { const sl = slotOf(b); sl.adjust += +b.dataset.adj; sl.touched = true; renderCombat(); });
+  body.querySelectorAll('[data-plan]').forEach(b => b.onclick = () => { d.slots[+b.dataset.plan].open = true; renderCombat(); });
+  body.querySelectorAll('[data-planclose]').forEach(b => b.onclick = () => { d.slots[+b.dataset.planclose].open = false; renderCombat(); });
+  // The DM calls the next attack; it starts with the previous attack's target and situation
+  const call = $('demo-call'); if (call) call.onclick = () => {
+    const next = d.active + 1;
+    if (next >= d.slots.length) { d.status = 'done'; d.active = -1; renderCombat(); return; }
+    const sl = d.slots[next]; const prev = d.slots[next - 1];
+    if (prev && !sl.touched) { sl.target = prev.target; sl.situation = [...prev.situation]; }
+    d.active = next; renderCombat();
+  };
+  const roll = (i, value, source) => {
+    const sl = d.slots[i]; sl.roll = value; sl.source = source;
+    d.log.push({ what: `d20 · ${SLOT_NAMES[i] || '#' + (i + 1)} attack → ${FOES.find(f => f.id === sl.target).name}`, value, source });
+    if (i === d.slots.length - 1) { d.status = 'done'; d.active = -1; }
+    renderCombat();
+  };
+  body.querySelectorAll('[data-roll]').forEach(b => b.onclick = () => roll(+b.dataset.roll, Math.floor(Math.random() * 20) + 1, 'rolled'));
   body.querySelectorAll('[data-enter]').forEach(b => b.onclick = () => {
-    const inp = $(`in-${b.dataset.enter}`); const v = parseInt(inp.value, 10);
-    if (v >= 1 && v <= 20) roll(b.dataset.enter, v, 'entered'); else { inp.setCustomValidity('Enter a number from 1 to 20'); inp.reportValidity(); inp.setCustomValidity(''); }
+    const inp = $(`in-slot-${b.dataset.enter}`); const v = parseInt(inp.value, 10);
+    if (v >= 1 && v <= 20) roll(+b.dataset.enter, v, 'entered'); else { inp.setCustomValidity('Enter a number from 1 to 20'); inp.reportValidity(); inp.setCustomValidity(''); }
   });
   const nr = $('next-round'); if (nr) nr.onclick = () => {
     for (const o of S.sheet.__combatOptions || []) if (!o.sticks) delete S.round.toggles[o.id];
-    S.round.situation = []; S.round.adjust = 0; d.status = 'choosing'; d.rolls = {}; renderCombat();
+    d.round += 1; d.status = 'choosing'; d.slots = []; d.active = -1; d.log = []; renderCombat();
   };
 }
 

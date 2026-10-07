@@ -1039,34 +1039,51 @@ function listAttacks({ sheet, campaignWeapons = {}, round = {} }) {
   return out;
 }
 
+// How many attacks a rate gives in a given round of combat. Fractional rates
+// alternate: 3/2 is 1 attack in round 1, 2 in round 2, 1 in round 3, …;
+// 5/2 is 2, 3, 2, …
+function attacksThisRound(apr, roundNumber = 1) {
+  const v = aprValue(apr);
+  const n = Math.max(1, roundNumber);
+  return Math.floor(v * n + 1e-9) - Math.floor(v * (n - 1) + 1e-9);
+}
+
 // Plan one round of attacks: a primary attack plus, for characters who fight
 // with two weapons, one off-hand attack.
 //   • The primary attack's attacks-per-round all use that one attack, so
 //     melee and ranged primary attacks can't be mixed in a round.
 //   • The off-hand attack is one extra attack, any mode, outside that rule.
-// Returns { attacks, perRound, summary, errors }.
-function planRound({ sheet, primary, offHand, campaignWeapons = {}, round = {} }) {
+//   • Each attack is its own event (`slots`): it can have its own target and
+//     situation, and happen at its own point in the round. `round` here holds
+//     only round-wide choices (stances like Bladesong); pass per-attack
+//     situation to computeAttack when each attack is made.
+// Returns { attacks, slots, perRound, summary, errors }.
+function planRound({ sheet, primary, offHand, campaignWeapons = {}, round = {}, roundNumber = 1 }) {
   const errors = [];
   const attacks = [];
   const main = computeAttack({ sheet, ...primary, campaignWeapons, round });
   if (main.hand === 'off') errors.push('The primary attack must be a main-hand attack.');
   attacks.push(main);
+  const mainCount = attacksThisRound(main.attacksPerRound, roundNumber);
+  const slots = Array.from({ length: mainCount }, () => ({ weaponId: primary.weaponId, attackId: primary.attackId, hand: 'main', name: main.name }));
   let perRound = aprValue(main.attacksPerRound);
-  let summary = `${main.attacksPerRound} ${main.name}`;
+  let summary = `${mainCount} × ${main.name}`;
   if (offHand) {
     const off = computeAttack({ sheet, ...offHand, campaignWeapons, round });
     if (!(sheet.__combatRules || {}).offHandAttack) errors.push('This character has no extra off-hand attack.');
     if (off.hand !== 'off') errors.push('The off-hand attack must be an off-hand attack.');
     if (offHand.weaponId === primary.weaponId) errors.push('The off-hand attack needs a second weapon.');
     attacks.push(off);
+    slots.push({ weaponId: offHand.weaponId, attackId: offHand.attackId, hand: 'off', name: off.name });
     perRound += 1;
-    summary += ` + 1 ${off.name}`;
+    summary += ` + 1 × ${off.name}`;
   }
-  if (main.noAttack) return { attacks: [], perRound: 0, summary: 'No attack this round', errors };
-  return { attacks, perRound, summary, errors };
+  slots.forEach((s, i) => { s.n = i + 1; });
+  if (main.noAttack) return { attacks: [], slots: [], perRound: 0, summary: 'No attack this round', errors };
+  return { attacks, slots, perRound, summary, errors };
 }
 
-return { SITUATIONS, effectiveLevel, baseTHAC0, strengthMods, weaponAttacks, computeAttack, listAttacks, planRound };
+return { SITUATIONS, effectiveLevel, baseTHAC0, strengthMods, weaponAttacks, computeAttack, listAttacks, attacksThisRound, planRound };
 })();
 // ── rules/character ──
 __m["rules/character"] = (() => {

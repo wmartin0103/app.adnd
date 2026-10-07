@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 
 import { parseDice, formatDice } from '../src/rules/dice.js';
 import { resolveWeapon } from '../src/rules/weapons.js';
-import { baseTHAC0, strengthMods, computeAttack, listAttacks, planRound } from '../src/rules/attacks.js';
+import { baseTHAC0, strengthMods, computeAttack, listAttacks, planRound, attacksThisRound } from '../src/rules/attacks.js';
 
 const jaque = JSON.parse(readFileSync(new URL('./fixtures/jaque-v2.json', import.meta.url)));
 
@@ -206,7 +206,7 @@ test('a round is one primary attack type plus one off-hand attack', () => {
   const melee = planRound({ sheet: jaque, primary: { weaponId: 'wpn-1', attackId: 'atk-1' }, offHand: { weaponId: 'wpn-5', attackId: 'atk-6' } });
   assert.deepEqual(melee.errors, []);
   assert.equal(melee.perRound, 2.5);
-  assert.equal(melee.summary, '3/2 Dagger Attack (Specialized) + 1 Off-hand dagger');
+  assert.equal(melee.summary, '1 × Dagger Attack (Specialized) + 1 × Off-hand dagger');   // round 1
   // Melee primary with a thrown off-hand dagger is allowed.
   const mixed = planRound({ sheet: jaque, primary: { weaponId: 'wpn-1', attackId: 'atk-1' }, offHand: { weaponId: 'wpn-5', attackId: 'atk-7' } });
   assert.deepEqual(mixed.errors, []);
@@ -229,4 +229,18 @@ test('Defensive Spin: no attack, AC better by half his level rounded up', () => 
 test('Trick Throw is a custom attack at −2', () => {
   const a = computeAttack({ sheet: jaque, weaponId: 'wpn-5', attackId: 'atk-8' });
   assert.equal(a.thac0, 16);   // 18 − Dex 3 − Signature 1 + Trick Throw 2
+});
+
+test('fractional attack rates alternate by round', () => {
+  assert.deepEqual([1, 2, 3, 4].map(r => attacksThisRound('3/2', r)), [1, 2, 1, 2]);
+  assert.deepEqual([1, 2, 3].map(r => attacksThisRound('5/2', r)), [2, 3, 2]);
+  assert.deepEqual([1, 2].map(r => attacksThisRound('3/1', r)), [3, 3]);
+});
+
+test('each attack in a round is its own slot', () => {
+  const thrown = planRound({ sheet: jaque, primary: { weaponId: 'wpn-1', attackId: 'atk-2' }, offHand: { weaponId: 'wpn-5', attackId: 'atk-7' }, roundNumber: 3 });
+  assert.deepEqual(thrown.slots.map(s => [s.n, s.attackId, s.hand]), [[1, 'atk-2', 'main'], [2, 'atk-2', 'main'], [3, 'atk-2', 'main'], [4, 'atk-7', 'off']]);
+  assert.equal(thrown.summary, '3 × Superior Dagger, thrown + 1 × Off-hand dagger, thrown');
+  const meleeEven = planRound({ sheet: jaque, primary: { weaponId: 'wpn-1', attackId: 'atk-1' }, roundNumber: 2 });
+  assert.equal(meleeEven.slots.length, 2);
 });

@@ -276,30 +276,37 @@ intend to do *before* initiative is rolled. Then actions resolve in initiative
 order. The flow is the sequence of steps a player clicks through in their app
 window for that, and what they see while waiting and resolving.
 
-A proposed default, for you to react to:
+**Two levels: declare the round, then make each attack (decided).** A round
+can hold several attacks (Jaque's thrown daggers: 3, plus an off-hand attack),
+and each one can go at a different target, under different conditions, at a
+different point in the round. So only the round's *plan* is declared up front;
+everything about an individual attack is decided when that attack happens.
 
 ```
  DM starts round 3
         │
- ① CHOOSE        Player's window: "Round 3 — what are you doing?"
-                 Big buttons: your attacks (most-used first) · Cast · Move · Other
+ ① DECLARE (round level)
+      Primary attack (sets how many attacks: 3/1 → 3; 3/2 → 1 or 2, alternating)
+      Off-hand attack (two-weapon fighters: +1)
+      Stances that cover every attack this round (Bladesong)
+      → "Declare". The DM's tracker shows ✓ declared / … thinking.
+      Can be changed until the first attack is called.
         │
- ② TARGET        List of foes the DM has revealed ("Orc 1", "Orc 2", "the big one")
+ DM locks the round → initiative
         │
- ③ ADJUST        Active chips shown (sticky ones already on). Tap to change.
-   (optional)    Collapsed by default: most rounds, skip straight to Ready.
+ ② EACH ATTACK, when the DM calls it
+      Its own target, situation chips (Flanking, Target unaware…), and adjustment
+      → THAC0 for this attack → Roll d20 (or type your die)
+      Starts with the previous attack's target and situation; change as needed.
+      Upcoming attacks can be planned ahead, but nothing is locked.
+      DM's screen shows hit/miss vs. the real AC and announces it.
         │
- ④ READY ✓       DM's tracker shows each PC as ✓ declared / … thinking
-        │
- DM locks round → initiative rolled (player rolls or types it) → order shown to all
-        │
- ⑤ ACT           On your turn: "Roll attack" (or type your die). Result goes to the DM.
-                 DM's screen shows hit/miss vs. the real AC.
-        │
- ⑥ DAMAGE        On a hit: "Roll damage". DM applies it to the target.
+ ③ DAMAGE        On a hit: "Roll damage". DM applies it to the target.
 ```
 
-A Ready player can change their mind until the DM locks the round.
+**Open question for the DM:** at what point in the round do the extra attacks
+happen (all at the first initiative count, spread across the round, or at the
+end)? The prototype leaves it to the DM ("DM calls the next attack").
 
 ### Visibility rules (decided)
 
@@ -320,15 +327,24 @@ A Ready player can change their mind until the DM locks the round.
 ```jsonc
 {
   "encounterId": "enc-12", "round": 3, "characterId": "char-jaque",
-  "action": { "type": "attack", "attackId": "atk-1" },   // or cast / move / other
-  "target": "orc-2",
-  "toggles": { "opt-1": "+1 hit" },
-  "situation": ["flanking"],
-  "adjust": { "hit": 0, "label": "" },
-  "status": "ready",                                     // choosing → ready → locked → resolved
-  "rolls": ["roll-88", "roll-89"]                        // links into the dice log
+  // ① Round level: declared once
+  "primary": { "weaponId": "wpn-1", "attackId": "atk-2" },   // thrown Superior Dagger
+  "offHand": { "weaponId": "wpn-5", "attackId": "atk-7" },
+  "toggles": { "opt-1": "+1 hit" },                          // stances: every attack this round
+  "status": "declared",                                      // choosing → declared → locked → done
+  // ② Attack level: one entry per attack, filled in as each happens
+  "attacks": [
+    { "n": 1, "attackId": "atk-2", "target": "orc-1", "situation": ["flanking"],      "adjust": 0, "roll": "roll-88" },
+    { "n": 2, "attackId": "atk-2", "target": "orc-2", "situation": ["targetUnaware"], "adjust": 0, "roll": "roll-89" },
+    { "n": 3, "attackId": "atk-2", "target": null,    "situation": [],                "adjust": 0, "roll": null },
+    { "n": 4, "attackId": "atk-7", "target": "orc-1", "situation": [],                "adjust": 0, "roll": null, "hand": "off" }
+  ]
 }
 ```
+
+The rules code builds the attack list from the declaration
+(`planRound(..., roundNumber)` → `slots`), and `attacksThisRound` handles
+alternating rates (3/2 → 1, 2, 1, 2…).
 
 ### HP and conditions
 

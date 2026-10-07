@@ -10,7 +10,7 @@ import { bundle, RULES_FILES } from './bundle.mjs';
 
 const rules = bundle(RULES_FILES, {
   expose: {
-    Rules: ['rules/attacks', ['computeAttack', 'listAttacks', 'weaponAttacks', 'planRound', 'effectiveLevel', 'SITUATIONS']],
+    Rules: ['rules/attacks', ['computeAttack', 'listAttacks', 'weaponAttacks', 'planRound', 'attacksThisRound', 'effectiveLevel', 'SITUATIONS']],
     Weapons: ['rules/weapons', ['resolveWeapon', 'PHB_WEAPONS']],
     Character: ['rules/character', ['armorClass']],
     Migrate: ['rules/migrate', ['migrateV1toV2']],
