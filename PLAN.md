@@ -342,6 +342,8 @@ Helper pick from (see section 9).
 7. ~~**Devices.**~~ **Decided:** sessions are remote over video call. Players mostly use a
    tablet or a desktop browser window beside the call; phones must still work.
    Design target: a half-width desktop window (about 600–900px), then tablet, then phone.
+8. **Blade Pick Pockets (open, being clarified).** No Pick Pockets at all, or
+   no skill points but race and Dex still apply? See `docs/house-rules/blade-revised.md`.
 
 ---
 

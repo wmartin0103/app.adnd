@@ -89,7 +89,14 @@ If Strength would give a better result in either case, use Strength.
   attack is exempt and can be either.
 - **Flanked = the table's Flanking chip.** Turning on Flanking (+2 to hit) also
   counts the target as flanked for Duelist's Precision damage.
-- **No Pick Pockets or Read Languages.** The character sheet now hides both for Blades.
+- **No Read Languages.** The character sheet hides it for Blades.
+
+## Open questions (waiting on the table)
+
+- **Pick Pockets from race and Dex.** "No Pick Pockets" could mean the Blade
+  has no Pick Pockets at all (standard 2e: race and Dex only adjust skills the
+  class has), or only that he can't spend points on it, so race and Dex still
+  apply (Jaque: elf +5, Dex +15 = 20%). The sheet shows the row for now.
 - **Signature Weapon thrown rate (from Jaque's sheet):** 3/1, 4/1 at 7th,
   5/1 at 13th.
 

@@ -5345,8 +5345,9 @@
       THIEF_SKILLS.forEach(skill => {
         // Ranger only has MS and HS — skip all other skills
         if (isRanger && !['ms', 'hs'].includes(skill.id) && !skill.notPercent) return;
-        // Blades (revised kit) have no Pick Pockets or Read Languages
-        if (thiefSubclass === 'blade' && ['pp', 'rl'].includes(skill.id)) return;
+        // Blades (revised kit) have no Read Languages. Pick Pockets: open
+        // question (see docs/house-rules/blade-revised.md), shown for now.
+        if (thiefSubclass === 'blade' && skill.id === 'rl') return;
 
         const row = document.createElement('div');
         row.className = 'thief-row' + (skill.notPercent ? ' thief-row-special' : '');
@@ -5360,7 +5361,7 @@
           const armor  = isRanger ? 0 : (thiefSkillAlloc.armor?.[skill.id]  || 0);
           const racial = racialAdj?.[skill.id] || 0;
           const dex    = DEX_SKILLS.includes(skill.id) ? (dexAdj?.[skill.id] || 0) : 0;
-          return Math.min(95, Math.max(1, base + points + kit + armor + racial + dex));
+          return Math.min(95, Math.max(0, base + points + kit + armor + racial + dex));
         }
 
         // Cell helpers
