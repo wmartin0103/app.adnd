@@ -340,7 +340,10 @@ no manual entry.
 **Plan: keep the familiar part, add context.**
 - The **free-form roller** copies Roll Deep's pattern: click dice into a tray,
   Roll, shared feed newest first with each die's result. No learning curve.
-- **Name comes from the login**, not a text field.
+- **Name comes from the login**, not a text field: the character's name, or
+  the player's name when no character is picked. Anyone without either
+  (e.g. a guest before they set up) rolls as **Jim Darkmagic**.
+- **No dice-style option.** Nobody uses Roll Deep's style dropdown.
 - **In-context roll buttons** post richer entries to the same feed:
   `Jaque · Attack, Dagger → Orc 1 · d20: 16 · rolled`. Modifiers are shown with
   the dice, e.g. `Damage · 1d4+3 · d4: 2 → 5`.
