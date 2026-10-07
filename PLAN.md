@@ -339,7 +339,8 @@ file-passing workflow, before any backend exists.
 - [x] One character save received (Jaque)
 - [x] Repo made private, then files committed to `legacy/` and `samples/`
 - [x] Combat data spec drafted (`docs/combat-data-spec.md`)
-- [ ] Combat data spec reviewed: UX questions in its section 6
+- [x] Combat data spec: first round of UX answers folded in
+- [ ] Combat data spec: remaining questions in its section 8
 - [ ] Saves from the other active players
 - [ ] Answers to section 8
 - [ ] Accounts: Netlify or Cloudflare, Supabase (free; owned by you)
