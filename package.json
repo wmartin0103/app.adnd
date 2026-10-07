@@ -1,0 +1,9 @@
+{
+  "name": "app-adnd",
+  "private": true,
+  "type": "module",
+  "description": "Web app for our homegrown AD&D campaign",
+  "scripts": {
+    "test": "node --test"
+  }
+}

@@ -120,7 +120,8 @@ its standard attacks automatically, and removing a weapon removes its attacks.
   {
     "id": "wpn-1",
     "name": "Superior Dagger",
-    "category": "dagger",              // from the weapon list: racial bonuses, proficiency
+    "basedOn": "dagger",               // PHB or campaign weapon it inherits from; the PHB
+                                       // weapon at the root of the chain is its category
     "damageTypes": ["P"],
     "speed": 2,
     "damage": { "sm": "1d4", "l": "1d4" },
@@ -142,6 +143,19 @@ its standard attacks automatically, and removing a weapon removes its attacks.
   { "id": "atk-9", "name": "Bowcast", "usesWeapon": "wpn-7", "speedFromCast": true }
 ]
 ```
+
+### Weapon list: PHB + campaign, everything maps to a PHB category (decided)
+
+- **PHB list:** the standard weapons, with stats.
+- **Campaign list:** weapons your table invents or borrows. Each one is **based
+  on** a PHB weapon (Maul → warhammer, Folding bow → short bow) and stores only
+  what's different.
+- **Sheet weapons** are based on either list and also store only what's different
+  ("Superior Dagger" = dagger, +1/+1).
+- The PHB weapon at the root of that chain is the weapon's **category**. Racial
+  bonuses, Signature Weapon, and proficiencies match on category, so a weapon can
+  have any name ("Moonstring" based on long bow still gets the elf bow bonus).
+  Creativity is unlimited and the math stays simple.
 
 Fixed bonuses that apply to **all** attacks with this weapon (Signature Weapon,
 specialization) are set once at the character level and matched by weapon
@@ -329,8 +343,7 @@ Old JSON files keep importing.
 
 1. ~~Hit/miss visibility~~ **Decided:** the DM announces it (section 5).
 2. ~~Initiative order visibility~~ **Decided:** visible, with per-foe hiding (section 5).
-3. **Weapon list scope:** core PHB list plus a campaign list, or also Player's
-   Option weapon stats? (Discussion in progress.)
+3. ~~**Weapon list scope**~~ **Decided:** PHB + campaign list, every weapon based on a PHB category (section 3).
 4. **"Needs review" after migration:** summary + inline markers recommended (discussion in progress).
 5. **Dice roller features** the group relies on in Roll Dice With Friends.
 
@@ -338,7 +351,7 @@ Old JSON files keep importing.
 
 ## 9. Build order
 
-1. **Rules functions** for weapons, attacks, and the four modifier layers, as
+1. ✅ **Rules functions** (`src/rules/`, run tests with `npm test`) for weapons, attacks, and the four modifier layers, as
    plain functions with tests. Jaque is the first test case, with expected
    numbers confirmed with you and the DM.
 2. **Sheet v2 data + migration**, with the current UI adapted minimally so nothing breaks.
