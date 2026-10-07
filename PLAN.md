@@ -287,9 +287,13 @@ whole time as a backup.
 - ✅ Write the sheet → DM Helper converter (`src/adapters/dm-helper.js`), with tests.
   It produces one paste-in block per party (`scripts/dm-helper-config.mjs`),
   checked by loading the DM Helper with Jaque's generated block.
-- Add an **"Import party"** button to the DM Helper: the DM selects the players'
-  exported JSON files, and the config is generated from them. Hand-typed config
-  stays as a fallback.
+- ✅ **"Import sheets"** on the DM Helper's Config tab: the DM picks players'
+  exported JSON files, and their stats are generated from them (kept in that
+  browser; DM-only settings preserved). Hand-typed config stays for everyone
+  else, including players who don't have a digital sheet yet.
+- Players without a digital sheet create one in the character sheet tool from
+  scratch (it already supports a blank sheet). A guided "new character" setup
+  is a candidate for the sheet redesign.
 
 **Result:** the DM stops re-typing character data. It works with today's
 file-passing workflow, before any backend exists.
