@@ -315,7 +315,9 @@ file-passing workflow, before any backend exists.
 5. ~~**Player combat view.**~~ **Decided:** players declare their own actions.
    This requires the sheet v2 weapon/attack data (Phase 2).
 6. **Party visibility.** Can players see each other's full sheets, a summary, or nothing?
-7. **Devices at the table.** Phones, laptops, a shared screen? This drives layout priorities.
+7. ~~**Devices.**~~ **Decided:** sessions are remote over video call. Players mostly use a
+   tablet or a desktop browser window beside the call; phones must still work.
+   Design target: a half-width desktop window (about 600–900px), then tablet, then phone.
 
 ---
 

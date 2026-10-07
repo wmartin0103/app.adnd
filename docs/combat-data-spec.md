@@ -220,17 +220,27 @@ actually changed.
 
 ## 5. Declaring an action: the proposed flow
 
+**Context:** sessions run over a video call. Each player has the app open in a
+browser window beside the call (tablet or desktop; phone supported). So:
+- **Design for a half-width window first** (about 600–900px), then tablet, then phone.
+- **Attention is on the call.** "Your turn" needs a cue beyond the page itself:
+  a highlighted banner plus a flashing browser tab title.
+- **No one sees anyone else's dice.** The shared dice log is the record, with
+  "rolled" vs "entered" visible to all.
+- **The DM may screen-share.** The players' initiative view is safe to share:
+  no ACs, no hidden foes.
+
 **What "declaration flow" means:** in 2e, each round everyone says what they
 intend to do *before* initiative is rolled. Then actions resolve in initiative
-order. The flow is the sequence of screens a player taps through on their phone
-for that, and what they see while waiting and resolving.
+order. The flow is the sequence of steps a player clicks through in their app
+window for that, and what they see while waiting and resolving.
 
 A proposed default, for you to react to:
 
 ```
  DM starts round 3
         │
- ① CHOOSE        Player's phone: "Round 3 — what are you doing?"
+ ① CHOOSE        Player's window: "Round 3 — what are you doing?"
                  Big buttons: your attacks (most-used first) · Cast · Move · Other
         │
  ② TARGET        List of foes the DM has revealed ("Orc 1", "Orc 2", "the big one")
@@ -252,7 +262,7 @@ A Ready player can change their mind until the DM locks the round.
 
 ### Visibility rules (decided)
 
-- **Hit/miss: the DM announces it.** The player's phone shows "You rolled 17 —
+- **Hit/miss: the DM announces it.** The player's window shows "You rolled 17 —
   waiting on the DM" and never shows the target's AC or the hit/miss result. The
   suspense stays at the table. The DM's screen shows hit/miss as it does today.
   The DM can optionally tap **Reveal** to post the outcome to the log afterward.
@@ -262,7 +272,7 @@ A Ready player can change their mind until the DM locks the round.
   - **Hidden initiative:** the foe is visible, but its slot in the order shows
     as "?" until it acts.
   - Each is a per-baddy toggle in the DM tracker, defaulting to visible.
-- **The DM can declare for a player** who's away from their phone.
+- **The DM can declare for a player** who's away from the app.
 
 ### Data shape
 
