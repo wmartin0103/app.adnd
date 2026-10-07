@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 
 import { parseDice, formatDice } from '../src/rules/dice.js';
 import { resolveWeapon } from '../src/rules/weapons.js';
-import { baseTHAC0, strengthMods, computeAttack, listAttacks, planRound, attacksThisRound } from '../src/rules/attacks.js';
+import { baseTHAC0, strengthMods, computeAttack, listAttacks, planRound, attacksThisRound, offHandAttacks } from '../src/rules/attacks.js';
 
 const jaque = JSON.parse(readFileSync(new URL('./fixtures/jaque-v2.json', import.meta.url)));
 
@@ -106,7 +106,7 @@ test('unidentified weapons are flagged for review', () => {
 
 test('weapons without an attack list get one attack per mode', () => {
   const ids = listAttacks({ sheet: jaque }).map(a => a.attackId);
-  assert.deepEqual(ids, ['atk-1', 'atk-2', 'wpn-3:melee', 'wpn-3:thrown', 'wpn-4:melee', 'wpn-4:thrown', 'atk-5', 'atk-6', 'atk-7', 'atk-8']);
+  assert.deepEqual(ids, ['atk-1', 'atk-2', 'wpn-3:melee', 'wpn-3:thrown', 'wpn-4:melee', 'wpn-4:thrown', 'atk-5', 'atk-8']);
 });
 
 // ── Round layers ──
@@ -186,7 +186,7 @@ test('Int damage caps at +2 and never uses exceptional strength', () => {
 });
 
 test('off-hand dagger: −2, still gets Signature Weapon and Duelist\'s Precision', () => {
-  const a = computeAttack({ sheet: jaque, weaponId: 'wpn-5', attackId: 'atk-6' });
+  const a = computeAttack({ sheet: jaque, weaponId: 'wpn-5', attackId: 'off-melee' });
   assert.equal(a.thac0, 16);   // 18 − Dex 3 − Signature 1 + off-hand 2
   assert.deepEqual(a.damage, { sm: '1d4+2', l: '1d3+2' });
   assert.equal(a.attacksPerRound, '1');   // the Signature rate never applies to the extra attack
@@ -194,7 +194,9 @@ test('off-hand dagger: −2, still gets Signature Weapon and Duelist\'s Precisio
 
 test('every main-hand dagger gets the Signature rate; the off-hand gets one attack', () => {
   const apr = id => listAttacks({ sheet: jaque }).find(a => a.attackId === id).attacksPerRound;
-  assert.deepEqual(['wpn-3:melee', 'wpn-4:thrown', 'atk-6', 'atk-7'].map(apr), ['3/2', '3/1', '1', '1']);
+  assert.deepEqual(['wpn-3:melee', 'wpn-4:thrown'].map(apr), ['3/2', '3/1']);
+  const off = computeAttack({ sheet: jaque, weaponId: 'wpn-4', attackId: 'off-thrown' });
+  assert.equal(off.attacksPerRound, '1');
 });
 
 test('signature attacks per round improve at 7th and 13th level', () => {
@@ -203,14 +205,48 @@ test('signature attacks per round improve at 7th and 13th level', () => {
 });
 
 test('a round is one primary attack type plus one off-hand attack', () => {
-  const melee = planRound({ sheet: jaque, primary: { weaponId: 'wpn-1', attackId: 'atk-1' }, offHand: { weaponId: 'wpn-5', attackId: 'atk-6' } });
+  const melee = planRound({ sheet: jaque, primary: { weaponId: 'wpn-1', attackId: 'atk-1' }, offHand: { weaponId: 'wpn-5', attackId: 'off-melee' } });
   assert.deepEqual(melee.errors, []);
   assert.equal(melee.perRound, 2.5);
-  assert.equal(melee.summary, '1 × Dagger Attack (Specialized) + 1 × Off-hand dagger');   // round 1
+  assert.equal(melee.summary, '1 × Dagger Attack (Specialized) + 1 × Off-hand Dagger x6');   // round 1
   // Melee primary with a thrown off-hand dagger is allowed.
-  const mixed = planRound({ sheet: jaque, primary: { weaponId: 'wpn-1', attackId: 'atk-1' }, offHand: { weaponId: 'wpn-5', attackId: 'atk-7' } });
+  const mixed = planRound({ sheet: jaque, primary: { weaponId: 'wpn-1', attackId: 'atk-1' }, offHand: { weaponId: 'wpn-5', attackId: 'off-thrown' } });
   assert.deepEqual(mixed.errors, []);
   assert.equal(mixed.perRound, 2.5);
+});
+
+test('any dagger can go in the off hand, including the one in the main hand', () => {
+  const ids = listAttacks({ sheet: jaque, offHand: true }).filter(a => a.hand === 'off').map(a => `${a.weaponId}:${a.attackId}`);
+  assert.deepEqual(ids, ['wpn-1:off-melee', 'wpn-1:off-thrown', 'wpn-3:off-melee', 'wpn-3:off-thrown', 'wpn-4:off-melee', 'wpn-4:off-thrown', 'wpn-5:off-melee', 'wpn-5:off-thrown']);
+  const both = planRound({ sheet: jaque, primary: { weaponId: 'wpn-5', attackId: 'atk-5' }, offHand: { weaponId: 'wpn-5', attackId: 'off-thrown' } });
+  assert.deepEqual(both.errors, []);
+  const superior = computeAttack({ sheet: jaque, weaponId: 'wpn-1', attackId: 'off-melee' });
+  assert.equal(superior.thac0, 15);   // its own +1 still counts
+});
+
+test('no off-hand attack unless the main hand holds a dagger (Handle Weapons)', () => {
+  const sheet = { ...jaque, __weapons: [...jaque.__weapons, { id: 'w-sword', name: 'Short sword', basedOn: 'short-sword' }] };
+  const r = planRound({ sheet, primary: { weaponId: 'w-sword', attackId: 'w-sword:melee' }, offHand: { weaponId: 'wpn-5', attackId: 'off-melee' } });
+  assert.ok(r.errors.includes('An off-hand attack needs a dagger in the main hand.'));
+});
+
+test('any weapon can go in the off hand, with the non-proficiency penalty', () => {
+  const sheet = { ...jaque, __weapons: [...jaque.__weapons, { id: 'w-sword', name: 'Short sword', basedOn: 'short-sword' }, { id: 'w-bow', name: 'Short bow', basedOn: 'short-bow' }] };
+  const off = computeAttack({ sheet, weaponId: 'w-sword', attackId: 'off-melee' });
+  assert.equal(off.thac0, 19);   // 18 − Dex (Duelist) 3 + not proficient 3 − elf sword 1 + off-hand 2
+  assert.ok(off.lines.some(l => l.label === 'Not proficient' && l.hit === -3));
+  const r = planRound({ sheet, primary: { weaponId: 'wpn-1', attackId: 'atk-1' }, offHand: { weaponId: 'w-sword', attackId: 'off-melee' } });
+  assert.deepEqual(r.errors, []);
+  assert.deepEqual(offHandAttacks(sheet, sheet.__weapons.at(-1)), []);   // bows can't be used off-hand
+});
+
+test('non-proficiency penalty follows the class (most favorable of a multi-class)', () => {
+  const base = { str: '10', dex: '10', __weaponProficiencies: ['dagger'], __weapons: [{ id: 'w', basedOn: 'long-sword' }] };
+  const t = classes => computeAttack({ sheet: { ...base, __classes: classes }, weaponId: 'w', attackId: 'w:melee' }).thac0;
+  assert.equal(t([{ group: 'wizard', level: '1' }]), 25);
+  assert.equal(t([{ group: 'warrior', level: '1' }]), 22);
+  assert.equal(t([{ group: 'wizard', level: '1' }, { group: 'warrior', level: '1' }]), 22);
+  assert.equal(computeAttack({ sheet: { ...base, __weaponProficiencies: undefined, __classes: [{ group: 'wizard', level: '1' }] }, weaponId: 'w', attackId: 'w:melee' }).thac0, 20);   // no list yet: no penalty
 });
 
 test('a round rejects a main-hand attack in the off-hand slot', () => {
@@ -238,9 +274,9 @@ test('fractional attack rates alternate by round', () => {
 });
 
 test('each attack in a round is its own slot', () => {
-  const thrown = planRound({ sheet: jaque, primary: { weaponId: 'wpn-1', attackId: 'atk-2' }, offHand: { weaponId: 'wpn-5', attackId: 'atk-7' }, roundNumber: 3 });
-  assert.deepEqual(thrown.slots.map(s => [s.n, s.attackId, s.hand]), [[1, 'atk-2', 'main'], [2, 'atk-2', 'main'], [3, 'atk-2', 'main'], [4, 'atk-7', 'off']]);
-  assert.equal(thrown.summary, '3 × Superior Dagger, thrown + 1 × Off-hand dagger, thrown');
+  const thrown = planRound({ sheet: jaque, primary: { weaponId: 'wpn-1', attackId: 'atk-2' }, offHand: { weaponId: 'wpn-5', attackId: 'off-thrown' }, roundNumber: 3 });
+  assert.deepEqual(thrown.slots.map(s => [s.n, s.attackId, s.hand]), [[1, 'atk-2', 'main'], [2, 'atk-2', 'main'], [3, 'atk-2', 'main'], [4, 'off-thrown', 'off']]);
+  assert.equal(thrown.summary, '3 × Superior Dagger, thrown + 1 × Off-hand Dagger x6, thrown');
   const meleeEven = planRound({ sheet: jaque, primary: { weaponId: 'wpn-1', attackId: 'atk-1' }, roundNumber: 2 });
   assert.equal(meleeEven.slots.length, 2);
 });

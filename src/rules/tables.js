@@ -44,6 +44,10 @@ export const DEX_TABLE = {
   25: { missile:  5, defense: -6 },
 };
 
+// Non-proficiency penalty to hit, by class group (PHB). A multi-class character
+// uses the most favorable of their classes.
+export const NONPROFICIENT_PENALTY = { warrior: -2, priest: -3, rogue: -3, wizard: -5 };
+
 // THAC0 by class group and level (PHB Table 53), levels 1–20.
 // Warrior improves 1 per level, priest 2 per 3 levels, rogue 1 per 2, wizard 1 per 3.
 // NOTE: the legacy character sheet's priest row improves every 2 levels

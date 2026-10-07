@@ -76,10 +76,11 @@ test('Jaque becomes a DM Helper character', () => {
   assert.deepEqual(c.weapons['Dagger x6, thrown'], { thac0: 14, speed: 2 });
   assert.deepEqual(c.weapons['Trick Throw'], { thac0: 16, speed: 2 });
   assert.deepEqual(c.secondary.map(s => s.name), [
-    'Off-hand Dagger x6',
+    'Off-hand Superior Dagger', 'Off-hand Leprechaun Dagger', 'Off-hand Wave Dagger', 'Off-hand Dagger x6',
     'Superior Dagger (2nd; melee alt. rounds)',
     'Superior Dagger (3rd; thrown)',
   ]);
+  assert.deepEqual(c.secondary[0], { name: 'Off-hand Superior Dagger', modes: { melee: { thac0: 15 }, thrown: { thac0: 15 } } });
   assert.deepEqual(r.damage['Jaque|Superior Dagger'], { sm: '1d4+3', l: '1d3+3' });
   assert.equal(r.critTypes['Superior Dagger'], 'P');
   assert.deepEqual(r.material['Superior Dagger'], { m: 'metal' });

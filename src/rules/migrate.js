@@ -93,6 +93,15 @@ export function migrateV1toV2(input) {
   const oldWeapons = d.__weapons || [];
   const oldScenarios = d.__scenarios || [];
 
+  // ── Weapon proficiencies, from the sheet's proficiency cards ──
+  const profCats = [...new Set((d.__wpnProfCards || []).map(c => guessCategory(c.name)).filter(Boolean))];
+  if (profCats.length) {
+    d.__weaponProficiencies = profCats;
+    flag('character', 'weapon-proficiencies', `Weapon proficiencies set to ${profCats.map(c => PHB_WEAPONS[c].name.replace(/\s*\(.*\)$/, '')).join(', ')} from your proficiency cards. Add any that are missing.`);
+  } else {
+    flag('character', 'weapon-proficiencies', 'Set which weapons this character is proficient in, so non-proficiency penalties apply.');
+  }
+
   // ── Weapons ──
   const weapons = oldWeapons.map(old => {
     const w = { id: old.id, name: old.name || '' };
@@ -200,8 +209,9 @@ export function migrateV1toV2(input) {
     (weapon.attacks ||= []).push(attack);
     const oldT = oldScenarioTHAC0(d, sc, oldWeapon);
     const calc = computeAttack({ sheet: { ...d, __weapons: weapons }, weaponId: weapon.id, attackId: attack.id });
-    const racial = calc.lines.filter(l => l.kind === 'racial').reduce((s, l) => s + l.hit, 0);
-    const newT = calc.thac0 === null ? null : calc.thac0 + racial;
+    // Racial bonuses and proficiency penalties are v2's own rules, not part of the old hit mod
+    const ruled = calc.lines.filter(l => l.kind === 'racial' || l.kind === 'proficiency').reduce((s, l) => s + l.hit, 0);
+    const newT = calc.thac0 === null ? null : calc.thac0 + ruled;
     if (oldT !== null && newT !== null && newT !== oldT) {
       attack.mods.push({ label: 'From old sheet', hit: newT - oldT });
       flag('attack', sc.id, `"${sc.name || 'This attack'}" carries ${newT - oldT > 0 ? '+' : ''}${newT - oldT} to hit from the old sheet's hit mod. Replace it with named bonuses (e.g. Signature Weapon), which can add damage too.`);

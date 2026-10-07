@@ -136,18 +136,6 @@
           "name": "Thrown Dagger Attack"
         },
         {
-          "id": "atk-6",
-          "mode": "melee",
-          "hand": "off",
-          "name": "Off-hand dagger"
-        },
-        {
-          "id": "atk-7",
-          "mode": "thrown",
-          "hand": "off",
-          "name": "Off-hand dagger, thrown"
-        },
-        {
           "id": "atk-8",
           "mode": "thrown",
           "name": "Trick Throw",
@@ -706,6 +694,15 @@
     }
   ],
   "__combatRules": {
-    "offHandAttack": true
-  }
+    "offHandAttack": {
+      "needsMain": {
+        "categories": [
+          "dagger"
+        ]
+      }
+    }
+  },
+  "__weaponProficiencies": [
+    "dagger"
+  ]
 }

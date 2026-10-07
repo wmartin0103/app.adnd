@@ -181,6 +181,7 @@ button { cursor: pointer; }
 .choice { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; text-align: left; border: 1px solid var(--rule); background: var(--surface); border-radius: var(--radius); padding: 6px 10px; }
 .choice[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
 .choice small { font-family: var(--font-data); font-size: 0.78rem; color: var(--ink-muted); }
+.choice.offpick { cursor: default; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip { border: 1px solid var(--rule); background: var(--surface); border-radius: 999px; padding: 2px 11px; font-size: 0.92rem; }
 .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--surface); }
@@ -261,7 +262,7 @@ footer { color: var(--ink-faint); font-size: 0.88rem; }
 <script>
 const JAQUE_V1 = /*__JAQUE_V1__*/;
 const JAQUE_V2 = /*__JAQUE_V2__*/;
-const { computeAttack, weaponAttacks, planRound, effectiveLevel, SITUATIONS } = Rules;
+const { computeAttack, weaponAttacks, planRound, offHandAttacks, effectiveLevel, SITUATIONS } = Rules;
 const { resolveWeapon, PHB_WEAPONS } = Weapons;
 
 const $ = id => document.getElementById(id);
@@ -388,6 +389,19 @@ function readCard(raw) {
     </button>`;
     if (open) rows += mathHtml(c);
   }
+  // Off-hand: one row when melee and thrown come out the same, else one per mode
+  const offs = offHandAttacks(S.sheet, raw).map(a => ({ a, c: calc(raw.id, a.id) }));
+  const same = offs.length > 1 && offs.every(o => o.c.thac0 === offs[0].c.thac0 && o.c.damage.sm === offs[0].c.damage.sm);
+  for (const o of same ? [offs[0]] : offs) {
+    const key = `${raw.id}|${o.a.id}`; const open = S.open === key;
+    rows += `<button type="button" class="arow" data-open="${key}" aria-expanded="${open}">
+      <span class="aname">Off-hand <span class="tag">+1 attack</span> <small>${same ? offs.map(x => x.c.mode).join(' or ') : o.c.mode}</small></span>
+      <span class="cell t0"><span class="lbl">${ICON.target}THAC0</span><span class="val">${o.c.thac0}</span></span>
+      <span class="cell dm"><span class="lbl">${ICON.die}Dmg S/M · L</span><span class="val">${esc(o.c.damage.sm)} · ${esc(o.c.damage.l)}</span></span>
+      <span class="cell apr"><span class="lbl">${ICON.repeat}Per rd</span><span class="val">1</span></span>
+    </button>`;
+    if (open) rows += mathHtml(o.c);
+  }
   const wflags = [raw.id, ...attacksOf(raw).map(a => a.id)].flatMap(reviewFor);
   return `<article class="wcard" id="card-${raw.id}">
     <div class="whead"><span class="wname">${esc(w.name)}</span>
@@ -499,8 +513,9 @@ function abilitiesHtml() {
   const row = (id, name, what) => S.editingAbility === id ? abilityEdit(id) : `<div class="ab"><span class="abname">${esc(name)}</span><span class="abwhat">${what}</span><button class="btn quiet edit" type="button" data-editab="${id}" aria-label="Edit ${esc(name)}">Edit</button></div>`;
   return `<div class="abilities">
     <div class="ab-sub">Always on</div>
+    ${Array.isArray(S.sheet.__weaponProficiencies) ? row('profs', 'Weapon proficiencies', `${S.sheet.__weaponProficiencies.map(c => esc((PHB_WEAPONS[c] || { name: c }).name.replace(/\s*\(.*\)$/, ''))).join(', ')} <span class="muted">(anything else: non-proficiency penalty)</span>`) : ''}
     ${bonuses.map((b, i) => row(`b${i}`, b.label, describeBonus(b))).join('')}
-    ${rules.offHandAttack ? row('rule-off', 'Two-weapon fighting', 'One extra off-hand attack per round') : ''}
+    ${rules.offHandAttack ? row('rule-off', 'Two-weapon fighting', (() => { const r = rules.offHandAttack === true ? {} : rules.offHandAttack; const off = r.weapons?.categories?.map(c => c + 's').join(', ') || 'any weapon'; const main = r.needsMain?.categories?.map(c => 'a ' + c).join(' or '); return `One extra off-hand attack per round with ${esc(off)}${main ? `, only when the main hand holds ${esc(main)}` : ''}`; })()) : ''}
     <div class="ab-sub">Choose each round (in Combat)</div>
     ${opts.map(o => row(o.id, o.name, `${o.choice ? o.choice.map(c => esc(c.label)).join(' · ') : (o.ac === 'halfLevel' ? 'AC better by half level' : 'On / off')}${o.noAttack ? ' · no attack' : ''} <span class="tag">${o.sticks ? 'stays on' : 'resets each round'}</span>`)).join('')}
   </div>`;
@@ -574,6 +589,7 @@ function wireSheet() {
     const id = b.dataset.editab; S.editingAbility = id;
     if (id.startsWith('b')) { const x = S.sheet.__combatBonuses[+id.slice(1)]; S.abDraft = { kind: 'bonus', label: x.label, hit: x.hit || 0, dmg: x.dmg || 0 }; }
     else if (id === 'rule-off') S.abDraft = { label: 'Two-weapon fighting' };
+    else if (id === 'profs') S.abDraft = { label: 'Weapon proficiencies' };
     else { const o = S.sheet.__combatOptions.find(x => x.id === id); S.abDraft = { label: o.name }; }
     renderSheet(); $('ab-name')?.focus();
   });
@@ -581,7 +597,7 @@ function wireSheet() {
   const as = $('ab-save'); if (as) as.onclick = () => {
     const id = S.editingAbility;
     if (id.startsWith('b')) Object.assign(S.sheet.__combatBonuses[+id.slice(1)], { label: S.abDraft.label, hit: S.abDraft.hit, dmg: S.abDraft.dmg });
-    else if (id !== 'rule-off') S.sheet.__combatOptions.find(x => x.id === id).name = S.abDraft.label;
+    else if (id !== 'rule-off' && id !== 'profs') S.sheet.__combatOptions.find(x => x.id === id).name = S.abDraft.label;
     S.editingAbility = null; S.abDraft = null; renderSheet();
   };
   const ac = $('ab-cancel'); if (ac) ac.onclick = () => { S.editingAbility = null; S.abDraft = null; renderSheet(); };
@@ -611,7 +627,12 @@ function renderCombat() {
   const sheet = S.sheet; const d = S.decl; const rw = { toggles: S.round.toggles };
   const all = sheet.__weapons.filter(w => resolveWeapon(w).carried !== false).flatMap(w => attacksOf(w).map(a => ({ w, a, c: computeAttack({ sheet, weaponId: w.id, attackId: a.id, round: rw }) })));
   const mains = all.filter(x => x.c.hand === 'main');
-  const offs = all.filter(x => x.c.hand === 'off');
+  const offRule = (sheet.__combatRules || {}).offHandAttack;
+  const offWeapons = offRule ? sheet.__weapons.map(w => ({ w, list: offHandAttacks(sheet, w).map(a => ({ a, c: computeAttack({ sheet, weaponId: w.id, attackId: a.id, round: rw }) })) })).filter(x => x.list.length) : [];
+  const needs = offRule && offRule !== true ? offRule.needsMain?.categories : null;
+  const mainCat = d.primary ? computeAttack({ sheet, ...d.primary, round: rw }).category : null;
+  const offAllowed = !needs || (mainCat && needs.includes(mainCat));
+  if (!offAllowed && d.offHand && d.status === 'choosing') d.offHand = null;
   const featured = mains.filter(x => (x.w.attacks || []).some(a => a.active) || x.a.name || (d.primary && d.primary.weaponId === x.w.id && d.primary.attackId === x.a.id));
   const shown = S.moreAttacks || featured.length === mains.length ? mains : featured;
   const plan = d.primary ? planRound({ sheet, primary: d.primary, offHand: d.offHand || undefined, round: rw, roundNumber: d.round }) : null;
@@ -656,8 +677,13 @@ function renderCombat() {
       <p class="muted" style="font-size:.9rem">Declare what you're doing this round. Targets and conditions are picked for each attack when it happens.</p>
       <div class="optrow"><span class="label">Attack</span><div class="choices">${shown.map(x => choice(x, 'primary')).join('')}
         ${shown.length < mains.length ? `<button type="button" class="linkbtn more" id="more-atk">More attacks (${mains.length - shown.length})</button>` : ''}</div></div>
-      ${(sheet.__combatRules || {}).offHandAttack && offs.length ? `<div class="optrow"><span class="label">Off-hand attack <span class="tag">+1 attack</span></span><div class="choices">
-        <button type="button" class="choice" data-slot="offHand" data-w="" data-a="" aria-pressed="${!d.offHand}" ${choosing ? '' : 'disabled'}><span>None</span><small></small></button>${offs.map(x => choice(x, 'offHand')).join('')}</div></div>` : ''}
+      ${offWeapons.length ? `<div class="optrow"><span class="label">Off-hand attack <span class="tag">+1 attack</span></span>
+        ${offAllowed ? `<div class="choices">
+          <button type="button" class="choice" data-slot="offHand" data-w="" data-a="" aria-pressed="${!d.offHand}" ${choosing ? '' : 'disabled'}><span>None</span><small></small></button>
+          ${offWeapons.map(({ w, list }) => { const sel = d.offHand && d.offHand.weaponId === w.id; return `<div class="choice offpick" aria-label="Off-hand ${esc(resolveWeapon(w).name)}" style="${sel ? 'border-color:var(--accent);background:var(--accent-soft)' : ''}"><span>${esc(resolveWeapon(w).name)}</span>
+            <span class="seg">${list.map(o => `<button type="button" data-slot="offHand" data-w="${w.id}" data-a="${o.a.id}" aria-pressed="${!!(sel && d.offHand.attackId === o.a.id)}" ${choosing ? '' : 'disabled'}>${cap(o.c.mode)} <span class="num" style="font-size:.78rem">${o.c.thac0}</span></button>`).join('')}</span></div>`; }).join('')}
+        </div>` : `<p class="muted" style="font-size:.9rem">Needs ${esc(needs.map(c => 'a ' + c).join(' or '))} in your main hand this round.</p>`}
+      </div>` : ''}
       <h3>All attacks this round</h3>
       ${opts}
       <div class="formbar">

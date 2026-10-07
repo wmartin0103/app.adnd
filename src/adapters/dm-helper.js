@@ -10,7 +10,7 @@
 
 import { migrateV1toV2 } from '../rules/migrate.js';
 import { resolveWeapon } from '../rules/weapons.js';
-import { computeAttack, weaponAttacks, effectiveLevel, baseTHAC0 } from '../rules/attacks.js';
+import { computeAttack, weaponAttacks, offHandAttacks, effectiveLevel, baseTHAC0 } from '../rules/attacks.js';
 import { armorClass, savingThrows, thiefSkills, proficiencyTargets } from '../rules/character.js';
 
 const num = v => {
@@ -73,7 +73,11 @@ export function toDMHelper(save, dmSettings = {}) {
 
     const grouped = attacks.filter(x => x.calc.hand === 'main' && !(x.def.mods || []).length);
     const custom = attacks.filter(x => x.calc.hand === 'main' && (x.def.mods || []).length);
-    const off = attacks.filter(x => x.calc.hand === 'off');
+    // Off-hand: the weapon's own off-hand attacks plus any the two-weapon rule gives it
+    const off = [
+      ...attacks.filter(x => x.calc.hand === 'off'),
+      ...offHandAttacks(sheet, raw).map(a => ({ def: a, calc: computeAttack({ sheet, weaponId: raw.id, attackId: a.id }) })),
+    ];
 
     if (grouped.length) {
       const byMode = {};

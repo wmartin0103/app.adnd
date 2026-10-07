@@ -81,6 +81,10 @@ If Strength would give a better result in either case, use Strength.
 - **Multi-weapon fighting stays.** A Blade fighting with two weapons gets **one
   extra off-hand attack per round**, on top of the Signature Weapon's attacks
   per round. Handle Weapons sets its penalty (−2).
+- **The off hand can hold any weapon** (normal non-proficiency penalty if he
+  isn't proficient in it), but the extra attack only comes **when the main hand
+  holds his specialized weapon** (a dagger). That's what "only the primary may
+  be the signature weapon" means at this table.
 - **Signature Weapon covers the whole proficiency.** Every dagger gets +1 to
   hit and +2 damage, off-hand included. The off-hand attack is still just the
   one extra attack; it never gets the Signature Weapon's extra attacks per round.
@@ -107,7 +111,8 @@ If Strength would give a better result in either case, use Strength.
 | Duelist's Precision (to hit) | Melee uses Dex missile adj. instead of Str, unless Str is better |
 | Duelist's Precision (damage) | With the "Flanking" or "Target unaware" chip on: Int replaces Str for damage in melee or with a crossbow, unless Str is better; capped at +2 |
 | Handle Weapons | Off-hand attacks at −2 |
-| Multi-weapon fighting | One extra off-hand attack per round (`__combatRules.offHandAttack`) |
+| Multi-weapon fighting | One extra off-hand attack per round with any weapon (not bows), only with a dagger in the main hand (`__combatRules.offHandAttack.needsMain`) |
+| Weapon proficiencies | `__weaponProficiencies` (Jaque: daggers); anything else at the rogue non-proficiency penalty (−3) |
 | Defensive Spin | Toggle: no attack, AC better by half his level (rounded up) |
 | Offensive Spin, Weapon Display | Toggles: no attack this round |
 | Trick Throw | A custom thrown attack with −2 |

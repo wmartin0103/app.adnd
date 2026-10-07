@@ -597,6 +597,10 @@ const DEX_TABLE = {
   25: { missile:  5, defense: -6 },
 };
 
+// Non-proficiency penalty to hit, by class group (PHB). A multi-class character
+// uses the most favorable of their classes.
+const NONPROFICIENT_PENALTY = { warrior: -2, priest: -3, rogue: -3, wizard: -5 };
+
 // THAC0 by class group and level (PHB Table 53), levels 1–20.
 // Warrior improves 1 per level, priest 2 per 3 levels, rogue 1 per 2, wizard 1 per 3.
 // NOTE: the legacy character sheet's priest row improves every 2 levels
@@ -624,7 +628,7 @@ const RACIAL_WEAPON_BONUSES = {
   ],
 };
 
-return { STR_TABLE, STR_EXCEPTIONAL, DEX_TABLE, THAC0_TABLE, RACIAL_WEAPON_BONUSES };
+return { STR_TABLE, STR_EXCEPTIONAL, DEX_TABLE, NONPROFICIENT_PENALTY, THAC0_TABLE, RACIAL_WEAPON_BONUSES };
 })();
 // ── rules/dice ──
 __m["rules/dice"] = (() => {
@@ -761,7 +765,7 @@ return { PHB_WEAPONS, resolveWeapon };
 })();
 // ── rules/attacks ──
 __m["rules/attacks"] = (() => {
-const {STR_TABLE, STR_EXCEPTIONAL, DEX_TABLE, THAC0_TABLE, RACIAL_WEAPON_BONUSES} = __m["rules/tables"];
+const {STR_TABLE, STR_EXCEPTIONAL, DEX_TABLE, THAC0_TABLE, RACIAL_WEAPON_BONUSES, NONPROFICIENT_PENALTY} = __m["rules/tables"];
 const {resolveWeapon} = __m["rules/weapons"];
 const {parseDice, formatDice} = __m["rules/dice"];
 // ── ATTACKS ─────────────────────────────────────────────────────
@@ -908,6 +912,33 @@ function weaponAttacks(weapon) {
   return (weapon.modes || []).map(mode => ({ id: `${weapon.id}:${mode}`, mode }));
 }
 
+// Two-weapon fighting. `__combatRules.offHandAttack` is either `true` (any
+// weapon, any main hand) or a rule:
+//   { weapons: { categories: [...] },          optional: which weapons can go in the off hand
+//     needsMain: { categories: ['dagger'] } }  what the main hand must hold to get the attack
+// (Blade: any weapon off-hand, non-proficiency penalty applies; only with the
+// specialized dagger in the main hand.) Bows and other missile-only weapons
+// can't be used off-hand.
+function offHandRule(sheet) {
+  const r = (sheet.__combatRules || {}).offHandAttack;
+  if (!r) return null;
+  return r === true ? {} : r;
+}
+
+// The off-hand attacks a weapon offers (one per mode), or [] if it can't be
+// used in the off hand. Ids are "off-melee" / "off-thrown" within the weapon.
+function offHandAttacks(sheet, raw, campaignWeapons = {}) {
+  const rule = offHandRule(sheet);
+  if (!rule) return [];
+  const w = resolveWeapon(raw, campaignWeapons);
+  if (w.carried === false) return [];
+  const cats = rule.weapons?.categories;
+  if (cats && !cats.includes(w.category)) return [];
+  return (w.modes || []).filter(m => m !== 'missile').map(mode => ({
+    id: `off-${mode}`, mode, hand: 'off', name: `Off-hand ${w.name}${mode === 'melee' ? '' : `, ${mode}`}`,
+  }));
+}
+
 // Calculate one attack.
 //   sheet           — character save (v2)
 //   weaponId        — which weapon on the sheet
@@ -918,7 +949,8 @@ function computeAttack({ sheet, weaponId, attackId, campaignWeapons = {}, round 
   const raw = (sheet.__weapons || []).find(w => w.id === weaponId);
   if (!raw) throw new Error(`No weapon ${weaponId} on sheet`);
   const weapon = resolveWeapon(raw, campaignWeapons);
-  const attack = weaponAttacks({ ...raw, modes: weapon.modes }).find(a => a.id === attackId);
+  const attack = weaponAttacks({ ...raw, modes: weapon.modes }).find(a => a.id === attackId)
+    || offHandAttacks(sheet, raw, campaignWeapons).find(a => a.id === attackId);
   if (!attack) throw new Error(`No attack ${attackId} on weapon ${weaponId}`);
 
   const group = attack.thac0Group || (sheet.__classes || [])[0]?.group || 'warrior';
@@ -951,6 +983,16 @@ function computeAttack({ sheet, weaponId, attackId, campaignWeapons = {}, round 
   if (hitPick.value) add('built-in', hitPick.source ? `${hitPick.source}: ${hitPick.value.label}` : hitPick.value.label, hitPick.value.hit, 0);
   const dmgPick = pickAbility(attack.dmgAbility || (attack.mode === 'missile' ? 'none' : 'str'), 'dmgAbility', k => abilityDmg(sheet, k));
   if (dmgPick.value) add('built-in', dmgPick.source ? `${dmgPick.source}: ${dmgPick.value.label}` : dmgPick.value.label, 0, dmgPick.value.dmg);
+
+  // Weapon proficiency: `__weaponProficiencies` lists the weapon types (PHB
+  // categories) the character is proficient in. If the sheet doesn't have the
+  // list yet, no penalty is applied.
+  const profs = sheet.__weaponProficiencies;
+  if (Array.isArray(profs) && !profs.includes(weapon.category)) {
+    const groups = (sheet.__classes || []).map(c => c.group).filter(g => g in NONPROFICIENT_PENALTY);
+    const penalty = groups.length ? Math.max(...groups.map(g => NONPROFICIENT_PENALTY[g])) : -2;
+    add('built-in', 'Not proficient', penalty, 0, 'proficiency');
+  }
 
   add('built-in', weapon.name || 'Weapon', weapon.hitBonus, weapon.dmgBonus);
   if (weapon.magicPlus) add('built-in', `Magic +${weapon.magicPlus}`, weapon.magicPlus, weapon.magicPlus);
@@ -1027,12 +1069,14 @@ function computeAttack({ sheet, weaponId, attackId, campaignWeapons = {}, round 
 }
 
 // Every attack on the sheet, calculated. Skips weapons marked not carried.
-function listAttacks({ sheet, campaignWeapons = {}, round = {} }) {
+// With `offHand: true`, also each weapon's off-hand attacks.
+function listAttacks({ sheet, campaignWeapons = {}, round = {}, offHand = false }) {
   const out = [];
   for (const raw of sheet.__weapons || []) {
     const weapon = resolveWeapon(raw, campaignWeapons);
     if (weapon.carried === false) continue;
-    for (const a of weaponAttacks({ ...raw, modes: weapon.modes })) {
+    const attacks = [...weaponAttacks({ ...raw, modes: weapon.modes }), ...(offHand ? offHandAttacks(sheet, raw, campaignWeapons) : [])];
+    for (const a of attacks) {
       out.push(computeAttack({ sheet, weaponId: raw.id, attackId: a.id, campaignWeapons, round }));
     }
   }
@@ -1070,9 +1114,11 @@ function planRound({ sheet, primary, offHand, campaignWeapons = {}, round = {}, 
   let summary = `${mainCount} × ${main.name}`;
   if (offHand) {
     const off = computeAttack({ sheet, ...offHand, campaignWeapons, round });
-    if (!(sheet.__combatRules || {}).offHandAttack) errors.push('This character has no extra off-hand attack.');
+    const rule = offHandRule(sheet);
+    if (!rule) errors.push('This character has no extra off-hand attack.');
     if (off.hand !== 'off') errors.push('The off-hand attack must be an off-hand attack.');
-    if (offHand.weaponId === primary.weaponId) errors.push('The off-hand attack needs a second weapon.');
+    const needs = rule?.needsMain?.categories;
+    if (needs && !needs.includes(main.category)) errors.push(`An off-hand attack needs a ${needs.join(' or ')} in the main hand.`);
     attacks.push(off);
     slots.push({ weaponId: offHand.weaponId, attackId: offHand.attackId, hand: 'off', name: off.name });
     perRound += 1;
@@ -1083,7 +1129,7 @@ function planRound({ sheet, primary, offHand, campaignWeapons = {}, round = {}, 
   return { attacks, slots, perRound, summary, errors };
 }
 
-return { SITUATIONS, effectiveLevel, baseTHAC0, strengthMods, weaponAttacks, computeAttack, listAttacks, attacksThisRound, planRound };
+return { SITUATIONS, effectiveLevel, baseTHAC0, strengthMods, weaponAttacks, offHandAttacks, computeAttack, listAttacks, attacksThisRound, planRound };
 })();
 // ── rules/character ──
 __m["rules/character"] = (() => {
@@ -1369,6 +1415,15 @@ function migrateV1toV2(input) {
   const oldWeapons = d.__weapons || [];
   const oldScenarios = d.__scenarios || [];
 
+  // ── Weapon proficiencies, from the sheet's proficiency cards ──
+  const profCats = [...new Set((d.__wpnProfCards || []).map(c => guessCategory(c.name)).filter(Boolean))];
+  if (profCats.length) {
+    d.__weaponProficiencies = profCats;
+    flag('character', 'weapon-proficiencies', `Weapon proficiencies set to ${profCats.map(c => PHB_WEAPONS[c].name.replace(/\s*\(.*\)$/, '')).join(', ')} from your proficiency cards. Add any that are missing.`);
+  } else {
+    flag('character', 'weapon-proficiencies', 'Set which weapons this character is proficient in, so non-proficiency penalties apply.');
+  }
+
   // ── Weapons ──
   const weapons = oldWeapons.map(old => {
     const w = { id: old.id, name: old.name || '' };
@@ -1476,8 +1531,9 @@ function migrateV1toV2(input) {
     (weapon.attacks ||= []).push(attack);
     const oldT = oldScenarioTHAC0(d, sc, oldWeapon);
     const calc = computeAttack({ sheet: { ...d, __weapons: weapons }, weaponId: weapon.id, attackId: attack.id });
-    const racial = calc.lines.filter(l => l.kind === 'racial').reduce((s, l) => s + l.hit, 0);
-    const newT = calc.thac0 === null ? null : calc.thac0 + racial;
+    // Racial bonuses and proficiency penalties are v2's own rules, not part of the old hit mod
+    const ruled = calc.lines.filter(l => l.kind === 'racial' || l.kind === 'proficiency').reduce((s, l) => s + l.hit, 0);
+    const newT = calc.thac0 === null ? null : calc.thac0 + ruled;
     if (oldT !== null && newT !== null && newT !== oldT) {
       attack.mods.push({ label: 'From old sheet', hit: newT - oldT });
       flag('attack', sc.id, `"${sc.name || 'This attack'}" carries ${newT - oldT > 0 ? '+' : ''}${newT - oldT} to hit from the old sheet's hit mod. Replace it with named bonuses (e.g. Signature Weapon), which can add damage too.`);
@@ -1502,7 +1558,7 @@ return { guessCategory, migrateV1toV2 };
 __m["adapters/dm-helper"] = (() => {
 const {migrateV1toV2} = __m["rules/migrate"];
 const {resolveWeapon} = __m["rules/weapons"];
-const {computeAttack, weaponAttacks, effectiveLevel, baseTHAC0} = __m["rules/attacks"];
+const {computeAttack, weaponAttacks, offHandAttacks, effectiveLevel, baseTHAC0} = __m["rules/attacks"];
 const {armorClass, savingThrows, thiefSkills, proficiencyTargets} = __m["rules/character"];
 // ── SHEET → DM HELPER ───────────────────────────────────────────
 // Builds a character's entries for the DM Helper's config block
@@ -1578,7 +1634,11 @@ function toDMHelper(save, dmSettings = {}) {
 
     const grouped = attacks.filter(x => x.calc.hand === 'main' && !(x.def.mods || []).length);
     const custom = attacks.filter(x => x.calc.hand === 'main' && (x.def.mods || []).length);
-    const off = attacks.filter(x => x.calc.hand === 'off');
+    // Off-hand: the weapon's own off-hand attacks plus any the two-weapon rule gives it
+    const off = [
+      ...attacks.filter(x => x.calc.hand === 'off'),
+      ...offHandAttacks(sheet, raw).map(a => ({ def: a, calc: computeAttack({ sheet, weaponId: raw.id, attackId: a.id }) })),
+    ];
 
     if (grouped.length) {
       const byMode = {};

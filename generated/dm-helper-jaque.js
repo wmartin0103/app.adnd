@@ -70,6 +70,39 @@ Object.assign(CHARACTERS, {
     },
     "secondary": [
       {
+        "name": "Off-hand Superior Dagger",
+        "modes": {
+          "melee": {
+            "thac0": 15
+          },
+          "thrown": {
+            "thac0": 15
+          }
+        }
+      },
+      {
+        "name": "Off-hand Leprechaun Dagger",
+        "modes": {
+          "melee": {
+            "thac0": 15
+          },
+          "thrown": {
+            "thac0": 15
+          }
+        }
+      },
+      {
+        "name": "Off-hand Wave Dagger",
+        "modes": {
+          "melee": {
+            "thac0": 16
+          },
+          "thrown": {
+            "thac0": 16
+          }
+        }
+      },
+      {
         "name": "Off-hand Dagger x6",
         "modes": {
           "melee": {
@@ -174,8 +207,11 @@ Object.assign(SAVES, {
 });
 Object.assign(DAMAGE, {
   "Jaque|Superior Dagger": {"sm":"1d4+3","l":"1d3+3"},
+  "Jaque|Off-hand Superior Dagger": {"sm":"1d4+3","l":"1d3+3"},
   "Jaque|Leprechaun Dagger": {"sm":"1d4+2","l":"1d3+2"},
+  "Jaque|Off-hand Leprechaun Dagger": {"sm":"1d4+2","l":"1d3+2"},
   "Jaque|Wave Dagger": {"sm":"1d4+2","l":"1d3+2"},
+  "Jaque|Off-hand Wave Dagger": {"sm":"1d4+2","l":"1d3+2"},
   "Jaque|Dagger x6, thrown": {"sm":"1d4+2","l":"1d3+2"},
   "Jaque|Trick Throw": {"sm":"1d4+2","l":"1d3+2"},
   "Jaque|Off-hand Dagger x6": {"sm":"1d4+2","l":"1d3+2"},
@@ -184,8 +220,11 @@ Object.assign(DAMAGE, {
 });
 Object.assign(CRIT_TYPES, {
   "Superior Dagger": "P",
+  "Off-hand Superior Dagger": "P",
   "Leprechaun Dagger": "P",
+  "Off-hand Leprechaun Dagger": "P",
   "Wave Dagger": "P",
+  "Off-hand Wave Dagger": "P",
   "Dagger x6, thrown": "P",
   "Trick Throw": "P",
   "Off-hand Dagger x6": "P",
@@ -194,8 +233,11 @@ Object.assign(CRIT_TYPES, {
 });
 Object.assign(WEAPON_MATERIAL, {
   "Superior Dagger": {"m":"metal"},
+  "Off-hand Superior Dagger": {"m":"metal"},
   "Leprechaun Dagger": {"m":"metal"},
+  "Off-hand Leprechaun Dagger": {"m":"metal"},
   "Wave Dagger": {"m":"metal"},
+  "Off-hand Wave Dagger": {"m":"metal"},
   "Dagger x6, thrown": {"m":"metal"},
   "Trick Throw": {"m":"metal"},
   "Off-hand Dagger x6": {"m":"metal"},
@@ -205,5 +247,6 @@ Object.assign(WEAPON_MATERIAL, {
 /* NEEDS REVIEW
    Jaque:
      - Leprechaun Dagger: Weapon has unidentified properties
+     - Off-hand Leprechaun Dagger: Weapon has unidentified properties
      - Intimidation: Adjustment "*" isn't a number; target uses the bare ability score
 */

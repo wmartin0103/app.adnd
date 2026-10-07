@@ -102,5 +102,11 @@ test('a weapon with no recognizable name asks for its base weapon', () => {
   assert.deepEqual(v2.__weapons[0].damage, { sm: '2d4', l: '1d10' });
   assert.equal(v2.__weapons[0].speed, 6);
   assert.deepEqual(listAttacks({ sheet: v2 }).map(x => x.mode), ['melee']);
-  assert.match(v2.__review[0].message, /Pick the PHB weapon "Maul"/);
+  assert.ok(v2.__review.some(r => /Pick the PHB weapon "Maul"/.test(r.message)));
+});
+
+test('weapon proficiencies come from the old proficiency cards, flagged to confirm', () => {
+  const v2 = migrateV1toV2(jaqueV1);
+  assert.deepEqual(v2.__weaponProficiencies, ['dagger']);
+  assert.ok(v2.__review.some(r => r.target.id === 'weapon-proficiencies' && /Dagger/.test(r.message)));
 });
