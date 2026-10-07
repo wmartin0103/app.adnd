@@ -43,7 +43,9 @@ export function baseTHAC0(group, level) {
 // Strength hit/dmg, including exceptional strength (18/xx) when the sheet has it.
 export function strengthMods(sheet) {
   const str = num(sheet.str);
-  const pct = num(sheet['str-pct']);
+  // "00" (or 100) is 18/00, matching the sheet's exceptional strength field.
+  const rawPct = String(sheet['str-pct'] ?? '').trim();
+  const pct = rawPct === '00' ? 100 : Math.min(num(rawPct), 100);
   if (str === 18 && pct > 0) {
     const row = STR_EXCEPTIONAL.find(r => pct <= r.upTo) || STR_EXCEPTIONAL.at(-1);
     return { hit: row.hit, dmg: row.dmg, label: `Strength 18/${pct === 100 ? '00' : String(pct).padStart(2, '0')}` };

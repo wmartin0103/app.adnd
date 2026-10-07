@@ -302,6 +302,25 @@
     .ability-score-input::-webkit-outer-spin-button,
     .ability-score-input::-webkit-inner-spin-button { -webkit-appearance: none; }
 
+    .ability-pct {
+      display: flex;
+      align-items: baseline;
+      gap: 0.1rem;
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      color: var(--ink-muted);
+    }
+    .ability-pct[hidden] { display: none; }
+    .ability-pct-input {
+      font: inherit;
+      color: var(--ink);
+      width: 3ch;
+      text-align: left;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--rule);
+    }
+
     .ability-divider {
       width: 100%;
       height: 1px;
@@ -2841,6 +2860,33 @@
       25: { hit:  7, dmg: 14, weight: 1535,max:1750,open: '20',  bb: '99%' },
     };
 
+    // Exceptional strength (18/01–18/00, warriors only). `upTo` is the top of
+    // each percentile bracket; 100 stands for 18/00.
+    const STR_EXCEPTIONAL = [
+      { upTo: 50,  hit: 1, dmg: 3, weight: 135, max: 280, open: '12',    bb: '20%' },
+      { upTo: 75,  hit: 2, dmg: 3, weight: 160, max: 305, open: '13',    bb: '25%' },
+      { upTo: 90,  hit: 2, dmg: 4, weight: 185, max: 330, open: '14',    bb: '30%' },
+      { upTo: 99,  hit: 2, dmg: 5, weight: 235, max: 380, open: '15(3)', bb: '35%' },
+      { upTo: 100, hit: 3, dmg: 6, weight: 335, max: 480, open: '16(6)', bb: '40%' },
+    ];
+
+    // Percentile from the exceptional strength field: "00" or "100" is 18/00,
+    // blank is none.
+    function getStrPct() {
+      const raw = (document.getElementById('ability-str-pct')?.value || '').trim();
+      if (raw === '00' || raw === '100') return 100;
+      const n = parseInt(raw, 10);
+      return n >= 1 && n <= 99 ? n : 0;
+    }
+
+    // The Strength row in effect, including exceptional strength at 18.
+    function getStrRow() {
+      const score = parseInt(document.getElementById('ability-str').value) || 0;
+      const pct = getStrPct();
+      if (score === 18 && pct > 0) return STR_EXCEPTIONAL.find(r => pct <= r.upTo);
+      return STR_TABLE[score];
+    }
+
     const DEX_TABLE = {
       1:  { reaction: -6, missile: -6, defense: +5 },
       2:  { reaction: -4, missile: -4, defense: +5 },
@@ -3124,6 +3170,35 @@
         card.appendChild(nameEl);
         card.appendChild(scoreLabel);
         card.appendChild(scoreInput);
+
+        // Exceptional strength: 18/xx, shown only when STR is 18
+        if (ability.id === 'str') {
+          const pctWrap = document.createElement('div');
+          pctWrap.id = 'ability-str-pct-wrap';
+          pctWrap.className = 'ability-pct';
+          pctWrap.hidden = true;
+
+          const pctLabel = document.createElement('label');
+          pctLabel.htmlFor = 'ability-str-pct';
+          pctLabel.textContent = '18/';
+          pctLabel.title = 'Exceptional strength (warriors only). 01–99, or 00 for 18/00. Leave blank for none.';
+
+          const pctInput = document.createElement('input');
+          pctInput.type = 'text';
+          pctInput.inputMode = 'numeric';
+          pctInput.maxLength = 3;
+          pctInput.id = 'ability-str-pct';
+          pctInput.className = 'ability-pct-input';
+          pctInput.placeholder = '—';
+          pctInput.dataset.save = 'str-pct';
+          pctInput.dataset.ability = 'str';
+          pctInput.setAttribute('aria-label', 'Exceptional strength percentile (warriors only; 00 for 18/00)');
+
+          pctWrap.appendChild(pctLabel);
+          pctWrap.appendChild(pctInput);
+          card.appendChild(pctWrap);
+        }
+
         card.appendChild(divider);
         card.appendChild(modsEl);
         grid.appendChild(card);
@@ -3174,7 +3249,13 @@
       const ability = ABILITIES.find(a => a.id === abilityId);
       if (!ability) return;
 
-      const tableRow = ability.table[score];
+      const tableRow = abilityId === 'str' ? getStrRow() : ability.table[score];
+
+      // The exceptional strength field only appears at 18
+      if (abilityId === 'str') {
+        const pctWrap = document.getElementById('ability-str-pct-wrap');
+        if (pctWrap) pctWrap.hidden = score !== 18;
+      }
 
       ability.mods.forEach(mod => {
         const el = document.getElementById(`mod-${abilityId}-${mod.key}`);
@@ -3202,8 +3283,7 @@
     function updateCombatFields() {
       const dexScore = parseInt(document.getElementById('ability-dex').value) || 0;
       const dexRow   = DEX_TABLE[dexScore];
-      const strScore = parseInt(document.getElementById('ability-str').value) || 0;
-      const strRow   = STR_TABLE[strScore];
+      const strRow   = getStrRow();
 
 
       // ── Missile Attack Adj. (DEX missile) ───────────────────
@@ -3274,9 +3354,9 @@
       priest: {
         label: 'Priest',
         sublabel: 'Cleric, Druid, Shaman',
-        // Source: PHB Table 53. Improves by 2 every 2 levels.
+        // Source: PHB Table 53. Improves by 2 every 3 levels.
         calc: (level) => {
-          const t = [20,20,18,18,16,16,14,14,12,12,10,10,8,8,6,6,5,5,4,4];
+          const t = [20,20,20,18,18,18,16,16,16,14,14,14,12,12,12,10,10,10,8,8];
           return t[Math.min(Math.max(level, 1), 20) - 1];
         },
       },
@@ -3708,8 +3788,7 @@
       const baseTHAC0 = group.calc(level);
 
       // Pull STR hit adjustment from the ability score table
-      const strScore = parseInt(document.getElementById('ability-str').value) || 0;
-      const strRow   = STR_TABLE[strScore];
+      const strRow   = getStrRow();
       const strAdj   = strRow ? strRow.hit : 0;
 
       // Pull linked weapon hit adjustment if any
@@ -3720,6 +3799,14 @@
           const match = wpn.hitAdj.match(/[+-]?\d+/);
           if (match) weaponHitAdj = parseInt(match[0]);
         }
+      }
+
+      // Racial weapon bonus (e.g. elves +1 with swords and bows), only on
+      // weapons that qualify
+      let racialAdj = 0;
+      if (scenario.weaponId) {
+        const wpn = weapons.find(w => w.id === scenario.weaponId);
+        if (wpn && wpn.name) racialAdj = getRacialWeaponBonus(wpn.name, { forAttack: true });
       }
 
       // Off-hand penalty (positive number entered by user = penalty, so we add it as negative)
@@ -3740,7 +3827,7 @@
       }
 
       // In 2nd Ed., a positive hit adj. LOWERS THAC0 (improves it).
-      return baseTHAC0 - strAdj - weaponHitAdj + offHandAdj - hitModAdj;
+      return baseTHAC0 - strAdj - weaponHitAdj - racialAdj + offHandAdj - hitModAdj;
     }
 
     // Given a THAC0, return what you need to roll on a d20 to hit each AC.
@@ -4099,8 +4186,7 @@
           ];
 
           // Show STR hit adj if non-zero
-          const strScore = parseInt(document.getElementById('ability-str').value) || 0;
-          const strRow = STR_TABLE[strScore];
+          const strRow = getStrRow();
           if (strRow && strRow.hit !== 0) {
             items.push({ label: 'STR Adj.', value: strRow.hit > 0 ? `+${strRow.hit}` : strRow.hit });
           }
@@ -4109,6 +4195,8 @@
           if (scenario.weaponId) {
             const wpn = weapons.find(w => w.id === scenario.weaponId);
             if (wpn && wpn.hitAdj) items.push({ label: 'Wpn Hit', value: wpn.hitAdj });
+            const racial = wpn && wpn.name ? getRacialWeaponBonus(wpn.name, { forAttack: true }) : 0;
+            if (racial) items.push({ label: 'Racial', value: racial > 0 ? `+${racial}` : racial });
           }
 
           // Off-hand penalty
@@ -5460,7 +5548,10 @@
     // Usage (from weapons section):
     //   const bonus = getRacialWeaponBonus('long sword'); // returns 1 for Elves
 
-    function getRacialWeaponBonus(weaponName) {
+    // opts.forAttack: when calculating an attack's THAC0, skip the "thrown"
+    // match. Scenarios don't record melee vs. thrown, so a dagger could be
+    // either, and the bonus must only apply to weapons that always qualify.
+    function getRacialWeaponBonus(weaponName, opts = {}) {
       const raceGroup = document.getElementById('char-race-group')?.value || 'human';
       const traits    = RACE_TRAITS[raceGroup] || [];
       const name      = weaponName.toLowerCase().trim();
@@ -5472,6 +5563,7 @@
         if (!state.active) return; // player has toggled this trait off
         const matches = trait.weaponBonus.weapons.some(w => {
           // 'thrown' is a category — match if weapon name contains 'thrown' or is a thrown type
+          if (w === 'thrown' && opts.forAttack) return false;
           if (w === 'thrown') return name.includes('thrown') || name.includes('javelin')
             || name.includes('dart') || name.includes('dagger') || name.includes('axe, hand');
           return name.includes(w.toLowerCase());
@@ -6937,7 +7029,8 @@
 
       // Was it an ability score?
       if (target.dataset.ability) {
-        const score = parseInt(target.value) || 0;
+        const scoreEl = document.getElementById(`ability-${target.dataset.ability}`);
+        const score = parseInt(scoreEl.value) || 0;
         updateModifiers(target.dataset.ability, score);
         updateCombatFields();
         // Ability scores affect XP bonus eligibility — refresh indicators

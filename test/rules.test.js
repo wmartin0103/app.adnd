@@ -56,16 +56,17 @@ test('THAC0 progressions follow the PHB', () => {
 });
 
 test('exceptional strength', () => {
+  assert.deepEqual(strengthMods({ str: '18', 'str-pct': '00' }), { hit: 3, dmg: 6, label: 'Strength 18/00' });
   assert.deepEqual(strengthMods({ str: '18', 'str-pct': '100' }), { hit: 3, dmg: 6, label: 'Strength 18/00' });
   assert.deepEqual(strengthMods({ str: '18', 'str-pct': '67' }), { hit: 2, dmg: 3, label: 'Strength 18/67' });
   assert.deepEqual(strengthMods({ str: '13' }), { hit: 0, dmg: 0, label: 'Strength 13' });
 });
 
 // ── Jaque ──
-test('Jaque, Superior Dagger melee: THAC0 13, 1d4+3 (matches the legacy sheet)', () => {
+test('Jaque, Superior Dagger melee: THAC0 13, 1d4+3 / 1d3+3 (PHB damage vs L)', () => {
   const a = computeAttack({ sheet: jaque, weaponId: 'wpn-1', attackId: 'atk-1' });
   assert.equal(a.thac0, 13);
-  assert.deepEqual(a.damage, { sm: '1d4+3', l: '1d4+3' });
+  assert.deepEqual(a.damage, { sm: '1d4+3', l: '1d3+3' });
   assert.equal(a.speed, 2);
   assert.deepEqual(a.damageTypes, ['P']);
   assert.equal(a.attacksPerRound, '3/2');
@@ -78,10 +79,10 @@ test('Jaque, Superior Dagger melee: THAC0 13, 1d4+3 (matches the legacy sheet)',
   // Precision. To be settled at the table; the breakdown makes the gap visible.
 });
 
-test('Jaque, thrown Dagger x6: THAC0 14, 1d4+2 (matches both legacy tools)', () => {
+test('Jaque, thrown Dagger x6: THAC0 14, 1d4+2 / 1d3+2', () => {
   const a = computeAttack({ sheet: jaque, weaponId: 'wpn-5', attackId: 'atk-5' });
   assert.equal(a.thac0, 14);
-  assert.deepEqual(a.damage, { sm: '1d4+2', l: '1d4+2' });
+  assert.deepEqual(a.damage, { sm: '1d4+2', l: '1d3+2' });
   assert.equal(a.attacksPerRound, '3/1');
   assert.deepEqual(a.range, { s: 1, m: 2, l: 3 });
 });

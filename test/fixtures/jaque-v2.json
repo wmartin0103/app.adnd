@@ -89,10 +89,6 @@
       "id": "wpn-1",
       "name": "Superior Dagger",
       "basedOn": "dagger",
-      "damage": {
-        "sm": "1d4",
-        "l": "1d4"
-      },
       "hitBonus": 1,
       "dmgBonus": 1,
       "attacks": [
@@ -113,10 +109,6 @@
       "id": "wpn-3",
       "name": "Leprechaun Dagger",
       "basedOn": "dagger",
-      "damage": {
-        "sm": "1d4",
-        "l": "1d4"
-      },
       "hitBonus": 1,
       "unknown": true,
       "notes": "\"This dagger is nice\" | old dmg adj: ?"
@@ -125,10 +117,6 @@
       "id": "wpn-4",
       "name": "Wave Dagger",
       "basedOn": "dagger",
-      "damage": {
-        "sm": "1d4",
-        "l": "1d4"
-      },
       "conditional": [
         {
           "label": "vs Tiny/Small",
@@ -142,10 +130,6 @@
       "id": "wpn-5",
       "name": "Dagger x6",
       "basedOn": "dagger",
-      "damage": {
-        "sm": "1d4",
-        "l": "1d4"
-      },
       "attacks": [
         {
           "id": "atk-5",
