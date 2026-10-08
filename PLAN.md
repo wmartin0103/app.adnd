@@ -361,8 +361,11 @@ Helper pick from (see section 9).
 10. **Declaring actions in the app (open).** Spoken declarations are part of
     the session's community; the app shouldn't replace them. No declare/lock
     step for now; revisit once the Combat tab takes shape.
-11. **Party visibility in Combat (open):** exact HP, or a health state
-    (healthy / wounded / badly hurt / down)? Conditions? Prototype shows both.
+11. ~~**Party visibility in Combat.**~~ **Decided:** players see each other's
+    exact HP and conditions.
+12. **Combat is a quick-reference helper (decided):** combat material and actions
+    at a glance (attacks, party, foes, saves, abilities, ready spells, checks,
+    rolls), supporting the spoken game rather than replacing it.
 
 ---
 

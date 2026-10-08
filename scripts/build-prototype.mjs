@@ -12,7 +12,7 @@ const rules = bundle(RULES_FILES, {
   expose: {
     Rules: ['rules/attacks', ['computeAttack', 'listAttacks', 'weaponAttacks', 'planRound', 'attacksThisRound', 'offHandAttacks', 'effectiveLevel', 'SITUATIONS']],
     Weapons: ['rules/weapons', ['resolveWeapon', 'PHB_WEAPONS']],
-    Character: ['rules/character', ['armorClass']],
+    Character: ['rules/character', ['armorClass', 'savingThrows', 'proficiencyTargets']],
     Migrate: ['rules/migrate', ['migrateV1toV2']],
   },
 });

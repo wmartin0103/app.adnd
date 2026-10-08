@@ -140,6 +140,19 @@ details.math summary { cursor: pointer; color: var(--accent); font-size: 0.9rem;
 .person .pname { font-weight: 600; }
 .person .pmeta { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px; }
 .person .hp { display: inline-flex; gap: 6px; align-items: center; font-family: var(--font-data); font-size: 0.85rem; }
+.qr { border-top: 1px solid var(--rule); padding-top: 6px; }
+.qr:first-of-type { border-top: none; padding-top: 0; }
+.qr > summary { cursor: pointer; font-family: var(--font-display); font-size: 0.8rem; letter-spacing: 0.06em; display: flex; gap: 8px; align-items: baseline; }
+.qr > summary { list-style: none; }
+.qr > summary::-webkit-details-marker { display: none; }
+.qr > summary::before { content: '▸'; color: var(--accent); transition: transform 0.15s; display: inline-block; }
+.qr[open] > summary::before { transform: rotate(90deg); }
+.qr > summary .muted { font-family: var(--font-body); font-size: 0.85rem; letter-spacing: 0; }
+.qr-body { display: grid; gap: 2px; padding: 6px 0 2px; }
+.qr-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: baseline; font-size: 0.93rem; padding: 2px 0; border-bottom: 1px dotted var(--rule); }
+.qr-ab { font-size: 0.93rem; padding: 3px 0; border-bottom: 1px dotted var(--rule); }
+.qr-ab summary { cursor: pointer; }
+.qr-ab p { margin: 4px 0 4px 1em; font-size: 0.9rem; color: var(--ink-muted); }
 .log { display: grid; gap: 3px; font-size: 0.9rem; }
 .log div { display: flex; justify-content: space-between; gap: 8px; }
 .demo { background: var(--sunk); border-radius: var(--radius); padding: 8px 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 0.9rem; }
@@ -163,7 +176,6 @@ footer { color: var(--ink-faint); font-size: 0.88rem; }
   <div class="controls" role="group" aria-label="Prototype controls">
     <span><span class="ctl-label">View as</span><span class="seg" id="role"></span></span>
     <span><span class="ctl-label">Width</span><span class="seg" id="widths"></span></span>
-    <span><span class="ctl-label">Party HP shows</span><span class="seg" id="partyvis"></span></span>
     <label class="toggle"><input type="checkbox" id="notes-toggle" checked> Show design notes</label>
   </div>
 
@@ -1408,7 +1420,7 @@ return { toDMHelper, formatDMHelperConfig };
 })();
 window.Rules = { computeAttack: __m["rules/attacks"].computeAttack, listAttacks: __m["rules/attacks"].listAttacks, weaponAttacks: __m["rules/attacks"].weaponAttacks, planRound: __m["rules/attacks"].planRound, attacksThisRound: __m["rules/attacks"].attacksThisRound, offHandAttacks: __m["rules/attacks"].offHandAttacks, effectiveLevel: __m["rules/attacks"].effectiveLevel, SITUATIONS: __m["rules/attacks"].SITUATIONS };
 window.Weapons = { resolveWeapon: __m["rules/weapons"].resolveWeapon, PHB_WEAPONS: __m["rules/weapons"].PHB_WEAPONS };
-window.Character = { armorClass: __m["rules/character"].armorClass };
+window.Character = { armorClass: __m["rules/character"].armorClass, savingThrows: __m["rules/character"].savingThrows, proficiencyTargets: __m["rules/character"].proficiencyTargets };
 window.Migrate = { migrateV1toV2: __m["rules/migrate"].migrateV1toV2 };
 })();
 </script>
@@ -2144,9 +2156,10 @@ const NOTES = [
   ['A', 'Three tabs, one character', 'Sheet is who your character is, Combat is what you do right now, and DM is the DM\'s workspace. The tabs share one character record, so they can\'t drift apart the way the separate tools did.'],
   ['B', 'The sheet stays the sheet', 'This is your existing character sheet, unchanged. Its weapons and scenarios sections get the extra fields the rules need (based-on weapon, melee/thrown, named bonuses, proficiencies) in their current layout, and its THAC0 math switches to the shared rules so it always matches Combat.'],
   ['C', 'Encounter at a glance', 'Round and initiative order for everyone: hidden foes don\'t appear, and a foe with hidden initiative shows "?". Whose turn it is is highlighted, and so is your place in the order.'],
-  ['D', 'Party and foes', 'The party\'s health, conditions and whose turn it is, so nobody has to ask "how hurt are you?" mid-fight. How much players see of each other is still open; use "Party HP shows" to compare exact HP with a health state. Foes show only what\'s visible on the battlefield, never AC.'],
+  ['D', 'Party and foes', 'Everyone\'s exact HP and conditions, so nobody has to ask "how hurt are you?" mid-fight. Foes show only what\'s visible on the battlefield, never AC.'],
+  ['I', 'Quick reference, not a second sheet', 'Saves, abilities, ready spells, and proficiency checks: the things you\'d otherwise flip to the sheet for mid-fight. Each section collapses; abilities show a one-line summary that expands to the full text from your sheet.'],
   ['E', 'Attack helper, no lock-in', 'Pick an attack and a target, flip the conditions, roll or type your die. It counts your attacks this round (3 thrown daggers + off-hand), and each roll lands in the shared log for everyone. You still say what you\'re doing out loud; whether the app should record a declaration is a question for later.'],
-  ['F', 'Your numbers come from the sheet', 'Ability scores, HP, AC, class and level are read from the Sheet tab. Change Jaque\'s Dex on the sheet and the THAC0s here change. Weapons and abilities come from the reviewed v2 data until the sheet\'s weapon fields are updated.'],
+  ['F', 'Your numbers come from the sheet', 'Ability scores, HP, AC, class and level, plus the abilities, spells and proficiencies in Quick reference, are read from the Sheet tab. Change Jaque\'s Dex on the sheet and the THAC0s here change. Weapons and abilities come from the reviewed v2 data until the sheet\'s weapon fields are updated.'],
   ['G', 'DM tab only for the DM', 'Switch "View as" to DM: a fourth tab appears with the real DM Helper, with Jaque already imported from his sheet. Players never get it, and in the cloud version the database enforces that, not just the interface.'],
   ['H', 'Built for a half-width window', 'Combat stacks into one column at half-window and puts party, foes and the log beside you at tablet width. Sheet and DM keep their own responsive layouts.'],
 ];
@@ -2166,7 +2179,7 @@ const FOES = [
 const ORDER = [['Orc 1', 5, 'foe'], ['Goroth', 7], ['Atteroak', 8], ['Jaque', 9, 'you'], ['Rifiyr', 10], ['Hanspeter', 12]];
 
 const S = {
-  role: 'player', tab: 'sheet', width: 720, partyVis: 'exact', notes: true,
+  role: 'player', tab: 'sheet', width: 720, notes: true,
   round: 3, turn: 0,
   toggles: { 'opt-1': '+1 hit' },
   pick: { weaponId: 'wpn-1', attackId: 'atk-2' }, off: false,
@@ -2176,7 +2189,7 @@ const S = {
 
 // ── The character Combat uses: ability scores, HP, AC, class from the Sheet tab;
 // weapons and abilities from the v2 data (until the sheet's weapon fields exist). ──
-const SHEET_FIELDS = ['name', 'str', 'str-pct', 'dex', 'con', 'int', 'wis', 'cha', 'ac', 'hp-current', 'hp-max', 'race-group', '__classes', '__traitState', '__nwps'];
+const SHEET_FIELDS = ['name', 'str', 'str-pct', 'dex', 'con', 'int', 'wis', 'cha', 'ac', 'hp-current', 'hp-max', 'race-group', '__classes', '__traitState', '__nwps', '__abilitiesCards', '__spells', '__saveMods'];
 let sheetLive = null;
 function character() {
   const c = JSON.parse(JSON.stringify(JAQUE_V2));
@@ -2218,7 +2231,6 @@ function renderControls() {
   const seg = (host, items, cur, on) => { $(host).innerHTML = items.map(([k, l]) => `<button type="button" data-k="${k}" aria-pressed="${cur === k}">${l}</button>`).join(''); $(host).querySelectorAll('button').forEach(b => b.onclick = () => on(b.dataset.k)); };
   seg('role', [['player', "Jaque's player"], ['dm', 'DM']], S.role, k => { S.role = k; if (k === 'player' && S.tab === 'dm') S.tab = 'sheet'; render(); });
   seg('widths', WIDTHS.map(([l, w]) => [String(w), `${l} <span class="num" style="font-size:.75rem">${w}</span>`]), String(S.width), k => { S.width = +k; render(); });
-  seg('partyvis', [['exact', 'Exact HP'], ['state', 'Health state']], S.partyVis, k => { S.partyVis = k; render(); });
   $('frame').style.maxWidth = S.width + 'px';
   $('frame').classList.toggle('show-notes', S.notes);
   $('frame-label').textContent = `${S.role === 'dm' ? "DM's" : "Jaque's player's"} browser · ${WIDTHS.find(w => w[1] === S.width)[0].toLowerCase()} (${S.width}px)`;
@@ -2333,12 +2345,16 @@ function renderCombat() {
         <section class="panel" aria-labelledby="h-party">
           <div class="panel-head"><h2 id="h-party">Party ${pin('D')}</h2></div>
           <div class="people">${PARTY.map(p => { const [st, tone] = healthState(p.hp); return `<div class="person"><span class="pname">${esc(p.name)}</span>
-            <span class="hp">${S.partyVis === 'exact' ? `${hpBar(p.hp)} ${p.hp[0]}/${p.hp[1]}` : `<span class="tag ${tone}">${st}</span>`}</span>
+            <span class="hp">${hpBar(p.hp)} ${p.hp[0]}/${p.hp[1]}${p.hp[0] <= 0 ? ` <span class="tag ${tone}">${st}</span>` : ''}</span>
             ${p.conds.length ? `<span class="pmeta">${p.conds.map(x => `<span class="tag">${esc(x)}</span>`).join('')}</span>` : ''}</div>`; }).join('')}</div>
         </section>
         <section class="panel" aria-labelledby="h-foes">
           <div class="panel-head"><h2 id="h-foes">Foes</h2><span class="muted" style="font-size:.85rem">What you can see</span></div>
           <div class="people">${visibleFoes.map(f => `<div class="person"><span class="pname">${esc(f.name)}</span><span class="tag ${f.state === 'bloodied' ? 'bad' : ''}">${esc(f.state)}</span></div>`).join('')}</div>
+        </section>
+        <section class="panel" aria-labelledby="h-ref">
+          <div class="panel-head"><h2 id="h-ref">Quick reference ${pin('I')}</h2><span class="muted" style="font-size:.85rem">From your sheet</span></div>
+          ${quickRef(c)}
         </section>
         <section class="panel" aria-labelledby="h-log">
           <div class="panel-head"><h2 id="h-log">Dice log</h2><span class="muted" style="font-size:.85rem">Everyone sees this</span></div>
@@ -2349,6 +2365,26 @@ function renderCombat() {
     <div class="demo"><b>Demo</b><button type="button" class="btn quiet" id="next-turn">Next turn</button><button type="button" class="btn quiet" id="new-round">New round</button><span class="muted">stand in for the DM</span></div>
   </div>`;
   wireCombat(c, cur, offCalc, count);
+}
+
+// One-line summary: the first sentence (or the first ~110 characters)
+function firstLine(text) {
+  const t = String(text || '').replace(/\s+/g, ' ').trim();
+  const m = t.match(/^(.{20,140}?[.!?])(\s|$)/);
+  const line = m ? m[1] : t;
+  return line.length > 140 ? line.slice(0, 137).trimEnd() + '…' : line;
+}
+function quickRef(c) {
+  const sv = Character.savingThrows(c);
+  const SAVE_LABEL = { PPD: 'Paralysis, poison, death', RSW: 'Rod, staff, wand', PP: 'Petrification, polymorph', BW: 'Breath weapon', Spell: 'Spell' };
+  const saves = sv ? Object.entries(sv.base).map(([k, v]) => `<div class="qr-row"><span>${SAVE_LABEL[k]}</span><span class="num">${v}</span></div>`).join('') + (sv.notes.length ? `<p class="muted" style="font-size:.85rem">${sv.notes.map(esc).join('; ')}</p>` : '') : '';
+  const abilities = (c.__abilitiesCards || []).map(a => `<details class="qr-ab"><summary><b>${esc(a.name)}</b> <span class="muted">${esc(firstLine(a.desc))}</span></summary><p>${esc(a.desc).replace(/\n/g, '<br>')}</p></details>`).join('');
+  const spells = (c.__spells || []).filter(x => x.isMemorized).map(x => `<div class="qr-row"><span>${esc(x.name)} <span class="tag">L${x.level}</span></span><span class="muted" style="font-size:.85rem;text-align:right">${esc(x.notes || '')}</span></div>`).join('');
+  const checks = Character.proficiencyTargets(c).map(p => `<div class="qr-row"><span>${esc(p.name)}</span><span class="num">${p.target}</span></div>`).join('');
+  return `<details class="qr" open><summary>Saving throws <span class="muted">roll at or above</span></summary><div class="qr-body">${saves}</div></details>
+    <details class="qr"><summary>Abilities <span class="muted">${(c.__abilitiesCards || []).length}</span></summary><div class="qr-body">${abilities || '<span class="muted">None on the sheet</span>'}</div></details>
+    <details class="qr"><summary>Spells ready <span class="muted">${(c.__spells || []).filter(x => x.isMemorized).length}</span></summary><div class="qr-body">${spells || '<span class="muted">None memorized</span>'}</div></details>
+    <details class="qr"><summary>Proficiency checks <span class="muted">roll at or under</span></summary><div class="qr-body">${checks}</div></details>`;
 }
 
 function wireCombat(c, cur, offCalc, count) {
