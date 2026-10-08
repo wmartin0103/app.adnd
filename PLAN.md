@@ -370,6 +370,9 @@ Helper pick from (see section 9).
     updates live. Players' notes on foes are private. A foe that goes down
     stays listed (greyed, last, notes kept) and leaves the initiative order;
     the DM can remove a foe for good, and clearing the encounter removes all.
+14. **Players change their own HP (decided):** Damage / Heal in the Combat tab
+    writes to the character record and the shared log, so the DM doesn't
+    have to track party HP and encounters stay spoken.
 
 ---
 
