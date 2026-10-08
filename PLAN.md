@@ -427,6 +427,9 @@ can grow over time.
 - [x] Repo made private, then files committed to `legacy/` and `samples/`
 - [x] Combat data spec drafted (`docs/combat-data-spec.md`)
 - [x] Combat data spec: first round of UX answers folded in
+- [x] Sheet: weapon settings gear (based on, melee/thrown, magic +); Combat Scenarios and Enemy Tracker removed (data kept in saves); THAC0 card shows base from class and level
+- [x] Combat tab: weapon list read only from the sheet's Weapons; roll-needed-by-AC table; your own notes on each target
+- [ ] Combat effects on ability cards (so bonuses and stances come from the sheet, not the v2 fixture)
 - [ ] Combat data spec: remaining questions in its section 8
 - [ ] Saves from the other active players
 - [ ] Answers to section 8

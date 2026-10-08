@@ -130,6 +130,26 @@ select.pick { border: 1px solid var(--rule); border-radius: var(--radius); backg
 .btn.secondary { background: var(--surface); color: var(--accent); }
 .btn.quiet { background: transparent; border-color: var(--rule); color: var(--ink-muted); }
 .linkbtn { background: none; border: none; padding: 0; color: var(--accent); text-decoration: underline; text-underline-offset: 2px; font-size: 0.92rem; }
+.acm { overflow-x: auto; border: 1px solid var(--rule); border-radius: var(--radius); }
+.acm:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.acm table { border-collapse: collapse; width: 100%; min-width: 560px; font-family: var(--font-data); font-size: 0.8rem; text-align: center; }
+.acm caption { text-align: left; font-family: var(--font-body); font-size: 0.85rem; color: var(--ink-muted); padding: 4px 8px 2px; }
+.acm th, .acm td { padding: 3px 2px; border-top: 1px solid var(--rule); }
+.acm thead th { color: var(--ink-muted); font-weight: 400; }
+.acm th[scope="row"] { text-align: left; padding-left: 8px; font-family: var(--font-body); font-weight: 600; white-space: nowrap; position: sticky; left: 0; background: var(--surface); }
+.acm td.easy { color: var(--good); font-weight: 600; }
+.acm td.mid { color: var(--gold); font-weight: 600; }
+.acm td.hard { color: var(--accent); font-weight: 600; }
+.acm td.max { color: var(--ink-faint); }
+.note-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--note); margin-left: 6px; vertical-align: 1px; }
+.chip[aria-pressed="true"] .note-dot { background: var(--surface); }
+.tnote { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; background: var(--note-soft); border-radius: var(--radius); padding: 6px 8px; font-size: 0.92rem; }
+.tnote label { font-weight: 600; flex-basis: 100%; }
+.tnote textarea { flex: 1 1 100%; font: inherit; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--surface); color: var(--ink); padding: 4px 6px; resize: vertical; }
+.tnote-text { flex: 1 1 12rem; }
+.tnote-actions { display: flex; gap: 6px; }
+.foe-note { flex-basis: 100%; font-size: 0.85rem; color: var(--ink-muted); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 details.math summary { cursor: pointer; color: var(--accent); font-size: 0.9rem; }
 .math table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
 .math td { padding: 2px 6px; }
@@ -226,12 +246,12 @@ const ICON = {
 
 const NOTES = [
   ['A', 'Three tabs, one character', 'Sheet is who your character is, Combat is what you do right now, and DM is the DM\'s workspace. The tabs share one character record, so they can\'t drift apart the way the separate tools did.'],
-  ['B', 'The sheet stays the sheet', 'This is your existing character sheet, unchanged. Its weapons and scenarios sections get the extra fields the rules need (based-on weapon, melee/thrown, named bonuses, proficiencies) in their current layout, and its THAC0 math switches to the shared rules so it always matches Combat.'],
+  ['B', 'The sheet stays the sheet', 'This is your existing character sheet, unchanged. Its Weapons rows gain a settings gear (based-on weapon, melee/thrown, magic +). Combat Scenarios and the Enemy Tracker are gone from it: Combat covers both. Its THAC0 card shows the base from class and level.'],
   ['C', 'Encounter at a glance', 'Round and initiative order for everyone: hidden foes don\'t appear, and a foe with hidden initiative shows "?". Whose turn it is is highlighted, and so is your place in the order.'],
-  ['D', 'Party and foes', 'Everyone\'s exact HP and conditions, so nobody has to ask "how hurt are you?" mid-fight. Foes show only what\'s visible on the battlefield, never AC.'],
+  ['D', 'Party and foes', 'Everyone\'s exact HP and conditions, so nobody has to ask "how hurt are you?" mid-fight. Foes show only what\'s visible on the battlefield, never AC, plus your own notes on them (they replace the sheet\'s Enemy Tracker).'],
   ['I', 'Quick reference, not a second sheet', 'Saves, abilities, ready spells, and proficiency checks: the things you\'d otherwise flip to the sheet for mid-fight. Each section collapses; abilities show a one-line summary that expands to the full text from your sheet.'],
-  ['E', 'Attack helper, no lock-in', 'Pick an attack and a target, flip the conditions, roll or type your die. It counts your attacks this round (3 thrown daggers + off-hand), and each roll lands in the shared log for everyone. You still say what you\'re doing out loud; whether the app should record a declaration is a question for later.'],
-  ['F', 'Your numbers come from the sheet', 'Ability scores, HP, AC, class and level, plus the abilities, spells and proficiencies in Quick reference, are read from the Sheet tab. Change Jaque\'s Dex on the sheet and the THAC0s here change. Weapons and abilities come from the reviewed v2 data until the sheet\'s weapon fields are updated.'],
+  ['E', 'Attack helper, no lock-in', 'Pick an attack and a target, flip the conditions, roll or type your die. The table shows the roll you need against each AC, for the main and off-hand attack. Pick a target to see or add your notes on it. It counts your attacks this round (3 thrown daggers + off-hand), and each roll lands in the shared log for everyone. You still say what you\'re doing out loud; whether the app should record a declaration is a question for later.'],
+  ['F', 'Your numbers come from the sheet', 'Ability scores, HP, AC, class and level, plus the abilities, spells and proficiencies in Quick reference, are read from the Sheet tab. Change Jaque\'s Dex on the sheet and the THAC0s here change. The weapon list is the sheet\'s Weapons section and nothing else: one entry per weapon and way it\'s used (melee, thrown). Bonuses and stances (Signature Weapon, Bladesong…) still come from the reviewed v2 data until ability cards carry their combat effects.'],
   ['G', 'DM tab only for the DM', 'Switch "View as" to DM: a fourth tab appears with the real DM Helper, with Jaque already imported from his sheet. Players never get it, and in the cloud version the database enforces that, not just the interface.'],
   ['H', 'Built for a half-width window', 'Combat stacks into one column at half-window and puts party, foes and the log beside you at tablet width. Sheet and DM keep their own responsive layouts.'],
 ];
@@ -254,19 +274,25 @@ const S = {
   role: 'player', tab: 'sheet', width: 720, notes: true,
   round: 3, turn: 0,
   toggles: { 'opt-1': '+1 hit' },
-  pick: { weaponId: 'wpn-1', attackId: 'atk-2' }, off: false,
+  pick: { weaponId: 'wpn-1', attackId: 'wpn-1:thrown' }, off: false,
   target: 'orc-1', situation: ['flanking'], adjust: 0,
+  // Your own notes on each foe (stand-in for the sheet's old Enemy Tracker)
+  foeNotes: { 'orc-1': 'Shield on left arm. Took 2 daggers already.' }, editingNote: null,
   used: 0, offUsed: false, log: [],
 };
 
-// ── The character Combat uses: ability scores, HP, AC, class from the Sheet tab;
-// weapons and abilities from the v2 data (until the sheet's weapon fields exist). ──
+// ── The character Combat uses: ability scores, HP, AC, class, weapons and weapon
+// proficiencies from the Sheet tab; combat bonuses and stances from the v2 data
+// (until ability cards carry their combat effects). ──
 const SHEET_FIELDS = ['name', 'str', 'str-pct', 'dex', 'con', 'int', 'wis', 'cha', 'ac', 'hp-current', 'hp-max', 'race-group', '__classes', '__traitState', '__nwps', '__abilitiesCards', '__spells', '__saveMods'];
 let sheetLive = null;
 function character() {
   const c = JSON.parse(JSON.stringify(JAQUE_V2));
   const src = sheetLive || JAQUE_SHEET;
   for (const k of SHEET_FIELDS) if (src[k] !== undefined) c[k] = JSON.parse(JSON.stringify(src[k]));
+  // Only the sheet's own weapons, with the sheet's own values
+  c.__weapons = (src.__weapons || []).map(Migrate.sheetWeaponToV2);
+  c.__weaponProficiencies = Migrate.sheetProficiencies(src);
   return c;
 }
 function readSheet() {
@@ -340,10 +366,15 @@ function renderCombat() {
   const rw = { toggles: S.toggles };
   const hp = [parseInt(c['hp-current'], 10) || 0, parseInt(c['hp-max'], 10) || 0];
   const ac = Character.armorClass(c);
-  const acUp = (() => { const a = computeAttack({ sheet: c, ...S.pick, round: rw }); return a.acImprovement; })();
 
-  // Attack options: main-hand attacks, then off-hand when allowed
-  const mains = c.__weapons.filter(w => resolveWeapon(w).carried !== false).flatMap(w => weaponAttacks({ ...w, modes: resolveWeapon(w).modes }).map(a => ({ w, a }))).filter(x => (x.a.hand || 'main') === 'main');
+  // Attack options: one per weapon and way it's used, from the sheet's Weapons
+  const mains = c.__weapons.flatMap(w => weaponAttacks(w).map(a => ({ w, a }))).filter(x => (x.a.hand || 'main') === 'main');
+  if (!mains.length) {
+    $('tab-combat').innerHTML = `<div class="combat"><section class="panel"><h2>No weapons yet</h2><p class="muted">Add weapons in the Sheet tab's Weapons section and they'll show up here.</p></section></div>`;
+    return;
+  }
+  if (!mains.some(x => x.w.id === S.pick.weaponId && x.a.id === S.pick.attackId)) { S.pick = { weaponId: mains[0].w.id, attackId: mains[0].a.id }; S.used = 0; }
+  const acUp = computeAttack({ sheet: c, ...S.pick, round: rw }).acImprovement;
   const label = x => x.a.name || `${resolveWeapon(x.w).name}, ${x.a.mode}`;
   const cur = computeAttack({ sheet: c, ...S.pick, round: { toggles: S.toggles, situation: S.situation, adjust: S.adjust ? { hit: S.adjust, label: 'Quick adjust' } : undefined } });
   const count = attacksThisRound(cur.attacksPerRound, S.round);
@@ -351,7 +382,7 @@ function renderCombat() {
   const needs = rule && rule !== true ? rule.needsMain?.categories : null;
   const offAllowed = rule && (!needs || needs.includes(cur.category));
   const offOptions = offAllowed ? c.__weapons.flatMap(w => offHandAttacks(c, w).map(a => ({ w, a }))) : [];
-  if (!offAllowed) S.off = false;
+  if (!offAllowed || (S.off && !offOptions.some(x => x.w.id === S.off.weaponId && x.a.id === S.off.attackId))) S.off = false;
   const offPick = S.off || null;
   const offCalc = offPick ? computeAttack({ sheet: c, weaponId: offPick.weaponId, attackId: offPick.attackId, round: { toggles: S.toggles, situation: S.situation, adjust: S.adjust ? { hit: S.adjust, label: 'Quick adjust' } : undefined } }) : null;
   const pips = Array.from({ length: count }, (_, i) => `<i class="${i < S.used ? 'used' : ''}"></i>`).join('') + (offCalc ? `<i class="${S.offUsed ? 'used' : ''}" style="border-style:dashed"></i>` : '');
@@ -392,7 +423,8 @@ function renderCombat() {
                 <select class="pick" id="pick">${mains.map(x => `<option value="${x.w.id}|${x.a.id}" ${S.pick.weaponId === x.w.id && S.pick.attackId === x.a.id ? 'selected' : ''}>${esc(label(x))} · ${attacksThisRound(computeAttack({ sheet: c, weaponId: x.w.id, attackId: x.a.id, round: rw }).attacksPerRound, S.round)}/rd</option>`).join('')}</select></label>
               ${rule ? `<label class="optrow"><span class="label">Off-hand</span>
                 ${offAllowed ? `<select class="pick" id="pick-off"><option value="">None</option>${offOptions.map(x => `<option value="${x.w.id}|${x.a.id}" ${offPick && offPick.weaponId === x.w.id && offPick.attackId === x.a.id ? 'selected' : ''}>${esc(x.a.name)}</option>`).join('')}</select>` : `<span class="muted" style="font-size:.9rem">Needs a dagger in your main hand</span>`}</label>` : ''}
-              <div class="optrow"><span class="label">Target</span><div class="chips">${visibleFoes.map(f => `<button type="button" class="chip" data-target="${f.id}" aria-pressed="${S.target === f.id}">${esc(f.name)}</button>`).join('')}</div></div>
+              <div class="optrow"><span class="label">Target</span><div class="chips">${visibleFoes.map(f => `<button type="button" class="chip" data-target="${f.id}" aria-pressed="${S.target === f.id}">${esc(f.name)}${S.foeNotes[f.id] ? `<span class="note-dot" title="Has your notes"></span><span class="sr-only"> (has notes)</span>` : ''}</button>`).join('')}</div></div>
+              ${targetNote(visibleFoes.find(f => f.id === S.target))}
               <div class="optrow"><span class="label">Situation</span><div class="chips">${Object.entries(SITUATIONS).map(([k, s]) => `<button type="button" class="chip" data-sit="${k}" aria-pressed="${S.situation.includes(k)}">${esc(s.label)}${s.hit ? ' ' + sign(s.hit) : ''}</button>`).join('')}</div></div>
               <div class="optrow"><span class="label">Quick adjust</span><span class="seg"><button type="button" id="adj-dn" aria-label="Lower to-hit adjustment">−</button><button type="button" disabled aria-live="polite" style="opacity:1;cursor:default">${S.adjust ? sign(S.adjust) : 0}</button><button type="button" id="adj-up" aria-label="Raise to-hit adjustment">+</button></span></div>
             </div>
@@ -402,6 +434,7 @@ function renderCombat() {
               ${offCalc ? `<div class="cell"><span class="lbl">Off-hand</span><span class="val">${offCalc.thac0} · ${esc(offCalc.damage.sm)}</span></div>` : ''}
             </div>
           </div>
+          ${acTable(cur.thac0, offCalc && offCalc.thac0)}
           <details class="math"><summary>Show the math</summary><table><tbody>${mathRows}</tbody></table></details>
           <div class="rollrow">
             <button type="button" class="btn" data-roll="main">Roll attack</button>
@@ -422,7 +455,7 @@ function renderCombat() {
         </section>
         <section class="panel" aria-labelledby="h-foes">
           <div class="panel-head"><h2 id="h-foes">Foes</h2><span class="muted" style="font-size:.85rem">What you can see</span></div>
-          <div class="people">${visibleFoes.map(f => `<div class="person"><span class="pname">${esc(f.name)}</span><span class="tag ${f.state === 'bloodied' ? 'bad' : ''}">${esc(f.state)}</span></div>`).join('')}</div>
+          <div class="people">${visibleFoes.map(f => `<div class="person"><span class="pname">${esc(f.name)}</span><span class="tag ${f.state === 'bloodied' ? 'bad' : ''}">${esc(f.state)}</span>${S.foeNotes[f.id] ? `<span class="pmeta foe-note">${esc(S.foeNotes[f.id])}</span>` : ''}</div>`).join('')}</div>
         </section>
         <section class="panel" aria-labelledby="h-ref">
           <div class="panel-head"><h2 id="h-ref">Quick reference ${pin('I')}</h2><span class="muted" style="font-size:.85rem">From your sheet</span></div>
@@ -437,6 +470,30 @@ function renderCombat() {
     <div class="demo"><b>Demo</b><button type="button" class="btn quiet" id="next-turn">Next turn</button><button type="button" class="btn quiet" id="new-round">New round</button><span class="muted">stand in for the DM</span></div>
   </div>`;
   wireCombat(c, cur, offCalc, count);
+}
+
+// Roll needed on the d20 to hit each AC: THAC0 − AC, kept between 1 and 20.
+// Same table and colour bands the sheet's Combat Scenarios had.
+const ACS = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6, -7, -8, -9, -10];
+const need = (thac0, ac) => Math.min(Math.max(thac0 - ac, 1), 20);
+const band = r => (r <= 7 ? 'easy' : r <= 13 ? 'mid' : r <= 19 ? 'hard' : 'max');
+function acTable(thac0, offThac0) {
+  const row = (label, t) => `<tr><th scope="row">${label}</th>${ACS.map(ac => { const r = need(t, ac); return `<td class="${band(r)}">${r}</td>`; }).join('')}</tr>`;
+  return `<div class="acm" role="region" aria-labelledby="acm-cap" tabindex="0">
+    <table><caption id="acm-cap">Roll needed to hit, by target AC</caption>
+      <thead><tr><th scope="col">AC</th>${ACS.map(ac => `<th scope="col">${ac < 0 ? '−' + -ac : ac}</th>`).join('')}</tr></thead>
+      <tbody>${row('Roll', thac0)}${offThac0 != null ? row('Off-hand', offThac0) : ''}</tbody></table></div>`;
+}
+
+// Your notes on the selected target: shown under the Target pills, editable in place
+function targetNote(f) {
+  if (!f) return '';
+  const note = S.foeNotes[f.id] || '';
+  if (S.editingNote === f.id) return `<div class="tnote"><label for="tnote-inp">Your notes on ${esc(f.name)}</label>
+    <textarea id="tnote-inp" rows="2" placeholder="AC you've worked out, resistances, what it's done…">${esc(note)}</textarea>
+    <span class="tnote-actions"><button type="button" class="btn quiet" id="tnote-save">Save</button><button type="button" class="btn quiet" id="tnote-cancel">Cancel</button></span></div>`;
+  return `<div class="tnote"><span class="tnote-text ${note ? '' : 'muted'}">${note ? esc(note) : `No notes on ${esc(f.name)}`}</span>
+    <button type="button" class="btn quiet" id="tnote-edit" aria-label="${note ? 'Edit' : 'Add'} your notes on ${esc(f.name)}">${note ? 'Edit note' : 'Add note'}</button></div>`;
 }
 
 // One-line summary: the first sentence (or the first ~110 characters)
@@ -464,7 +521,10 @@ function wireCombat(c, cur, offCalc, count) {
   host.querySelectorAll('[data-opt]').forEach(b => b.onclick = () => { const o = c.__combatOptions.find(x => x.id === b.dataset.opt); const v = b.dataset.val; if (v === 'Off') delete S.toggles[o.id]; else S.toggles[o.id] = o.choice ? v : true; renderCombat(); });
   $('pick').onchange = e => { const [w, a] = e.target.value.split('|'); S.pick = { weaponId: w, attackId: a }; S.used = 0; renderCombat(); };
   const po = $('pick-off'); if (po) po.onchange = e => { S.off = e.target.value ? { weaponId: e.target.value.split('|')[0], attackId: e.target.value.split('|')[1] } : false; S.offUsed = false; renderCombat(); };
-  host.querySelectorAll('[data-target]').forEach(b => b.onclick = () => { S.target = b.dataset.target; renderCombat(); });
+  host.querySelectorAll('[data-target]').forEach(b => b.onclick = () => { S.target = b.dataset.target; S.editingNote = null; renderCombat(); });
+  const te = $('tnote-edit'); if (te) te.onclick = () => { S.editingNote = S.target; renderCombat(); $('tnote-inp').focus(); };
+  const ts = $('tnote-save'); if (ts) ts.onclick = () => { const v = $('tnote-inp').value.trim(); if (v) S.foeNotes[S.target] = v; else delete S.foeNotes[S.target]; S.editingNote = null; renderCombat(); $('tnote-edit')?.focus(); };
+  const tc = $('tnote-cancel'); if (tc) tc.onclick = () => { S.editingNote = null; renderCombat(); $('tnote-edit')?.focus(); };
   host.querySelectorAll('[data-sit]').forEach(b => b.onclick = () => { const k = b.dataset.sit; S.situation = S.situation.includes(k) ? S.situation.filter(x => x !== k) : [...S.situation, k]; renderCombat(); });
   $('adj-up').onclick = () => { S.adjust++; renderCombat(); };
   $('adj-dn').onclick = () => { S.adjust--; renderCombat(); };

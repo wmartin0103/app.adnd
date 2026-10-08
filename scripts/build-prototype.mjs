@@ -13,7 +13,7 @@ const rules = bundle(RULES_FILES, {
     Rules: ['rules/attacks', ['computeAttack', 'listAttacks', 'weaponAttacks', 'planRound', 'attacksThisRound', 'offHandAttacks', 'effectiveLevel', 'SITUATIONS']],
     Weapons: ['rules/weapons', ['resolveWeapon', 'PHB_WEAPONS']],
     Character: ['rules/character', ['armorClass', 'savingThrows', 'proficiencyTargets']],
-    Migrate: ['rules/migrate', ['migrateV1toV2']],
+    Migrate: ['rules/migrate', ['migrateV1toV2', 'sheetWeaponToV2', 'sheetProficiencies']],
   },
 });
 const v1 = readFileSync('samples/jaque_09-23.json', 'utf8');

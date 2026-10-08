@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-import { migrateV1toV2, guessCategory } from '../src/rules/migrate.js';
+import { migrateV1toV2, guessCategory, sheetWeaponToV2, sheetProficiencies } from '../src/rules/migrate.js';
 import { computeAttack, listAttacks } from '../src/rules/attacks.js';
 
 const jaqueV1 = JSON.parse(readFileSync(new URL('../samples/jaque_09-23.json', import.meta.url)));
@@ -122,4 +122,20 @@ test('fields set on the sheet are used instead of guesses', () => {
   assert.ok(!v2.__review.some(r => r.target.id === 'wpn-1' && /guessed/.test(r.message)));
   assert.deepEqual(v2.__weaponProficiencies, ['dagger']);
   assert.ok(!v2.__review.some(r => r.target.id === 'weapon-proficiencies'));
+});
+
+test('the sheet\'s weapons are read as they are, one attack per mode', () => {
+  const sheet = { str: '13', dex: '19', 'race-group': 'elf', __classes: [{ group: 'rogue', level: '5' }],
+    __weaponProficiencies: ['dagger'],
+    __weapons: [sheetWeaponToV2({ id: 'w1', name: 'Superior Dagger', basedOn: 'dagger', modes: ['melee', 'thrown'], speed: '2', dmgType: 'piercing', hitAdj: '+1', dmgAdj: '+1', dmgSM: '1d4', dmgL: '1d4', magicPlus: 0 })] };
+  const w = sheet.__weapons[0];
+  assert.deepEqual(w.damage, { sm: '1d4', l: '1d4' });   // the sheet's dice, even where the PHB differs
+  assert.equal(w.hitBonus, 1);
+  const attacks = listAttacks({ sheet });
+  assert.deepEqual(attacks.map(a => [a.attackId, a.thac0, a.damage.l]), [['w1:melee', 17, '1d4+1'], ['w1:thrown', 14, '1d4+1']]);
+});
+
+test('proficiencies come from the cards\' weapon type, or a guess from the name', () => {
+  assert.deepEqual(sheetProficiencies({ __wpnProfCards: [{ name: 'Daggers (Signature Weapon)' }, { name: 'Bladesong Fighting Style' }] }), ['dagger']);
+  assert.deepEqual(sheetProficiencies({ __wpnProfCards: [{ name: 'Daggers', weaponType: 'knife' }] }), ['knife']);
 });

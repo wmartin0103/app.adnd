@@ -2558,12 +2558,12 @@
       <h2 id="combat-heading" class="section-heading">Combat</h2>
       <div class="combat-grid">
 
-        <!-- THAC0 — driven by active Combat Scenario below -->
+        <!-- THAC0 — base from class and level (per-attack THAC0 is in the Combat tab) -->
         <div class="combat-card">
           <span class="combat-label" id="thac0-label">THAC0</span>
           <output id="thac0" class="combat-value" aria-labelledby="thac0-label"
             aria-describedby="thac0-desc" style="display:block;">—</output>
-          <span id="thac0-desc" class="combat-sublabel">From active scenario</span>
+          <span id="thac0-desc" class="combat-sublabel">Class &amp; level, before modifiers</span>
         </div>
 
         <!-- Armor Class — Base + Effective combined -->
@@ -2662,24 +2662,8 @@
 
     </div><!-- /.combat-saves-main -->
 
-    <!-- ── Combat Scenarios ───────────────────────────────── -->
-    <section class="section" aria-labelledby="scenarios-heading">
-      <h2 id="scenarios-heading" class="section-heading">Combat Scenarios</h2>
-      <div class="scenarios-list" id="scenarios-list" role="list">
-        <!-- Injected by JS -->
-      </div>
-      <button class="add-scenario-btn" id="add-scenario-btn" type="button" aria-label="Add combat scenario">
-        <span aria-hidden="true">＋</span> Add Scenario
-      </button>
-
-      <!-- ── Enemy Tracker ──────────────────────────────────── -->
-      <div class="enemy-tracker">
-        <div id="enemy-list" class="enemy-grid" aria-label="Enemy tracker"></div>
-        <button class="add-class-btn" id="add-enemy-btn" type="button">
-          <span aria-hidden="true">＋</span> Add Enemy
-        </button>
-      </div>
-    </section>
+    <!-- Combat Scenarios and the Enemy Tracker moved to the app's Combat tab.
+         Their data (__scenarios, __enemies) still loads and saves. -->
 
     <!-- ── Combat + Saving Throws side by side ─────────────── -->
     <div class="combat-saves-row">
@@ -3763,6 +3747,41 @@ function guessMode(scenario, modes) {
   return modes[0] || 'melee';
 }
 
+// ── Reading the sheet directly ──
+// The character sheet's Weapons section (with its Based on / Used / Magic +
+// settings) as v2 weapons, taking the sheet's values as they are: its dice,
+// speed, and adjustments. Used by Combat, so it only ever shows the sheet's
+// own weapons. One attack per mode it's used for, plus off-hand attacks.
+function sheetWeaponToV2(old) {
+  const w = { id: old.id, name: old.name || 'Weapon' };
+  const basedOn = old.basedOn != null ? old.basedOn : guessCategory(old.name);
+  if (basedOn) w.basedOn = basedOn;
+  const base = basedOn ? resolveWeapon({ id: '_', basedOn }) : {};
+  w.modes = Array.isArray(old.modes) && old.modes.length ? old.modes.slice() : (base.modes || ['melee']);
+  const speed = cleanNumber(old.speed);
+  if (speed) w.speed = speed;
+  const type = TYPE_CODES[old.dmgType];
+  if (type) w.damageTypes = [type];
+  const damage = {};
+  if (parseDice(old.dmgSM)) damage.sm = String(old.dmgSM).trim();
+  if (parseDice(old.dmgL)) damage.l = String(old.dmgL).trim();
+  if (Object.keys(damage).length) w.damage = damage;
+  const hit = cleanNumber(old.hitAdj);
+  const dmg = cleanNumber(old.dmgAdj);
+  if (hit) w.hitBonus = hit;
+  if (dmg) w.dmgBonus = dmg;
+  if (old.hitAdj === '?' || old.dmgAdj === '?') w.unknown = true;
+  if (old.magicPlus) w.magicPlus = old.magicPlus;
+  if (old.notes) w.notes = old.notes;
+  return w;
+}
+
+// Weapon types the sheet's proficiency cards cover ("Weapon type", or a guess
+// from the card's name when it hasn't been set).
+function sheetProficiencies(sheet) {
+  return [...new Set((sheet.__wpnProfCards || []).map(c => (c.weaponType !== undefined ? c.weaponType : guessCategory(c.name))).filter(Boolean))];
+}
+
 function migrateV1toV2(input) {
   const d = structuredClone(input);
   const review = [];
@@ -3920,7 +3939,7 @@ function migrateV1toV2(input) {
   return d;
 }
 
-return { guessCategory, migrateV1toV2 };
+return { guessCategory, sheetWeaponToV2, sheetProficiencies, migrateV1toV2 };
 })();
 // ── adapters/dm-helper ──
 __m["adapters/dm-helper"] = (() => {
@@ -4659,10 +4678,7 @@ window.SheetDice = { parseDice: __m["rules/dice"].parseDice, formatDice: __m["ru
         effectiveEl.textContent = '—';
       }
 
-      // ── THAC0 is driven by active Combat Scenario ────────────
-      // See updateActiveTHAC0(). Scenarios that use "sheet level"
-      // will call getEffectiveLevel() which returns the highest
-      // level across all class entries.
+      // ── THAC0: see updateActiveTHAC0() (base, from class and level) ──
     }
 
 
@@ -5182,6 +5198,7 @@ window.SheetDice = { parseDice: __m["rules/dice"].parseDice, formatDice: __m["ru
     // This wipes and rebuilds the list every time — fine at this scale.
     function renderScenarios() {
       const list = document.getElementById('scenarios-list');
+      if (!list) return;   // section removed; data is kept in saves
       list.innerHTML = '';
 
       scenarios.forEach((scenario, index) => {
@@ -5626,21 +5643,19 @@ window.SheetDice = { parseDice: __m["rules/dice"].parseDice, formatDice: __m["ru
       });
     }
 
-    // Update the THAC0 display in the combat block to reflect the active scenario
+    // Base THAC0 in the combat block: the best of the character's classes at
+    // their levels, before Str, weapon, and situational modifiers.
     function updateActiveTHAC0() {
-      const active = scenarios.find(s => s.active);
       const el = document.getElementById('thac0');
-      if (active) {
-        const val = calcScenarioTHAC0(active);
-        el.textContent = val !== null ? val : '—';
-      } else {
-        el.textContent = '—';
-      }
+      const values = characterClasses
+        .map(c => THAC0_GROUPS[c.group] && parseInt(c.level) ? THAC0_GROUPS[c.group].calc(parseInt(c.level)) : null)
+        .filter(v => v !== null);
+      el.textContent = values.length ? Math.min(...values) : '—';
     }
 
     // Add Scenario button
-    document.getElementById('add-enemy-btn').addEventListener('click', addNewEnemy);
-    document.getElementById('add-scenario-btn').addEventListener('click', () => {
+    document.getElementById('add-enemy-btn')?.addEventListener('click', addNewEnemy);
+    document.getElementById('add-scenario-btn')?.addEventListener('click', () => {
       const isFirst = scenarios.length === 0;
       const primaryGroup = characterClasses[0]?.group || 'warrior';
       const sc = makeScenario({ active: isFirst, group: primaryGroup });

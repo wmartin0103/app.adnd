@@ -84,6 +84,41 @@ function guessMode(scenario, modes) {
   return modes[0] || 'melee';
 }
 
+// ── Reading the sheet directly ──
+// The character sheet's Weapons section (with its Based on / Used / Magic +
+// settings) as v2 weapons, taking the sheet's values as they are: its dice,
+// speed, and adjustments. Used by Combat, so it only ever shows the sheet's
+// own weapons. One attack per mode it's used for, plus off-hand attacks.
+export function sheetWeaponToV2(old) {
+  const w = { id: old.id, name: old.name || 'Weapon' };
+  const basedOn = old.basedOn != null ? old.basedOn : guessCategory(old.name);
+  if (basedOn) w.basedOn = basedOn;
+  const base = basedOn ? resolveWeapon({ id: '_', basedOn }) : {};
+  w.modes = Array.isArray(old.modes) && old.modes.length ? old.modes.slice() : (base.modes || ['melee']);
+  const speed = cleanNumber(old.speed);
+  if (speed) w.speed = speed;
+  const type = TYPE_CODES[old.dmgType];
+  if (type) w.damageTypes = [type];
+  const damage = {};
+  if (parseDice(old.dmgSM)) damage.sm = String(old.dmgSM).trim();
+  if (parseDice(old.dmgL)) damage.l = String(old.dmgL).trim();
+  if (Object.keys(damage).length) w.damage = damage;
+  const hit = cleanNumber(old.hitAdj);
+  const dmg = cleanNumber(old.dmgAdj);
+  if (hit) w.hitBonus = hit;
+  if (dmg) w.dmgBonus = dmg;
+  if (old.hitAdj === '?' || old.dmgAdj === '?') w.unknown = true;
+  if (old.magicPlus) w.magicPlus = old.magicPlus;
+  if (old.notes) w.notes = old.notes;
+  return w;
+}
+
+// Weapon types the sheet's proficiency cards cover ("Weapon type", or a guess
+// from the card's name when it hasn't been set).
+export function sheetProficiencies(sheet) {
+  return [...new Set((sheet.__wpnProfCards || []).map(c => (c.weaponType !== undefined ? c.weaponType : guessCategory(c.name))).filter(Boolean))];
+}
+
 export function migrateV1toV2(input) {
   const d = structuredClone(input);
   const review = [];
