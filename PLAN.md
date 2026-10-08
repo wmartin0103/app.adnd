@@ -379,6 +379,13 @@ Helper pick from (see section 9).
     Standard / Bonus round. A bonus round has the extra attack; if it goes
     unused the next round is still a bonus round (it can't be banked for two),
     and after it's used the next round is standard. The app never flips it.
+16. **Combat layout (mock-up, for review):** a "Your round" block for
+    round-wide choices (Fight / Cast / Something else; main hand incl.
+    unarmed, melee or thrown, off-hand; Standard / Bonus; stances; what adds
+    to initiative), then one card per attack with its own target, situation,
+    adjustment, roll and damage. Unarmed follows PHB punching and wrestling
+    (Table 57, to spot-check). Cast picks from memorized spells; the sheet's
+    spellbook entries need cast time, range, save and attack-roll fields.
 
 ---
 

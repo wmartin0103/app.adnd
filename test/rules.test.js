@@ -294,3 +294,12 @@ test('half attacks: standard or bonus round, chosen by the player', () => {
   assert.deepEqual([attacksInRound('3/1'), attacksInRound('3/1', { bonus: true })], [3, 3]);
   assert.deepEqual(['3/2', '3/1', '1'].map(formatRate), ['3 per 2 rounds', '3 per round', '1 per round']);
 });
+
+test('unarmed: PHB Table 57 lookup and THAC0 from Strength and situation', async () => {
+  const { unarmedResult, unarmedAttack } = await import('../src/rules/unarmed.js');
+  assert.deepEqual(unarmedResult(15), { punch: { name: 'Jab', damage: 2, knockout: 6 }, wrestle: { name: 'Arm lock', hold: true } });
+  assert.equal(unarmedResult(24).punch.name, 'Haymaker');
+  assert.equal(unarmedResult(-2).punch.knockout, 25);
+  const a = unarmedAttack({ sheet: { str: '17', __classes: [{ group: 'rogue', level: '5' }] }, round: { situation: ['flanking'] } });
+  assert.deepEqual([a.base.thac0, a.thac0, a.strDamage], [18, 15, 1]);   // rogue 5: 18; Str 17 +1 hit; flanking +2
+});

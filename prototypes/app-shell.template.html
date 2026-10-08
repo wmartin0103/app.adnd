@@ -122,6 +122,40 @@ select.pick { border: 1px solid var(--rule); border-radius: var(--radius); backg
 .cell.big .val { font-size: 1.9rem; line-height: 1; color: var(--accent); }
 .count { font-family: var(--font-data); font-size: 0.85rem; color: var(--ink-muted); }
 .hint { font-size: 0.85rem; font-weight: 400; }
+.round, .cards-wrap { display: grid; gap: 10px; }
+.round { border: 1px solid var(--rule); border-radius: var(--radius); padding: 10px; background: var(--sunk); }
+.round-grid { display: grid; gap: 8px; }
+.stances summary { cursor: pointer; font-weight: 600; }
+.stances summary .muted { font-weight: 400; font-size: 0.88rem; }
+.stances[open] { display: grid; gap: 8px; }
+.spells { display: grid; gap: 6px; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
+.spell { text-align: left; border: 1px solid var(--rule); background: var(--surface); border-radius: var(--radius); padding: 7px 9px; display: grid; gap: 3px; color: var(--ink); }
+.spell[aria-checked="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.spell.spent .spell-name { color: var(--ink-muted); }
+.spell-name { font-weight: 600; }
+.spell-meta { display: flex; flex-wrap: wrap; gap: 2px 10px; font-size: 0.82rem; color: var(--ink-muted); }
+.cards { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); align-items: start; }
+.card { border: 1px solid var(--accent); border-radius: var(--radius); padding: 10px; display: grid; gap: 8px; background: var(--surface); min-width: 0; }
+.card.done { border-color: var(--rule); }
+.card-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 10px; }
+.card h4 { margin: 0; font-family: var(--font-display); font-size: 0.92rem; font-weight: 600; display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+.card-n { font-family: var(--font-data); font-size: 0.75rem; color: var(--surface); background: var(--accent); border-radius: 50%; width: 1.5em; height: 1.5em; display: inline-grid; place-items: center; }
+.card.done .card-n { background: var(--ink-faint); }
+.card-nums { display: inline-flex; align-items: center; gap: 4px; font-size: 0.9rem; }
+.card-nums b { font-size: 1.3rem; color: var(--accent); }
+.card-nums .lbl { display: inline-flex; align-items: center; gap: 3px; font-family: var(--font-display); font-size: 0.6rem; letter-spacing: 0.08em; color: var(--ink-muted); }
+.card .lbl svg, .card-nums svg { width: 12px; height: 12px; }
+.chip.small { font-size: 0.82rem; padding: 1px 8px; }
+.seg.mini { display: inline-flex; align-items: center; }
+.seg.mini button { padding: 0 8px; }
+.seg.mini .adj { padding: 0 6px; font-size: 0.82rem; }
+.result { margin: 0; display: flex; align-items: baseline; gap: 8px; font-weight: 600; }
+.big-roll { font-size: 1.4rem; color: var(--accent); }
+.result-sub, .spell-line { margin: 0; font-size: 0.9rem; }
+.acd summary { cursor: pointer; color: var(--accent); font-size: 0.85rem; }
+.acd .acm { margin-top: 6px; }
+.add-card { border-style: dashed; border-color: var(--rule); color: var(--accent); font-family: var(--font-display); font-size: 0.8rem; letter-spacing: 0.05em; place-items: center; min-height: 64px; text-align: center; }
+.add-card .muted { display: block; font-family: var(--font-body); font-size: 0.8rem; letter-spacing: 0; }
 .seg.fit { justify-self: start; width: fit-content; }
 .rollrow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .rollrow input { width: 4em; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--surface); text-align: center; padding: 3px; font-family: var(--font-data); }
@@ -260,11 +294,23 @@ const NOTES = [
   ['C', 'Encounter at a glance', 'Round and initiative order for everyone: hidden foes don\'t appear, and a foe with hidden initiative shows "?". Whose turn it is is highlighted, and so is your place in the order.'],
   ['D', 'Party and foes', 'Everyone\'s exact HP and conditions, so nobody has to ask "how hurt are you?" mid-fight. Foes show only what\'s visible on the battlefield, never AC, plus your own notes on them (private to you; they replace the sheet\'s Enemy Tracker). The list comes from the DM\'s encounter. A foe that goes down stays listed, greyed and last, with your notes, and drops out of initiative; the DM can remove it for good. Try the Down / Remove buttons at the bottom.'],
   ['I', 'Quick reference, not a second sheet', 'Saves, abilities, ready spells, and proficiency checks: the things you\'d otherwise flip to the sheet for mid-fight. Each section collapses; abilities show a one-line summary that expands to the full text from your sheet.'],
-  ['E', 'Attack helper, no lock-in', 'Pick an attack and a target, flip the conditions, roll or type your die. The table shows the roll you need against each AC, for the main and off-hand attack. Pick a target to see or add your notes on it. It shows how many attacks you have this round (3 thrown daggers + off-hand) without counting them off: you track that out loud, and each roll lands in the shared log for everyone. With a half attack (melee 3/2) you switch Standard / Bonus round yourself; the app never flips it. You still say what you\'re doing out loud; whether the app should record a declaration is a question for later.'],
+  ['K', 'Your round, then your attacks', 'Round-wide choices sit together: Fight, Cast or Something else; what\'s in each hand and how the main hand is used (melee or thrown, which sets how many cards you get); Standard or Bonus round; stances. Initiative gets the weapon speed or casting time. Cast lists your memorized spells with casting time, range and save (fields the sheet\'s spellbook will gain). Unarmed uses the PHB punch and wrestle table.'],
+  ['E', 'One card per attack, no lock-in', 'Each attack has its own target, situation and adjustment, because Jaque\'s three thrown daggers can go three ways at three points in the round. A new card copies the card before it, so "all at Orc 1" is no extra taps. After a roll the card says what it hits ("hits AC 2 or worse"), since foe AC is the DM\'s secret. Cards aren\'t a quota: skip one, re-roll, clear, or add one when the DM allows. They clear when the DM starts a new round.'],
   ['F', 'Your numbers come from the sheet', 'Ability scores, HP, AC, class and level, plus the abilities, spells and proficiencies in Quick reference, are read from the Sheet tab. Change Jaque\'s Dex on the sheet and the THAC0s here change. The weapon list is the sheet\'s Weapons section and nothing else: one entry per weapon and way it\'s used (melee, thrown). Bonuses and stances (Signature Weapon, Bladesong…) still come from the reviewed v2 data until ability cards carry their combat effects.'],
   ['G', 'DM tab only for the DM', 'Switch "View as" to DM: a fourth tab appears with the real DM Helper, with Jaque already imported from his sheet. Players never get it, and in the cloud version the database enforces that, not just the interface.'],
   ['H', 'Built for a half-width window', 'Combat stacks into one column at half-window and puts party, foes and the log beside you at tablet width. Sheet and DM keep their own responsive layouts.'],
 ];
+
+// Casting details per spell (PHB). The sheet's spellbook entries will get these
+// as fields (cast time, range, save, attack roll), the way weapons got speed.
+const SPELL_INFO = {
+  'charm person': { castTime: '1', range: '120 yds', save: 'Negates', attack: null },
+  'feather fall': { castTime: '1', range: '10 yds/level', save: 'None', attack: null },
+  'ventriloquism': { castTime: '1', range: '10 yds/level (90 yds max)', save: 'Negates', attack: null },
+  "tasha's uncontrollable hideous laughter": { castTime: '2', range: '60 yds', save: 'Negates', attack: null },
+  'shocking grasp': { castTime: '1', range: 'Touch', save: 'None', attack: 'touch' },
+};
+const spellInfo = sp => SPELL_INFO[String(sp.name || '').toLowerCase()] || { castTime: '', range: '', save: '', attack: null };
 
 const WIDTHS = [['Half window', 720], ['Tablet', 1024], ['Phone', 390]];
 const PARTY = [
@@ -289,8 +335,10 @@ const S = {
   role: 'player', tab: 'sheet', width: 720, notes: true,
   round: 3, turn: 0,
   toggles: { 'opt-1': '+1 hit' },
-  pick: { weaponId: 'wpn-1', attackId: 'wpn-1:thrown' }, off: false,
-  target: 'orc-1', situation: ['flanking'], adjust: 0,
+  // Your round: what you're doing and holding (round-wide choices)
+  action: 'fight', main: 'wpn-1', mode: 'thrown', off: false, spell: null,
+  // One card per attack, keyed by slot (main-0, main-1, off, extra-0, unarmed-0, spell)
+  cards: { 'main-0': { target: 'orc-1', situation: ['flanking'], adjust: 0 } }, extras: [], cast: {},
   // Your own notes on each foe (stand-in for the sheet's old Enemy Tracker)
   foeNotes: { 'orc-1': 'Shield on left arm. Took 2 daggers already.' }, editingNote: null,
   bonusRound: false, log: [],   // standard or bonus round: the player's call, never changed by the app
@@ -377,31 +425,52 @@ function hpBar([cur, max]) {
   return `<span class="hpbar ${r <= 0.4 ? 'low' : r <= 0.75 ? 'mid' : ''}" aria-hidden="true"><span style="width:${Math.round(r * 100)}%"></span></span>`;
 }
 
+let currentSlots = [];
 function renderCombat() {
   const c = character();
   const rw = { toggles: S.toggles };
   const hp = [parseInt(c['hp-current'], 10) || 0, parseInt(c['hp-max'], 10) || 0];
   const ac = Character.armorClass(c);
 
-  // Attack options: one per weapon and way it's used, from the sheet's Weapons
-  const mains = c.__weapons.flatMap(w => weaponAttacks(w).map(a => ({ w, a }))).filter(x => (x.a.hand || 'main') === 'main');
-  if (!mains.length) {
-    $('tab-combat').innerHTML = `<div class="combat"><section class="panel"><h2>No weapons yet</h2><p class="muted">Add weapons in the Sheet tab's Weapons section and they'll show up here.</p></section></div>`;
-    return;
-  }
-  if (!mains.some(x => x.w.id === S.pick.weaponId && x.a.id === S.pick.attackId)) { S.pick = { weaponId: mains[0].w.id, attackId: mains[0].a.id }; }
-  const acUp = computeAttack({ sheet: c, ...S.pick, round: rw }).acImprovement;
-  const label = x => x.a.name || `${resolveWeapon(x.w).name}, ${x.a.mode}`;
-  const cur = computeAttack({ sheet: c, ...S.pick, round: { toggles: S.toggles, situation: S.situation, adjust: S.adjust ? { hit: S.adjust, label: 'Quick adjust' } : undefined } });
-  const halfAttacks = hasBonusRounds(cur.attacksPerRound);
-  const count = attacksInRound(cur.attacksPerRound, { bonus: S.bonusRound });
+  // ── Your round: what you're doing and holding ──
+  const weapons = c.__weapons;
+  if (S.main !== 'unarmed' && !weapons.some(w => w.id === S.main)) S.main = weapons[0] ? weapons[0].id : 'unarmed';
+  const mainW = weapons.find(w => w.id === S.main);
+  const modes = mainW ? (mainW.modes || ['melee']) : ['melee'];
+  if (!modes.includes(S.mode)) S.mode = modes[0];
+  const mainPick = mainW ? { weaponId: mainW.id, attackId: `${mainW.id}:${S.mode}` } : null;
+  const roundCalc = mainPick ? computeAttack({ sheet: c, ...mainPick, round: rw }) : null;
+  const acUp = roundCalc ? roundCalc.acImprovement : 0;
+  const apr = roundCalc ? roundCalc.attacksPerRound : '1';
+  const halfAttacks = S.action === 'fight' && !!mainW && hasBonusRounds(apr);
+  const count = mainW ? attacksInRound(apr, { bonus: S.bonusRound }) : 1;
   const rule = (c.__combatRules || {}).offHandAttack;
   const needs = rule && rule !== true ? rule.needsMain?.categories : null;
-  const offAllowed = rule && (!needs || needs.includes(cur.category));
-  const offOptions = offAllowed ? c.__weapons.flatMap(w => offHandAttacks(c, w).map(a => ({ w, a }))) : [];
+  const offAllowed = !!rule && !!roundCalc && (!needs || needs.includes(roundCalc.category));
+  const offOptions = offAllowed ? weapons.flatMap(w => offHandAttacks(c, w).map(a => ({ w, a }))) : [];
   if (!offAllowed || (S.off && !offOptions.some(x => x.w.id === S.off.weaponId && x.a.id === S.off.attackId))) S.off = false;
-  const offPick = S.off || null;
-  const offCalc = offPick ? computeAttack({ sheet: c, weaponId: offPick.weaponId, attackId: offPick.attackId, round: { toggles: S.toggles, situation: S.situation, adjust: S.adjust ? { hit: S.adjust, label: 'Quick adjust' } : undefined } }) : null;
+  const ready = (c.__spells || []).filter(x => x.isMemorized);
+  if (S.spell && !ready.some(x => x.id === S.spell)) S.spell = null;
+  const spell = ready.find(x => x.id === S.spell);
+  const initMod = S.action === 'cast' ? (spell ? spellInfo(spell).castTime : '') : S.action === 'fight' ? (mainW ? (mainW.speed || '') : '1') : '';
+
+  // ── The cards for this round ──
+  const slots = [];
+  if (S.action === 'fight') {
+    if (mainW) for (let i = 0; i < count; i++) slots.push({ key: `main-${i}`, kind: 'weapon', pick: mainPick });
+    else slots.push({ key: 'unarmed-0', kind: 'unarmed' });
+    if (S.off && mainW) slots.push({ key: 'off', kind: 'weapon', pick: S.off, off: true });
+  }
+  if (S.action === 'cast' && spell) slots.push({ key: 'spell', kind: 'spell', spell });
+  for (const id of S.extras) slots.push({ key: `extra-${id}`, kind: mainW && S.action === 'fight' ? 'weapon' : 'unarmed', pick: mainPick, extra: true });
+  currentSlots = slots;
+  // A new card starts with the card before it's target and situation
+  slots.forEach((sl, i) => {
+    if (!S.cards[sl.key]) {
+      const prev = i > 0 ? S.cards[slots[i - 1].key] : null;
+      S.cards[sl.key] = { target: prev ? prev.target : (shownFoes().find(f => !f.down) || {}).id, situation: prev ? prev.situation.slice() : [], adjust: 0, style: 'punch' };
+    }
+  });
 
   const opts = (c.__combatOptions || []).map(o => {
     const v = S.toggles[o.id];
@@ -415,8 +484,6 @@ function renderCombat() {
   if (S.turn >= order.length) S.turn = 0;
   const unknown = visibleFoes.filter(f => f.hideInit && !f.down);
 
-  const mathRows = [`<tr><td>${esc(cap(cur.base.group))} level ${cur.base.level}</td><td class="n">THAC0 ${cur.base.thac0}</td><td class="n"></td></tr>`]
-    .concat(cur.lines.map(l => `<tr><td>${esc(l.label)}</td><td class="n">${l.hit ? sign(l.hit) : ''}</td><td class="n">${l.dmg ? sign(l.dmg) + ' dmg' : ''}</td></tr>`)).join('');
 
   $('tab-combat').innerHTML = `<div class="combat">
     <section class="enc" aria-labelledby="h-enc">
@@ -432,39 +499,31 @@ function renderCombat() {
           <div class="stat"><span class="lbl">${ICON.shield}AC</span><span class="val">${ac.ac - acUp}</span><span class="muted" style="font-size:.78rem">${acUp ? `${ac.ac} − ${acUp} this round` : `surprised ${ac.surprised}`}</span></div>
           <div class="stat"><span class="lbl">Conditions</span><span class="chips">${S.toggles['opt-1'] ? `<span class="tag">Bladesong: ${esc(S.toggles['opt-1'])}</span>` : '<span class="muted">None</span>'}</span></div>
         </div>
-        <div class="attack" aria-labelledby="h-atk">
-          <div class="panel-head"><h3 id="h-atk">Attack ${pin('E')}</h3><span class="count">${count} attack${count === 1 ? '' : 's'} this round${offCalc ? ' + off-hand' : ''}</span></div>
-          <div class="attack-top">
-            <div style="display:grid;gap:8px;min-width:0">
-              <label class="optrow"><span class="label">Weapon</span>
-                <select class="pick" id="pick">${mains.map(x => `<option value="${x.w.id}|${x.a.id}" ${S.pick.weaponId === x.w.id && S.pick.attackId === x.a.id ? 'selected' : ''}>${esc(label(x))} · ${esc(formatRate(computeAttack({ sheet: c, weaponId: x.w.id, attackId: x.a.id, round: rw }).attacksPerRound))}</option>`).join('')}</select></label>
-      ${halfAttacks ? `<div class="optrow"><span class="label">This round <span class="tag">${esc(formatRate(cur.attacksPerRound))}</span></span>
-            <span class="seg fit" role="group" aria-label="Standard or bonus round"><button type="button" data-bonus="0" aria-pressed="${!S.bonusRound}">Standard · ${attacksInRound(cur.attacksPerRound)}</button><button type="button" data-bonus="1" aria-pressed="${S.bonusRound}">Bonus · ${attacksInRound(cur.attacksPerRound, { bonus: true })}</button></span>
-            <span class="muted hint">Used the extra attack? Next round is Standard. Didn't? It waits, but never stacks.</span></div>` : ''}
-              ${rule ? `<label class="optrow"><span class="label">Off-hand</span>
-                ${offAllowed ? `<select class="pick" id="pick-off"><option value="">None</option>${offOptions.map(x => `<option value="${x.w.id}|${x.a.id}" ${offPick && offPick.weaponId === x.w.id && offPick.attackId === x.a.id ? 'selected' : ''}>${esc(x.a.name)}</option>`).join('')}</select>` : `<span class="muted" style="font-size:.9rem">Needs a dagger in your main hand</span>`}</label>` : ''}
-              <div class="optrow"><span class="label">Target</span><div class="chips">${visibleFoes.map(f => `<button type="button" class="chip ${f.down ? 'down' : ''}" data-target="${f.id}" aria-pressed="${S.target === f.id}">${esc(f.name)}${f.down ? ' <span class="tag">Down</span>' : ''}${S.foeNotes[f.id] ? `<span class="note-dot" title="Has your notes"></span><span class="sr-only"> (has notes)</span>` : ''}</button>`).join('')}</div></div>
-              ${targetNote(visibleFoes.find(f => f.id === S.target))}
-              <div class="optrow"><span class="label">Situation</span><div class="chips">${Object.entries(SITUATIONS).map(([k, s]) => `<button type="button" class="chip" data-sit="${k}" aria-pressed="${S.situation.includes(k)}">${esc(s.label)}${s.hit ? ' ' + sign(s.hit) : ''}</button>`).join('')}</div></div>
-              <div class="optrow"><span class="label">Quick adjust</span><span class="seg"><button type="button" id="adj-dn" aria-label="Lower to-hit adjustment">−</button><button type="button" disabled aria-live="polite" style="opacity:1;cursor:default">${S.adjust ? sign(S.adjust) : 0}</button><button type="button" id="adj-up" aria-label="Raise to-hit adjustment">+</button></span></div>
-            </div>
-            <div class="nums">
-              <div class="cell big"><span class="lbl">${ICON.target}THAC0</span><span class="val">${cur.thac0}</span></div>
-              <div class="cell"><span class="lbl">${ICON.die}Dmg S/M · L</span><span class="val">${esc(cur.damage.sm)} · ${esc(cur.damage.l)}</span></div>
-              ${offCalc ? `<div class="cell"><span class="lbl">Off-hand</span><span class="val">${offCalc.thac0} · ${esc(offCalc.damage.sm)}</span></div>` : ''}
-            </div>
+        <section class="round" aria-labelledby="h-round">
+          <div class="panel-head"><h3 id="h-round">Your round ${pin('K')}</h3>${initMod ? `<span class="count">Adds ${esc(initMod)} to initiative</span>` : ''}</div>
+          <div class="seg fit" role="group" aria-label="What you're doing this round">${[['fight', 'Fight'], ['cast', 'Cast'], ['other', 'Something else']].map(([k, l]) => `<button type="button" data-action="${k}" aria-pressed="${S.action === k}">${l}</button>`).join('')}</div>
+          ${S.action === 'fight' ? `<div class="round-grid">
+            <label class="optrow"><span class="label">Main hand</span>
+              <select class="pick" id="main-hand">${weapons.map(w => `<option value="${w.id}" ${S.main === w.id ? 'selected' : ''}>${esc(w.name)}</option>`).join('')}<option value="unarmed" ${S.main === 'unarmed' ? 'selected' : ''}>Unarmed (punch or wrestle)</option></select></label>
+            ${mainW && modes.length > 1 ? `<div class="optrow"><span class="label">Used as</span><span class="seg fit" role="group" aria-label="Melee or thrown">${modes.map(m => `<button type="button" data-mode="${m}" aria-pressed="${S.mode === m}">${cap(m)} · ${esc(formatRate(computeAttack({ sheet: c, weaponId: mainW.id, attackId: `${mainW.id}:${m}`, round: rw }).attacksPerRound))}</button>`).join('')}</span></div>` : ''}
+            ${halfAttacks ? `<div class="optrow"><span class="label">This round <span class="tag">${esc(formatRate(apr))}</span></span>
+              <span class="seg fit" role="group" aria-label="Standard or bonus round"><button type="button" data-bonus="0" aria-pressed="${!S.bonusRound}">Standard · ${attacksInRound(apr)}</button><button type="button" data-bonus="1" aria-pressed="${S.bonusRound}">Bonus · ${attacksInRound(apr, { bonus: true })}</button></span>
+              <span class="muted hint">Used the extra attack? Next round is Standard. Didn't? It waits, but never stacks.</span></div>` : ''}
+            ${rule ? `<label class="optrow"><span class="label">Off-hand</span>
+              ${offAllowed ? `<select class="pick" id="pick-off"><option value="">None</option>${offOptions.map(x => `<option value="${x.w.id}|${x.a.id}" ${S.off && S.off.weaponId === x.w.id && S.off.attackId === x.a.id ? 'selected' : ''}>${esc(x.a.name.replace(/^Off-hand /, ''))}</option>`).join('')}</select>` : `<span class="muted" style="font-size:.9rem">Needs a dagger in your main hand</span>`}</label>` : ''}
+          </div>` : ''}
+          ${S.action === 'cast' ? `<div class="spells" role="radiogroup" aria-label="Ready spells">${ready.length ? ready.map(sp => { const info = spellInfo(sp); return `<button type="button" role="radio" class="spell ${S.cast[sp.id] ? 'spent' : ''}" data-spell="${sp.id}" aria-checked="${S.spell === sp.id}">
+              <span class="spell-name">${esc(sp.name)} <span class="tag">L${sp.level}</span>${S.cast[sp.id] ? ' <span class="tag">Cast</span>' : ''}</span>
+              <span class="spell-meta"><span>Cast time <b class="num">${esc(info.castTime || '—')}</b></span><span>Range ${esc(info.range || sp.notes || '—')}</span><span>Save ${esc(info.save || '—')}</span></span></button>`; }).join('') : '<span class="muted">No spells memorized on your sheet</span>'}</div>` : ''}
+          ${S.action === 'other' ? `<p class="muted" style="margin:0">Moving, using an item, helping someone up: nothing to roll here. Say it out loud; add an attack card below if the DM calls for one.</p>` : ''}
+          ${(c.__combatOptions || []).length ? `<details class="stances"><summary>Stances and abilities <span class="muted">${Object.keys(S.toggles).length ? Object.entries(S.toggles).map(([k, v]) => { const o = c.__combatOptions.find(x => x.id === k); return o ? `${o.name}${v === true ? '' : ': ' + v}` : ''; }).filter(Boolean).join(' · ') : 'none on'}</span></summary>${opts}</details>` : ''}
+        </section>
+        <section class="cards-wrap" aria-labelledby="h-atk">
+          <div class="panel-head"><h3 id="h-atk">${S.action === 'cast' ? 'Spell and attacks' : 'Attacks'} ${pin('E')}</h3>${(() => { const n = slots.filter(x => x.kind !== 'spell' || spellInfo(x.spell).attack).length; return n ? `<span class="count">${n} attack${n === 1 ? '' : 's'} this round</span>` : ''; })()}</div>
+          <div class="cards">${slots.map((sl, i) => attackCard(c, sl, i, visibleFoes)).join('')}
+            <button type="button" class="card add-card" id="add-attack"><span aria-hidden="true">＋</span> Add attack<span class="muted">when the DM allows one more</span></button>
           </div>
-          ${acTable(cur.thac0, offCalc && offCalc.thac0)}
-          <details class="math"><summary>Show the math</summary><table><tbody>${mathRows}</tbody></table></details>
-          <div class="rollrow">
-            <button type="button" class="btn" data-roll="main">Roll attack</button>
-            <span class="muted">or</span><input id="enter-main" inputmode="numeric" placeholder="d20" aria-label="Type your d20 for the attack"><button type="button" class="btn quiet" data-enter="main">Enter</button>
-            ${offCalc ? `<button type="button" class="btn secondary" data-roll="off">Roll off-hand</button>` : ''}
-            <button type="button" class="btn secondary" data-dmg="1">Roll damage</button>
-          </div>
-        </div>
-        <h3>Stances and abilities</h3>
-        ${opts}
+        </section>
       </section>
       <div class="side">
         <section class="panel" aria-labelledby="h-party">
@@ -492,7 +551,7 @@ function renderCombat() {
       ${FOES.filter(f => !f.hidden && !f.removed).map(f => `<button type="button" class="btn quiet" data-remove="${f.id}">Remove ${esc(f.name)}</button>`).join('')}
       ${FOES.some(f => f.removed) ? '<button type="button" class="btn quiet" id="restore-foes">Bring removed back</button>' : ''}</span></div>
   </div>`;
-  wireCombat(c, cur, offCalc, count);
+  wireCombat(c);
 }
 
 // Roll needed on the d20 to hit each AC: THAC0 − AC, kept between 1 and 20.
@@ -500,23 +559,85 @@ function renderCombat() {
 const ACS = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6, -7, -8, -9, -10];
 const need = (thac0, ac) => Math.min(Math.max(thac0 - ac, 1), 20);
 const band = r => (r <= 7 ? 'easy' : r <= 13 ? 'mid' : r <= 19 ? 'hard' : 'max');
+let acTableN = 0;
 function acTable(thac0, offThac0) {
+  const capId = `acm-cap-${++acTableN}`;
   const row = (label, t) => `<tr><th scope="row">${label}</th>${ACS.map(ac => { const r = need(t, ac); return `<td class="${band(r)}">${r}</td>`; }).join('')}</tr>`;
-  return `<div class="acm" role="region" aria-labelledby="acm-cap" tabindex="0">
-    <table><caption id="acm-cap">Roll needed to hit, by target AC</caption>
+  return `<div class="acm" role="region" aria-labelledby="${capId}" tabindex="0">
+    <table><caption id="${capId}">Roll needed to hit, by target AC</caption>
       <thead><tr><th scope="col">AC</th>${ACS.map(ac => `<th scope="col">${ac < 0 ? '−' + -ac : ac}</th>`).join('')}</tr></thead>
       <tbody>${row('Roll', thac0)}${offThac0 != null ? row('Off-hand', offThac0) : ''}</tbody></table></div>`;
 }
 
-// Your notes on the selected target: shown under the Target pills, editable in place
-function targetNote(f) {
+// Your notes on a card's target: shown under its Target pills, editable in place
+function targetNote(f, key) {
   if (!f) return '';
   const note = S.foeNotes[f.id] || '';
-  if (S.editingNote === f.id) return `<div class="tnote"><label for="tnote-inp">Your notes on ${esc(f.name)}</label>
-    <textarea id="tnote-inp" rows="2" placeholder="AC you've worked out, resistances, what it's done…">${esc(note)}</textarea>
-    <span class="tnote-actions"><button type="button" class="btn quiet" id="tnote-save">Save</button><button type="button" class="btn quiet" id="tnote-cancel">Cancel</button></span></div>`;
-  return `<div class="tnote"><span class="tnote-text ${note ? '' : 'muted'}">${note ? esc(note) : `No notes on ${esc(f.name)}`}</span>
-    <button type="button" class="btn quiet" id="tnote-edit" aria-label="${note ? 'Edit' : 'Add'} your notes on ${esc(f.name)}">${note ? 'Edit note' : 'Add note'}</button></div>`;
+  if (S.editingNote === key) return `<div class="tnote"><label for="tnote-${key}">Your notes on ${esc(f.name)}</label>
+    <textarea id="tnote-${key}" rows="2" placeholder="AC you've worked out, resistances, what it's done…">${esc(note)}</textarea>
+    <span class="tnote-actions"><button type="button" class="btn quiet" data-note-save="${key}">Save</button><button type="button" class="btn quiet" data-note-cancel="${key}">Cancel</button></span></div>`;
+  return `<div class="tnote"><span class="tnote-text ${note ? '' : 'muted'}">${note ? esc(note) : 'No notes'}</span>
+    <button type="button" class="linkbtn" data-note-edit="${key}" aria-label="${note ? 'Edit' : 'Add'} your notes on ${esc(f.name)}">${note ? 'Edit' : 'Add note'}</button></div>`;
+}
+
+// What a card computes: weapon (shared rules), unarmed (PHB Table 57) or spell
+function cardCalc(c, sl) {
+  const st = S.cards[sl.key];
+  const round = { toggles: S.toggles, situation: st.situation, adjust: st.adjust ? { hit: st.adjust, label: 'Quick adjust' } : undefined };
+  if (sl.kind === 'weapon') return computeAttack({ sheet: c, ...sl.pick, round });
+  if (sl.kind === 'unarmed') { const u = Unarmed.unarmedAttack({ sheet: c, round }); return { ...u, name: st.style === 'wrestle' ? 'Wrestle' : 'Punch', damage: null }; }
+  const info = spellInfo(sl.spell);
+  if (!info.attack) return { name: sl.spell.name, thac0: null };
+  const u = Unarmed.unarmedAttack({ sheet: { ...c, str: '10' }, round });   // touch: base THAC0 and situation, no Strength
+  return { ...u, name: sl.spell.name };
+}
+const fmtAc = n => (n < 0 ? `−${-n}` : `${n}`);
+function hitText(thac0, roll) {
+  if (roll === 20) return 'natural 20: hits';
+  const ac = thac0 - roll;
+  if (ac > 10) return 'misses even AC 10';
+  return `hits AC ${fmtAc(Math.max(ac, -10))} or worse`;
+}
+
+function attackCard(c, sl, i, foes) {
+  const st = S.cards[sl.key];
+  const calc = cardCalc(c, sl);
+  const title = sl.kind === 'spell' ? `Cast ${esc(sl.spell.name)}` : sl.kind === 'unarmed' ? 'Unarmed' : esc(sl.off ? calc.name.replace(/^Off-hand /, '') : calc.name);
+  const tag = sl.off ? '<span class="tag">Off-hand</span>' : sl.extra ? '<span class="tag">Extra</span>' : '';
+  const info = sl.kind === 'spell' ? spellInfo(sl.spell) : null;
+  const rolls = sl.kind !== 'spell' || (info && info.attack);
+  const target = foes.find(f => f.id === st.target);
+  let result = '';
+  if (st.roll) {
+    result = `<p class="result"><span class="num big-roll">${st.roll.value}</span> <span>${hitText(calc.thac0, st.roll.value)}</span></p>`;
+    if (sl.kind === 'unarmed') {
+      const r = Unarmed.unarmedResult(st.roll.value + calc.hitBonus);
+      result += st.style === 'wrestle'
+        ? `<p class="result-sub">If it hits: <b>${r.wrestle.name}</b>${r.wrestle.hold ? ' (hold: keep it up next round without a roll)' : ''}</p>`
+        : `<p class="result-sub">If it hits: <b>${r.punch.name}</b>, ${Math.max(0, r.punch.damage + calc.strDamage)} damage (75% temporary), ${r.punch.knockout}% knockout</p>`;
+    }
+  }
+  if (st.dmg) result += `<p class="result-sub">Damage <span class="num">${st.dmg}</span></p>`;
+  const ac = rolls && calc.thac0 != null ? `<details class="acd"><summary>Roll needed by AC</summary>${acTable(calc.thac0)}</details>` : '';
+  return `<article class="card ${st.roll ? 'done' : ''}" aria-labelledby="card-${sl.key}">
+    <div class="card-head"><h4 id="card-${sl.key}"><span class="card-n">${i + 1}</span>${title} ${tag}</h4>
+      ${rolls && calc.thac0 != null ? `<span class="card-nums"><span class="lbl">${ICON.target}THAC0</span> <b class="num">${calc.thac0}</b>${calc.damage ? ` <span class="lbl">${ICON.die}</span> <span class="num">${esc(calc.damage.sm)}${calc.damage.l !== calc.damage.sm ? ' · ' + esc(calc.damage.l) : ''}</span>` : ''}</span>` : ''}</div>
+    ${sl.kind === 'unarmed' ? `<span class="seg fit" role="group" aria-label="Punch or wrestle"><button type="button" data-style="${sl.key}|punch" aria-pressed="${st.style !== 'wrestle'}">Punch</button><button type="button" data-style="${sl.key}|wrestle" aria-pressed="${st.style === 'wrestle'}">Wrestle</button></span>` : ''}
+    ${info ? `<p class="spell-line">Cast time <b class="num">${esc(info.castTime || '—')}</b> · Range ${esc(info.range || '—')} · ${info.attack ? `Needs a ${info.attack} attack roll` : `No attack roll: target saves (${esc(info.save || '—')})`}</p><p class="muted spell-line">If you're hit before your turn comes, the spell is lost.</p>` : ''}
+    <div class="chips" role="group" aria-label="Target for attack ${i + 1}">${foes.map(f => `<button type="button" class="chip ${f.down ? 'down' : ''}" data-card-target="${sl.key}|${f.id}" aria-pressed="${st.target === f.id}">${esc(f.name)}${f.down ? ' <span class="tag">Down</span>' : ''}${S.foeNotes[f.id] ? `<span class="note-dot" title="Has your notes"></span><span class="sr-only"> (has notes)</span>` : ''}</button>`).join('')}</div>
+    ${targetNote(target, sl.key)}
+    ${rolls ? `<div class="chips" role="group" aria-label="Situation for attack ${i + 1}">${Object.entries(SITUATIONS).map(([k, s]) => `<button type="button" class="chip small" data-card-sit="${sl.key}|${k}" aria-pressed="${st.situation.includes(k)}">${esc(s.label)}${s.hit ? ' ' + sign(s.hit) : ''}</button>`).join('')}
+      <span class="seg mini" role="group" aria-label="Quick adjust for attack ${i + 1}"><button type="button" data-card-adj="${sl.key}|-1" aria-label="Lower to-hit">−</button><span class="adj num" aria-live="polite">${st.adjust ? sign(st.adjust) : '±0'}</span><button type="button" data-card-adj="${sl.key}|1" aria-label="Raise to-hit">+</button></span></div>` : ''}
+    ${result}
+    <div class="rollrow">
+      ${rolls ? `<button type="button" class="btn" data-card-roll="${sl.key}">${st.roll ? 'Re-roll' : 'Roll'}</button>
+      <input inputmode="numeric" placeholder="d20" aria-label="Type your d20 for attack ${i + 1}" data-card-input="${sl.key}"><button type="button" class="btn quiet" data-card-enter="${sl.key}">Enter</button>
+      ${calc.damage ? `<button type="button" class="btn secondary" data-card-dmg="${sl.key}">Damage</button>` : ''}` : `<button type="button" class="btn" data-card-cast="${sl.key}">${S.cast[sl.spell.id] ? 'Cast again' : 'Cast'}</button>`}
+      ${st.roll || st.dmg ? `<button type="button" class="linkbtn" data-card-clear="${sl.key}">Clear</button>` : ''}
+      ${sl.extra ? `<button type="button" class="linkbtn" data-card-remove="${sl.key}">Remove card</button>` : ''}
+    </div>
+    ${ac}
+  </article>`;
 }
 
 // One-line summary: the first sentence (or the first ~110 characters)
@@ -550,7 +671,7 @@ function setHp(value) {
   } catch (e) { /* the sheet hasn't loaded */ }
 }
 
-function wireCombat(c, cur, offCalc, count) {
+function wireCombat(c) {
   const host = $('tab-combat');
   const hpNow = parseInt(c['hp-current'], 10) || 0, hpMax = parseInt(c['hp-max'], 10) || 0;
   // Current HP is edited in place; the change is saved when you leave the box or press Enter
@@ -568,40 +689,67 @@ function wireCombat(c, cur, offCalc, count) {
   $('hp-inp').oninput = e => { e.target.style.width = `${Math.max(2, e.target.value.length)}ch`; };
   $('hp-inp').onkeydown = e => { if (e.key === 'Enter') e.target.blur(); };
   host.querySelectorAll('[data-opt]').forEach(b => b.onclick = () => { const o = c.__combatOptions.find(x => x.id === b.dataset.opt); const v = b.dataset.val; if (v === 'Off') delete S.toggles[o.id]; else S.toggles[o.id] = o.choice ? v : true; renderCombat(); });
-  $('pick').onchange = e => { const [w, a] = e.target.value.split('|'); S.pick = { weaponId: w, attackId: a }; renderCombat(); };
+  // Your round
+  host.querySelectorAll('[data-action]').forEach(b => b.onclick = () => { S.action = b.dataset.action; renderCombat(); });
+  // A different weapon or way of using it starts the cards fresh (results stay in the log)
+  const clearResults = () => { for (const st of Object.values(S.cards)) { st.roll = null; st.dmg = null; } };
+  const mh = $('main-hand'); if (mh) mh.onchange = e => { S.main = e.target.value; clearResults(); renderCombat(); };
+  host.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => { if (S.mode !== b.dataset.mode) clearResults(); S.mode = b.dataset.mode; renderCombat(); });
   host.querySelectorAll('[data-bonus]').forEach(b => b.onclick = () => { S.bonusRound = b.dataset.bonus === '1'; renderCombat(); });
   const po = $('pick-off'); if (po) po.onchange = e => { S.off = e.target.value ? { weaponId: e.target.value.split('|')[0], attackId: e.target.value.split('|')[1] } : false; renderCombat(); };
-  host.querySelectorAll('[data-target]').forEach(b => b.onclick = () => { S.target = b.dataset.target; S.editingNote = null; renderCombat(); });
-  const te = $('tnote-edit'); if (te) te.onclick = () => { S.editingNote = S.target; renderCombat(); $('tnote-inp').focus(); };
-  const ts = $('tnote-save'); if (ts) ts.onclick = () => { const v = $('tnote-inp').value.trim(); if (v) S.foeNotes[S.target] = v; else delete S.foeNotes[S.target]; S.editingNote = null; renderCombat(); $('tnote-edit')?.focus(); };
-  const tc = $('tnote-cancel'); if (tc) tc.onclick = () => { S.editingNote = null; renderCombat(); $('tnote-edit')?.focus(); };
-  host.querySelectorAll('[data-sit]').forEach(b => b.onclick = () => { const k = b.dataset.sit; S.situation = S.situation.includes(k) ? S.situation.filter(x => x !== k) : [...S.situation, k]; renderCombat(); });
-  $('adj-up').onclick = () => { S.adjust++; renderCombat(); };
-  $('adj-dn').onclick = () => { S.adjust--; renderCombat(); };
-  const tgt = () => (FOES.find(f => f.id === S.target) || {}).name || 'no target';
+  host.querySelectorAll('[data-spell]').forEach(b => b.onclick = () => { S.spell = b.dataset.spell; renderCombat(); });
+  $('add-attack').onclick = () => { S.extras.push(Date.now().toString(36)); renderCombat(); };
+
+  // Cards
+  const each = (attr, fn) => host.querySelectorAll(`[${attr}]`).forEach(b => b.onclick = () => { const [key, v] = b.getAttribute(attr).split('|'); fn(S.cards[key], v, key, b); renderCombat(); });
+  const tgtName = st => (FOES.find(f => f.id === st.target) || {}).name || 'no target';
   const log = (what, value, source) => { S.log.push({ what, value, source }); };
-  const attack = (value, source) => { log(`Jaque · ${cur.name} → ${tgt()} · d20`, value, source); renderCombat(); };
-  host.querySelectorAll('[data-roll="main"]').forEach(b => b.onclick = () => attack(Math.floor(Math.random() * 20) + 1, 'rolled'));
-  host.querySelectorAll('[data-enter="main"]').forEach(b => b.onclick = () => {
-    const inp = $('enter-main'); const v = parseInt(inp.value, 10);
-    if (v >= 1 && v <= 20) attack(v, 'entered'); else { inp.setCustomValidity('Enter a number from 1 to 20'); inp.reportValidity(); inp.setCustomValidity(''); }
+  const slotOf = key => currentSlots.find(x => x.key === key);
+  const slotName = key => { const sl = slotOf(key); return sl.kind === 'spell' ? sl.spell.name : sl.kind === 'unarmed' ? cardCalc(c, sl).name : cardCalc(c, sl).name; };
+  const thac0Of = key => cardCalc(c, slotOf(key)).thac0;
+  const roll = (key, value, source) => {
+    const st = S.cards[key];
+    st.roll = { value, source }; st.dmg = null;
+    log(`Jaque · ${slotName(key)} → ${tgtName(st)} · ${hitText(thac0Of(key), value)}`, value, source);
+  };
+  each('data-card-target', (st, v) => { st.target = v; S.editingNote = null; });
+  each('data-card-sit', (st, v) => { st.situation = st.situation.includes(v) ? st.situation.filter(x => x !== v) : [...st.situation, v]; });
+  each('data-card-adj', (st, v) => { st.adjust += Number(v); });
+  each('data-style', (st, v) => { st.style = v; });
+  each('data-card-roll', (st, v, key) => roll(key, Math.floor(Math.random() * 20) + 1, 'rolled'));
+  host.querySelectorAll('[data-card-enter]').forEach(b => b.onclick = () => {
+    const key = b.dataset.cardEnter; const inp = host.querySelector(`[data-card-input="${CSS.escape(key)}"]`); const v = parseInt(inp.value, 10);
+    if (v >= 1 && v <= 20) { roll(key, v, 'entered'); renderCombat(); } else { inp.setCustomValidity('Enter a number from 1 to 20'); inp.reportValidity(); inp.setCustomValidity(''); }
   });
-  host.querySelectorAll('[data-roll="off"]').forEach(b => b.onclick = () => { log(`Jaque · ${offCalc.name} → ${tgt()} · d20`, Math.floor(Math.random() * 20) + 1, 'rolled'); renderCombat(); });
-  host.querySelectorAll('[data-dmg]').forEach(b => b.onclick = () => {
-    const m = cur.damage.sm.match(/^(\d+)d(\d+)([+-]\d+)?$/); let total = 0;
-    for (let i = 0; i < +m[1]; i++) total += Math.floor(Math.random() * +m[2]) + 1;
-    total += m[3] ? +m[3] : 0;
-    log(`Jaque · damage ${cur.damage.sm} → ${tgt()}`, total, 'rolled'); renderCombat();
+  host.querySelectorAll('[data-card-input]').forEach(inp => inp.onkeydown = e => { if (e.key === 'Enter') host.querySelector(`[data-card-enter="${CSS.escape(inp.dataset.cardInput)}"]`).click(); });
+  each('data-card-dmg', (st, v, key, b) => {
+    const d = cardCalc(c, slotOf(key)).damage;
+    const dice = d.l !== d.sm ? [d.sm, d.l] : [d.sm];
+    const rollDice = d => { const m = d.match(/^(\d+)d(\d+)([+-]\d+)?$/); if (!m) return parseInt(d, 10) || 0; let t = 0; for (let i = 0; i < +m[1]; i++) t += Math.floor(Math.random() * +m[2]) + 1; return Math.max(1, t + (m[3] ? +m[3] : 0)); };
+    const vals = dice.map(rollDice);
+    st.dmg = vals.length > 1 ? `${vals[0]} vs S/M · ${vals[1]} vs L` : `${vals[0]}`;
+    log(`Jaque · ${slotName(key)} damage → ${tgtName(st)}`, st.dmg, 'rolled');
   });
+  each('data-card-cast', (st, v, key) => { S.cast[S.spell] = true; log(`Jaque casts ${slotName(key)} → ${tgtName(st)}`, '✦', 'spell'); });
+  each('data-card-clear', st => { st.roll = null; st.dmg = null; });
+  host.querySelectorAll('[data-card-remove]').forEach(b => b.onclick = () => { const key = b.dataset.cardRemove; S.extras = S.extras.filter(id => `extra-${id}` !== key); delete S.cards[key]; renderCombat(); });
+  // Notes on a card's target
+  host.querySelectorAll('[data-note-edit]').forEach(b => b.onclick = () => { S.editingNote = b.dataset.noteEdit; renderCombat(); $(`tnote-${S.editingNote}`)?.focus(); });
+  host.querySelectorAll('[data-note-save]').forEach(b => b.onclick = () => { const key = b.dataset.noteSave; const f = S.cards[key].target; const v = $(`tnote-${key}`).value.trim(); if (v) S.foeNotes[f] = v; else delete S.foeNotes[f]; S.editingNote = null; renderCombat(); host.querySelector(`[data-note-edit="${CSS.escape(key)}"]`)?.focus(); });
+  host.querySelectorAll('[data-note-cancel]').forEach(b => b.onclick = () => { const key = b.dataset.noteCancel; S.editingNote = null; renderCombat(); host.querySelector(`[data-note-edit="${CSS.escape(key)}"]`)?.focus(); });
   $('next-turn').onclick = () => { S.turn = (S.turn + 1) % liveOrder().length; renderCombat(); };
   // DM stand-ins: a foe that goes down stays listed (greyed, last); if it was
   // your target, the target moves to the first foe still standing
-  const retarget = () => { const t = FOES.find(f => f.id === S.target); if (!t || t.down || t.removed) S.target = (shownFoes().find(f => !f.down) || {}).id || null; };
+  const retarget = () => { const up = (shownFoes().find(f => !f.down) || {}).id || null; for (const st of Object.values(S.cards)) { const t = FOES.find(f => f.id === st.target); if (!t || t.down || t.removed) st.target = up; } };
   host.querySelectorAll('[data-down]').forEach(b => b.onclick = () => { const f = FOES.find(x => x.id === b.dataset.down); f.down = !f.down; retarget(); renderCombat(); });
   host.querySelectorAll('[data-remove]').forEach(b => b.onclick = () => { FOES.find(x => x.id === b.dataset.remove).removed = true; retarget(); renderCombat(); });
   const rf = $('restore-foes'); if (rf) rf.onclick = () => { FOES.forEach(f => delete f.removed); renderCombat(); };
   $('new-round').onclick = () => {
     for (const o of c.__combatOptions || []) if (!o.sticks) delete S.toggles[o.id];
+    // New round: cards clear (results and extra cards); targets and situations stay as a starting point
+    for (const st of Object.values(S.cards)) { st.roll = null; st.dmg = null; }
+    for (const id of S.extras) delete S.cards[`extra-${id}`];
+    S.extras = [];
     S.round += 1; S.turn = 0; renderCombat();
   };
 }
