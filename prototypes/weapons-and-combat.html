@@ -977,6 +977,44 @@ function sameAbility(a, b) {
 
 return { COMBAT_ROLES, guessCombatRole, sameAbility };
 })();
+// ── rules/spells ──
+__m["rules/spells"] = (() => {
+
+// The campaign's shared spell catalog (data/spell-catalog.json): one short
+// stat block per spell, used by every character. Sheets keep their own spell
+// entries (name, level, memorized, notes); this finds the matching stat block.
+
+const key = s => String(s || '').toLowerCase().replace(/['’]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+
+// The catalog entry for a sheet spell: by name or alias, preferring the
+// spell's class (wizard/priest) when the name is used by both (Light).
+function findSpell(catalog, sheetSpell, spellClass) {
+  const k = key(sheetSpell.name);
+  const matches = (catalog.spells || catalog).filter(e => key(e.name) === k || (e.aliases || []).some(a => key(a) === k));
+  if (matches.length <= 1) return matches[0] || null;
+  const cls = spellClass || sheetSpell.type;
+  return matches.find(e => e.class === cls) || matches.find(e => e.level === Number(sheetSpell.level)) || matches[0];
+}
+
+// Fields a catalog entry needs before Combat can use it fully
+const SPELL_FIELDS = [
+  ['castTime', 'Casting time', 'Segments (or "1 rd"); adds to your initiative', 'e.g. 1'],
+  ['range', 'Range', 'As written in the book', 'e.g. 60 yds'],
+  ['duration', 'Duration', 'How long it lasts', 'e.g. 1 rd/level'],
+  ['area', 'Area or targets', 'Who or what it affects', 'e.g. 1 creature'],
+  ['save', 'Save', 'What a save does: Negates, ½, None', 'e.g. Negates'],
+  ['attack', 'Attack roll', 'Whether the caster rolls to hit', 'none, touch or ranged'],
+  ['dice', 'Damage or healing dice', 'Leave blank if none', 'e.g. 1d8'],
+  ['summary', 'Summary', 'One line, in your own words (not the book\'s text)', ''],
+  ['link', 'Link', 'Where to read the full spell', 'https://…'],
+];
+
+function missingFields(entry) {
+  return ['castTime', 'range', 'duration', 'save'].filter(f => !entry || !String(entry[f] || '').trim());
+}
+
+return { findSpell, SPELL_FIELDS, missingFields };
+})();
 // ── rules/character ──
 __m["rules/character"] = (() => {
 const {DEX_TABLE} = __m["rules/tables"];
@@ -1668,6 +1706,7 @@ return { toDMHelper, formatDMHelperConfig };
 })();
 window.Rules = { computeAttack: __m["rules/attacks"].computeAttack, listAttacks: __m["rules/attacks"].listAttacks, weaponAttacks: __m["rules/attacks"].weaponAttacks, planRound: __m["rules/attacks"].planRound, attacksThisRound: __m["rules/attacks"].attacksThisRound, attacksInRound: __m["rules/attacks"].attacksInRound, hasBonusRounds: __m["rules/attacks"].hasBonusRounds, formatRate: __m["rules/attacks"].formatRate, offHandAttacks: __m["rules/attacks"].offHandAttacks, effectiveLevel: __m["rules/attacks"].effectiveLevel, SITUATIONS: __m["rules/attacks"].SITUATIONS };
 window.Weapons = { resolveWeapon: __m["rules/weapons"].resolveWeapon, PHB_WEAPONS: __m["rules/weapons"].PHB_WEAPONS };
+window.Spells = { findSpell: __m["rules/spells"].findSpell, SPELL_FIELDS: __m["rules/spells"].SPELL_FIELDS, missingFields: __m["rules/spells"].missingFields };
 window.Abilities = { COMBAT_ROLES: __m["rules/abilities"].COMBAT_ROLES, guessCombatRole: __m["rules/abilities"].guessCombatRole, sameAbility: __m["rules/abilities"].sameAbility };
 window.Unarmed = { unarmedAttack: __m["rules/unarmed"].unarmedAttack, unarmedResult: __m["rules/unarmed"].unarmedResult };
 window.Character = { armorClass: __m["rules/character"].armorClass, savingThrows: __m["rules/character"].savingThrows, proficiencyTargets: __m["rules/character"].proficiencyTargets, hpState: __m["rules/character"].hpState, HP_FLOOR: __m["rules/character"].HP_FLOOR };

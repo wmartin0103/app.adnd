@@ -394,6 +394,14 @@ Helper pick from (see section 9).
     abilities (with Uses and Save); "Changes an attack" abilities (with a
     To hit value) are options on each attack card. Magic items may get their
     own round choice later.
+18. **Weapon rows hold final numbers (decided):** to-hit and damage as the
+    player writes them (Strength, proficiency, magic, kit included), as the
+    converted saves already do. The app adds only base THAC0 and what's
+    toggled this round. Inputs must be clearly labelled for players.
+19. **Shared spell catalog (decided):** one short stat block per spell for
+    the whole campaign (`data/spell-catalog.json`), never the book's text;
+    anyone in the group can add or edit. PHB stats pre-filled for the spells
+    in the current saves (marked "check" until compared with the book).
 
 ---
 

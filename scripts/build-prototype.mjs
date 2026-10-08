@@ -12,6 +12,7 @@ const rules = bundle(RULES_FILES, {
   expose: {
     Rules: ['rules/attacks', ['computeAttack', 'listAttacks', 'weaponAttacks', 'planRound', 'attacksThisRound', 'attacksInRound', 'hasBonusRounds', 'formatRate', 'offHandAttacks', 'effectiveLevel', 'SITUATIONS']],
     Weapons: ['rules/weapons', ['resolveWeapon', 'PHB_WEAPONS']],
+    Spells: ['rules/spells', ['findSpell', 'SPELL_FIELDS', 'missingFields']],
     Abilities: ['rules/abilities', ['COMBAT_ROLES', 'guessCombatRole', 'sameAbility']],
     Unarmed: ['rules/unarmed', ['unarmedAttack', 'unarmedResult']],
     Character: ['rules/character', ['armorClass', 'savingThrows', 'proficiencyTargets', 'hpState', 'HP_FLOOR']],
@@ -20,6 +21,7 @@ const rules = bundle(RULES_FILES, {
 });
 const v1 = readFileSync('samples/jaque_09-23.json', 'utf8');
 const v2 = readFileSync('test/fixtures/jaque-v2.json', 'utf8');
+const spellCatalog = readFileSync('data/spell-catalog.json', 'utf8');
 
 // Jaque's current sheet save: the 09-23 save with the thief skill Kit/Misc
 // corrections made on 10-07 (Open Locks +20, Find/Remove Traps 0).
@@ -28,6 +30,9 @@ current.__thiefSkillAlloc.kit = { ...current.__thiefSkillAlloc.kit, ol: 20, frt:
 // …and Trick Throw's to-hit filled in on its ability card (In combat: Changes an attack)
 const trick = current.__abilitiesCards.find(a => a.name === 'Trick Throw');
 if (trick) trick.hitAdj = '-2';
+// …and Sound Bubble memorized, to show a spell whose catalog entry needs details
+const bubble = current.__spells.find(sp => sp.name === 'Sound Bubble' && !sp.isMemorized);
+if (bubble) current.__spells.push({ ...bubble, id: 'spl-90', isMemorized: true, sourceId: bubble.id });
 
 // Whole pages embedded as JS strings. "<" is escaped so nothing inside can
 // close the surrounding <script> tag.
@@ -40,6 +45,7 @@ for (const file of readdirSync('prototypes').filter(f => f.endsWith('.template.h
     .replace('/*__RULES__*/', () => rules)
     .replace('/*__JAQUE_V1__*/', () => v1.trim())
     .replace('/*__JAQUE_V2__*/', () => v2.trim())
+    .replace('/*__SPELL_CATALOG__*/', () => spellCatalog.trim())
     .replace('/*__JAQUE_SHEET__*/', () => JSON.stringify(current))
     .replace('/*__SHEET_HTML__*/', () => asJsString(sheetHtml))
     .replace('/*__DM_HTML__*/', () => asJsString(dmHtml));

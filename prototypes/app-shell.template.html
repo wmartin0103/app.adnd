@@ -155,6 +155,15 @@ select.pick { border: 1px solid var(--rule); border-radius: var(--radius); backg
 .acd summary { cursor: pointer; color: var(--accent); font-size: 0.85rem; }
 .acd .acm { margin-top: 6px; }
 .chip.abil[aria-pressed="false"] { border-style: dashed; }
+.spell-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr)); gap: 4px 12px; margin: 0; font-size: 0.88rem; }
+.spell-stats dt { font-family: var(--font-display); font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-muted); }
+.spell-stats dd { margin: 0; }
+.warn-line { color: var(--warn); }
+.spellform { display: grid; gap: 8px; background: var(--sunk); border-radius: var(--radius); padding: 8px; }
+.sf-row { display: grid; gap: 2px; font-size: 0.9rem; }
+.sf-row span { font-weight: 600; }
+.sf-row input, .sf-row select { font: inherit; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--surface); color: var(--ink); padding: 3px 6px; min-width: 0; }
+.sf-row small { color: var(--ink-muted); font-size: 0.8rem; }
 .add-card { border-style: dashed; border-color: var(--rule); color: var(--accent); font-family: var(--font-display); font-size: 0.8rem; letter-spacing: 0.05em; place-items: center; min-height: 64px; text-align: center; }
 .add-card .muted { display: block; font-family: var(--font-body); font-size: 0.8rem; letter-spacing: 0; }
 .seg.fit { justify-self: start; width: fit-content; }
@@ -295,6 +304,7 @@ const NOTES = [
   ['C', 'Encounter at a glance', 'Round and initiative order for everyone: hidden foes don\'t appear, and a foe with hidden initiative shows "?". Whose turn it is is highlighted, and so is your place in the order.'],
   ['D', 'Party and foes', 'Everyone\'s exact HP and conditions, so nobody has to ask "how hurt are you?" mid-fight. Foes show only what\'s visible on the battlefield, never AC, plus your own notes on them (private to you; they replace the sheet\'s Enemy Tracker). The list comes from the DM\'s encounter. A foe that goes down stays listed, greyed and last, with your notes, and drops out of initiative; the DM can remove it for good. Try the Down / Remove buttons at the bottom.'],
   ['I', 'Quick reference, not a second sheet', 'Saves, abilities, ready spells, and proficiency checks: the things you\'d otherwise flip to the sheet for mid-fight. Each section collapses; abilities show a one-line summary that expands to the full text from your sheet.'],
+  ['L', 'Spells come from a shared catalog', 'Each spell is a short stat block (casting time, range, duration, area, save, attack roll, dice, a one-line summary in your own words, a link to the full text) kept once for the whole campaign. Anyone can add or edit an entry from the spell card; the stats for the PHB spells in your saves are pre-filled. Spells without details are marked so the first person who casts one fills it in.'],
   ['K', 'Your round, then your attacks', 'Round-wide choices sit together: Fight, Cast or Ability; what\'s in each hand and how the main hand is used (melee or thrown, which sets how many cards you get); Standard or Bonus round; stances; what adds to initiative. Cast lists memorized spells with casting time, range and save. Ability lists the abilities on your sheet set to \"Uses your round\" (Defensive Spin, Weapons Display; Turn Undead for a cleric). Abilities set to \"Changes an attack\" (Trick Throw, Backstab) are options on each attack card; \"Stance\" ones stay as round toggles. Each ability card on the sheet has an In combat setting the app pre-fills from its wording and marks guessed until confirmed. Unarmed uses the PHB punch and wrestle table.'],
   ['E', 'One card per attack, no lock-in', 'Each attack has its own target, situation and adjustment, because Jaque\'s three thrown daggers can go three ways at three points in the round. A new card copies the card before it, so "all at Orc 1" is no extra taps. After a roll the card says what it hits ("hits AC 2 or worse"), since foe AC is the DM\'s secret. Cards aren\'t a quota: skip one, re-roll, clear, or add one when the DM allows. They clear when the DM starts a new round.'],
   ['F', 'Your numbers come from the sheet', 'Ability scores, HP, AC, class and level, plus the abilities, spells and proficiencies in Quick reference, are read from the Sheet tab. Change Jaque\'s Dex on the sheet and the THAC0s here change. The weapon list is the sheet\'s Weapons section and nothing else: one entry per weapon and way it\'s used (melee, thrown). Bonuses and stances (Signature Weapon, Bladesong…) still come from the reviewed v2 data until ability cards carry their combat effects.'],
@@ -302,16 +312,32 @@ const NOTES = [
   ['H', 'Built for a half-width window', 'Combat stacks into one column at half-window and puts party, foes and the log beside you at tablet width. Sheet and DM keep their own responsive layouts.'],
 ];
 
-// Casting details per spell (PHB). The sheet's spellbook entries will get these
-// as fields (cast time, range, save, attack roll), the way weapons got speed.
-const SPELL_INFO = {
-  'charm person': { castTime: '1', range: '120 yds', save: 'Negates', attack: null },
-  'feather fall': { castTime: '1', range: '10 yds/level', save: 'None', attack: null },
-  'ventriloquism': { castTime: '1', range: '10 yds/level (90 yds max)', save: 'Negates', attack: null },
-  "tasha's uncontrollable hideous laughter": { castTime: '2', range: '60 yds', save: 'Negates', attack: null },
-  'shocking grasp': { castTime: '1', range: 'Touch', save: 'None', attack: 'touch' },
+// The campaign's shared spell catalog (data/spell-catalog.json). Anyone in the
+// group can add or edit an entry; here edits live in this page only.
+const SPELL_CATALOG = /*__SPELL_CATALOG__*/;
+const catalogNow = () => {
+  const base = SPELL_CATALOG.spells.map(e => S.catalogEdits[e.id] || e);
+  return base.concat(Object.values(S.catalogEdits).filter(e => !SPELL_CATALOG.spells.some(x => x.id === e.id)));
 };
-const spellInfo = sp => SPELL_INFO[String(sp.name || '').toLowerCase()] || { castTime: '', range: '', save: '', attack: null };
+let spellClassNow = '';
+const spellEntry = sp => Spells.findSpell(catalogNow(), sp, spellClassNow);
+const spellInfo = sp => {
+  const e = spellEntry(sp);
+  return e ? { ...e, attack: e.attack && e.attack !== 'none' ? e.attack : null, missing: Spells.missingFields(e) }
+    : { name: sp.name, castTime: '', range: '', duration: '', save: '', attack: null, dice: '', summary: '', link: sp.url || '', missing: ['castTime', 'range', 'duration', 'save'], notInCatalog: true };
+};
+// Edit form for a spell's catalog entry: labelled fields, each with a hint
+function spellForm(sp, key) {
+  const e = spellEntry(sp) || { name: sp.name, class: spellClassNow || sp.type, level: sp.level };
+  const hintId = f => `sf-${key}-${f}-hint`;
+  return `<form class="spellform" data-spellform="${key}" aria-label="Catalog details for ${esc(sp.name)}">
+    <p class="muted" style="margin:0">Shared with everyone in the campaign. Short facts only; link to the full text.</p>
+    ${Spells.SPELL_FIELDS.map(([f, label, hint, ph]) => f === 'attack'
+      ? `<label class="sf-row"><span>${label}</span><select name="attack" aria-describedby="${hintId(f)}">${['none', 'touch', 'ranged'].map(v => `<option ${String(e.attack || 'none') === v ? 'selected' : ''}>${v}</option>`).join('')}</select><small id="${hintId(f)}">${esc(hint)}</small></label>`
+      : `<label class="sf-row"><span>${label}</span><input name="${f}" value="${esc(e[f] || '')}" placeholder="${esc(ph)}" aria-describedby="${hintId(f)}"><small id="${hintId(f)}">${esc(hint)}</small></label>`).join('')}
+    <span class="tnote-actions"><button type="submit" class="btn">Save to catalog</button><button type="button" class="btn quiet" data-spellform-cancel="${key}">Cancel</button></span>
+  </form>`;
+}
 
 const WIDTHS = [['Half window', 720], ['Tablet', 1024], ['Phone', 390]];
 const PARTY = [
@@ -342,7 +368,7 @@ const S = {
   cards: { 'main-0': { target: 'orc-1', situation: ['flanking'], adjust: 0 } }, extras: [], cast: {},
   // Your own notes on each foe (stand-in for the sheet's old Enemy Tracker)
   foeNotes: { 'orc-1': 'Shield on left arm. Took 2 daggers already.' }, editingNote: null,
-  bonusRound: false, log: [],   // standard or bonus round: the player's call, never changed by the app
+  bonusRound: false, log: [], catalogEdits: {}, editingSpell: null,   // standard or bonus round: the player's call, never changed by the app
 };
 
 // ── The character Combat uses: ability scores, HP, AC, class, weapons and weapon
@@ -464,6 +490,7 @@ function renderCombat() {
   const offAllowed = !!rule && !!roundCalc && (!needs || needs.includes(roundCalc.category));
   const offOptions = offAllowed ? weapons.flatMap(w => offHandAttacks(c, w).map(a => ({ w, a }))) : [];
   if (!offAllowed || (S.off && !offOptions.some(x => x.w.id === S.off.weaponId && x.a.id === S.off.attackId))) S.off = false;
+  spellClassNow = c.__spellClass || '';
   const ready = (c.__spells || []).filter(x => x.isMemorized);
   if (S.spell && !ready.some(x => x.id === S.spell)) S.spell = null;
   const spell = ready.find(x => x.id === S.spell);
@@ -529,7 +556,7 @@ function renderCombat() {
               ${offAllowed ? `<select class="pick" id="pick-off"><option value="">None</option>${offOptions.map(x => `<option value="${x.w.id}|${x.a.id}" ${S.off && S.off.weaponId === x.w.id && S.off.attackId === x.a.id ? 'selected' : ''}>${esc(x.a.name.replace(/^Off-hand /, ''))}</option>`).join('')}</select>` : `<span class="muted" style="font-size:.9rem">Needs a dagger in your main hand</span>`}</label>` : ''}
           </div>` : ''}
           ${S.action === 'cast' ? `<div class="spells" role="radiogroup" aria-label="Ready spells">${ready.length ? ready.map(sp => { const info = spellInfo(sp); return `<button type="button" role="radio" class="spell ${S.cast[sp.id] ? 'spent' : ''}" data-spell="${sp.id}" aria-checked="${S.spell === sp.id}">
-              <span class="spell-name">${esc(sp.name)} <span class="tag">L${sp.level}</span>${S.cast[sp.id] ? ' <span class="tag">Cast</span>' : ''}</span>
+              <span class="spell-name">${esc(sp.name)} <span class="tag">L${sp.level}</span>${S.cast[sp.id] ? ' <span class="tag">Cast</span>' : ''}${info.missing.length ? ' <span class="tag warn">needs details</span>' : ''}</span>
               <span class="spell-meta"><span>Cast time <b class="num">${esc(info.castTime || '—')}</b></span><span>Range ${esc(info.range || sp.notes || '—')}</span><span>Save ${esc(info.save || '—')}</span></span></button>`; }).join('') : '<span class="muted">No spells memorized on your sheet</span>'}</div>` : ''}
           ${S.action === 'ability' ? `<div class="spells" role="radiogroup" aria-label="Abilities that use your round">${roundAbilities.length ? roundAbilities.map(a => `<button type="button" role="radio" class="spell" data-ability="${a.id}" aria-checked="${S.ability === a.id}">
               <span class="spell-name">${esc(a.name)}${a.combatRoleGuessed ? ' <span class="tag">guessed</span>' : ''}</span>
@@ -537,7 +564,7 @@ function renderCombat() {
           ${(c.__combatOptions || []).length ? `<details class="stances"><summary>Stances and abilities <span class="muted">${Object.keys(S.toggles).length ? Object.entries(S.toggles).map(([k, v]) => { const o = c.__combatOptions.find(x => x.id === k); return o ? `${o.name}${v === true ? '' : ': ' + v}` : ''; }).filter(Boolean).join(' · ') : 'none on'}</span></summary>${opts}</details>` : ''}
         </section>
         <section class="cards-wrap" aria-labelledby="h-atk">
-          <div class="panel-head"><h3 id="h-atk">${S.action === 'cast' ? 'Spell and attacks' : S.action === 'ability' ? 'Ability and attacks' : 'Attacks'} ${pin('E')}</h3>${(() => { const n = slots.filter(x => x.kind === 'weapon' || x.kind === 'unarmed' || (x.kind === 'spell' && spellInfo(x.spell).attack)).length; return n ? `<span class="count">${n} attack${n === 1 ? '' : 's'} this round</span>` : ''; })()}</div>
+          <div class="panel-head"><h3 id="h-atk">${S.action === 'cast' ? `Spell and attacks ${pin('L')}` : S.action === 'ability' ? 'Ability and attacks' : 'Attacks'} ${pin('E')}</h3>${(() => { const n = slots.filter(x => x.kind === 'weapon' || x.kind === 'unarmed' || (x.kind === 'spell' && spellInfo(x.spell).attack)).length; return n ? `<span class="count">${n} attack${n === 1 ? '' : 's'} this round</span>` : ''; })()}</div>
           <div class="cards">${slots.map((sl, i) => attackCard(c, sl, i, visibleFoes, attackAbilities)).join('')}
             <button type="button" class="card add-card" id="add-attack"><span aria-hidden="true">＋</span> Add attack<span class="muted">when the DM allows one more</span></button>
           </div>
@@ -610,7 +637,7 @@ function cardCalc(c, sl) {
   if (sl.kind === 'weapon') return computeAttack({ sheet: c, ...sl.pick, round });
   if (sl.kind === 'unarmed') { const u = Unarmed.unarmedAttack({ sheet: c, round }); return { ...u, name: st.style === 'wrestle' ? 'Wrestle' : 'Punch', damage: null }; }
   const info = spellInfo(sl.spell);
-  if (!info.attack) return { name: sl.spell.name, thac0: null };
+  if (!info.attack) return { name: sl.spell.name, thac0: null };   // no attack roll
   const u = Unarmed.unarmedAttack({ sheet: { ...c, str: '10' }, round });   // touch: base THAC0 and situation, no Strength
   return { ...u, name: sl.spell.name };
 }
@@ -646,7 +673,14 @@ function attackCard(c, sl, i, foes, attackAbilities = []) {
     <div class="card-head"><h4 id="card-${sl.key}"><span class="card-n">${i + 1}</span>${title} ${tag}</h4>
       ${rolls && calc.thac0 != null ? `<span class="card-nums"><span class="lbl">${ICON.target}THAC0</span> <b class="num">${calc.thac0}</b>${calc.damage ? ` <span class="lbl">${ICON.die}</span> <span class="num">${esc(calc.damage.sm)}${calc.damage.l !== calc.damage.sm ? ' · ' + esc(calc.damage.l) : ''}</span>` : ''}</span>` : ''}</div>
     ${sl.kind === 'unarmed' ? `<span class="seg fit" role="group" aria-label="Punch or wrestle"><button type="button" data-style="${sl.key}|punch" aria-pressed="${st.style !== 'wrestle'}">Punch</button><button type="button" data-style="${sl.key}|wrestle" aria-pressed="${st.style === 'wrestle'}">Wrestle</button></span>` : ''}
-    ${info ? `<p class="spell-line">Cast time <b class="num">${esc(info.castTime || '—')}</b> · Range ${esc(info.range || '—')} · ${info.attack ? `Needs a ${info.attack} attack roll` : `No attack roll: target saves (${esc(info.save || '—')})`}</p><p class="muted spell-line">If you're hit before your turn comes, the spell is lost.</p>` : ''}
+    ${info ? (S.editingSpell === sl.key ? spellForm(sl.spell, sl.key) : `<dl class="spell-stats">
+        <div><dt>Cast time</dt><dd class="num">${esc(info.castTime || '—')}</dd></div><div><dt>Range</dt><dd>${esc(info.range || '—')}</dd></div>
+        <div><dt>Duration</dt><dd>${esc(info.duration || '—')}</dd></div><div><dt>Area</dt><dd>${esc(info.area || '—')}</dd></div>
+        <div><dt>Save</dt><dd>${esc(info.save || '—')}</dd></div><div><dt>Attack roll</dt><dd>${info.attack ? esc(info.attack) : 'none'}</dd></div></dl>
+      ${info.summary ? `<p class="spell-line">${esc(info.summary)}</p>` : ''}
+      ${info.missing.length ? `<p class="spell-line warn-line">${info.notInCatalog ? 'Not in the catalog yet.' : 'Missing in the catalog:'} ${info.missing.map(f => Spells.SPELL_FIELDS.find(x => x[0] === f)[1].toLowerCase()).join(', ')}.</p>` : ''}
+      <p class="spell-line"><button type="button" class="linkbtn" data-spell-edit="${sl.key}">${info.missing.length ? 'Add details' : 'Edit details'}</button>${info.link ? ` · <a href="${esc(info.link)}" target="_blank" rel="noopener">Full spell ↗</a>` : ''}</p>
+      <p class="muted spell-line">If you're hit before your turn comes, the spell is lost.</p>`) : ''}
     ${sl.kind === 'ability' ? `<p class="spell-line">${sl.ability.uses ? `Uses <b>${esc(sl.ability.uses)}</b> · ` : ''}${sl.ability.save ? `Save ${esc(sl.ability.save)} · ` : ''}Uses your round: no attacks</p><p class="muted spell-line">${esc(firstLine(sl.ability.desc))}</p>${sl.effect && sl.effect.ac ? '<p class="spell-line"><b>Applied:</b> your AC this round, shown above.</p>' : ''}` : ''}
     <div class="chips" role="group" aria-label="Target for attack ${i + 1}">${foes.map(f => `<button type="button" class="chip ${f.down ? 'down' : ''}" data-card-target="${sl.key}|${f.id}" aria-pressed="${st.target === f.id}">${esc(f.name)}${f.down ? ' <span class="tag">Down</span>' : ''}${S.foeNotes[f.id] ? `<span class="note-dot" title="Has your notes"></span><span class="sr-only"> (has notes)</span>` : ''}</button>`).join('')}</div>
     ${targetNote(target, sl.key)}
@@ -657,7 +691,7 @@ function attackCard(c, sl, i, foes, attackAbilities = []) {
     <div class="rollrow">
       ${rolls ? `<button type="button" class="btn" data-card-roll="${sl.key}">${st.roll ? 'Re-roll' : 'Roll'}</button>
       <input inputmode="numeric" placeholder="d20" aria-label="Type your d20 for attack ${i + 1}" data-card-input="${sl.key}"><button type="button" class="btn quiet" data-card-enter="${sl.key}">Enter</button>
-      ${calc.damage ? `<button type="button" class="btn secondary" data-card-dmg="${sl.key}">Damage</button>` : ''}` : sl.kind === 'ability' ? `<button type="button" class="btn" data-card-use="${sl.key}">Use</button>` : `<button type="button" class="btn" data-card-cast="${sl.key}">${S.cast[sl.spell.id] ? 'Cast again' : 'Cast'}</button>`}
+      ${calc.damage ? `<button type="button" class="btn secondary" data-card-dmg="${sl.key}">Damage</button>` : ''}` : sl.kind === 'ability' ? `<button type="button" class="btn" data-card-use="${sl.key}">Use</button>` : `<button type="button" class="btn" data-card-cast="${sl.key}">${S.cast[sl.spell.id] ? 'Cast again' : 'Cast'}</button>${info && info.dice ? `<button type="button" class="btn secondary" data-card-spelldice="${sl.key}">${info.diceKind === 'heal' ? 'Heal' : 'Damage'} ${esc(info.dice)}</button>` : ''}`}
       ${st.roll || st.dmg ? `<button type="button" class="linkbtn" data-card-clear="${sl.key}">Clear</button>` : ''}
       ${sl.extra ? `<button type="button" class="linkbtn" data-card-remove="${sl.key}">Remove card</button>` : ''}
     </div>
@@ -755,6 +789,27 @@ function wireCombat(c) {
     const vals = dice.map(rollDice);
     st.dmg = vals.length > 1 ? `${vals[0]} vs S/M · ${vals[1]} vs L` : `${vals[0]}`;
     log(`Jaque · ${slotName(key)} damage → ${tgtName(st)}`, st.dmg, 'rolled');
+  });
+  // Spell catalog: add or edit an entry from the card
+  host.querySelectorAll('[data-spell-edit]').forEach(b => b.onclick = () => { S.editingSpell = b.dataset.spellEdit; renderCombat(); host.querySelector('[data-spellform] input')?.focus(); });
+  host.querySelectorAll('[data-spellform-cancel]').forEach(b => b.onclick = () => { S.editingSpell = null; renderCombat(); host.querySelector('[data-spell-edit]')?.focus(); });
+  host.querySelectorAll('[data-spellform]').forEach(f => f.onsubmit = e => {
+    e.preventDefault();
+    const sp = slotOf(f.dataset.spellform).spell;
+    const prev = spellEntry(sp);
+    const entry = { ...(prev || { id: sp.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'), name: sp.name, class: spellClassNow || sp.type, level: Number(sp.level), source: 'Added by the group' }) };
+    for (const [k, v] of new FormData(f)) entry[k] = String(v).trim();
+    entry.status = Spells.missingFields(entry).length ? 'needs details' : 'entered by the group';
+    S.catalogEdits[entry.id] = entry; S.editingSpell = null;
+    log(`Jaque updated ${entry.name} in the spell catalog`, '✎', 'catalog');
+    renderCombat(); host.querySelector('[data-spell-edit]')?.focus();
+  });
+  each('data-card-spelldice', (st, v, key) => {
+    const info = spellInfo(slotOf(key).spell);
+    const m = info.dice.match(/^(\d+)d(\d+)([+-]\d+)?$/); let t = 0;
+    if (m) { for (let i = 0; i < +m[1]; i++) t += Math.floor(Math.random() * +m[2]) + 1; t += m[3] ? +m[3] : 0; } else t = parseInt(info.dice, 10) || 0;
+    st.dmg = `${t}${info.diceKind === 'heal' ? ' healed' : ''}`;
+    log(`Jaque · ${info.name} ${info.diceKind === 'heal' ? 'heals' : 'damage'} → ${tgtName(st)}`, t, 'rolled');
   });
   each('data-card-cast', (st, v, key) => { S.cast[S.spell] = true; log(`Jaque casts ${slotName(key)} → ${tgtName(st)}`, '✦', 'spell'); });
   each('data-card-clear', st => { st.roll = null; st.dmg = null; });

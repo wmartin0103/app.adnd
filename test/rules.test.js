@@ -320,3 +320,20 @@ test('ability cards: combat role guessed from the wording', async () => {
   assert.ok(sameAbility('Signature Weapon (Dagger)', 'Signature Weapon'));
   assert.ok(!sameAbility('Defensive Spin', 'Offensive Spin'));
 });
+
+test('spell catalog: every spell in the saves has an entry, matched by name or alias', async () => {
+  const { findSpell, missingFields } = await import('../src/rules/spells.js');
+  const catalog = JSON.parse(readFileSync(new URL('../data/spell-catalog.json', import.meta.url)));
+  const { readdirSync } = await import('node:fs');
+  for (const f of readdirSync(new URL('../samples/', import.meta.url)).filter(f => f.endsWith('.json'))) {
+    const s = JSON.parse(readFileSync(new URL(`../samples/${f}`, import.meta.url)));
+    for (const sp of s.__spells || []) assert.ok(findSpell(catalog, sp), `${f}: ${sp.name}`);
+  }
+  assert.equal(findSpell(catalog, { name: 'Cure L Wounds', level: 1 }).id, 'cure-light-wounds');
+  assert.equal(findSpell(catalog, { name: 'Light', level: 1 }, 'priest').castTime, '4');
+  assert.equal(findSpell(catalog, { name: 'Light', level: 1, type: 'wizard' }).castTime, '1');
+  assert.deepEqual(missingFields(findSpell(catalog, { name: 'Run' })), ['castTime', 'range', 'duration', 'save']);
+  assert.deepEqual(missingFields(findSpell(catalog, { name: 'Charm Person' })), []);
+  const ids = catalog.spells.map(e => e.id);
+  assert.equal(new Set(ids).size, ids.length);
+});
