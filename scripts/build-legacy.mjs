@@ -18,6 +18,7 @@ export const TARGETS = {
     SheetRules: ['rules/weapons', ['PHB_WEAPONS', 'resolveWeapon']],
     SheetGuess: ['rules/migrate', ['guessCategory']],
     SheetTables: ['rules/tables', ['NONPROFICIENT_PENALTY']],
+    SheetDice: ['rules/dice', ['parseDice', 'formatDice']],
   },
 };
 

@@ -747,17 +747,45 @@
       gap: 0.3rem;
     }
     .wpn-row:last-child    { border-bottom: none; }
-    .wpn-row-main          { border-bottom: none; }
+    .wpn-row-main          { border-bottom: 1px solid var(--rule); }
+    .wpn-sub[hidden]       { display: none; }
 
     /* Second line under each weapon: based on, used, magic, proficiency */
     .wpn-sub {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 0.3rem 1.1rem;
-      padding: 0 0.1rem 0.45rem;
-      border-bottom: 1px solid var(--rule);
+      gap: 0.4rem 1.1rem;
+      padding: 0.45rem 0.6rem;
+      margin: 0 0 0.35rem;
+      background: var(--parchment);
+      border: 1px solid var(--rule);
+      border-top: none;
+      border-radius: 0 0 var(--radius) var(--radius);
     }
+    .wpn-gear {
+      position: relative;
+      width: 22px; height: 22px;
+      padding: 0;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: none;
+      border: 1px solid transparent;
+      border-radius: var(--radius);
+      color: var(--ink-muted);
+      cursor: pointer;
+    }
+    .wpn-gear svg { width: 15px; height: 15px; }
+    .wpn-gear:hover, .wpn-gear[aria-expanded="true"] { color: var(--accent); border-color: var(--rule); }
+    .wpn-gear:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .wpn-gear-flag::after {
+      content: '';
+      position: absolute; top: 1px; right: 1px;
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #c98a00;
+      box-shadow: 0 0 0 1.5px var(--surface);
+    }
+    .wpn-split-pick .wpn-pick { border: none; text-align: center; text-align-last: center; padding-inline: 0.15em; }
+    .wpn-pick { padding-inline: 0.2em; }
     .wpn-sub:last-child { border-bottom: none; }
     .wpn-sub-field { display: flex; align-items: center; gap: 0.35rem; }
     .wpn-sub-label {
@@ -4094,6 +4122,7 @@ return { toDMHelper, formatDMHelperConfig };
 window.SheetRules = { PHB_WEAPONS: __m["rules/weapons"].PHB_WEAPONS, resolveWeapon: __m["rules/weapons"].resolveWeapon };
 window.SheetGuess = { guessCategory: __m["rules/migrate"].guessCategory };
 window.SheetTables = { NONPROFICIENT_PENALTY: __m["rules/tables"].NONPROFICIENT_PENALTY };
+window.SheetDice = { parseDice: __m["rules/dice"].parseDice, formatDice: __m["rules/dice"].formatDice };
 })();
 /* ── end sheet converter ── */
   </script>
@@ -5825,7 +5854,62 @@ window.SheetTables = { NONPROFICIENT_PENALTY: __m["rules/tables"].NONPROFICIENT_
         wpn.modes = base ? base.modes.slice() : ['melee'];
       }
       if (wpn.magicPlus === undefined) wpn.magicPlus = 0;
+      tidyWeaponValues(wpn);
     }
+    // Fixed choices for the row's dropdowns
+    const SPEED_OPTIONS = ['', ...Array.from({ length: 15 }, (_, i) => String(i + 1))];
+    const ADJ_OPTIONS = ['', '-5', '-4', '-3', '-2', '-1', '+1', '+2', '+3', '+4', '+5', '?'];
+    function diceOptions() {
+      const base = ['1', '1d2', '1d3', '1d4', '1d6', '1d8', '1d10', '1d12', '2d4', '2d6', '2d8', '3d4', '3d6'];
+      const fromPhb = Object.values((window.SheetRules && SheetRules.PHB_WEAPONS) || {}).flatMap(w => w.damage ? [w.damage.sm, w.damage.l] : []);
+      const parse = window.SheetDice ? SheetDice.parseDice : () => null;
+      const key = d => { const x = parse(d); return x ? x.count * 1000 + x.sides * 10 + x.flat : 0; };
+      return [...new Set([...base, ...fromPhb])].sort((a, b) => key(a) - key(b));
+    }
+    const fmtAdj = v => (v === '' ? '—' : v.replace('-', '−'));
+
+    // One-time tidy of older free-text values so they fit the dropdowns:
+    //  • Hit/Dmg adj: whole numbers become "+1"/"-1"; "?" stays; anything else
+    //    (e.g. "*+1/2") moves into Notes and the field is cleared.
+    //  • Damage: a flat bonus written into the dice ("1d4+1") moves to Dmg adj
+    //    when Dmg adj is empty and both sizes carry the same extra bonus. Bonuses
+    //    that are part of the PHB weapon itself (warhammer 1d4+1) stay in the dice.
+    function tidyWeaponValues(wpn) {
+      if (wpn.fieldsV >= 2) return;
+      const moved = [];
+      const cleanAdj = (field, label) => {
+        const raw = String(wpn[field] ?? '').trim();
+        if (raw === '' || raw === '?') { wpn[field] = raw; return; }
+        if (/^[+-]?\d+$/.test(raw)) { const n = parseInt(raw, 10); wpn[field] = n === 0 ? '' : (n > 0 ? `+${n}` : `${n}`); return; }
+        moved.push(`${label} was "${raw}"`);
+        wpn[field] = '';
+      };
+      cleanAdj('hitAdj', 'hit adj');
+      cleanAdj('dmgAdj', 'dmg adj');
+      const parse = window.SheetDice ? SheetDice.parseDice : () => null;
+      const base = phbBase(wpn.basedOn);
+      const extra = size => {
+        const d = parse(wpn[size === 'sm' ? 'dmgSM' : 'dmgL']);
+        if (!d) return null;
+        const b = base ? parse(base.damage[size]) : null;
+        const builtIn = b && b.count === d.count && b.sides === d.sides ? b.flat : 0;
+        return { d, builtIn, extra: d.flat - builtIn };
+      };
+      const sm = extra('sm'), l = extra('l');
+      if (sm && l && sm.extra !== 0 && sm.extra === l.extra && (wpn.dmgAdj === '' || wpn.dmgAdj === undefined)) {
+        const fmt = x => SheetDice.formatDice(x.d, x.builtIn);
+        wpn.dmgSM = fmt(sm); wpn.dmgL = fmt(l);
+        wpn.dmgAdj = sm.extra > 0 ? `+${sm.extra}` : `${sm.extra}`;
+      }
+      if (moved.length) wpn.notes = [wpn.notes, `(${moved.join('; ')})`].filter(Boolean).join(' ');
+      wpn.fieldsV = 2;
+    }
+
+    // Does anything in this weapon's settings need a look?
+    function weaponNeedsCheck(wpn) {
+      return !!wpn.basedOnGuessed || !wpn.basedOn;
+    }
+
     function normalizeProfCard(card) {
       if (card.weaponType === undefined) {
         const guess = window.SheetGuess ? SheetGuess.guessCategory(card.name) : null;
@@ -5875,6 +5959,9 @@ window.SheetTables = { NONPROFICIENT_PENALTY: __m["rules/tables"].NONPROFICIENT_
       el.innerHTML = parts.length > 0 ? 'Racial: ' + parts.join(' &nbsp;·&nbsp; ') : '';
     }
 
+    // Which weapons have their settings panel open (not saved)
+    const openWeaponSettings = new Set();
+
     function renderWeapons() {
       updateWeaponRacialHeading();
       const list = document.getElementById('weapons-list');
@@ -5890,7 +5977,7 @@ window.SheetTables = { NONPROFICIENT_PENALTY: __m["rules/tables"].NONPROFICIENT_
       }
 
       // Col: Name | Size | DmgType | Spd | Hit/DmgAdj | Damage | Notes | Del
-      const COL = '210px 60px 100px 44px 90px 170px 140px 24px';
+      const COL = '200px 60px 100px 52px 108px 150px 120px 28px 24px';
 
       // ── Header ──────────────────────────────────────────────
       const header = document.createElement('div');
@@ -5904,6 +5991,7 @@ window.SheetTables = { NONPROFICIENT_PENALTY: __m["rules/tables"].NONPROFICIENT_
         { label: 'Hit · Dmg',   cls: 'wpn-hcenter' },
         { label: 'Dmg S/M · L', cls: 'wpn-hcenter' },
         { label: 'Notes',       cls: '' },
+        { label: '',            cls: '' },
         { label: '',            cls: '' },
       ].forEach(({ label, cls }) => {
         const c = document.createElement('div');
@@ -5971,6 +6059,35 @@ window.SheetTables = { NONPROFICIENT_PENALTY: __m["rules/tables"].NONPROFICIENT_
           return sel;
         }
 
+        // Dropdown with fixed choices; a value not on the list is kept as its own option
+        function mkPick(field, values, label, display = v => v || '—') {
+          const sel = document.createElement('select');
+          sel.className = 'wpn-inp wpn-select wpn-pick';
+          sel.setAttribute('aria-label', label);
+          const current = String(wpn[field] ?? '');
+          const all = values.includes(current) ? values : [...values, current];
+          all.forEach(v => {
+            const opt = document.createElement('option');
+            opt.value = v;
+            opt.textContent = display(v);
+            if (v === '?') opt.label = '?'; if (v === '?') opt.setAttribute('aria-label', 'unknown');
+            if (v === current) opt.selected = true;
+            sel.appendChild(opt);
+          });
+          sel.addEventListener('change', () => { wpn[field] = sel.value; saveToItems(); });
+          return sel;
+        }
+        function pickPair(a, b) {
+          const wrap = document.createElement('div');
+          wrap.className = 'wpn-split wpn-split-pick';
+          a.classList.add('wpn-split-a'); b.classList.add('wpn-split-b');
+          const div = document.createElement('span');
+          div.className = 'wpn-split-div';
+          div.setAttribute('aria-hidden', 'true');
+          wrap.append(a, div, b);
+          return wrap;
+        }
+
         // Split input — two inputs side by side with a divider between them
         function mkSplit(fieldA, fieldB, placeholderA, placeholderB, numericA = false, numericB = false) {
           const wrap = document.createElement('div');
@@ -6009,17 +6126,22 @@ window.SheetTables = { NONPROFICIENT_PENALTY: __m["rules/tables"].NONPROFICIENT_
 
         // ── 4. Speed ───────────────────────────────────────────
         const spdCell = mkCell('wpn-center');
-        spdCell.appendChild(mkNum('speed', '—'));
+        spdCell.appendChild(mkPick('speed', SPEED_OPTIONS, `${wpn.name || 'Weapon'} speed`));
         row.appendChild(spdCell);
 
         // ── 5. Hit / Dmg Adj (split) ───────────────────────────
         const adjCell = mkCell('wpn-center');
-        adjCell.appendChild(mkSplit('hitAdj', 'dmgAdj', '+0', '+0', false, false));
+        adjCell.appendChild(pickPair(
+          mkPick('hitAdj', ADJ_OPTIONS, `${wpn.name || 'Weapon'} hit adjustment`, fmtAdj),
+          mkPick('dmgAdj', ADJ_OPTIONS, `${wpn.name || 'Weapon'} damage adjustment`, fmtAdj)));
         row.appendChild(adjCell);
 
         // ── 6. Damage S/M · L (split) ─────────────────────────
         const dmgCell = mkCell('wpn-center');
-        dmgCell.appendChild(mkSplit('dmgSM', 'dmgL', '1d6', '1d8', false, false));
+        const dice = diceOptions();
+        dmgCell.appendChild(pickPair(
+          mkPick('dmgSM', ['', ...dice], `${wpn.name || 'Weapon'} damage vs small and medium`),
+          mkPick('dmgL', ['', ...dice], `${wpn.name || 'Weapon'} damage vs large`)));
         row.appendChild(dmgCell);
 
         // ── 7. Notes ───────────────────────────────────────────
@@ -6027,7 +6149,26 @@ window.SheetTables = { NONPROFICIENT_PENALTY: __m["rules/tables"].NONPROFICIENT_
         notesCell.appendChild(mkText('notes', 'Notes'));
         row.appendChild(notesCell);
 
-        // ── 8. Delete ──────────────────────────────────────────
+        // ── 8. Settings (gear) ─────────────────────────────────
+        const gearCell = mkCell('wpn-center');
+        const gear = document.createElement('button');
+        gear.type = 'button';
+        gear.className = 'wpn-gear' + (weaponNeedsCheck(wpn) ? ' wpn-gear-flag' : '');
+        const open = openWeaponSettings.has(wpn.id);
+        gear.setAttribute('aria-expanded', open ? 'true' : 'false');
+        gear.setAttribute('aria-controls', `wpn-settings-${wpn.id}`);
+        gear.setAttribute('aria-label', `Settings for ${wpn.name || 'this weapon'}${weaponNeedsCheck(wpn) ? ' (needs a check)' : ''}`);
+        gear.title = weaponNeedsCheck(wpn) ? 'Weapon settings: something needs a check' : 'Weapon settings';
+        gear.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 5.4a2.6 2.6 0 1 0 0 5.2 2.6 2.6 0 0 0 0-5.2z" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M6.9 1.5h2.2l.4 1.7 1.2.5 1.5-.9 1.6 1.6-.9 1.5.5 1.2 1.7.4v2.2l-1.7.4-.5 1.2.9 1.5-1.6 1.6-1.5-.9-1.2.5-.4 1.7H6.9l-.4-1.7-1.2-.5-1.5.9-1.6-1.6.9-1.5-.5-1.2-1.7-.4V6.9l1.7-.4.5-1.2-.9-1.5 1.6-1.6 1.5.9 1.2-.5z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>';
+        gear.addEventListener('click', () => {
+          if (openWeaponSettings.has(wpn.id)) openWeaponSettings.delete(wpn.id); else openWeaponSettings.add(wpn.id);
+          renderWeapons();
+          document.querySelector(`.wpn-gear[aria-controls="wpn-settings-${wpn.id}"]`)?.focus();
+        });
+        gearCell.appendChild(gear);
+        row.appendChild(gearCell);
+
+        // ── 9. Delete ──────────────────────────────────────────
         const delCell = mkCell('wpn-center');
         const delBtn  = document.createElement('button');
         delBtn.type      = 'button';
@@ -6043,7 +6184,10 @@ window.SheetTables = { NONPROFICIENT_PENALTY: __m["rules/tables"].NONPROFICIENT_
         row.appendChild(delCell);
 
         list.appendChild(row);
-        list.appendChild(weaponDetailLine(wpn));
+        const settings = weaponDetailLine(wpn);
+        settings.id = `wpn-settings-${wpn.id}`;
+        settings.hidden = !openWeaponSettings.has(wpn.id);
+        list.appendChild(settings);
       });
     }
 
