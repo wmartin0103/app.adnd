@@ -366,6 +366,10 @@ Helper pick from (see section 9).
 12. **Combat is a quick-reference helper (decided):** combat material and actions
     at a glance (attacks, party, foes, saves, abilities, ready spells, checks,
     rolls), supporting the spoken game rather than replacing it.
+13. **Foes in Combat (decided):** the list comes from the DM's encounter and
+    updates live. Players' notes on foes are private. A foe that goes down
+    stays listed (greyed, last, notes kept) and leaves the initiative order;
+    the DM can remove a foe for good, and clearing the encounter removes all.
 
 ---
 

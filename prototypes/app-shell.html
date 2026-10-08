@@ -141,6 +141,12 @@ select.pick { border: 1px solid var(--rule); border-radius: var(--radius); backg
 .acm td.mid { color: var(--gold); font-weight: 600; }
 .acm td.hard { color: var(--accent); font-weight: 600; }
 .acm td.max { color: var(--ink-faint); }
+.chip.down { border-style: dashed; background: var(--sunk); color: var(--ink-muted); }
+.chip.down[aria-pressed="true"] { border-style: solid; background: var(--accent); color: var(--surface); }
+.chip.down .tag { margin-left: 4px; }
+.chip[aria-pressed="true"] .tag { color: var(--surface); border-color: currentColor; }
+.person.down .pname { color: var(--ink-faint); text-decoration: line-through; }
+.demo-foes { display: flex; flex-wrap: wrap; gap: 6px; flex-basis: 100%; }
 .note-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--note); margin-left: 6px; vertical-align: 1px; }
 .chip[aria-pressed="true"] .note-dot { background: var(--surface); }
 .tnote { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; background: var(--note-soft); border-radius: var(--radius); padding: 6px 8px; font-size: 0.92rem; }
@@ -2222,7 +2228,7 @@ const NOTES = [
   ['A', 'Three tabs, one character', 'Sheet is who your character is, Combat is what you do right now, and DM is the DM\'s workspace. The tabs share one character record, so they can\'t drift apart the way the separate tools did.'],
   ['B', 'The sheet stays the sheet', 'This is your existing character sheet, unchanged. Its Weapons rows gain a settings gear (based-on weapon, melee/thrown, magic +). Combat Scenarios and the Enemy Tracker are gone from it: Combat covers both. Its THAC0 card shows the base from class and level.'],
   ['C', 'Encounter at a glance', 'Round and initiative order for everyone: hidden foes don\'t appear, and a foe with hidden initiative shows "?". Whose turn it is is highlighted, and so is your place in the order.'],
-  ['D', 'Party and foes', 'Everyone\'s exact HP and conditions, so nobody has to ask "how hurt are you?" mid-fight. Foes show only what\'s visible on the battlefield, never AC, plus your own notes on them (they replace the sheet\'s Enemy Tracker).'],
+  ['D', 'Party and foes', 'Everyone\'s exact HP and conditions, so nobody has to ask "how hurt are you?" mid-fight. Foes show only what\'s visible on the battlefield, never AC, plus your own notes on them (private to you; they replace the sheet\'s Enemy Tracker). The list comes from the DM\'s encounter. A foe that goes down stays listed, greyed and last, with your notes, and drops out of initiative; the DM can remove it for good. Try the Down / Remove buttons at the bottom.'],
   ['I', 'Quick reference, not a second sheet', 'Saves, abilities, ready spells, and proficiency checks: the things you\'d otherwise flip to the sheet for mid-fight. Each section collapses; abilities show a one-line summary that expands to the full text from your sheet.'],
   ['E', 'Attack helper, no lock-in', 'Pick an attack and a target, flip the conditions, roll or type your die. The table shows the roll you need against each AC, for the main and off-hand attack. Pick a target to see or add your notes on it. It counts your attacks this round (3 thrown daggers + off-hand), and each roll lands in the shared log for everyone. You still say what you\'re doing out loud; whether the app should record a declaration is a question for later.'],
   ['F', 'Your numbers come from the sheet', 'Ability scores, HP, AC, class and level, plus the abilities, spells and proficiencies in Quick reference, are read from the Sheet tab. Change Jaque\'s Dex on the sheet and the THAC0s here change. The weapon list is the sheet\'s Weapons section and nothing else: one entry per weapon and way it\'s used (melee, thrown). Bonuses and stances (Signature Weapon, Bladesong…) still come from the reviewed v2 data until ability cards carry their combat effects.'],
@@ -2241,7 +2247,12 @@ const FOES = [
   { id: 'orc-1', name: 'Orc 1', state: 'bloodied', init: 5 },
   { id: 'orc-2', name: 'Orc 2', state: 'unhurt', init: 9, hideInit: true },
   { id: 'ogre', name: 'Ogre in the trees', state: 'unhurt', init: 3, hidden: true },
+  { id: 'orc-3', name: 'Orc 3', state: 'unhurt', init: 6, down: true },
 ];
+// What players see: revealed, not removed. Foes that are down go last.
+const shownFoes = () => FOES.filter(f => !f.hidden && !f.removed).sort((a, b) => !!a.down - !!b.down);
+// Initiative order: no hidden foes, no foes that are down or removed
+const liveOrder = () => ORDER.filter(([n]) => !FOES.find(f => f.name === n && (f.hidden || f.hideInit || f.down || f.removed)));
 const ORDER = [['Orc 1', 5, 'foe'], ['Goroth', 7], ['Atteroak', 8], ['Jaque', 9, 'you'], ['Rifiyr', 10], ['Hanspeter', 12]];
 
 const S = {
@@ -2368,9 +2379,10 @@ function renderCombat() {
       <span class="seg" role="group" aria-label="${esc(o.name)}">${choices.map(ch => { const on = ch === 'Off' ? !v : (o.choice ? v === ch : v === true); return `<button type="button" data-opt="${o.id}" data-val="${esc(ch)}" aria-pressed="${on}">${esc(ch)}</button>`; }).join('')}</span></div>`;
   }).join('');
 
-  const visibleFoes = FOES.filter(f => !f.hidden);
-  const order = ORDER.filter(([n]) => !FOES.find(f => f.name === n && (f.hidden || f.hideInit)));
-  const unknown = FOES.filter(f => !f.hidden && f.hideInit);
+  const visibleFoes = shownFoes();
+  const order = liveOrder();
+  if (S.turn >= order.length) S.turn = 0;
+  const unknown = visibleFoes.filter(f => f.hideInit && !f.down);
 
   const mathRows = [`<tr><td>${esc(cap(cur.base.group))} level ${cur.base.level}</td><td class="n">THAC0 ${cur.base.thac0}</td><td class="n"></td></tr>`]
     .concat(cur.lines.map(l => `<tr><td>${esc(l.label)}</td><td class="n">${l.hit ? sign(l.hit) : ''}</td><td class="n">${l.dmg ? sign(l.dmg) + ' dmg' : ''}</td></tr>`)).join('');
@@ -2397,7 +2409,7 @@ function renderCombat() {
                 <select class="pick" id="pick">${mains.map(x => `<option value="${x.w.id}|${x.a.id}" ${S.pick.weaponId === x.w.id && S.pick.attackId === x.a.id ? 'selected' : ''}>${esc(label(x))} · ${attacksThisRound(computeAttack({ sheet: c, weaponId: x.w.id, attackId: x.a.id, round: rw }).attacksPerRound, S.round)}/rd</option>`).join('')}</select></label>
               ${rule ? `<label class="optrow"><span class="label">Off-hand</span>
                 ${offAllowed ? `<select class="pick" id="pick-off"><option value="">None</option>${offOptions.map(x => `<option value="${x.w.id}|${x.a.id}" ${offPick && offPick.weaponId === x.w.id && offPick.attackId === x.a.id ? 'selected' : ''}>${esc(x.a.name)}</option>`).join('')}</select>` : `<span class="muted" style="font-size:.9rem">Needs a dagger in your main hand</span>`}</label>` : ''}
-              <div class="optrow"><span class="label">Target</span><div class="chips">${visibleFoes.map(f => `<button type="button" class="chip" data-target="${f.id}" aria-pressed="${S.target === f.id}">${esc(f.name)}${S.foeNotes[f.id] ? `<span class="note-dot" title="Has your notes"></span><span class="sr-only"> (has notes)</span>` : ''}</button>`).join('')}</div></div>
+              <div class="optrow"><span class="label">Target</span><div class="chips">${visibleFoes.map(f => `<button type="button" class="chip ${f.down ? 'down' : ''}" data-target="${f.id}" aria-pressed="${S.target === f.id}">${esc(f.name)}${f.down ? ' <span class="tag">Down</span>' : ''}${S.foeNotes[f.id] ? `<span class="note-dot" title="Has your notes"></span><span class="sr-only"> (has notes)</span>` : ''}</button>`).join('')}</div></div>
               ${targetNote(visibleFoes.find(f => f.id === S.target))}
               <div class="optrow"><span class="label">Situation</span><div class="chips">${Object.entries(SITUATIONS).map(([k, s]) => `<button type="button" class="chip" data-sit="${k}" aria-pressed="${S.situation.includes(k)}">${esc(s.label)}${s.hit ? ' ' + sign(s.hit) : ''}</button>`).join('')}</div></div>
               <div class="optrow"><span class="label">Quick adjust</span><span class="seg"><button type="button" id="adj-dn" aria-label="Lower to-hit adjustment">−</button><button type="button" disabled aria-live="polite" style="opacity:1;cursor:default">${S.adjust ? sign(S.adjust) : 0}</button><button type="button" id="adj-up" aria-label="Raise to-hit adjustment">+</button></span></div>
@@ -2429,7 +2441,7 @@ function renderCombat() {
         </section>
         <section class="panel" aria-labelledby="h-foes">
           <div class="panel-head"><h2 id="h-foes">Foes</h2><span class="muted" style="font-size:.85rem">What you can see</span></div>
-          <div class="people">${visibleFoes.map(f => `<div class="person"><span class="pname">${esc(f.name)}</span><span class="tag ${f.state === 'bloodied' ? 'bad' : ''}">${esc(f.state)}</span>${S.foeNotes[f.id] ? `<span class="pmeta foe-note">${esc(S.foeNotes[f.id])}</span>` : ''}</div>`).join('')}</div>
+          <div class="people">${visibleFoes.map(f => `<div class="person ${f.down ? 'down' : ''}"><span class="pname">${esc(f.name)}</span><span class="tag ${f.down ? '' : f.state === 'bloodied' ? 'bad' : ''}">${f.down ? 'Down' : esc(f.state)}</span>${S.foeNotes[f.id] ? `<span class="pmeta foe-note">${esc(S.foeNotes[f.id])}</span>` : ''}</div>`).join('')}</div>
         </section>
         <section class="panel" aria-labelledby="h-ref">
           <div class="panel-head"><h2 id="h-ref">Quick reference ${pin('I')}</h2><span class="muted" style="font-size:.85rem">From your sheet</span></div>
@@ -2441,7 +2453,10 @@ function renderCombat() {
         </section>
       </div>
     </div>
-    <div class="demo"><b>Demo</b><button type="button" class="btn quiet" id="next-turn">Next turn</button><button type="button" class="btn quiet" id="new-round">New round</button><span class="muted">stand in for the DM</span></div>
+    <div class="demo"><b>Demo</b><button type="button" class="btn quiet" id="next-turn">Next turn</button><button type="button" class="btn quiet" id="new-round">New round</button><span class="muted">stand in for the DM</span>
+      <span class="demo-foes">${FOES.filter(f => !f.hidden && !f.removed).map(f => `<button type="button" class="btn quiet" data-down="${f.id}" aria-pressed="${!!f.down}">${f.down ? 'Revive' : 'Down'} ${esc(f.name)}</button>`).join('')}
+      ${FOES.filter(f => !f.hidden && !f.removed).map(f => `<button type="button" class="btn quiet" data-remove="${f.id}">Remove ${esc(f.name)}</button>`).join('')}
+      ${FOES.some(f => f.removed) ? '<button type="button" class="btn quiet" id="restore-foes">Bring removed back</button>' : ''}</span></div>
   </div>`;
   wireCombat(c, cur, offCalc, count);
 }
@@ -2517,7 +2532,13 @@ function wireCombat(c, cur, offCalc, count) {
     total += m[3] ? +m[3] : 0;
     log(`Jaque · damage ${cur.damage.sm} → ${tgt()}`, total, 'rolled'); renderCombat();
   });
-  $('next-turn').onclick = () => { S.turn = (S.turn + 1) % ORDER.filter(([n]) => !FOES.find(f => f.name === n && (f.hidden || f.hideInit))).length; renderCombat(); };
+  $('next-turn').onclick = () => { S.turn = (S.turn + 1) % liveOrder().length; renderCombat(); };
+  // DM stand-ins: a foe that goes down stays listed (greyed, last); if it was
+  // your target, the target moves to the first foe still standing
+  const retarget = () => { const t = FOES.find(f => f.id === S.target); if (!t || t.down || t.removed) S.target = (shownFoes().find(f => !f.down) || {}).id || null; };
+  host.querySelectorAll('[data-down]').forEach(b => b.onclick = () => { const f = FOES.find(x => x.id === b.dataset.down); f.down = !f.down; retarget(); renderCombat(); });
+  host.querySelectorAll('[data-remove]').forEach(b => b.onclick = () => { FOES.find(x => x.id === b.dataset.remove).removed = true; retarget(); renderCombat(); });
+  const rf = $('restore-foes'); if (rf) rf.onclick = () => { FOES.forEach(f => delete f.removed); renderCombat(); };
   $('new-round').onclick = () => {
     for (const o of c.__combatOptions || []) if (!o.sticks) delete S.toggles[o.id];
     S.round += 1; S.turn = 0; S.used = 0; S.offUsed = false; renderCombat();
