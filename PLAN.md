@@ -351,6 +351,19 @@ Helper pick from (see section 9).
 8. ~~**Blade thief skills.**~~ **Decided:** only the four Blade skills; race and
    Dex don't add skills he lacks; Locksmithing grants full Open Locks.
 
+9. **App structure (decided, 10-08):** three tabs sharing one character.
+   **Sheet** = the existing character sheet, kept in its current form (its
+   weapons/scenarios sections gain the fields the rules need; its THAC0 math
+   switches to the shared rules). **Combat** = a new view for mid-fight:
+   encounter and initiative, party and foes, your attacks and rolls. **DM** =
+   the DM Helper, shown only to DM users. Supersedes the prototype's redesigned
+   Sheet tab. Prototype: `prototypes/app-shell.template.html`.
+10. **Declaring actions in the app (open).** Spoken declarations are part of
+    the session's community; the app shouldn't replace them. No declare/lock
+    step for now; revisit once the Combat tab takes shape.
+11. **Party visibility in Combat (open):** exact HP, or a health state
+    (healthy / wounded / badly hurt / down)? Conditions? Prototype shows both.
+
 ---
 
 ## 9. Reference library (PHB and supplements)

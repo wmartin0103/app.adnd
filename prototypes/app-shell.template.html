@@ -1,0 +1,458 @@
+<title>Campaign App Shell</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Layout: one app frame with three tabs. Sheet and DM are the real existing tools,
+   embedded; Combat is new. Everything in the frame responds to the frame's width
+   (container queries), so the width switcher previews half-window, tablet, phone.
+   Tokens follow the character sheet: Cinzel display, Crimson Pro body, oxblood accent. */
+:root {
+  --bg: #efecea; --surface: #ffffff; --sunk: #f4f1ee;
+  --ink: #1a1714; --ink-muted: #5a534e; --ink-faint: #8f8782; --rule: #d8d0c8;
+  --accent: #8b2e12; --accent-soft: #f3e3dc; --gold: #946a24;
+  --good: #2f6b3a; --good-soft: #e1efe3; --warn: #8a5a00; --warn-soft: #fbefd6;
+  --bad: #9b2a1f; --bad-soft: #f8e1dd; --note: #2f5d8a; --note-soft: #e3edf7;
+  --font-display: 'Cinzel', Georgia, serif; --font-body: 'Crimson Pro', Georgia, serif;
+  --font-data: 'IBM Plex Mono', ui-monospace, Menlo, monospace; --radius: 4px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131110; --surface: #201c19; --sunk: #2a2521;
+    --ink: #eee7e1; --ink-muted: #b7aca4; --ink-faint: #85796f; --rule: #3a332e;
+    --accent: #e0795a; --accent-soft: #3a2219; --gold: #d3a65a;
+    --good: #7cc58a; --good-soft: #1e3324; --warn: #e2b259; --warn-soft: #362a12;
+    --bad: #f08b7c; --bad-soft: #3b1f1b; --note: #8db8e6; --note-soft: #1b2a3a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #131110; --surface: #201c19; --sunk: #2a2521;
+  --ink: #eee7e1; --ink-muted: #b7aca4; --ink-faint: #85796f; --rule: #3a332e;
+  --accent: #e0795a; --accent-soft: #3a2219; --gold: #d3a65a;
+  --good: #7cc58a; --good-soft: #1e3324; --warn: #e2b259; --warn-soft: #362a12;
+  --bad: #f08b7c; --bad-soft: #3b1f1b; --note: #8db8e6; --note-soft: #1b2a3a;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 1.0625rem; line-height: 1.45; }
+.page { max-width: 1180px; margin: 0 auto; padding-inline: 16px; padding-block: 24px 64px; display: grid; gap: 18px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0; letter-spacing: 0.02em; text-wrap: balance; }
+h1 { font-size: clamp(1.5rem, 3.6vw, 2.1rem); }
+h2 { font-size: 0.95rem; letter-spacing: 0.08em; text-transform: uppercase; }
+h3 { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-muted); }
+p { margin: 0; max-width: 70ch; }
+.muted { color: var(--ink-muted); }
+.num { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* Page chrome */
+.intro { display: grid; gap: 8px; }
+.eyebrow { font-family: var(--font-display); font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); }
+.controls { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+.ctl-label { font-family: var(--font-display); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-muted); margin-right: 6px; }
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden; background: var(--surface); }
+.seg button { border: none; background: transparent; padding: 4px 11px; border-right: 1px solid var(--rule); font-size: 0.93rem; }
+.seg button:last-child { border-right: none; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
+.seg button:disabled { opacity: 0.45; cursor: not-allowed; }
+.toggle { display: inline-flex; gap: 6px; align-items: center; }
+.stage { overflow-x: auto; padding-block: 4px; }
+.frame { margin: 0 auto; width: 100%; background: var(--sunk); border: 1px solid var(--rule); border-radius: 10px; container-type: inline-size; overflow: hidden; }
+.frame-bar { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-bottom: 1px solid var(--rule); font-family: var(--font-data); font-size: 0.75rem; color: var(--ink-muted); }
+.frame-bar i { width: 9px; height: 9px; border-radius: 50%; background: var(--rule); display: inline-block; }
+.frame-bar span { margin-left: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* App bar + tabs */
+.appbar { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; justify-content: space-between; padding: 8px 14px; background: var(--surface); border-bottom: 2px solid var(--accent); }
+.appbar .who { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; min-width: 0; }
+.appbar .who b { font-family: var(--font-display); font-size: 1.05rem; }
+.appbar .who span { font-family: var(--font-data); font-size: 0.8rem; color: var(--ink-muted); }
+.tabs { display: flex; gap: 2px; }
+.tabs button { border: 1px solid var(--rule); background: var(--sunk); padding: 4px 14px; font-family: var(--font-display); font-size: 0.78rem; letter-spacing: 0.06em; border-radius: var(--radius); }
+.tabs button[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.tabs .dm-only { border-style: dashed; }
+.embed { display: block; width: 100%; height: min(78vh, 900px); min-height: 560px; border: none; background: var(--surface); }
+.embed-note { padding: 6px 14px; background: var(--note-soft); font-size: 0.88rem; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+
+/* Combat */
+.combat { padding: 12px; display: grid; gap: 12px; }
+.enc { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: 10px 12px; display: grid; gap: 8px; }
+.enc-head { display: flex; flex-wrap: wrap; gap: 4px 12px; justify-content: space-between; align-items: baseline; }
+.order { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 0; padding: 0; }
+.order li { display: inline-flex; gap: 6px; align-items: baseline; border: 1px solid var(--rule); border-radius: 999px; padding: 2px 10px 2px 4px; font-size: 0.93rem; background: var(--sunk); }
+.order li .n { font-family: var(--font-data); font-size: 0.75rem; background: var(--surface); border-radius: 999px; padding: 0 6px; }
+.order li.foe { border-style: dashed; }
+.order li.you { border-color: var(--accent); }
+.order li.now { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.order li.now .n { color: var(--ink); }
+.cgrid { display: grid; gap: 12px; grid-template-columns: 1fr; align-items: start; }
+@container (min-width: 820px) { .cgrid { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); } }
+.panel { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: 12px; display: grid; gap: 10px; }
+.panel-head { display: flex; flex-wrap: wrap; gap: 4px 12px; justify-content: space-between; align-items: baseline; }
+.side { display: grid; gap: 12px; }
+
+.you-stats { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: flex-end; }
+.stat { display: grid; gap: 1px; }
+.stat .lbl, .cell .lbl { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-display); font-size: 0.64rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-muted); white-space: nowrap; }
+.lbl svg { width: 12px; height: 12px; flex: none; color: var(--accent); }
+.stat .val { font-family: var(--font-data); font-size: 1.4rem; line-height: 1.1; }
+.hpbar { height: 6px; background: var(--sunk); border-radius: 3px; overflow: hidden; width: 7em; }
+.hpbar span { display: block; height: 100%; background: var(--good); }
+.hpbar.mid span { background: var(--warn); }
+.hpbar.low span { background: var(--bad); }
+.optrow { display: grid; gap: 4px; }
+.optrow .label { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; font-weight: 600; }
+.tag { display: inline-block; font-family: var(--font-data); font-size: 0.66rem; padding: 0 5px; border-radius: 3px; border: 1px solid var(--rule); color: var(--ink-muted); vertical-align: 1px; font-weight: 400; }
+.tag.warn { background: var(--warn-soft); color: var(--warn); border-color: transparent; }
+.tag.good { background: var(--good-soft); color: var(--good); border-color: transparent; }
+.tag.bad { background: var(--bad-soft); color: var(--bad); border-color: transparent; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--rule); background: var(--surface); border-radius: 999px; padding: 2px 11px; font-size: 0.92rem; }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+select.pick { border: 1px solid var(--rule); border-radius: var(--radius); background: var(--surface); padding: 5px 8px; width: 100%; }
+.attack { border: 1px solid var(--accent); border-radius: var(--radius); padding: 10px; display: grid; gap: 10px; }
+.attack-top { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: start; }
+@container (max-width: 520px) { .attack-top { grid-template-columns: 1fr; } }
+.nums { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; }
+.cell { display: grid; gap: 1px; justify-items: end; }
+.cell .val { font-family: var(--font-data); }
+.cell.big .val { font-size: 1.9rem; line-height: 1; color: var(--accent); }
+.count { font-family: var(--font-data); font-size: 0.85rem; color: var(--ink-muted); }
+.pips { display: inline-flex; gap: 3px; vertical-align: middle; }
+.pips i { width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid var(--accent); display: inline-block; }
+.pips i.used { background: var(--accent); }
+.rollrow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.rollrow input { width: 4em; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--surface); text-align: center; padding: 3px; font-family: var(--font-data); }
+.btn { border: 1px solid var(--accent); background: var(--accent); color: var(--surface); border-radius: var(--radius); padding: 5px 12px; font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 0.06em; }
+.btn.secondary { background: var(--surface); color: var(--accent); }
+.btn.quiet { background: transparent; border-color: var(--rule); color: var(--ink-muted); }
+.linkbtn { background: none; border: none; padding: 0; color: var(--accent); text-decoration: underline; text-underline-offset: 2px; font-size: 0.92rem; }
+details.math summary { cursor: pointer; color: var(--accent); font-size: 0.9rem; }
+.math table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+.math td { padding: 2px 6px; }
+.math td.n { text-align: right; font-family: var(--font-data); white-space: nowrap; }
+.people { display: grid; gap: 2px; }
+.person { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; align-items: center; padding: 6px 0; border-top: 1px solid var(--rule); }
+.person:first-child { border-top: none; }
+.person .pname { font-weight: 600; }
+.person .pmeta { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px; }
+.person .hp { display: inline-flex; gap: 6px; align-items: center; font-family: var(--font-data); font-size: 0.85rem; }
+.log { display: grid; gap: 3px; font-size: 0.9rem; }
+.log div { display: flex; justify-content: space-between; gap: 8px; }
+.demo { background: var(--sunk); border-radius: var(--radius); padding: 8px 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 0.9rem; }
+.demo b { font-family: var(--font-display); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted); }
+.pin { display: none; font-family: var(--font-data); font-size: 0.7rem; font-weight: 500; background: var(--note); color: var(--surface); border-radius: 999px; min-width: 1.5em; height: 1.5em; padding: 0 0.4em; align-items: center; justify-content: center; vertical-align: 2px; margin-left: 4px; }
+.show-notes .pin { display: inline-flex; }
+.notes { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
+.note { background: var(--note-soft); border-radius: var(--radius); padding: 10px 12px; display: grid; gap: 4px; }
+.note b { font-family: var(--font-display); font-size: 0.8rem; letter-spacing: 0.04em; }
+.note b .pin { display: inline-flex; margin: 0 6px 0 0; }
+footer { color: var(--ink-faint); font-size: 0.88rem; }
+</style>
+
+<div class="page">
+  <div class="intro">
+    <span class="eyebrow">Design proposal · app structure</span>
+    <h1>Campaign App Shell</h1>
+    <p class="muted">The proposed structure: <strong>Sheet</strong> (your existing character sheet, kept as it is), a new <strong>Combat</strong> view for what you need mid-fight, and a <strong>DM</strong> tab only the DM sees. Sheet and DM are the real tools, loaded with Jaque. Combat reads Jaque's ability scores, HP, AC and class from the Sheet tab, so change his Dex there and come back. Nothing here declares or locks in actions; you still say what you do out loud.</p>
+  </div>
+
+  <div class="controls" role="group" aria-label="Prototype controls">
+    <span><span class="ctl-label">View as</span><span class="seg" id="role"></span></span>
+    <span><span class="ctl-label">Width</span><span class="seg" id="widths"></span></span>
+    <span><span class="ctl-label">Party HP shows</span><span class="seg" id="partyvis"></span></span>
+    <label class="toggle"><input type="checkbox" id="notes-toggle" checked> Show design notes</label>
+  </div>
+
+  <div class="stage">
+    <div class="frame show-notes" id="frame">
+      <div class="frame-bar" aria-hidden="true"><i></i><i></i><i></i><span id="frame-label"></span></div>
+      <div class="appbar">
+        <div class="who"><b id="who-name">Jaque</b><span id="who-meta"></span></div>
+        <div class="tabs" role="tablist" aria-label="App sections" id="tabs"></div>
+      </div>
+      <div id="tab-sheet" role="tabpanel" aria-label="Sheet"></div>
+      <div id="tab-combat" role="tabpanel" aria-label="Combat" hidden></div>
+      <div id="tab-dm" role="tabpanel" aria-label="DM" hidden></div>
+    </div>
+  </div>
+
+  <section aria-labelledby="h-notes" style="display:grid;gap:10px">
+    <h2 id="h-notes">Design notes</h2>
+    <div class="notes" id="notes"></div>
+  </section>
+
+  <footer>Source: prototypes/app-shell.template.html in the app.adnd repo. The Sheet and DM tabs are legacy/character-sheet.html and legacy/dm-helper.html, unchanged. Party, foes and initiative are example data.</footer>
+</div>
+
+<script>
+/*__RULES__*/
+</script>
+<script>
+const JAQUE_V2 = /*__JAQUE_V2__*/;
+const JAQUE_SHEET = /*__JAQUE_SHEET__*/;
+const SHEET_HTML = /*__SHEET_HTML__*/;
+const DM_HTML = /*__DM_HTML__*/;
+const { computeAttack, weaponAttacks, offHandAttacks, attacksThisRound, SITUATIONS } = Rules;
+const { resolveWeapon } = Weapons;
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const sign = n => (n > 0 ? `+${n}` : `${n}`);
+const cap = s => s[0].toUpperCase() + s.slice(1);
+const pin = l => `<span class="pin" aria-hidden="true">${l}</span>`;
+const ICON = {
+  target: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="8" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="8" cy="8" r="1.1" fill="currentColor"/></svg>',
+  die: '<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="2" width="12" height="12" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="5.5" cy="5.5" r="1.1" fill="currentColor"/><circle cx="8" cy="8" r="1.1" fill="currentColor"/><circle cx="10.5" cy="10.5" r="1.1" fill="currentColor"/></svg>',
+  repeat: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M12.8 6.2A5 5 0 1 0 13 9.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M13.2 2.6v3.8H9.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  heart: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 13.6S2 10 2 5.9A3 3 0 0 1 8 4.6a3 3 0 0 1 6 1.3C14 10 8 13.6 8 13.6z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>',
+  shield: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.8 13 3.6v4.1c0 3.1-2.2 5.4-5 6.5-2.8-1.1-5-3.4-5-6.5V3.6z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>',
+};
+
+const NOTES = [
+  ['A', 'Three tabs, one character', 'Sheet is who your character is, Combat is what you do right now, and DM is the DM\'s workspace. The tabs share one character record, so they can\'t drift apart the way the separate tools did.'],
+  ['B', 'The sheet stays the sheet', 'This is your existing character sheet, unchanged. Its weapons and scenarios sections get the extra fields the rules need (based-on weapon, melee/thrown, named bonuses, proficiencies) in their current layout, and its THAC0 math switches to the shared rules so it always matches Combat.'],
+  ['C', 'Encounter at a glance', 'Round and initiative order for everyone: hidden foes don\'t appear, and a foe with hidden initiative shows "?". Whose turn it is is highlighted, and so is your place in the order.'],
+  ['D', 'Party and foes', 'The party\'s health, conditions and whose turn it is, so nobody has to ask "how hurt are you?" mid-fight. How much players see of each other is still open; use "Party HP shows" to compare exact HP with a health state. Foes show only what\'s visible on the battlefield, never AC.'],
+  ['E', 'Attack helper, no lock-in', 'Pick an attack and a target, flip the conditions, roll or type your die. It counts your attacks this round (3 thrown daggers + off-hand), and each roll lands in the shared log for everyone. You still say what you\'re doing out loud; whether the app should record a declaration is a question for later.'],
+  ['F', 'Your numbers come from the sheet', 'Ability scores, HP, AC, class and level are read from the Sheet tab. Change Jaque\'s Dex on the sheet and the THAC0s here change. Weapons and abilities come from the reviewed v2 data until the sheet\'s weapon fields are updated.'],
+  ['G', 'DM tab only for the DM', 'Switch "View as" to DM: a fourth tab appears with the real DM Helper, with Jaque already imported from his sheet. Players never get it, and in the cloud version the database enforces that, not just the interface.'],
+  ['H', 'Built for a half-width window', 'Combat stacks into one column at half-window and puts party, foes and the log beside you at tablet width. Sheet and DM keep their own responsive layouts.'],
+];
+
+const WIDTHS = [['Half window', 720], ['Tablet', 1024], ['Phone', 390]];
+const PARTY = [
+  { name: 'Goroth', hp: [34, 40], conds: [] },
+  { name: 'Atteroak', hp: [22, 31], conds: ['Blessed'] },
+  { name: 'Rifiyr', hp: [7, 24], conds: ['Prone'] },
+  { name: 'Hanspeter', hp: [0, 27], conds: ['Unconscious'] },
+];
+const FOES = [
+  { id: 'orc-1', name: 'Orc 1', state: 'bloodied', init: 5 },
+  { id: 'orc-2', name: 'Orc 2', state: 'unhurt', init: 9, hideInit: true },
+  { id: 'ogre', name: 'Ogre in the trees', state: 'unhurt', init: 3, hidden: true },
+];
+const ORDER = [['Orc 1', 5, 'foe'], ['Goroth', 7], ['Atteroak', 8], ['Jaque', 9, 'you'], ['Rifiyr', 10], ['Hanspeter', 12]];
+
+const S = {
+  role: 'player', tab: 'sheet', width: 720, partyVis: 'exact', notes: true,
+  round: 3, turn: 0,
+  toggles: { 'opt-1': '+1 hit' },
+  pick: { weaponId: 'wpn-1', attackId: 'atk-2' }, off: false,
+  target: 'orc-1', situation: ['flanking'], adjust: 0,
+  used: 0, offUsed: false, log: [],
+};
+
+// ── The character Combat uses: ability scores, HP, AC, class from the Sheet tab;
+// weapons and abilities from the v2 data (until the sheet's weapon fields exist). ──
+const SHEET_FIELDS = ['name', 'str', 'str-pct', 'dex', 'con', 'int', 'wis', 'cha', 'ac', 'hp-current', 'hp-max', 'race-group', '__classes', '__traitState', '__nwps'];
+let sheetLive = null;
+function character() {
+  const c = JSON.parse(JSON.stringify(JAQUE_V2));
+  const src = sheetLive || JAQUE_SHEET;
+  for (const k of SHEET_FIELDS) if (src[k] !== undefined) c[k] = JSON.parse(JSON.stringify(src[k]));
+  return c;
+}
+function readSheet() {
+  try {
+    const w = $('sheet-frame')?.contentWindow;
+    if (w && typeof w.gatherData === 'function') sheetLive = w.gatherData();
+  } catch (e) { /* the sheet hasn't loaded */ }
+}
+
+// ── Embedded tools ──
+function embed(host, id, html, onload) {
+  if ($(id)) return;
+  const f = document.createElement('iframe');
+  f.id = id; f.className = 'embed'; f.title = host === 'tab-sheet' ? 'Character sheet' : 'DM Helper';
+  f.addEventListener('load', () => { try { onload && onload(f.contentWindow); } catch (e) { console.warn(e); } });
+  f.srcdoc = html;
+  $(host).appendChild(f);
+}
+function loadSheet() {
+  if ($('sheet-frame')) return;   // load once; it keeps its state while hidden
+  $('tab-sheet').innerHTML = `<div class="embed-note">${pin('B')}<span>Your existing character sheet, unchanged, with Jaque loaded. Edits here flow into Combat.</span></div>`;
+  embed('tab-sheet', 'sheet-frame', SHEET_HTML, w => { w.applyData(JAQUE_SHEET); w.refreshAll(); });
+}
+function loadDM() {
+  // The DM Helper keeps imported sheets in browser storage; seed Jaque before it loads
+  try { localStorage.setItem('adnd-imported-sheets', JSON.stringify([{ name: 'Jaque', file: 'from the Sheet tab', at: new Date().toISOString(), save: character() }])); } catch (e) { /* storage blocked: the DM Helper shows its hand-typed Jaque */ }
+  // Reload each time so it picks up the latest sheet
+  $('tab-dm').innerHTML = `<div class="embed-note">${pin('G')}<span>The real DM Helper. Jaque's stats come from his sheet (see Config → Character sheets). Only the DM sees this tab.</span></div>`;
+  embed('tab-dm', 'dm-frame', DM_HTML);
+}
+
+// ── Chrome ──
+function renderControls() {
+  const seg = (host, items, cur, on) => { $(host).innerHTML = items.map(([k, l]) => `<button type="button" data-k="${k}" aria-pressed="${cur === k}">${l}</button>`).join(''); $(host).querySelectorAll('button').forEach(b => b.onclick = () => on(b.dataset.k)); };
+  seg('role', [['player', "Jaque's player"], ['dm', 'DM']], S.role, k => { S.role = k; if (k === 'player' && S.tab === 'dm') S.tab = 'sheet'; render(); });
+  seg('widths', WIDTHS.map(([l, w]) => [String(w), `${l} <span class="num" style="font-size:.75rem">${w}</span>`]), String(S.width), k => { S.width = +k; render(); });
+  seg('partyvis', [['exact', 'Exact HP'], ['state', 'Health state']], S.partyVis, k => { S.partyVis = k; render(); });
+  $('frame').style.maxWidth = S.width + 'px';
+  $('frame').classList.toggle('show-notes', S.notes);
+  $('frame-label').textContent = `${S.role === 'dm' ? "DM's" : "Jaque's player's"} browser · ${WIDTHS.find(w => w[1] === S.width)[0].toLowerCase()} (${S.width}px)`;
+  $('notes').innerHTML = NOTES.map(([l, t, d]) => `<div class="note"><b><span class="pin">${l}</span>${esc(t)}</b><p>${esc(d)}</p></div>`).join('');
+}
+$('notes-toggle').onchange = e => { S.notes = e.target.checked; render(); };
+
+function render() {
+  renderControls();
+  const tabs = [['sheet', 'Sheet'], ['combat', 'Combat'], ...(S.role === 'dm' ? [['dm', 'DM']] : [])];
+  $('tabs').innerHTML = tabs.map(([k, l]) => `<button type="button" role="tab" data-tab="${k}" aria-selected="${S.tab === k}" class="${k === 'dm' ? 'dm-only' : ''}">${l}</button>`).join('') + pin('A');
+  $('tabs').querySelectorAll('[data-tab]').forEach(b => b.onclick = () => { if (S.tab === 'sheet') readSheet(); S.tab = b.dataset.tab; render(); });
+  const c = character();
+  $('who-name').textContent = c.name;
+  $('who-meta').textContent = `${c['race-group']} · ${(c.__classes || []).map(x => `${x.name} ${x.level}`).join(' / ')}`;
+  for (const k of ['sheet', 'combat', 'dm']) $(`tab-${k}`).hidden = S.tab !== k;
+  if (S.tab === 'sheet') loadSheet();
+  if (S.tab === 'dm') loadDM();
+  if (S.tab === 'combat') renderCombat();
+}
+
+// ── Combat ──
+function healthState([cur, max]) {
+  if (cur <= 0) return ['down', 'bad'];
+  const r = cur / max;
+  return r > 0.75 ? ['healthy', 'good'] : r > 0.4 ? ['wounded', 'warn'] : ['badly hurt', 'bad'];
+}
+function hpBar([cur, max]) {
+  const r = max ? Math.max(0, cur) / max : 0;
+  return `<span class="hpbar ${r <= 0.4 ? 'low' : r <= 0.75 ? 'mid' : ''}" aria-hidden="true"><span style="width:${Math.round(r * 100)}%"></span></span>`;
+}
+
+function renderCombat() {
+  const c = character();
+  const rw = { toggles: S.toggles };
+  const hp = [parseInt(c['hp-current'], 10) || 0, parseInt(c['hp-max'], 10) || 0];
+  const ac = Character.armorClass(c);
+  const acUp = (() => { const a = computeAttack({ sheet: c, ...S.pick, round: rw }); return a.acImprovement; })();
+
+  // Attack options: main-hand attacks, then off-hand when allowed
+  const mains = c.__weapons.filter(w => resolveWeapon(w).carried !== false).flatMap(w => weaponAttacks({ ...w, modes: resolveWeapon(w).modes }).map(a => ({ w, a }))).filter(x => (x.a.hand || 'main') === 'main');
+  const label = x => x.a.name || `${resolveWeapon(x.w).name}, ${x.a.mode}`;
+  const cur = computeAttack({ sheet: c, ...S.pick, round: { toggles: S.toggles, situation: S.situation, adjust: S.adjust ? { hit: S.adjust, label: 'Quick adjust' } : undefined } });
+  const count = attacksThisRound(cur.attacksPerRound, S.round);
+  const rule = (c.__combatRules || {}).offHandAttack;
+  const needs = rule && rule !== true ? rule.needsMain?.categories : null;
+  const offAllowed = rule && (!needs || needs.includes(cur.category));
+  const offOptions = offAllowed ? c.__weapons.flatMap(w => offHandAttacks(c, w).map(a => ({ w, a }))) : [];
+  if (!offAllowed) S.off = false;
+  const offPick = S.off || null;
+  const offCalc = offPick ? computeAttack({ sheet: c, weaponId: offPick.weaponId, attackId: offPick.attackId, round: { toggles: S.toggles, situation: S.situation, adjust: S.adjust ? { hit: S.adjust, label: 'Quick adjust' } : undefined } }) : null;
+  const pips = Array.from({ length: count }, (_, i) => `<i class="${i < S.used ? 'used' : ''}"></i>`).join('') + (offCalc ? `<i class="${S.offUsed ? 'used' : ''}" style="border-style:dashed"></i>` : '');
+
+  const opts = (c.__combatOptions || []).map(o => {
+    const v = S.toggles[o.id];
+    const choices = o.choice ? ['Off', ...o.choice.map(x => x.label)] : ['Off', 'On'];
+    return `<div class="optrow"><span class="label">${esc(o.name)} <span class="tag">${o.sticks ? 'stays on' : 'this round'}</span></span>
+      <span class="seg" role="group" aria-label="${esc(o.name)}">${choices.map(ch => { const on = ch === 'Off' ? !v : (o.choice ? v === ch : v === true); return `<button type="button" data-opt="${o.id}" data-val="${esc(ch)}" aria-pressed="${on}">${esc(ch)}</button>`; }).join('')}</span></div>`;
+  }).join('');
+
+  const visibleFoes = FOES.filter(f => !f.hidden);
+  const order = ORDER.filter(([n]) => !FOES.find(f => f.name === n && (f.hidden || f.hideInit)));
+  const unknown = FOES.filter(f => !f.hidden && f.hideInit);
+
+  const mathRows = [`<tr><td>${esc(cap(cur.base.group))} level ${cur.base.level}</td><td class="n">THAC0 ${cur.base.thac0}</td><td class="n"></td></tr>`]
+    .concat(cur.lines.map(l => `<tr><td>${esc(l.label)}</td><td class="n">${l.hit ? sign(l.hit) : ''}</td><td class="n">${l.dmg ? sign(l.dmg) + ' dmg' : ''}</td></tr>`)).join('');
+
+  $('tab-combat').innerHTML = `<div class="combat">
+    <section class="enc" aria-labelledby="h-enc">
+      <div class="enc-head"><h2 id="h-enc">Orc ambush · Round ${S.round} ${pin('C')}</h2><span class="muted" style="font-size:.9rem">Lower acts first</span></div>
+      <ol class="order" aria-label="Initiative order">${order.map(([n, init, kind], i) => `<li class="${kind === 'foe' ? 'foe' : ''} ${kind === 'you' ? 'you' : ''} ${i === S.turn ? 'now' : ''}" ${i === S.turn ? 'aria-current="step"' : ''}><span class="n">${init}</span>${esc(n)}${kind === 'you' ? ' (you)' : ''}</li>`).join('')}
+        ${unknown.map(f => `<li class="foe"><span class="n">?</span>${esc(f.name)}</li>`).join('')}</ol>
+    </section>
+    <div class="cgrid">
+      <section class="panel" aria-labelledby="h-you">
+        <div class="panel-head"><h2 id="h-you">You ${pin('F')}</h2>${order[S.turn] && order[S.turn][2] === 'you' ? '<span class="tag good">Your turn</span>' : ''}</div>
+        <div class="you-stats">
+          <div class="stat"><span class="lbl">${ICON.heart}HP</span><span class="val">${hp[0]}<span class="muted" style="font-size:.9rem">/${hp[1]}</span></span>${hpBar(hp)}</div>
+          <div class="stat"><span class="lbl">${ICON.shield}AC</span><span class="val">${ac.ac - acUp}</span><span class="muted" style="font-size:.78rem">${acUp ? `${ac.ac} − ${acUp} this round` : `surprised ${ac.surprised}`}</span></div>
+          <div class="stat"><span class="lbl">Conditions</span><span class="chips">${S.toggles['opt-1'] ? `<span class="tag">Bladesong: ${esc(S.toggles['opt-1'])}</span>` : '<span class="muted">None</span>'}</span></div>
+        </div>
+        <div class="attack" aria-labelledby="h-atk">
+          <div class="panel-head"><h3 id="h-atk">Attack ${pin('E')}</h3><span class="count">This round: <span class="pips" aria-hidden="true">${pips}</span> ${Math.min(S.used, count)} of ${count}${offCalc ? ' + off-hand' : ''}</span></div>
+          <div class="attack-top">
+            <div style="display:grid;gap:8px;min-width:0">
+              <label class="optrow"><span class="label">Weapon</span>
+                <select class="pick" id="pick">${mains.map(x => `<option value="${x.w.id}|${x.a.id}" ${S.pick.weaponId === x.w.id && S.pick.attackId === x.a.id ? 'selected' : ''}>${esc(label(x))} · ${attacksThisRound(computeAttack({ sheet: c, weaponId: x.w.id, attackId: x.a.id, round: rw }).attacksPerRound, S.round)}/rd</option>`).join('')}</select></label>
+              ${rule ? `<label class="optrow"><span class="label">Off-hand</span>
+                ${offAllowed ? `<select class="pick" id="pick-off"><option value="">None</option>${offOptions.map(x => `<option value="${x.w.id}|${x.a.id}" ${offPick && offPick.weaponId === x.w.id && offPick.attackId === x.a.id ? 'selected' : ''}>${esc(x.a.name)}</option>`).join('')}</select>` : `<span class="muted" style="font-size:.9rem">Needs a dagger in your main hand</span>`}</label>` : ''}
+              <div class="optrow"><span class="label">Target</span><div class="chips">${visibleFoes.map(f => `<button type="button" class="chip" data-target="${f.id}" aria-pressed="${S.target === f.id}">${esc(f.name)}</button>`).join('')}</div></div>
+              <div class="optrow"><span class="label">Situation</span><div class="chips">${Object.entries(SITUATIONS).map(([k, s]) => `<button type="button" class="chip" data-sit="${k}" aria-pressed="${S.situation.includes(k)}">${esc(s.label)}${s.hit ? ' ' + sign(s.hit) : ''}</button>`).join('')}</div></div>
+              <div class="optrow"><span class="label">Quick adjust</span><span class="seg"><button type="button" id="adj-dn" aria-label="Lower to-hit adjustment">−</button><button type="button" disabled aria-live="polite" style="opacity:1;cursor:default">${S.adjust ? sign(S.adjust) : 0}</button><button type="button" id="adj-up" aria-label="Raise to-hit adjustment">+</button></span></div>
+            </div>
+            <div class="nums">
+              <div class="cell big"><span class="lbl">${ICON.target}THAC0</span><span class="val">${cur.thac0}</span></div>
+              <div class="cell"><span class="lbl">${ICON.die}Dmg S/M · L</span><span class="val">${esc(cur.damage.sm)} · ${esc(cur.damage.l)}</span></div>
+              ${offCalc ? `<div class="cell"><span class="lbl">Off-hand</span><span class="val">${offCalc.thac0} · ${esc(offCalc.damage.sm)}</span></div>` : ''}
+            </div>
+          </div>
+          <details class="math"><summary>Show the math</summary><table><tbody>${mathRows}</tbody></table></details>
+          <div class="rollrow">
+            <button type="button" class="btn" data-roll="main">Roll attack</button>
+            <span class="muted">or</span><input id="enter-main" inputmode="numeric" placeholder="d20" aria-label="Type your d20 for the attack"><button type="button" class="btn quiet" data-enter="main">Enter</button>
+            ${offCalc ? `<button type="button" class="btn secondary" data-roll="off">Roll off-hand</button>` : ''}
+            <button type="button" class="btn secondary" data-dmg="1">Roll damage</button>
+          </div>
+        </div>
+        <h3>Stances and abilities</h3>
+        ${opts}
+      </section>
+      <div class="side">
+        <section class="panel" aria-labelledby="h-party">
+          <div class="panel-head"><h2 id="h-party">Party ${pin('D')}</h2></div>
+          <div class="people">${PARTY.map(p => { const [st, tone] = healthState(p.hp); return `<div class="person"><span class="pname">${esc(p.name)}</span>
+            <span class="hp">${S.partyVis === 'exact' ? `${hpBar(p.hp)} ${p.hp[0]}/${p.hp[1]}` : `<span class="tag ${tone}">${st}</span>`}</span>
+            ${p.conds.length ? `<span class="pmeta">${p.conds.map(x => `<span class="tag">${esc(x)}</span>`).join('')}</span>` : ''}</div>`; }).join('')}</div>
+        </section>
+        <section class="panel" aria-labelledby="h-foes">
+          <div class="panel-head"><h2 id="h-foes">Foes</h2><span class="muted" style="font-size:.85rem">What you can see</span></div>
+          <div class="people">${visibleFoes.map(f => `<div class="person"><span class="pname">${esc(f.name)}</span><span class="tag ${f.state === 'bloodied' ? 'bad' : ''}">${esc(f.state)}</span></div>`).join('')}</div>
+        </section>
+        <section class="panel" aria-labelledby="h-log">
+          <div class="panel-head"><h2 id="h-log">Dice log</h2><span class="muted" style="font-size:.85rem">Everyone sees this</span></div>
+          <div class="log">${S.log.length ? S.log.slice().reverse().map(l => `<div><span>${esc(l.what)}</span><span><span class="num">${l.value}</span> <span class="tag">${l.source}</span></span></div>`).join('') : '<span class="muted">No rolls yet</span>'}</div>
+        </section>
+      </div>
+    </div>
+    <div class="demo"><b>Demo</b><button type="button" class="btn quiet" id="next-turn">Next turn</button><button type="button" class="btn quiet" id="new-round">New round</button><span class="muted">stand in for the DM</span></div>
+  </div>`;
+  wireCombat(c, cur, offCalc, count);
+}
+
+function wireCombat(c, cur, offCalc, count) {
+  const host = $('tab-combat');
+  host.querySelectorAll('[data-opt]').forEach(b => b.onclick = () => { const o = c.__combatOptions.find(x => x.id === b.dataset.opt); const v = b.dataset.val; if (v === 'Off') delete S.toggles[o.id]; else S.toggles[o.id] = o.choice ? v : true; renderCombat(); });
+  $('pick').onchange = e => { const [w, a] = e.target.value.split('|'); S.pick = { weaponId: w, attackId: a }; S.used = 0; renderCombat(); };
+  const po = $('pick-off'); if (po) po.onchange = e => { S.off = e.target.value ? { weaponId: e.target.value.split('|')[0], attackId: e.target.value.split('|')[1] } : false; S.offUsed = false; renderCombat(); };
+  host.querySelectorAll('[data-target]').forEach(b => b.onclick = () => { S.target = b.dataset.target; renderCombat(); });
+  host.querySelectorAll('[data-sit]').forEach(b => b.onclick = () => { const k = b.dataset.sit; S.situation = S.situation.includes(k) ? S.situation.filter(x => x !== k) : [...S.situation, k]; renderCombat(); });
+  $('adj-up').onclick = () => { S.adjust++; renderCombat(); };
+  $('adj-dn').onclick = () => { S.adjust--; renderCombat(); };
+  const tgt = () => (FOES.find(f => f.id === S.target) || {}).name || 'no target';
+  const log = (what, value, source) => { S.log.push({ what, value, source }); };
+  const attack = (value, source) => { S.used = Math.min(S.used + 1, count); log(`Jaque · ${cur.name} → ${tgt()} · d20`, value, source); renderCombat(); };
+  host.querySelectorAll('[data-roll="main"]').forEach(b => b.onclick = () => attack(Math.floor(Math.random() * 20) + 1, 'rolled'));
+  host.querySelectorAll('[data-enter="main"]').forEach(b => b.onclick = () => {
+    const inp = $('enter-main'); const v = parseInt(inp.value, 10);
+    if (v >= 1 && v <= 20) attack(v, 'entered'); else { inp.setCustomValidity('Enter a number from 1 to 20'); inp.reportValidity(); inp.setCustomValidity(''); }
+  });
+  host.querySelectorAll('[data-roll="off"]').forEach(b => b.onclick = () => { S.offUsed = true; log(`Jaque · ${offCalc.name} → ${tgt()} · d20`, Math.floor(Math.random() * 20) + 1, 'rolled'); renderCombat(); });
+  host.querySelectorAll('[data-dmg]').forEach(b => b.onclick = () => {
+    const m = cur.damage.sm.match(/^(\d+)d(\d+)([+-]\d+)?$/); let total = 0;
+    for (let i = 0; i < +m[1]; i++) total += Math.floor(Math.random() * +m[2]) + 1;
+    total += m[3] ? +m[3] : 0;
+    log(`Jaque · damage ${cur.damage.sm} → ${tgt()}`, total, 'rolled'); renderCombat();
+  });
+  $('next-turn').onclick = () => { S.turn = (S.turn + 1) % ORDER.filter(([n]) => !FOES.find(f => f.name === n && (f.hidden || f.hideInit))).length; renderCombat(); };
+  $('new-round').onclick = () => {
+    for (const o of c.__combatOptions || []) if (!o.sticks) delete S.toggles[o.id];
+    S.round += 1; S.turn = 0; S.used = 0; S.offUsed = false; renderCombat();
+  };
+}
+
+render();
+</script>
