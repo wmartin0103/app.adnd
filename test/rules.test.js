@@ -303,3 +303,20 @@ test('unarmed: PHB Table 57 lookup and THAC0 from Strength and situation', async
   const a = unarmedAttack({ sheet: { str: '17', __classes: [{ group: 'rogue', level: '5' }] }, round: { situation: ['flanking'] } });
   assert.deepEqual([a.base.thac0, a.thac0, a.strDamage], [18, 15, 1]);   // rogue 5: 18; Str 17 +1 hit; flanking +2
 });
+
+test('ability cards: combat role guessed from the wording', async () => {
+  const { guessCombatRole, sameAbility } = await import('../src/rules/abilities.js');
+  const sheet = JSON.parse(readFileSync(new URL('../samples/jaque_09-23.json', import.meta.url)));
+  const roles = Object.fromEntries(sheet.__abilitiesCards.map(a => [a.name, guessCombatRole(a)]));
+  assert.deepEqual(roles, {
+    'Weapons Display': 'round', 'Handle Weapon': 'passive', 'Trick Throw': 'attack',
+    'Defensive Spin': 'round', 'Offensive Spin': 'round', "Thieves' Cant": 'none',
+    'Influence Reactions': 'none', 'Inspiration': 'none', 'Signature Weapon (Dagger)': 'passive',
+    "Duelist's Precision": 'passive', 'Limited Legend Lore': 'none',
+  });
+  assert.equal(guessCombatRole({ name: 'Turn Undead', desc: 'Takes the round. Roll on the turning table.' }), 'round');
+  assert.equal(guessCombatRole({ name: 'Mystery', desc: 'Something happens.' }), null);
+  assert.ok(sameAbility('Weapons Display', 'Weapon Display'));
+  assert.ok(sameAbility('Signature Weapon (Dagger)', 'Signature Weapon'));
+  assert.ok(!sameAbility('Defensive Spin', 'Offensive Spin'));
+});

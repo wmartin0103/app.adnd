@@ -835,6 +835,7 @@
       text-decoration: underline;
       cursor: pointer;
     }
+    .ability-combat { flex-wrap: wrap; gap: 0.4rem 0.8rem; }
     .nwp-type-wrap { display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; }
     .nwp-type-sel {
       font-family: var(--font-display);
@@ -3561,6 +3562,53 @@ function unarmedAttack({ sheet, round = {} }) {
 
 return { unarmedResult, unarmedAttack };
 })();
+// ── rules/abilities ──
+__m["rules/abilities"] = (() => {
+
+// How an ability behaves in a round of combat. Every ability card on the sheet
+// carries one of these (`combatRole`), set by the player; the app pre-fills a
+// guess from the card's wording and flags it until the player confirms.
+//
+//   passive — always on; folded into the math (Signature Weapon)
+//   stance  — a toggle that sits alongside attacks (Bladesong)
+//   attack  — changes a single attack; an option on attack cards (Trick Throw, Backstab)
+//   round   — uses your round instead of attacking; listed like spells (Defensive Spin, Turn Undead)
+//   none    — not for combat (Thieves' Cant); stays in Quick reference
+const COMBAT_ROLES = {
+  passive: 'Always on',
+  stance: 'Stance',
+  attack: 'Changes an attack',
+  round: 'Uses your round',
+  none: 'Not for combat',
+};
+
+// First match wins, so the order matters: "before battle" beats "full round",
+// and "may not attack" beats "on a hit".
+const RULES = [
+  ['none', /\b(before|outside( of)?) (a |the )?(battle|combat|fight)\b|cannot be used in (battle|combat)|not usable in (battle|combat)/i],
+  ['round', /\b(may|can|does) not attack\b|\bmak(e|es|ing) no attacks?\b|instead of attacking|in place of (an |his |her |their )?attack\b|\b(one |a )?full round\b|\btakes? (a|the|one|his|her|their) (full |entire )?round\b|\buses? (his|her|their|the|your) round\b/i],
+  ['attack', /called shot|\bbackstab|\bon a (successful )?hit\b|instead of the normal (attack|damage)/i],
+  ['stance', /\bstance\b|while (it is |the song is )?active\b/i],
+  ['passive', /[+−-]\s?\d+\s*(to[ -])?(hit|dmg|damage|atk|attack)|in place of (the )?(str|dex|strength|dexterity)\b|attacks? per round|\b\d\/\d attacks|\bambidextrous\b|\bpenalt(y|ies)\b/i],
+  ['none', /\bsecret\b|communicat|\blore\b|\blanguages?\b|\bidentify\b|\bknowledge\b/i],
+];
+
+// The role an ability's wording suggests, or null when it can't tell.
+function guessCombatRole(card) {
+  const text = `${card.name || ''}. ${card.desc || ''}`;
+  for (const [role, re] of RULES) if (re.test(text)) return role;
+  return null;
+}
+
+// Loose name match between an ability card and a combat option or bonus:
+// case, punctuation and plurals ignored ("Weapons Display" = "Weapon Display").
+function sameAbility(a, b) {
+  const key = s => String(s || '').toLowerCase().replace(/\(.*?\)/g, '').split(/[^a-z]+/).filter(Boolean).map(w => w.replace(/s$/, '')).join(' ');
+  return key(a) !== '' && key(a) === key(b);
+}
+
+return { COMBAT_ROLES, guessCombatRole, sameAbility };
+})();
 // ── rules/character ──
 __m["rules/character"] = (() => {
 const {DEX_TABLE} = __m["rules/tables"];
@@ -4255,6 +4303,7 @@ window.SheetGuess = { guessCategory: __m["rules/migrate"].guessCategory };
 window.SheetTables = { NONPROFICIENT_PENALTY: __m["rules/tables"].NONPROFICIENT_PENALTY };
 window.SheetDice = { parseDice: __m["rules/dice"].parseDice, formatDice: __m["rules/dice"].formatDice };
 window.SheetCharacter = { hpState: __m["rules/character"].hpState, HP_FLOOR: __m["rules/character"].HP_FLOOR };
+window.SheetAbilities = { COMBAT_ROLES: __m["rules/abilities"].COMBAT_ROLES, guessCombatRole: __m["rules/abilities"].guessCombatRole };
 })();
 /* ── end sheet converter ── */
   </script>
@@ -8307,8 +8356,80 @@ window.SheetCharacter = { hpState: __m["rules/character"].hpState, HP_FLOOR: __m
         urlRow.appendChild(infoLink);
         card.appendChild(urlRow);
 
+        card.appendChild(abilityCombatBar(ab));
         grid.appendChild(card);
       });
+    }
+
+    // How an ability behaves in combat (used by the Combat tab). Pre-filled from
+    // the card's wording and marked "guessed" until the player confirms it.
+    function normalizeAbilityCard(ab) {
+      if (ab.combatRole === undefined) {
+        const guess = window.SheetAbilities ? SheetAbilities.guessCombatRole(ab) : null;
+        ab.combatRole = guess || '';
+        ab.combatRoleGuessed = !!guess;
+      }
+    }
+    function abilityCombatBar(ab) {
+      normalizeAbilityCard(ab);
+      const roles = (window.SheetAbilities && SheetAbilities.COMBAT_ROLES) || {};
+      const bar = document.createElement('div');
+      bar.className = 'nwp-card-bottom ability-combat';
+      const wrap = document.createElement('div');
+      wrap.className = 'nwp-type-wrap';
+      const label = document.createElement('label');
+      label.className = 'nwp-adj-label';
+      label.textContent = 'In combat';
+      label.htmlFor = `abc-role-${ab.id}`;
+      const sel = document.createElement('select');
+      sel.id = `abc-role-${ab.id}`;
+      sel.className = 'nwp-type-sel';
+      [['', '— choose'], ...Object.entries(roles)].forEach(([k, l]) => {
+        const opt = document.createElement('option');
+        opt.value = k; opt.textContent = l;
+        if (ab.combatRole === k) opt.selected = true;
+        sel.appendChild(opt);
+      });
+      sel.addEventListener('change', () => { ab.combatRole = sel.value; ab.combatRoleGuessed = false; renderAbilitiesCards(); saveToItems(); });
+      wrap.append(label, sel);
+      if (ab.combatRoleGuessed) {
+        const tag = document.createElement('span');
+        tag.className = 'wpn-guess';
+        tag.textContent = 'guessed';
+        const ok = document.createElement('button');
+        ok.type = 'button';
+        ok.className = 'wpn-guess-ok';
+        ok.textContent = 'Confirm';
+        ok.setAttribute('aria-label', `Confirm how ${ab.name || 'this ability'} works in combat`);
+        ok.addEventListener('click', () => { ab.combatRoleGuessed = false; renderAbilitiesCards(); saveToItems(); });
+        wrap.append(tag, ok);
+      }
+      bar.appendChild(wrap);
+      // Extra details for the roles Combat lists or applies
+      const field = (key, text, placeholder, width) => {
+        const w = document.createElement('div');
+        w.className = 'nwp-slots-wrap';
+        const l = document.createElement('label');
+        l.className = 'nwp-adj-label';
+        l.textContent = text;
+        l.htmlFor = `abc-${key}-${ab.id}`;
+        const inp = document.createElement('input');
+        inp.type = 'text';
+        inp.id = `abc-${key}-${ab.id}`;
+        inp.className = 'nwp-adj-inp';
+        inp.style.width = width;
+        inp.value = ab[key] || '';
+        inp.placeholder = placeholder;
+        inp.addEventListener('input', () => { ab[key] = inp.value; });
+        inp.addEventListener('change', () => saveToItems());
+        w.append(l, inp);
+        return w;
+      };
+      if (ab.combatRole === 'round') {
+        bar.append(field('uses', 'Uses', 'e.g. 3/day', '5.5rem'), field('save', 'Save', 'e.g. vs para', '6.5rem'));
+      }
+      if (ab.combatRole === 'attack') bar.append(field('hitAdj', 'To hit', '±0', '3rem'));
+      return bar;
     }
 
     // ── WEAPON PROFICIENCY CARDS ────────────────────────────────

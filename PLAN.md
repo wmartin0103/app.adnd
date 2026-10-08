@@ -386,6 +386,14 @@ Helper pick from (see section 9).
     adjustment, roll and damage. Unarmed follows PHB punching and wrestling
     (Table 57, to spot-check). Cast picks from memorized spells; the sheet's
     spellbook entries need cast time, range, save and attack-roll fields.
+17. **Abilities in combat (decided):** each ability card on the sheet has an
+    "In combat" setting: Always on, Stance, Changes an attack, Uses your
+    round, Not for combat. The app pre-fills it from the card's wording
+    (`src/rules/abilities.js`) and marks it guessed until confirmed. Combat's
+    round choice is Fight / Cast / Ability; Ability lists "Uses your round"
+    abilities (with Uses and Save); "Changes an attack" abilities (with a
+    To hit value) are options on each attack card. Magic items may get their
+    own round choice later.
 
 ---
 

@@ -40,6 +40,7 @@ export const RULES_FILES = [
   'src/rules/weapons.js',
   'src/rules/attacks.js',
   'src/rules/unarmed.js',
+  'src/rules/abilities.js',
   'src/rules/character.js',
   'src/rules/migrate.js',
   'src/adapters/dm-helper.js',

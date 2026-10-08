@@ -12,6 +12,7 @@ const rules = bundle(RULES_FILES, {
   expose: {
     Rules: ['rules/attacks', ['computeAttack', 'listAttacks', 'weaponAttacks', 'planRound', 'attacksThisRound', 'attacksInRound', 'hasBonusRounds', 'formatRate', 'offHandAttacks', 'effectiveLevel', 'SITUATIONS']],
     Weapons: ['rules/weapons', ['resolveWeapon', 'PHB_WEAPONS']],
+    Abilities: ['rules/abilities', ['COMBAT_ROLES', 'guessCombatRole', 'sameAbility']],
     Unarmed: ['rules/unarmed', ['unarmedAttack', 'unarmedResult']],
     Character: ['rules/character', ['armorClass', 'savingThrows', 'proficiencyTargets', 'hpState', 'HP_FLOOR']],
     Migrate: ['rules/migrate', ['migrateV1toV2', 'sheetWeaponToV2', 'sheetProficiencies']],
@@ -24,6 +25,9 @@ const v2 = readFileSync('test/fixtures/jaque-v2.json', 'utf8');
 // corrections made on 10-07 (Open Locks +20, Find/Remove Traps 0).
 const current = JSON.parse(v1);
 current.__thiefSkillAlloc.kit = { ...current.__thiefSkillAlloc.kit, ol: 20, frt: 0 };
+// …and Trick Throw's to-hit filled in on its ability card (In combat: Changes an attack)
+const trick = current.__abilitiesCards.find(a => a.name === 'Trick Throw');
+if (trick) trick.hitAdj = '-2';
 
 // Whole pages embedded as JS strings. "<" is escaped so nothing inside can
 // close the surrounding <script> tag.

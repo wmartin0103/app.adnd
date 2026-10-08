@@ -20,6 +20,7 @@ export const TARGETS = {
     SheetTables: ['rules/tables', ['NONPROFICIENT_PENALTY']],
     SheetDice: ['rules/dice', ['parseDice', 'formatDice']],
     SheetCharacter: ['rules/character', ['hpState', 'HP_FLOOR']],
+    SheetAbilities: ['rules/abilities', ['COMBAT_ROLES', 'guessCombatRole']],
   },
 };
 
