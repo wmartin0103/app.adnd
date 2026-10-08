@@ -110,3 +110,16 @@ test('weapon proficiencies come from the old proficiency cards, flagged to confi
   assert.deepEqual(v2.__weaponProficiencies, ['dagger']);
   assert.ok(v2.__review.some(r => r.target.id === 'weapon-proficiencies' && /Dagger/.test(r.message)));
 });
+
+test('fields set on the sheet are used instead of guesses', () => {
+  const save = JSON.parse(JSON.stringify(jaqueV1));
+  save.__weapons[0].basedOn = 'dagger'; save.__weapons[0].basedOnGuessed = false;
+  save.__weapons[0].modes = ['melee']; save.__weapons[0].magicPlus = 1;
+  save.__wpnProfCards.forEach(c => { c.weaponType = /Dagger/.test(c.name) ? 'dagger' : ''; c.weaponTypeGuessed = false; });
+  const v2 = migrateV1toV2(save);
+  const w = v2.__weapons.find(x => x.id === 'wpn-1');
+  assert.deepEqual([w.basedOn, w.modes, w.magicPlus], ['dagger', ['melee'], 1]);
+  assert.ok(!v2.__review.some(r => r.target.id === 'wpn-1' && /guessed/.test(r.message)));
+  assert.deepEqual(v2.__weaponProficiencies, ['dagger']);
+  assert.ok(!v2.__review.some(r => r.target.id === 'weapon-proficiencies'));
+});

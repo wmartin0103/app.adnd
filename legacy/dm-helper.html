@@ -1416,8 +1416,13 @@ function migrateV1toV2(input) {
   const oldScenarios = d.__scenarios || [];
 
   // ── Weapon proficiencies, from the sheet's proficiency cards ──
-  const profCats = [...new Set((d.__wpnProfCards || []).map(c => guessCategory(c.name)).filter(Boolean))];
-  if (profCats.length) {
+  // Cards with a "Weapon type" set on the sheet are used as-is; others are guessed from the name
+  const cards = d.__wpnProfCards || [];
+  const setOnSheet = cards.some(c => c.weaponType !== undefined && !c.weaponTypeGuessed);
+  const profCats = [...new Set(cards.map(c => (c.weaponType !== undefined ? c.weaponType : guessCategory(c.name))).filter(Boolean))];
+  if (profCats.length && setOnSheet && !cards.some(c => c.weaponTypeGuessed)) {
+    d.__weaponProficiencies = profCats;
+  } else if (profCats.length) {
     d.__weaponProficiencies = profCats;
     flag('character', 'weapon-proficiencies', `Weapon proficiencies set to ${profCats.map(c => PHB_WEAPONS[c].name.replace(/\s*\(.*\)$/, '')).join(', ')} from your proficiency cards. Add any that are missing.`);
   } else {
@@ -1430,10 +1435,12 @@ function migrateV1toV2(input) {
     const notes = [];
     if (old.notes) notes.push(old.notes);
 
-    const category = guessCategory(old.name);
+    // The sheet's own "Based on" field wins; otherwise guess from the name
+    const fromSheet = old.basedOn !== undefined;
+    const category = fromSheet ? (old.basedOn || null) : guessCategory(old.name);
     if (category) {
       w.basedOn = category;
-      flag('weapon', w.id, `Based on ${PHB_WEAPONS[category].name}? (guessed from the name)`);
+      if (!fromSheet || old.basedOnGuessed) flag('weapon', w.id, `Based on ${PHB_WEAPONS[category].name}? (guessed from the name)`);
     } else {
       w.modes = ['melee'];   // until the player picks a base weapon
       flag('weapon', w.id, `Pick the PHB weapon "${old.name || 'this weapon'}" is based on.`);
@@ -1495,7 +1502,11 @@ function migrateV1toV2(input) {
     }
     if (dmgBonus) w.dmgBonus = dmgBonus;
 
-    if (/\+\d/.test(old.name || '')) {
+    // Fields the sheet now keeps directly
+    if (Array.isArray(old.modes) && old.modes.length) w.modes = old.modes.slice();
+    if (old.magicPlus) w.magicPlus = old.magicPlus;
+
+    if (!old.magicPlus && /\+\d/.test(old.name || '')) {
       flag('weapon', w.id, `The name suggests a magic weapon. Set its magic plus so crits count it correctly.`);
     }
     if (notes.length) w.notes = notes.join(' | ');
