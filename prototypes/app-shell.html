@@ -146,10 +146,10 @@ select.pick { border: 1px solid var(--rule); border-radius: var(--radius); backg
 .chip.down .tag { margin-left: 4px; }
 .chip[aria-pressed="true"] .tag { color: var(--surface); border-color: currentColor; }
 .person.down .pname { color: var(--ink-faint); text-decoration: line-through; }
-.hp-inp { width: 2.6em; font: inherit; color: inherit; background: transparent; border: none; border-bottom: 1px dashed var(--ink-faint); border-radius: 0; padding: 0; text-align: right; -moz-appearance: textfield; }
+.hp-inp { width: 2ch; font: inherit; color: inherit; background: transparent; border: none; border-radius: 2px; padding: 0; text-align: right; -moz-appearance: textfield; }
 .hp-inp::-webkit-inner-spin-button, .hp-inp::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-.hp-inp:hover { border-bottom-color: var(--accent); }
-.hp-inp:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-bottom-color: transparent; }
+.hp-inp:hover { background: var(--sunk); }
+.hp-inp:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .demo-foes { display: flex; flex-wrap: wrap; gap: 6px; flex-basis: 100%; }
 .note-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--note); margin-left: 6px; vertical-align: 1px; }
 .chip[aria-pressed="true"] .note-dot { background: var(--surface); }
@@ -2414,7 +2414,7 @@ function renderCombat() {
       <section class="panel" aria-labelledby="h-you">
         <div class="panel-head"><h2 id="h-you">You ${pin('F')}${pin('J')}</h2>${order[S.turn] && order[S.turn][2] === 'you' ? '<span class="tag good">Your turn</span>' : ''}</div>
         <div class="you-stats">
-          <div class="stat"><label class="lbl" for="hp-inp">${ICON.heart}HP</label><span class="val"><input id="hp-inp" class="hp-inp" type="number" inputmode="numeric" step="1" min="${Character.HP_FLOOR}" max="${hp[1]}" value="${hp[0]}" aria-describedby="hp-of"><span class="muted" id="hp-of" style="font-size:.9rem" aria-label="of ${hp[1]} maximum">/${hp[1]}</span></span>${hpBar(hp)}${Character.hpState(hp[0]) ? `<span class="tag bad">${Character.hpState(hp[0])}</span>` : ''}</div>
+          <div class="stat"><label class="lbl" for="hp-inp">${ICON.heart}HP</label><span class="val"><input id="hp-inp" class="hp-inp" type="number" inputmode="numeric" step="1" min="${Character.HP_FLOOR}" max="${hp[1]}" value="${hp[0]}" style="width:${Math.max(2, String(hp[0]).length)}ch" aria-describedby="hp-of"><span class="muted" id="hp-of" style="font-size:.9rem" aria-label="of ${hp[1]} maximum">/${hp[1]}</span></span>${hpBar(hp)}${Character.hpState(hp[0]) ? `<span class="tag bad">${Character.hpState(hp[0])}</span>` : ''}</div>
           <div class="stat"><span class="lbl">${ICON.shield}AC</span><span class="val">${ac.ac - acUp}</span><span class="muted" style="font-size:.78rem">${acUp ? `${ac.ac} − ${acUp} this round` : `surprised ${ac.surprised}`}</span></div>
           <div class="stat"><span class="lbl">Conditions</span><span class="chips">${S.toggles['opt-1'] ? `<span class="tag">Bladesong: ${esc(S.toggles['opt-1'])}</span>` : '<span class="muted">None</span>'}</span></div>
         </div>
@@ -2547,6 +2547,8 @@ function wireCombat(c, cur, offCalc, count) {
     S.log.push({ what: `Jaque · HP ${hpNow} → ${next}/${hpMax}${st ? ` · ${st.toLowerCase()}` : ''}`, value: next, source: 'HP' });
     renderCombat();
   };
+  // Two digits wide; grows for −10
+  $('hp-inp').oninput = e => { e.target.style.width = `${Math.max(2, e.target.value.length)}ch`; };
   $('hp-inp').onkeydown = e => { if (e.key === 'Enter') e.target.blur(); };
   host.querySelectorAll('[data-opt]').forEach(b => b.onclick = () => { const o = c.__combatOptions.find(x => x.id === b.dataset.opt); const v = b.dataset.val; if (v === 'Off') delete S.toggles[o.id]; else S.toggles[o.id] = o.choice ? v : true; renderCombat(); });
   $('pick').onchange = e => { const [w, a] = e.target.value.split('|'); S.pick = { weaponId: w, attackId: a }; S.used = 0; renderCombat(); };
