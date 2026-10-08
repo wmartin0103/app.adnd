@@ -1,0 +1,260 @@
+{
+  "__version": 1,
+  "name": "Nandun Goroth",
+  "player": "",
+  "race-group": "half-orc",
+  "alignment": "Chaotic-Good",
+  "str": "18",
+  "dex": "12",
+  "con": "18",
+  "int": "10",
+  "wis": "12",
+  "cha": "6",
+  "ac": "3",
+  "hp-current": "37",
+  "hp-max": "37",
+  "movement-mod": "",
+  "money": "",
+  "notes": "Kit: Brute (CBb 40)\nGender: Male\nRace (full): Half-Orc\nBase movement: 12\n[Converted from the Advanced D&D (Rev.) Excel sheet. Fields with no JSON equivalent (spell-school access, psionics, stronghold, hirelings, time log, ability sub-scores/overrides) were not carried over.]",
+  "__scenarios": [],
+  "__scenarioCounter": 1,
+  "__enemies": [],
+  "__enemyCounter": 1,
+  "__classes": [
+    {
+      "id": "cls-1",
+      "name": "Barbarian",
+      "group": "warrior",
+      "level": "3",
+      "xp": "6514.2"
+    },
+    {
+      "id": "cls-2",
+      "name": "Ranger",
+      "group": "warrior",
+      "level": "3",
+      "xp": "6514.2"
+    }
+  ],
+  "__classCounter": 3,
+  "__saveMods": {
+    "paralysis": 0,
+    "rod": 0,
+    "petrification": 0,
+    "breath": 0,
+    "spell": 0
+  },
+  "__traitState": {
+    "ho-infravision": {
+      "active": true,
+      "notes": ""
+    }
+  },
+  "__thiefSkillAlloc": {
+    "points": {},
+    "kit": {},
+    "armor": {}
+  },
+  "__thiefSubclass": "thief",
+  "__weapons": [
+    {
+      "id": "wpn-1",
+      "name": "Club",
+      "size": "md",
+      "dmgType": "bludgeoning",
+      "speed": "4",
+      "hitAdj": "+3",
+      "dmgAdj": "",
+      "dmgSM": "1d6+6",
+      "dmgL": "1d3+6",
+      "notes": "Not proficient; Melee",
+      "racialBonus": false
+    },
+    {
+      "id": "wpn-2",
+      "name": "Maul",
+      "size": "lg",
+      "dmgType": "bludgeoning",
+      "speed": "6",
+      "hitAdj": "+5",
+      "dmgAdj": "",
+      "dmgSM": "2d4+6",
+      "dmgL": "1d10+6",
+      "notes": "Proficient; Melee",
+      "racialBonus": false
+    },
+    {
+      "id": "wpn-3",
+      "name": "Dagger",
+      "size": "sm",
+      "dmgType": "piercing",
+      "speed": "2",
+      "hitAdj": "+1",
+      "dmgAdj": "",
+      "dmgSM": "1d4+6",
+      "dmgL": "1d3+6",
+      "notes": "Proficient; Melee",
+      "racialBonus": false
+    },
+    {
+      "id": "wpn-4",
+      "name": "Spear, Thrown",
+      "size": "md",
+      "dmgType": "piercing",
+      "speed": "6",
+      "hitAdj": "+1",
+      "dmgAdj": "",
+      "dmgSM": "1d6+6",
+      "dmgL": "1d8+6",
+      "notes": "Proficient; Ranged/Thrown; Qty 12",
+      "racialBonus": false
+    },
+    {
+      "id": "wpn-5",
+      "name": "Wrestling*",
+      "size": "md",
+      "dmgType": "bludgeoning",
+      "speed": "3",
+      "hitAdj": "+3",
+      "dmgAdj": "",
+      "dmgSM": "1d6+6",
+      "dmgL": "1d6+6",
+      "notes": "Not proficient; Melee",
+      "racialBonus": false
+    },
+    {
+      "id": "wpn-6",
+      "name": "Punch*, Bare-handed",
+      "size": "md",
+      "dmgType": "bludgeoning",
+      "speed": "3",
+      "hitAdj": "+3",
+      "dmgAdj": "",
+      "dmgSM": "1d6+6",
+      "dmgL": "1d6+6",
+      "notes": "Not proficient; Melee",
+      "racialBonus": false
+    },
+    {
+      "id": "wpn-7",
+      "name": "Harpoon",
+      "size": "lg",
+      "dmgType": "piercing",
+      "speed": "4",
+      "hitAdj": "+3",
+      "dmgAdj": "",
+      "dmgSM": "2d4+6",
+      "dmgL": "2d6+6",
+      "notes": "Proficient; Ranged/Thrown",
+      "racialBonus": false
+    }
+  ],
+  "__weaponCounter": 8,
+  "__spells": [],
+  "__spellCounter": 1,
+  "__spellbookPagesUsed": "",
+  "__spellbookPagesTotal": "",
+  "__spellClass": "warrior",
+  "__nwps": [
+    {
+      "id": "nwp-1",
+      "name": "Wild Fighting G (CBb79)",
+      "desc": "Source: Barb",
+      "url": "",
+      "ability": "na",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-2",
+      "name": "Dirty Tricks W (DSCG29)",
+      "desc": "Source: Int",
+      "url": "",
+      "ability": "wis",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-3",
+      "name": "Intimidation G (DSDPH93)",
+      "desc": "Source: Ranger",
+      "url": "",
+      "ability": "str",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-4",
+      "name": "Running WH (84)",
+      "desc": "Source: Ranger",
+      "url": "",
+      "ability": "con",
+      "adj": "",
+      "slots": ""
+    }
+  ],
+  "__nwpCounter": 5,
+  "__abilitiesCards": [
+    {
+      "id": "abc-1",
+      "name": "Special Abilities",
+      "desc": "Special Abilities:",
+      "url": ""
+    },
+    {
+      "id": "abc-2",
+      "name": "Racial Abilities",
+      "desc": "Racial Abilities: +1 Str, +1 Con, -2 Cha, Night Vision, Half-orcs receive 1 more HP per level, Half-orcs receive a +2 to saving throws against disease and to resist the effect of bad smells (such as a troglodyte or an otyugh).\n\nBarbarian: \u2022 1d12 HP level. \u2022 Weapon Expertise, bonus attack every other round. \u2022 Multiple fighting style specializations. \u2022 Local fighting style, for 1 weapon prof (choose -1 AC, +1 attack, free block, no penalties with from two weapons fighting, or free unarmed attack each round). \u2022 Movement increase from 12 to 15. \u2022 Carry more: +3 bonus to strength calculation on optional encumbrance rules. \u2022 Leaping and Springing, increased horizontal and vertical jump distance. \u2022 Have my back 15%+5% per level negating flanking, +1 reposte. \u2022 Climb, 60%+5% per level. \u2022 Home Terrain (Forest) gain Survival, Hiding, Tracking, and Animal Lore. \n\nBrute: Thick skinned: Natural armor class of 6, armor stacks. Climber: Treat your level as two levels higher for climbing. Wild Brawl: Unarmed attacks deal 1d6. Enhanced Smell: Can track by known scent as tracking skill, and +2 to Tracking. Identify known creatures by scent. Surprising: +2 to suprise bonuses. Ripped: +1 or +25% to Strength.",
+      "url": ""
+    },
+    {
+      "id": "abc-3",
+      "name": "Code / Personality",
+      "desc": "Special Hinderances:",
+      "url": ""
+    }
+  ],
+  "__abilitiesCardsCounter": 4,
+  "__wpnProfCards": [
+    {
+      "id": "wpc-1",
+      "name": "Weapon Proficiencies",
+      "desc": "Weapon Expertise Maul",
+      "url": "",
+      "slots": ""
+    },
+    {
+      "id": "wpc-2",
+      "name": "Special Weapon Proficiencies & Slots (Source)",
+      "desc": "Special weapon proficiency slot",
+      "url": "",
+      "slots": ""
+    },
+    {
+      "id": "wpc-3",
+      "name": "Clubbing Tight Group 2 (CF59)",
+      "desc": "Special weapon proficiency slot",
+      "url": "",
+      "slots": ""
+    },
+    {
+      "id": "wpc-4",
+      "name": "Local Fighting Style W 1 (POCT78)",
+      "desc": "Special weapon proficiency slot",
+      "url": "",
+      "slots": ""
+    },
+    {
+      "id": "wpc-5",
+      "name": "Two-Handed Wpn Style W 1 (POCT77)",
+      "desc": "Special weapon proficiency slot",
+      "url": "",
+      "slots": ""
+    }
+  ],
+  "__wpnProfCardsCounter": 6,
+  "__equipment": [],
+  "__equipCounter": 1,
+  "__items": [],
+  "__itemsCounter": 1
+}

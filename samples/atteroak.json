@@ -1,0 +1,297 @@
+{
+  "__version": 1,
+  "name": "Atteroak Bearingstone",
+  "player": "",
+  "race-group": "dwarf",
+  "alignment": "Neutral-Good",
+  "str": "14",
+  "dex": "13",
+  "con": "16",
+  "int": "11",
+  "wis": "18",
+  "cha": "11",
+  "ac": "2",
+  "hp-current": "31",
+  "hp-max": "31",
+  "movement-mod": "",
+  "money": "",
+  "notes": "Kit: *Dwarf:\nGender: Male\nRace (full): Dwarf\nBase movement: 6\nNWP note: Cooking as adventure reward, Kit Bonuses Pick One Craft\n[Converted from the Advanced D&D (Rev.) Excel sheet. Fields with no JSON equivalent (spell-school access, psionics, stronghold, hirelings, time log, ability sub-scores/overrides) were not carried over.]",
+  "__scenarios": [],
+  "__scenarioCounter": 1,
+  "__enemies": [],
+  "__enemyCounter": 1,
+  "__classes": [
+    {
+      "id": "cls-1",
+      "name": "Cleric",
+      "group": "priest",
+      "level": "4",
+      "xp": "11871.2"
+    }
+  ],
+  "__classCounter": 2,
+  "__saveMods": {
+    "paralysis": 0,
+    "rod": 0,
+    "petrification": 0,
+    "breath": 0,
+    "spell": 0
+  },
+  "__traitState": {
+    "dw-infravision": {
+      "active": true,
+      "notes": ""
+    },
+    "dw-save-bonus": {
+      "active": true,
+      "notes": ""
+    },
+    "dw-combat-bonus": {
+      "active": true,
+      "notes": ""
+    },
+    "dw-languages": {
+      "active": true,
+      "notes": ""
+    }
+  },
+  "__thiefSkillAlloc": {
+    "points": {},
+    "kit": {},
+    "armor": {}
+  },
+  "__thiefSubclass": "thief",
+  "__weapons": [
+    {
+      "id": "wpn-1",
+      "name": "Horseman's Mace +1",
+      "size": "md",
+      "dmgType": "bludgeoning",
+      "speed": "5",
+      "hitAdj": "+1",
+      "dmgAdj": "",
+      "dmgSM": "1d6+2",
+      "dmgL": "1d6+2",
+      "notes": "Not proficient; Melee",
+      "racialBonus": false
+    },
+    {
+      "id": "wpn-2",
+      "name": "Dagger",
+      "size": "sm",
+      "dmgType": "piercing",
+      "speed": "2",
+      "hitAdj": "-3",
+      "dmgAdj": "",
+      "dmgSM": "1d4",
+      "dmgL": "1d3",
+      "notes": "Proficient; Melee",
+      "racialBonus": false
+    },
+    {
+      "id": "wpn-3",
+      "name": "Dagger, Thrown",
+      "size": "sm",
+      "dmgType": "piercing",
+      "speed": "2",
+      "hitAdj": "-3",
+      "dmgAdj": "",
+      "dmgSM": "1d4",
+      "dmgL": "1d3",
+      "notes": "Proficient; Ranged/Thrown",
+      "racialBonus": false
+    },
+    {
+      "id": "wpn-4",
+      "name": "Sling, Bullets",
+      "size": "sm",
+      "dmgType": "bludgeoning",
+      "speed": "6",
+      "hitAdj": "-3",
+      "dmgAdj": "",
+      "dmgSM": "1d4+1",
+      "dmgL": "1d6+1",
+      "notes": "Proficient; Ranged/Thrown",
+      "racialBonus": false
+    },
+    {
+      "id": "wpn-5",
+      "name": "Sling, Stones",
+      "size": "sm",
+      "dmgType": "bludgeoning",
+      "speed": "6",
+      "hitAdj": "-2",
+      "dmgAdj": "",
+      "dmgSM": "1d4",
+      "dmgL": "1d4",
+      "notes": "Proficient; Ranged/Thrown",
+      "racialBonus": false
+    },
+    {
+      "id": "wpn-6",
+      "name": "Warhammer",
+      "size": "md",
+      "dmgType": "bludgeoning",
+      "speed": "4",
+      "hitAdj": "",
+      "dmgAdj": "",
+      "dmgSM": "1d4+1",
+      "dmgL": "1d4+1",
+      "notes": "Not proficient; Melee",
+      "racialBonus": false
+    },
+    {
+      "id": "wpn-7",
+      "name": "Warhammer, Thrown",
+      "size": "md",
+      "dmgType": "bludgeoning",
+      "speed": "4",
+      "hitAdj": "",
+      "dmgAdj": "",
+      "dmgSM": "1d4+1",
+      "dmgL": "1d4+1",
+      "notes": "Not proficient; Ranged/Thrown",
+      "racialBonus": false
+    }
+  ],
+  "__weaponCounter": 8,
+  "__spells": [],
+  "__spellCounter": 1,
+  "__spellbookPagesUsed": "",
+  "__spellbookPagesTotal": "",
+  "__spellClass": "priest",
+  "__nwps": [
+    {
+      "id": "nwp-1",
+      "name": "Animal Handling G (77,CR80,CPn72)",
+      "desc": "Source: Int",
+      "url": "",
+      "ability": "wis",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-2",
+      "name": "Armorer W (79,CF4,CPn72)",
+      "desc": "Source: Int + Cleric",
+      "url": "",
+      "ability": "wis",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-3",
+      "name": "Artistic Ability G (79)",
+      "desc": "Source: Cleric",
+      "url": "",
+      "ability": "cha",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-4",
+      "name": "Cooking G (80)",
+      "desc": "Source: Gift",
+      "url": "",
+      "ability": "wis",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-5",
+      "name": "Endurance W (80)",
+      "desc": "Source: Kit",
+      "url": "",
+      "ability": "con",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-6",
+      "name": "Healing P (81,CPn72)",
+      "desc": "Source: Cleric",
+      "url": "",
+      "ability": "wis",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-7",
+      "name": "Religion P (83)",
+      "desc": "Source: Kit",
+      "url": "",
+      "ability": "wis",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-8",
+      "name": "Weaponsmith W (87,CF10)",
+      "desc": "Source: Kit",
+      "url": "",
+      "ability": "wis",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-9",
+      "name": "Bargain G (DSAH46)",
+      "desc": "Source: Lvl3",
+      "url": "",
+      "ability": "wis",
+      "adj": "",
+      "slots": ""
+    }
+  ],
+  "__nwpCounter": 10,
+  "__abilitiesCards": [
+    {
+      "id": "abc-1",
+      "name": "Special Abilities",
+      "desc": "Class Benefits:\n\u2022 Priest Spells\n\nClass Hinderances:\n\u2022 None\n\nChrom, the God of Creation and Craft\n\u2022 Turn Undead\n\u2022 Burn for: Exchange a memorized spell for a cure spell of the same level\n\u2022 Experienced: Use which ever is better, Wis or Int, for craft skills\n\u2022 Major Domains: See Spells Sheet\n\u2022 Minor Domains: See Spells Sheet\n\nKit Benefits:\n\u2022 Free Craft Proficiency: Player Choice (Weaponsmith)\n\u2022 Bonus Proficiencies: Endurance, Religion\n\nKit Hinderances:\n\u2022 None.",
+      "url": ""
+    },
+    {
+      "id": "abc-2",
+      "name": "Racial Abilities",
+      "desc": "Racial Abilities: Con +1, Cha -1, Size: Small, Speed 6, Night Vision\n\nConstitute: +4 Bonus to Save vs Poison\n\nAntimagical:\n+4 Bonus to Save vs Rods, Staves, Wands, and Spells\nIf a magical item is not specifically created for the dwarf's class, there is a 20% chance of malfunction when used. Dwarves have learned to master some magical items. Weapons, shields, armor, gauntlets, and girdles always work. Dwarf priests and warrior/priests may use clerical items without malfunction. Dwarves also recognize cursed magical items that malfunction in their hands. They may dispose of malfunctioning items.\n\nEnemy of my people: +1 bonus to attack orcs, half-orcs, goblins, and hobgoblins.\n\nUnderground Sense:\nDetect grade or slope in passage, 1-5 on a d6\nDetect new tunnel/passage construction, 1-5 on a d6\nDetect sliding/shifting walls or rooms, 1-4 on a d6\nDetect stonework traps, pits, and deadfalls, 1-3 on a d6\nEstimate approximate depth underground, 1-3 on a d6",
+      "url": ""
+    }
+  ],
+  "__abilitiesCardsCounter": 3,
+  "__wpnProfCards": [
+    {
+      "id": "wpc-1",
+      "name": "Weapon Proficiencies",
+      "desc": "Horseman's Mace, Warhammer, Throwing Hammer",
+      "url": "",
+      "slots": ""
+    },
+    {
+      "id": "wpc-2",
+      "name": "Special Weapon Proficiencies & Slots (Source)",
+      "desc": "Special weapon proficiency slot",
+      "url": "",
+      "slots": ""
+    },
+    {
+      "id": "wpc-3",
+      "name": "Single Weapon Style Spec. 1-2 (CF62)",
+      "desc": "Special weapon proficiency slot",
+      "url": "",
+      "slots": ""
+    },
+    {
+      "id": "wpc-4",
+      "name": "Single Weapon Style Spec. 1-2 (CF62)",
+      "desc": "Special weapon proficiency slot",
+      "url": "",
+      "slots": ""
+    }
+  ],
+  "__wpnProfCardsCounter": 5,
+  "__equipment": [],
+  "__equipCounter": 1,
+  "__items": [],
+  "__itemsCounter": 1
+}

@@ -1,0 +1,387 @@
+{
+  "__version": 1,
+  "name": "Hanspeter Windfellow, brother of Erlyn",
+  "player": "",
+  "race-group": "human",
+  "alignment": "Chaotic-Neutral",
+  "str": "10",
+  "dex": "11",
+  "con": "16",
+  "int": "13",
+  "wis": "18",
+  "cha": "15",
+  "ac": "8",
+  "hp-current": "24",
+  "hp-max": "29",
+  "movement-mod": "",
+  "money": "",
+  "notes": "Kit: Shapeshifter (CD 37)\nGender: Male\nRace (full): Human\nWounds: -5 (HP max 29, current 24)\nBase movement: 12\n[Converted from the Advanced D&D (Rev.) Excel sheet. Fields with no JSON equivalent (spell-school access, psionics, stronghold, hirelings, time log, ability sub-scores/overrides) were not carried over.]",
+  "__scenarios": [],
+  "__scenarioCounter": 1,
+  "__enemies": [],
+  "__enemyCounter": 1,
+  "__classes": [
+    {
+      "id": "cls-1",
+      "name": "Bard",
+      "group": "rogue",
+      "level": "2",
+      "xp": "1250"
+    },
+    {
+      "id": "cls-2",
+      "name": "Druid",
+      "group": "priest",
+      "level": "5",
+      "xp": "11886.2"
+    }
+  ],
+  "__classCounter": 3,
+  "__saveMods": {
+    "paralysis": 0,
+    "rod": 0,
+    "petrification": 0,
+    "breath": 0,
+    "spell": 0
+  },
+  "__traitState": {},
+  "__thiefSkillAlloc": {
+    "points": {},
+    "kit": {},
+    "armor": {}
+  },
+  "__thiefSubclass": "thief",
+  "__weapons": [
+    {
+      "id": "wpn-1",
+      "name": "Club",
+      "size": "md",
+      "dmgType": "bludgeoning",
+      "speed": "4",
+      "hitAdj": "+1",
+      "dmgAdj": "",
+      "dmgSM": "1d6+1",
+      "dmgL": "1d3+1",
+      "notes": "Not proficient; Melee",
+      "racialBonus": false
+    },
+    {
+      "id": "wpn-2",
+      "name": "Stone Knife*",
+      "size": "sm",
+      "dmgType": "",
+      "speed": "2",
+      "hitAdj": "+1",
+      "dmgAdj": "",
+      "dmgSM": "1d2+1",
+      "dmgL": "1d2+1",
+      "notes": "Not proficient; Melee",
+      "racialBonus": false
+    },
+    {
+      "id": "wpn-3",
+      "name": "Other (Custom)",
+      "size": "sm",
+      "dmgType": "piercing",
+      "speed": "2",
+      "hitAdj": "+1",
+      "dmgAdj": "",
+      "dmgSM": "1d3+2",
+      "dmgL": "1d2+2",
+      "notes": "Not proficient; Ranged/Thrown",
+      "racialBonus": false
+    },
+    {
+      "id": "wpn-4",
+      "name": "Other (Custom)",
+      "size": "sm",
+      "dmgType": "slashing",
+      "speed": "3",
+      "hitAdj": "+3",
+      "dmgAdj": "",
+      "dmgSM": "1+1",
+      "dmgL": "1+1",
+      "notes": "Not proficient; Melee",
+      "racialBonus": false
+    },
+    {
+      "id": "wpn-5",
+      "name": "Punch*, Bare-handed",
+      "size": "md",
+      "dmgType": "bludgeoning",
+      "speed": "3",
+      "hitAdj": "+3",
+      "dmgAdj": "",
+      "dmgSM": "1d2+1",
+      "dmgL": "1d2+1",
+      "notes": "Not proficient; Melee",
+      "racialBonus": false
+    }
+  ],
+  "__weaponCounter": 6,
+  "__spells": [
+    {
+      "id": "spl-1",
+      "name": "Cure L Wounds",
+      "level": 1,
+      "type": "wizard",
+      "isMemorized": false,
+      "sourceId": null,
+      "charges": 1,
+      "url": "",
+      "notes": ""
+    },
+    {
+      "id": "spl-2",
+      "name": "Entangle",
+      "level": 1,
+      "type": "wizard",
+      "isMemorized": false,
+      "sourceId": null,
+      "charges": 1,
+      "url": "",
+      "notes": ""
+    },
+    {
+      "id": "spl-3",
+      "name": "Entangle",
+      "level": 1,
+      "type": "wizard",
+      "isMemorized": false,
+      "sourceId": null,
+      "charges": 1,
+      "url": "",
+      "notes": ""
+    },
+    {
+      "id": "spl-4",
+      "name": "Entangle",
+      "level": 1,
+      "type": "wizard",
+      "isMemorized": false,
+      "sourceId": null,
+      "charges": 1,
+      "url": "",
+      "notes": ""
+    },
+    {
+      "id": "spl-5",
+      "name": "Light",
+      "level": 1,
+      "type": "wizard",
+      "isMemorized": false,
+      "sourceId": null,
+      "charges": 1,
+      "url": "",
+      "notes": ""
+    },
+    {
+      "id": "spl-6",
+      "name": "Cure M Wounds",
+      "level": 2,
+      "type": "wizard",
+      "isMemorized": false,
+      "sourceId": null,
+      "charges": 1,
+      "url": "",
+      "notes": ""
+    },
+    {
+      "id": "spl-7",
+      "name": "Cure M Wounds",
+      "level": 2,
+      "type": "wizard",
+      "isMemorized": false,
+      "sourceId": null,
+      "charges": 1,
+      "url": "",
+      "notes": ""
+    },
+    {
+      "id": "spl-8",
+      "name": "Cure M Wounds",
+      "level": 2,
+      "type": "wizard",
+      "isMemorized": false,
+      "sourceId": null,
+      "charges": 1,
+      "url": "",
+      "notes": ""
+    },
+    {
+      "id": "spl-9",
+      "name": "Barkskin",
+      "level": 2,
+      "type": "wizard",
+      "isMemorized": false,
+      "sourceId": null,
+      "charges": 1,
+      "url": "",
+      "notes": ""
+    }
+  ],
+  "__spellCounter": 10,
+  "__spellbookPagesUsed": "",
+  "__spellbookPagesTotal": "",
+  "__spellClass": "rogue",
+  "__nwps": [
+    {
+      "id": "nwp-1",
+      "name": "Animal Lore W (77,CPn72)",
+      "desc": "Source: Kit",
+      "url": "",
+      "ability": "wis",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-2",
+      "name": "Musical Instrument G (POSP101)",
+      "desc": "Source: Kit",
+      "url": "",
+      "ability": "wis",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-3",
+      "name": "Singing G (84)",
+      "desc": "Source: Kit",
+      "url": "",
+      "ability": "cha",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-4",
+      "name": "Survival R (85,CT19)",
+      "desc": "Source: Kit",
+      "url": "",
+      "ability": "int",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-5",
+      "name": "Persuasion G (CR84)",
+      "desc": "Source: Bonus",
+      "url": "",
+      "ability": "cha",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-6",
+      "name": "Tumbling GB (87,CBb72)",
+      "desc": "Source: Brd",
+      "url": "",
+      "ability": "dex",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-7",
+      "name": "Camouflage R (CR82)",
+      "desc": "Source: Brd",
+      "url": "",
+      "ability": "wis",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-8",
+      "name": "Hunting R (82,CT18)",
+      "desc": "Source: Brd",
+      "url": "",
+      "ability": "wis",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-9",
+      "name": "Natural Fighting WH (CBH96)",
+      "desc": "Source: Dru",
+      "url": "",
+      "ability": "9.0",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-10",
+      "name": "Foraging G (XSh20)",
+      "desc": "Source: Dru",
+      "url": "",
+      "ability": "int",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-11",
+      "name": "Homeopathy",
+      "desc": "Source: Pov",
+      "url": "",
+      "ability": "",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-12",
+      "name": "Naturopathy",
+      "desc": "Source: Pov",
+      "url": "",
+      "ability": "",
+      "adj": "",
+      "slots": ""
+    }
+  ],
+  "__nwpCounter": 13,
+  "__abilitiesCards": [
+    {
+      "id": "abc-1",
+      "name": "Special Abilities",
+      "desc": "Class Benefits:\n\u2022 Druid Spells: Orison at will, 5 first level spells, 4 second level spells\n\u2022 Fire and Electrical Resistance \u2022 Secret Language\n\u2022 Identify: Plants, Animals, Soils, Minerals, Clean Water\n\u2022 Free Movement and Pass without Trace: Pass through overgrown areas without leaving a trail and at their normal movement rate.\n\u2022 Communicate with Creatures: Elves\n\nKit Benefits:\n\u2022 Shapeshifting: Gain shapechanging power at 1st level rather than at 7th level. However, until 7th level only the form of natural creatures whose Hit Dice total no greater than half level. Can shapechange twice as often as normal. (Forest Shapeshifters, then, can change to animal, reptile, and bird form, each twice per day.) However, using this power more than the normal three times per day may have dangerous consequences. (See \"Special Hindrances.\")\n\nKit Hinderences:\n\u2022 Limited healing: A Shapeshifter regains hit points only when resuming her human form, and then recovers only 1d4 hp. If the druid has 0 hp or fewer, they regain none with their human shape.",
+      "url": ""
+    },
+    {
+      "id": "abc-2",
+      "name": "Racial Abilities",
+      "desc": "Racial Abilities: Twice as Bright Half as Long, Bonus Weapon Proficiency, Bonus Non-Weapon Proficiency, XP Reduction\n\nClass Benefits:\n\u2022 Spells: Cantrip at will, 1st level spell\n\u2022 Theives Skills: Pick Pockets, Detect Noise, Climb Walls, Read Languages\n\nKit Benefits:\n\u2022 Song of Companionship: Summon animal who become companions. Meistersinger and animal can communicate simple thoughts and desires. The companion has hit points equal to the Meistersinger. Animal transfers its primary sensory power onto the Meistersinger.\n\u2022 Song of Sanction: Zone of good will, save vs. Paralization at -1 to ignore Mestersinger and any within in 2ft and favor other targets. \n\u2022 Song of Animal Charm: Song takes 1d10 rounds, animal is held temporarily spellbound, rolls a saving throw vs. paralyzation. If it fails, it is charmed as per spell. If it succeeds, it acts normally. If the roll was a natural 20, the animal is enraged and immediately attacks. \n\u2022 Influence Animal Reactions\n\nKit Hinderances:\n\u2022 Wanderer: No-stronghold, no troops, just a few huts and cabins scattered across the lands.",
+      "url": ""
+    },
+    {
+      "id": "abc-3",
+      "name": "Code / Personality",
+      "desc": "\u2022 Locked in: If you shape change more than three times per day, must make a saving throw vs. spell after each extra use. A failure locks you into her current form until the next day, when you can attempt a new saving throw. However, for each failed save, the druid's next one bears a -1 penalty. If three saving throws fail in succession, animal form is permanent, as if reincarnated as that creature. Only a polymorph other, limited wish, or wish can turn them back to human form.\n\nNotes: Useful spells, Create Spring, Cure Madness, Druidsight, Favor of the Goddess, Speak with Water, Precast: Goodberry, Rosetouch\n\nWizard Spells: Armor, Charm Person, Read Magic, Regenerate Self\n\n1st    AC bonus +1\n2nd   Bonus proficiency\n3rd    AC bonus +2\n4th    Exalted strike (+1 magic weapon), bonus proficiency\n5th    Endure Heat and Cold\n6th    AC bonus +3, bonus proficiency\n7th    Ability score enhancement +1\n8th    Sustenance, bonus proficiency\n9th    AC bonus +4 exalted strike (+2 magic weapon),\n10th    Mind shielding , bonus proficiency\n11th    Ability score enhancement +2/+1\n12th    AC bonus +5, bonus proficiency\n13th    Resist Heat and Cold\n14th    Exalted strike (+3 magic weapon), bonus proficiency\n15th    AC bonus +6, ability score enhancement +3/+2/+1\n16th    Free Movement, Bonus proficiency\n17th    Exalted strike (+4 magic weapon)\n18th    AC bonus +7, true seeing, bonus proficiency\n19th    Ability score enhancement +4/+3/+2/+1\n20th    Exalted strike (+5 magic weapon), bonus proficiency",
+      "url": ""
+    }
+  ],
+  "__abilitiesCardsCounter": 4,
+  "__wpnProfCards": [
+    {
+      "id": "wpc-1",
+      "name": "Weapon Proficiencies",
+      "desc": "Knife, Rock Throwing",
+      "url": "",
+      "slots": ""
+    },
+    {
+      "id": "wpc-2",
+      "name": "Special Weapon Proficiencies & Slots (Source)",
+      "desc": "Special weapon proficiency slot",
+      "url": "",
+      "slots": ""
+    },
+    {
+      "id": "wpc-3",
+      "name": "Clubbing Tight Group 2 (CF59)",
+      "desc": "Special weapon proficiency slot",
+      "url": "",
+      "slots": ""
+    }
+  ],
+  "__wpnProfCardsCounter": 4,
+  "__equipment": [],
+  "__equipCounter": 1,
+  "__items": [],
+  "__itemsCounter": 1
+}
