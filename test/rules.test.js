@@ -280,3 +280,8 @@ test('each attack in a round is its own slot', () => {
   const meleeEven = planRound({ sheet: jaque, primary: { weaponId: 'wpn-1', attackId: 'atk-1' }, roundNumber: 2 });
   assert.equal(meleeEven.slots.length, 2);
 });
+
+test('HP at or below 0: unconscious, dying, dead at -10', async () => {
+  const { hpState } = await import('../src/rules/character.js');
+  assert.deepEqual([5, 0, -1, -9, -10, -12, ''].map(hpState), [null, 'Unconscious', 'Dying', 'Dying', 'Dead', 'Dead', 'Unconscious']);
+});

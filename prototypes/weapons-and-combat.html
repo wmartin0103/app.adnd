@@ -1025,7 +1025,18 @@ function proficiencyTargets(sheet) {
   return out;
 }
 
-return { armorClass, stoutSaveBonus, savingThrows, THIEF_SKILLS, thiefSkills, proficiencyTargets };
+// ── Hit points at or below 0 (PHB optional rule, used by the group) ──
+// 0: unconscious. −1 to −9: dying (loses 1 HP a round until helped).
+// −10 or lower: dead. Damage stops at −10.
+const HP_FLOOR = -10;
+function hpState(current) {
+  const hp = Number(current);
+  if (!Number.isFinite(hp) || hp > 0) return null;
+  if (hp <= HP_FLOOR) return 'Dead';
+  return hp === 0 ? 'Unconscious' : 'Dying';
+}
+
+return { armorClass, stoutSaveBonus, savingThrows, THIEF_SKILLS, thiefSkills, proficiencyTargets, HP_FLOOR, hpState };
 })();
 // ── rules/migrate ──
 __m["rules/migrate"] = (() => {
@@ -1522,7 +1533,7 @@ return { toDMHelper, formatDMHelperConfig };
 })();
 window.Rules = { computeAttack: __m["rules/attacks"].computeAttack, listAttacks: __m["rules/attacks"].listAttacks, weaponAttacks: __m["rules/attacks"].weaponAttacks, planRound: __m["rules/attacks"].planRound, attacksThisRound: __m["rules/attacks"].attacksThisRound, offHandAttacks: __m["rules/attacks"].offHandAttacks, effectiveLevel: __m["rules/attacks"].effectiveLevel, SITUATIONS: __m["rules/attacks"].SITUATIONS };
 window.Weapons = { resolveWeapon: __m["rules/weapons"].resolveWeapon, PHB_WEAPONS: __m["rules/weapons"].PHB_WEAPONS };
-window.Character = { armorClass: __m["rules/character"].armorClass, savingThrows: __m["rules/character"].savingThrows, proficiencyTargets: __m["rules/character"].proficiencyTargets };
+window.Character = { armorClass: __m["rules/character"].armorClass, savingThrows: __m["rules/character"].savingThrows, proficiencyTargets: __m["rules/character"].proficiencyTargets, hpState: __m["rules/character"].hpState, HP_FLOOR: __m["rules/character"].HP_FLOOR };
 window.Migrate = { migrateV1toV2: __m["rules/migrate"].migrateV1toV2, sheetWeaponToV2: __m["rules/migrate"].sheetWeaponToV2, sheetProficiencies: __m["rules/migrate"].sheetProficiencies };
 })();
 </script>

@@ -177,3 +177,14 @@ export function proficiencyTargets(sheet) {
   }
   return out;
 }
+
+// ── Hit points at or below 0 (PHB optional rule, used by the group) ──
+// 0: unconscious. −1 to −9: dying (loses 1 HP a round until helped).
+// −10 or lower: dead. Damage stops at −10.
+export const HP_FLOOR = -10;
+export function hpState(current) {
+  const hp = Number(current);
+  if (!Number.isFinite(hp) || hp > 0) return null;
+  if (hp <= HP_FLOOR) return 'Dead';
+  return hp === 0 ? 'Unconscious' : 'Dying';
+}

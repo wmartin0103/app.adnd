@@ -19,6 +19,7 @@ export const TARGETS = {
     SheetGuess: ['rules/migrate', ['guessCategory']],
     SheetTables: ['rules/tables', ['NONPROFICIENT_PENALTY']],
     SheetDice: ['rules/dice', ['parseDice', 'formatDice']],
+    SheetCharacter: ['rules/character', ['hpState', 'HP_FLOOR']],
   },
 };
 

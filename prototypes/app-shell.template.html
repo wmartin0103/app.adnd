@@ -255,7 +255,7 @@ const ICON = {
 };
 
 const NOTES = [
-  ['J', 'Your HP, yours to change', 'Type an amount and press Damage (or Enter) or Heal. It updates the sheet, everyone\'s Party view, and the shared log, so the DM doesn\'t have to track it and nobody has to ask. Heal stops at your max; Undo reverses the last change.'],
+  ['J', 'Your HP, yours to change', 'Type an amount and press Damage (or Enter) or Heal. It updates the sheet, everyone\'s Party view, and the shared log, so the DM doesn\'t have to track it and nobody has to ask. Heal stops at your max. Damage can take you below 0: unconscious at 0, dying from −1 to −9, dead at −10 (PHB optional rule), shown here, on the sheet, and in everyone\'s Party view. Undo reverses the last change.'],
   ['A', 'Three tabs, one character', 'Sheet is who your character is, Combat is what you do right now, and DM is the DM\'s workspace. The tabs share one character record, so they can\'t drift apart the way the separate tools did.'],
   ['B', 'The sheet stays the sheet', 'This is your existing character sheet, unchanged. Its Weapons rows gain a settings gear (based-on weapon, melee/thrown, magic +). Combat Scenarios and the Enemy Tracker are gone from it: Combat covers both. Its THAC0 card shows the base from class and level.'],
   ['C', 'Encounter at a glance', 'Round and initiative order for everyone: hidden foes don\'t appear, and a foe with hidden initiative shows "?". Whose turn it is is highlighted, and so is your place in the order.'],
@@ -272,7 +272,7 @@ const PARTY = [
   { name: 'Goroth', hp: [34, 40], conds: [] },
   { name: 'Atteroak', hp: [22, 31], conds: ['Blessed'] },
   { name: 'Rifiyr', hp: [7, 24], conds: ['Prone'] },
-  { name: 'Hanspeter', hp: [0, 27], conds: ['Unconscious'] },
+  { name: 'Hanspeter', hp: [-3, 27], conds: [] },
 ];
 const FOES = [
   { id: 'orc-1', name: 'Orc 1', state: 'bloodied', init: 5 },
@@ -368,7 +368,8 @@ function render() {
 
 // ── Combat ──
 function healthState([cur, max]) {
-  if (cur <= 0) return ['down', 'bad'];
+  const st = Character.hpState(cur);
+  if (st) return [st.toLowerCase(), 'bad'];
   const r = cur / max;
   return r > 0.75 ? ['healthy', 'good'] : r > 0.4 ? ['wounded', 'warn'] : ['badly hurt', 'bad'];
 }
@@ -428,7 +429,7 @@ function renderCombat() {
       <section class="panel" aria-labelledby="h-you">
         <div class="panel-head"><h2 id="h-you">You ${pin('F')}${pin('J')}</h2>${order[S.turn] && order[S.turn][2] === 'you' ? '<span class="tag good">Your turn</span>' : ''}</div>
         <div class="you-stats">
-          <div class="stat"><span class="lbl">${ICON.heart}HP</span><span class="val">${hp[0]}<span class="muted" style="font-size:.9rem">/${hp[1]}</span></span>${hpBar(hp)}</div>
+          <div class="stat"><span class="lbl">${ICON.heart}HP</span><span class="val">${hp[0]}<span class="muted" style="font-size:.9rem">/${hp[1]}</span></span>${hpBar(hp)}${Character.hpState(hp[0]) ? `<span class="tag bad">${Character.hpState(hp[0])}</span>` : ''}</div>
           <div class="stat"><span class="lbl">${ICON.shield}AC</span><span class="val">${ac.ac - acUp}</span><span class="muted" style="font-size:.78rem">${acUp ? `${ac.ac} − ${acUp} this round` : `surprised ${ac.surprised}`}</span></div>
           <div class="stat"><span class="lbl">Conditions</span><span class="chips">${S.toggles['opt-1'] ? `<span class="tag">Bladesong: ${esc(S.toggles['opt-1'])}</span>` : '<span class="muted">None</span>'}</span></div>
         </div>
@@ -562,11 +563,11 @@ function wireCombat(c, cur, offCalc, count) {
     const amt = parseInt($('hp-amt').value, 10);
     if (!(amt > 0)) return;
     const kind = e.submitter?.value || 'damage';
-    const next = kind === 'heal' ? Math.min(hpMax, hpNow + amt) : Math.max(0, hpNow - amt);
-    const actual = Math.abs(next - hpNow);   // what really changed (heal stops at max, damage at 0)
+    const next = kind === 'heal' ? Math.min(hpMax, hpNow + amt) : Math.max(Character.HP_FLOOR, hpNow - amt);
+    const actual = Math.abs(next - hpNow);   // what really changed (heal stops at max, damage at −10)
     setHp(next);
     S.lastHp = { kind, amt: actual, before: hpNow };
-    S.log.push({ what: `Jaque · ${kind === 'heal' ? `healed ${actual}` : `took ${actual} damage`} → ${next}/${hpMax}`, value: next, source: 'HP' });
+    S.log.push({ what: `Jaque · ${kind === 'heal' ? `healed ${actual}` : `took ${actual} damage`} → ${next}/${hpMax}${Character.hpState(next) ? ` · ${Character.hpState(next).toLowerCase()}` : ''}`, value: next, source: 'HP' });
     renderCombat();
     $('hp-amt').focus();
   };

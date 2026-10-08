@@ -2235,6 +2235,7 @@
     .ac-matrix-table td.hit-hard  { color: var(--accent); font-weight: 600; }
     .ac-matrix-table td.hit-impossible { color: var(--rule); }
 
+    .hp-sub-label.hp-sub-alert { color: var(--accent); font-weight: 700; }
     .add-scenario-btn {
       display: flex;
       align-items: center;
@@ -2604,7 +2605,7 @@
             <div class="hp-inputs">
               <div class="hp-input-wrap">
                 <label class="sr-only" for="hp-current">Current HP</label>
-                <input id="hp-current" class="hp-main" type="number" min="0"
+                <input id="hp-current" class="hp-main" type="number" min="-10"
                   data-save="hp-current" aria-describedby="hp-current-sub" />
                 <span id="hp-current-sub" class="hp-sub-label">Current</span>
               </div>
@@ -3655,7 +3656,18 @@ function proficiencyTargets(sheet) {
   return out;
 }
 
-return { armorClass, stoutSaveBonus, savingThrows, THIEF_SKILLS, thiefSkills, proficiencyTargets };
+// ── Hit points at or below 0 (PHB optional rule, used by the group) ──
+// 0: unconscious. −1 to −9: dying (loses 1 HP a round until helped).
+// −10 or lower: dead. Damage stops at −10.
+const HP_FLOOR = -10;
+function hpState(current) {
+  const hp = Number(current);
+  if (!Number.isFinite(hp) || hp > 0) return null;
+  if (hp <= HP_FLOOR) return 'Dead';
+  return hp === 0 ? 'Unconscious' : 'Dying';
+}
+
+return { armorClass, stoutSaveBonus, savingThrows, THIEF_SKILLS, thiefSkills, proficiencyTargets, HP_FLOOR, hpState };
 })();
 // ── rules/migrate ──
 __m["rules/migrate"] = (() => {
@@ -4154,6 +4166,7 @@ window.SheetRules = { PHB_WEAPONS: __m["rules/weapons"].PHB_WEAPONS, resolveWeap
 window.SheetGuess = { guessCategory: __m["rules/migrate"].guessCategory };
 window.SheetTables = { NONPROFICIENT_PENALTY: __m["rules/tables"].NONPROFICIENT_PENALTY };
 window.SheetDice = { parseDice: __m["rules/dice"].parseDice, formatDice: __m["rules/dice"].formatDice };
+window.SheetCharacter = { hpState: __m["rules/character"].hpState, HP_FLOOR: __m["rules/character"].HP_FLOOR };
 })();
 /* ── end sheet converter ── */
   </script>
@@ -7618,6 +7631,13 @@ window.SheetDice = { parseDice: __m["rules/dice"].parseDice, formatDice: __m["ru
 
       const bar     = document.getElementById('hp-bar');
       const fill    = document.getElementById('hp-bar-fill');
+
+      // At 0 or below: unconscious, dying (−1 to −9), dead (−10)
+      const state = window.SheetCharacter && document.getElementById('hp-current').value !== ''
+        ? SheetCharacter.hpState(current) : null;
+      const sub = document.getElementById('hp-current-sub');
+      sub.textContent = state || 'Current';
+      sub.classList.toggle('hp-sub-alert', !!state);
 
       if (max <= 0) {
         fill.style.width = '0%';
