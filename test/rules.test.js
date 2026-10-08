@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 
 import { parseDice, formatDice } from '../src/rules/dice.js';
 import { resolveWeapon } from '../src/rules/weapons.js';
-import { baseTHAC0, strengthMods, computeAttack, listAttacks, planRound, attacksThisRound, offHandAttacks } from '../src/rules/attacks.js';
+import { baseTHAC0, strengthMods, computeAttack, listAttacks, planRound, attacksThisRound, attacksInRound, hasBonusRounds, formatRate, offHandAttacks } from '../src/rules/attacks.js';
 
 const jaque = JSON.parse(readFileSync(new URL('./fixtures/jaque-v2.json', import.meta.url)));
 
@@ -284,4 +284,13 @@ test('each attack in a round is its own slot', () => {
 test('HP at or below 0: unconscious, dying, dead at -10', async () => {
   const { hpState } = await import('../src/rules/character.js');
   assert.deepEqual([5, 0, -1, -9, -10, -12, ''].map(hpState), [null, 'Unconscious', 'Dying', 'Dying', 'Dead', 'Dead', 'Unconscious']);
+});
+
+test('half attacks: standard or bonus round, chosen by the player', () => {
+  assert.equal(hasBonusRounds('3/2'), true);
+  assert.equal(hasBonusRounds('3/1'), false);
+  assert.deepEqual([attacksInRound('3/2'), attacksInRound('3/2', { bonus: true })], [1, 2]);
+  assert.deepEqual([attacksInRound('5/2'), attacksInRound('5/2', { bonus: true })], [2, 3]);
+  assert.deepEqual([attacksInRound('3/1'), attacksInRound('3/1', { bonus: true })], [3, 3]);
+  assert.deepEqual(['3/2', '3/1', '1'].map(formatRate), ['3 per 2 rounds', '3 per round', '1 per round']);
 });

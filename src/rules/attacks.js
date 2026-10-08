@@ -317,6 +317,24 @@ export function listAttacks({ sheet, campaignWeapons = {}, round = {}, offHand =
 // How many attacks a rate gives in a given round of combat. Fractional rates
 // alternate: 3/2 is 1 attack in round 1, 2 in round 2, 1 in round 3, …;
 // 5/2 is 2, 3, 2, …
+// House rule for half attacks (3/2, 5/2): the player says whether this is a
+// standard or a bonus round. A bonus round has the extra attack; it can't be
+// banked, and after it's used the next round is standard. The app doesn't
+// work this out from the round number; the player's toggle decides.
+export function hasBonusRounds(apr) {
+  return !Number.isInteger(aprValue(apr));
+}
+export function attacksInRound(apr, { bonus = false } = {}) {
+  const v = aprValue(apr);
+  return bonus ? Math.ceil(v) : Math.floor(v);
+}
+// "3/2" → "3 per 2 rounds", "3/1" → "3 per round"
+export function formatRate(apr) {
+  const [a, b] = String(apr).split('/').map(Number);
+  return !b || b === 1 ? `${a} per round` : `${a} per ${b} rounds`;
+}
+
+// Alternating by round number (kept for reference; Combat uses attacksInRound)
 export function attacksThisRound(apr, roundNumber = 1) {
   const v = aprValue(apr);
   const n = Math.max(1, roundNumber);

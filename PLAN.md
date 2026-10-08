@@ -374,6 +374,11 @@ Helper pick from (see section 9).
     tab and writes to the character record and the shared log, so the DM doesn't
     have to track party HP and encounters stay spoken. HP can go below 0
     (PHB optional rule): 0 unconscious, −1 to −9 dying, −10 dead.
+15. **Attacks per round (decided):** Combat shows how many attacks you have,
+    and doesn't count them off. Half attacks (3/2, 5/2): the player switches
+    Standard / Bonus round. A bonus round has the extra attack; if it goes
+    unused the next round is still a bonus round (it can't be banked for two),
+    and after it's used the next round is standard. The app never flips it.
 
 ---
 
