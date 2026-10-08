@@ -164,6 +164,20 @@ select.pick { border: 1px solid var(--rule); border-radius: var(--radius); backg
 .sf-row span { font-weight: 600; }
 .sf-row input, .sf-row select { font: inherit; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--surface); color: var(--ink); padding: 3px 6px; min-width: 0; }
 .sf-row small { color: var(--ink-muted); font-size: 0.8rem; }
+.round-tools { display: inline-flex; align-items: center; gap: 10px; }
+.roll-line { margin: 0; display: flex; align-items: center; gap: 6px; font-size: 0.95rem; }
+.roll-line svg { width: 14px; height: 14px; color: var(--accent); flex: none; }
+.mobs { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 6px; }
+.mob { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 4px 8px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--rule); }
+.mob input { font: inherit; border: 1px solid transparent; border-radius: var(--radius); background: transparent; color: var(--ink); padding: 2px 4px; min-width: 0; }
+.mob input:hover { border-color: var(--rule); }
+.mob input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; background: var(--surface); }
+.mob-name { font-weight: 600; }
+.mob-mini { display: inline-flex; align-items: center; gap: 3px; font-family: var(--font-display); font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-muted); }
+.mob-mini input { width: 3.2em; text-align: center; font-family: var(--font-data); font-size: 0.9rem; text-transform: none; letter-spacing: 0; }
+.mob-notes-inp { grid-column: 1 / -1; font-size: 0.9rem; color: var(--ink-muted); }
+.mob-actions { grid-column: 1 / -1; display: flex; gap: 10px; align-items: center; }
+.mob.down .mob-name { color: var(--ink-faint); text-decoration: line-through; }
 .add-card { border-style: dashed; border-color: var(--rule); color: var(--accent); font-family: var(--font-display); font-size: 0.8rem; letter-spacing: 0.05em; place-items: center; min-height: 64px; text-align: center; }
 .add-card .muted { display: block; font-family: var(--font-body); font-size: 0.8rem; letter-spacing: 0; }
 .seg.fit { justify-self: start; width: fit-content; }
@@ -298,20 +312,18 @@ const ICON = {
 };
 
 const NOTES = [
-  ['J', 'Your HP, yours to change', 'Your current HP is an input: type the new number and press Enter or click away. It updates the sheet, everyone\'s Party view, and the shared log, so the DM doesn\'t have to track it and nobody has to ask. It stays between −10 and your max. At 0 or below: unconscious at 0, dying from −1 to −9, dead at −10 (PHB optional rule), shown here, on the sheet, and in everyone\'s Party view.'],
-  ['A', 'Three tabs, one character', 'Sheet is who your character is, Combat is what you do right now, and DM is the DM\'s workspace. The tabs share one character record, so they can\'t drift apart the way the separate tools did.'],
-  ['B', 'The sheet stays the sheet', 'This is your existing character sheet, unchanged. Its Weapons rows gain a settings gear (based-on weapon, melee/thrown, magic +). Combat Scenarios and the Enemy Tracker are gone from it: Combat covers both. Its THAC0 card shows the base from class and level.'],
-  ['C', 'Encounter at a glance', 'Round and initiative order for everyone: hidden foes don\'t appear, and a foe with hidden initiative shows "?". Whose turn it is is highlighted, and so is your place in the order.'],
-  ['D', 'Party and foes', 'Everyone\'s exact HP and conditions, so nobody has to ask "how hurt are you?" mid-fight. Foes show only what\'s visible on the battlefield, never AC, plus your own notes on them (private to you; they replace the sheet\'s Enemy Tracker). The list comes from the DM\'s encounter. A foe that goes down stays listed, greyed and last, with your notes, and drops out of initiative; the DM can remove it for good. Try the Down / Remove buttons at the bottom.'],
-  ['I', 'Quick reference, not a second sheet', 'Saves, abilities, ready spells, and proficiency checks: the things you\'d otherwise flip to the sheet for mid-fight. Each section collapses; abilities show a one-line summary that expands to the full text from your sheet.'],
-  ['L', 'Spells come from a shared catalog', 'Each spell is a short stat block (casting time, range, duration, area, save, attack roll, dice, a one-line summary in your own words, a link to the full text) kept once for the whole campaign. Anyone can add or edit an entry from the spell card; the stats for the PHB spells in your saves are pre-filled. Spells without details are marked so the first person who casts one fills it in.'],
-  ['K', 'Your round, then your attacks', 'Round-wide choices sit together: Fight, Cast or Ability; what\'s in each hand and how the main hand is used (melee or thrown, which sets how many cards you get); Standard or Bonus round; stances; what adds to initiative. Cast lists memorized spells with casting time, range and save. Ability lists the abilities on your sheet set to \"Uses your round\" (Defensive Spin, Weapons Display; Turn Undead for a cleric). Abilities set to \"Changes an attack\" (Trick Throw, Backstab) are options on each attack card; \"Stance\" ones stay as round toggles. Each ability card on the sheet has an In combat setting the app pre-fills from its wording and marks guessed until confirmed. Unarmed uses the PHB punch and wrestle table.'],
-  ['E', 'One card per attack, no lock-in', 'Each attack has its own target, situation and adjustment, because Jaque\'s three thrown daggers can go three ways at three points in the round. A new card copies the card before it, so "all at Orc 1" is no extra taps. After a roll the card says what it hits ("hits AC 2 or worse"), since foe AC is the DM\'s secret. Cards aren\'t a quota: skip one, re-roll, clear, or add one when the DM allows. They clear when the DM starts a new round.'],
-  ['F', 'Your numbers come from the sheet', 'Ability scores, HP, AC, class and level, plus the abilities, spells and proficiencies in Quick reference, are read from the Sheet tab. Change Jaque\'s Dex on the sheet and the THAC0s here change. The weapon list is the sheet\'s Weapons section and nothing else: one entry per weapon and way it\'s used (melee, thrown). Bonuses and stances (Signature Weapon, Bladesong…) still come from the reviewed v2 data until ability cards carry their combat effects.'],
-  ['G', 'DM tab only for the DM', 'Switch "View as" to DM: a fourth tab appears with the real DM Helper, with Jaque already imported from his sheet. Players never get it, and in the cloud version the database enforces that, not just the interface.'],
-  ['H', 'Built for a half-width window', 'Combat stacks into one column at half-window and puts party, foes and the log beside you at tablet width. Sheet and DM keep their own responsive layouts.'],
+  ['A', 'Three tabs, one character', 'Sheet is who your character is, Combat tells you your options and what to roll right now, and DM is the DM\'s existing helper. The tabs share one character record.'],
+  ['B', 'The sheet stays the sheet', 'Your existing character sheet. Combat Scenarios and the Enemy Tracker moved to Combat; the THAC0 card shows the base from class and level.'],
+  ['K', 'Your round: what you\'re doing', 'Fight, Cast or Ability, then what\'s in each hand and how the main hand is used (melee or thrown sets how many attacks you get), Standard or Bonus round, and stances. It tells you what adds to initiative. Next round turns off this-round stances and extra cards; nothing else changes on its own.'],
+  ['E', 'One card per attack: what to roll', 'Each card shows the THAC0, the d20 roll needed against every AC, and the damage dice, for that attack with its own situation (flanking, higher ground), abilities (Trick Throw) and adjustment. You roll your own dice wherever you like and say the result out loud; the app doesn\'t roll, pick targets, or record anything.'],
+  ['L', 'Spells come from a shared catalog', 'Each spell is a short stat block (casting time, range, duration, area, save, attack roll, dice, a one-line summary, a link to the full text) kept once for the whole campaign. Anyone can add or edit an entry from the spell card; PHB stats for the spells in your saves are pre-filled.'],
+  ['M', 'Mob tracker, yours alone', 'The sheet\'s old Enemy Tracker, in Combat: add the foes you\'re facing and note their AC as you work it out, the damage you\'ve dealt, and anything worth remembering. Mark one down when it falls. Private to you and saved with your character; the DM\'s tool doesn\'t feed it.'],
+  ['J', 'Your HP, yours to change', 'Your current HP is an input: type the new number and press Enter or click away. It updates your sheet and the party\'s view, so the DM doesn\'t track it. At 0 you\'re unconscious, −1 to −9 dying, −10 dead.'],
+  ['D', 'Party', 'Everyone\'s exact HP and conditions, from their own sheets, so nobody has to ask "how hurt are you?" mid-fight.'],
+  ['I', 'Quick reference, not a second sheet', 'Saves, abilities, ready spells, and proficiency checks: the things you\'d otherwise flip to the sheet for mid-fight.'],
+  ['G', 'DM tab only for the DM', 'Switch "View as" to DM: a fourth tab appears with the DM Helper as it is today, with Jaque imported from his sheet. Players never get it.'],
+  ['H', 'Built for a half-width window', 'Combat stacks into one column at half-window and puts party, mob tracker and quick reference beside you at tablet width.'],
 ];
-
 // The campaign's shared spell catalog (data/spell-catalog.json). Anyone in the
 // group can add or edit an entry; here edits live in this page only.
 const SPELL_CATALOG = /*__SPELL_CATALOG__*/;
@@ -346,29 +358,22 @@ const PARTY = [
   { name: 'Rifiyr', hp: [7, 24], conds: ['Prone'] },
   { name: 'Hanspeter', hp: [-3, 27], conds: [] },
 ];
-const FOES = [
-  { id: 'orc-1', name: 'Orc 1', state: 'bloodied', init: 5 },
-  { id: 'orc-2', name: 'Orc 2', state: 'unhurt', init: 9, hideInit: true },
-  { id: 'ogre', name: 'Ogre in the trees', state: 'unhurt', init: 3, hidden: true },
-  { id: 'orc-3', name: 'Orc 3', state: 'unhurt', init: 6, down: true },
-];
-// What players see: revealed, not removed. Foes that are down go last.
-const shownFoes = () => FOES.filter(f => !f.hidden && !f.removed).sort((a, b) => !!a.down - !!b.down);
-// Initiative order: no hidden foes, no foes that are down or removed
-const liveOrder = () => ORDER.filter(([n]) => !FOES.find(f => f.name === n && (f.hidden || f.hideInit || f.down || f.removed)));
-const ORDER = [['Orc 1', 5, 'foe'], ['Goroth', 7], ['Atteroak', 8], ['Jaque', 9, 'you'], ['Rifiyr', 10], ['Hanspeter', 12]];
 
 const S = {
   role: 'player', tab: 'sheet', width: 720, notes: true,
-  round: 3, turn: 0,
   toggles: { 'opt-1': '+1 hit' },
   // Your round: what you're doing and holding (round-wide choices)
   action: 'fight', main: 'wpn-1', mode: 'thrown', off: false, spell: null, ability: null,
-  // One card per attack, keyed by slot (main-0, main-1, off, extra-0, unarmed-0, spell)
-  cards: { 'main-0': { target: 'orc-1', situation: ['flanking'], adjust: 0 } }, extras: [], cast: {},
-  // Your own notes on each foe (stand-in for the sheet's old Enemy Tracker)
-  foeNotes: { 'orc-1': 'Shield on left arm. Took 2 daggers already.' }, editingNote: null,
-  bonusRound: false, log: [], catalogEdits: {}, editingSpell: null,   // standard or bonus round: the player's call, never changed by the app
+  bonusRound: false,   // standard or bonus round: the player's call, never changed by the app
+  // One card per attack, keyed by slot (main-0, main-1, off, extra-…, spell, ability)
+  cards: { 'main-0': { situation: ['flanking'], adjust: 0 } }, extras: [],
+  catalogEdits: {}, editingSpell: null,
+  // Mob tracker: your own list of foes (the sheet's __enemies), private to you
+  mobs: [
+    { id: 'm1', name: 'Orc 1', ac: '6?', dmg: '9', notes: 'Shield on left arm', down: false },
+    { id: 'm2', name: 'Orc 2', ac: '', dmg: '', notes: '', down: false },
+    { id: 'm3', name: 'Orc 3', ac: '6', dmg: '11', notes: '', down: true },
+  ],
 };
 
 // ── The character Combat uses: ability scores, HP, AC, class, weapons and weapon
@@ -475,7 +480,7 @@ function renderCombat() {
 
   // ── Your round: what you're doing and holding ──
   const weapons = c.__weapons;
-  if (S.main !== 'unarmed' && !weapons.some(w => w.id === S.main)) S.main = weapons[0] ? weapons[0].id : 'unarmed';
+  if (!weapons.some(w => w.id === S.main)) S.main = weapons[0] ? weapons[0].id : null;
   const mainW = weapons.find(w => w.id === S.main);
   const modes = mainW ? (mainW.modes || ['melee']) : ['melee'];
   if (!modes.includes(S.mode)) S.mode = modes[0];
@@ -484,7 +489,7 @@ function renderCombat() {
   const acUp = roundCalc ? roundCalc.acImprovement : 0;
   const apr = roundCalc ? roundCalc.attacksPerRound : '1';
   const halfAttacks = S.action === 'fight' && !!mainW && hasBonusRounds(apr);
-  const count = mainW ? attacksInRound(apr, { bonus: S.bonusRound }) : 1;
+  const count = mainW ? attacksInRound(apr, { bonus: S.bonusRound }) : 0;
   const rule = (c.__combatRules || {}).offHandAttack;
   const needs = rule && rule !== true ? rule.needsMain?.categories : null;
   const offAllowed = !!rule && !!roundCalc && (!needs || needs.includes(roundCalc.category));
@@ -494,24 +499,23 @@ function renderCombat() {
   const ready = (c.__spells || []).filter(x => x.isMemorized);
   if (S.spell && !ready.some(x => x.id === S.spell)) S.spell = null;
   const spell = ready.find(x => x.id === S.spell);
-  const initMod = S.action === 'cast' ? (spell ? spellInfo(spell).castTime : '') : S.action === 'fight' ? (mainW ? (mainW.speed || '') : '1') : '';
+  const initMod = S.action === 'cast' ? (spell ? spellInfo(spell).castTime : '') : S.action === 'fight' && mainW ? (mainW.speed || '') : '';
 
   // ── The cards for this round ──
   const slots = [];
-  if (S.action === 'fight') {
-    if (mainW) for (let i = 0; i < count; i++) slots.push({ key: `main-${i}`, kind: 'weapon', pick: mainPick });
-    else slots.push({ key: 'unarmed-0', kind: 'unarmed' });
-    if (S.off && mainW) slots.push({ key: 'off', kind: 'weapon', pick: S.off, off: true });
+  if (S.action === 'fight' && mainW) {
+    for (let i = 0; i < count; i++) slots.push({ key: `main-${i}`, kind: 'weapon', pick: mainPick });
+    if (S.off) slots.push({ key: 'off', kind: 'weapon', pick: S.off, off: true });
   }
   if (S.action === 'cast' && spell) slots.push({ key: 'spell', kind: 'spell', spell });
   if (S.action === 'ability' && ability) slots.push({ key: 'ability', kind: 'ability', ability, effect: optFor(ability) });
-  for (const id of S.extras) slots.push({ key: `extra-${id}`, kind: mainW && S.action === 'fight' ? 'weapon' : 'unarmed', pick: mainPick, extra: true });
+  if (mainW) for (const id of S.extras) slots.push({ key: `extra-${id}`, kind: 'weapon', pick: mainPick, extra: true });
   currentSlots = slots;
-  // A new card starts with the card before it's target and situation
+  // A new card starts with the situation of the card before it
   slots.forEach((sl, i) => {
     if (!S.cards[sl.key]) {
       const prev = i > 0 ? S.cards[slots[i - 1].key] : null;
-      S.cards[sl.key] = { target: prev ? prev.target : (shownFoes().find(f => !f.down) || {}).id, situation: prev ? prev.situation.slice() : [], adjust: 0, style: 'punch' };
+      S.cards[sl.key] = { situation: prev ? prev.situation.slice() : [], adjust: 0, abilities: [] };
     }
   });
 
@@ -521,54 +525,44 @@ function renderCombat() {
     return `<div class="optrow"><span class="label">${esc(o.name)} <span class="tag">${o.sticks ? 'stays on' : 'this round'}</span></span>
       <span class="seg" role="group" aria-label="${esc(o.name)}">${choices.map(ch => { const on = ch === 'Off' ? !v : (o.choice ? v === ch : v === true); return `<button type="button" data-opt="${o.id}" data-val="${esc(ch)}" aria-pressed="${on}">${esc(ch)}</button>`; }).join('')}</span></div>`;
   }).join('');
-
-  const visibleFoes = shownFoes();
-  const order = liveOrder();
-  if (S.turn >= order.length) S.turn = 0;
-  const unknown = visibleFoes.filter(f => f.hideInit && !f.down);
-
+  const attackCount = slots.filter(x => x.kind === 'weapon' || (x.kind === 'spell' && spellInfo(x.spell).attack)).length;
 
   $('tab-combat').innerHTML = `<div class="combat">
-    <section class="enc" aria-labelledby="h-enc">
-      <div class="enc-head"><h2 id="h-enc">Orc ambush · Round ${S.round} ${pin('C')}</h2><span class="muted" style="font-size:.9rem">Lower acts first</span></div>
-      <ol class="order" aria-label="Initiative order">${order.map(([n, init, kind], i) => `<li class="${kind === 'foe' ? 'foe' : ''} ${kind === 'you' ? 'you' : ''} ${i === S.turn ? 'now' : ''}" ${i === S.turn ? 'aria-current="step"' : ''}><span class="n">${init}</span>${esc(n)}${kind === 'you' ? ' (you)' : ''}</li>`).join('')}
-        ${unknown.map(f => `<li class="foe"><span class="n">?</span>${esc(f.name)}</li>`).join('')}</ol>
-    </section>
     <div class="cgrid">
       <section class="panel" aria-labelledby="h-you">
-        <div class="panel-head"><h2 id="h-you">You ${pin('F')}${pin('J')}</h2>${order[S.turn] && order[S.turn][2] === 'you' ? '<span class="tag good">Your turn</span>' : ''}</div>
+        <div class="panel-head"><h2 id="h-you">You ${pin('J')}</h2></div>
         <div class="you-stats">
           <div class="stat"><label class="lbl" for="hp-inp">${ICON.heart}HP</label><span class="val"><input id="hp-inp" class="hp-inp" type="number" inputmode="numeric" step="1" min="${Character.HP_FLOOR}" max="${hp[1]}" value="${hp[0]}" style="width:${Math.max(2, String(hp[0]).length)}ch" aria-describedby="hp-of"><span class="muted" id="hp-of" style="font-size:.9rem" aria-label="of ${hp[1]} maximum">/${hp[1]}</span></span>${hpBar(hp)}${Character.hpState(hp[0]) ? `<span class="tag bad">${Character.hpState(hp[0])}</span>` : ''}</div>
           <div class="stat"><span class="lbl">${ICON.shield}AC</span><span class="val">${ac.ac - acUp}</span><span class="muted" style="font-size:.78rem">${acUp ? `${ac.ac} − ${acUp} this round` : `surprised ${ac.surprised}`}</span></div>
           <div class="stat"><span class="lbl">Conditions</span><span class="chips">${S.toggles['opt-1'] ? `<span class="tag">Bladesong: ${esc(S.toggles['opt-1'])}</span>` : '<span class="muted">None</span>'}</span></div>
         </div>
         <section class="round" aria-labelledby="h-round">
-          <div class="panel-head"><h3 id="h-round">Your round ${pin('K')}</h3>${initMod ? `<span class="count">Adds ${esc(initMod)} to initiative</span>` : ''}</div>
+          <div class="panel-head"><h3 id="h-round">Your round ${pin('K')}</h3><span class="round-tools">${initMod ? `<span class="count">Adds ${esc(initMod)} to initiative</span>` : ''}<button type="button" class="btn quiet" id="next-round">Next round</button></span></div>
           <div class="seg fit" role="group" aria-label="What you're doing this round">${[['fight', 'Fight'], ['cast', 'Cast'], ['ability', 'Ability']].map(([k, l]) => `<button type="button" data-action="${k}" aria-pressed="${S.action === k}">${l}</button>`).join('')}</div>
-          ${S.action === 'fight' ? `<div class="round-grid">
+          ${S.action === 'fight' ? (mainW ? `<div class="round-grid">
             <label class="optrow"><span class="label">Main hand</span>
-              <select class="pick" id="main-hand">${weapons.map(w => `<option value="${w.id}" ${S.main === w.id ? 'selected' : ''}>${esc(w.name)}</option>`).join('')}<option value="unarmed" ${S.main === 'unarmed' ? 'selected' : ''}>Unarmed (punch or wrestle)</option></select></label>
-            ${mainW && modes.length > 1 ? `<div class="optrow"><span class="label">Used as</span><span class="seg fit" role="group" aria-label="Melee or thrown">${modes.map(m => `<button type="button" data-mode="${m}" aria-pressed="${S.mode === m}">${cap(m)} · ${esc(formatRate(computeAttack({ sheet: c, weaponId: mainW.id, attackId: `${mainW.id}:${m}`, round: rw }).attacksPerRound))}</button>`).join('')}</span></div>` : ''}
+              <select class="pick" id="main-hand">${weapons.map(w => `<option value="${w.id}" ${S.main === w.id ? 'selected' : ''}>${esc(w.name)}</option>`).join('')}</select></label>
+            ${modes.length > 1 ? `<div class="optrow"><span class="label">Used as</span><span class="seg fit" role="group" aria-label="Melee or thrown">${modes.map(m => `<button type="button" data-mode="${m}" aria-pressed="${S.mode === m}">${cap(m)} · ${esc(formatRate(computeAttack({ sheet: c, weaponId: mainW.id, attackId: `${mainW.id}:${m}`, round: rw }).attacksPerRound))}</button>`).join('')}</span></div>` : ''}
             ${halfAttacks ? `<div class="optrow"><span class="label">This round <span class="tag">${esc(formatRate(apr))}</span></span>
               <span class="seg fit" role="group" aria-label="Standard or bonus round"><button type="button" data-bonus="0" aria-pressed="${!S.bonusRound}">Standard · ${attacksInRound(apr)}</button><button type="button" data-bonus="1" aria-pressed="${S.bonusRound}">Bonus · ${attacksInRound(apr, { bonus: true })}</button></span>
               <span class="muted hint">Used the extra attack? Next round is Standard. Didn't? It waits, but never stacks.</span></div>` : ''}
             ${rule ? `<label class="optrow"><span class="label">Off-hand</span>
               ${offAllowed ? `<select class="pick" id="pick-off"><option value="">None</option>${offOptions.map(x => `<option value="${x.w.id}|${x.a.id}" ${S.off && S.off.weaponId === x.w.id && S.off.attackId === x.a.id ? 'selected' : ''}>${esc(x.a.name.replace(/^Off-hand /, ''))}</option>`).join('')}</select>` : `<span class="muted" style="font-size:.9rem">Needs a dagger in your main hand</span>`}</label>` : ''}
-          </div>` : ''}
-          ${S.action === 'cast' ? `<div class="spells" role="radiogroup" aria-label="Ready spells">${ready.length ? ready.map(sp => { const info = spellInfo(sp); return `<button type="button" role="radio" class="spell ${S.cast[sp.id] ? 'spent' : ''}" data-spell="${sp.id}" aria-checked="${S.spell === sp.id}">
-              <span class="spell-name">${esc(sp.name)} <span class="tag">L${sp.level}</span>${S.cast[sp.id] ? ' <span class="tag">Cast</span>' : ''}${info.missing.length ? ' <span class="tag warn">needs details</span>' : ''}</span>
+          </div>` : `<p class="muted" style="margin:0">No weapons on your sheet yet. Add them in the Sheet tab's Weapons section; punches and wrestling are rows there too.</p>`) : ''}
+          ${S.action === 'cast' ? `<div class="spells" role="radiogroup" aria-label="Ready spells">${ready.length ? ready.map(sp => { const info = spellInfo(sp); return `<button type="button" role="radio" class="spell" data-spell="${sp.id}" aria-checked="${S.spell === sp.id}">
+              <span class="spell-name">${esc(sp.name)} <span class="tag">L${sp.level}</span>${info.missing.length ? ' <span class="tag warn">needs details</span>' : ''}</span>
               <span class="spell-meta"><span>Cast time <b class="num">${esc(info.castTime || '—')}</b></span><span>Range ${esc(info.range || sp.notes || '—')}</span><span>Save ${esc(info.save || '—')}</span></span></button>`; }).join('') : '<span class="muted">No spells memorized on your sheet</span>'}</div>` : ''}
           ${S.action === 'ability' ? `<div class="spells" role="radiogroup" aria-label="Abilities that use your round">${roundAbilities.length ? roundAbilities.map(a => `<button type="button" role="radio" class="spell" data-ability="${a.id}" aria-checked="${S.ability === a.id}">
               <span class="spell-name">${esc(a.name)}${a.combatRoleGuessed ? ' <span class="tag">guessed</span>' : ''}</span>
               <span class="spell-meta">${a.uses ? `<span>Uses <b>${esc(a.uses)}</b></span>` : ''}${a.save ? `<span>Save ${esc(a.save)}</span>` : ''}<span>${esc(firstLine(a.desc))}</span></span></button>`).join('') : '<span class="muted">No abilities on your sheet are set to "Uses your round".</span>'}</div>` : ''}
-          ${(c.__combatOptions || []).length ? `<details class="stances"><summary>Stances and abilities <span class="muted">${Object.keys(S.toggles).length ? Object.entries(S.toggles).map(([k, v]) => { const o = c.__combatOptions.find(x => x.id === k); return o ? `${o.name}${v === true ? '' : ': ' + v}` : ''; }).filter(Boolean).join(' · ') : 'none on'}</span></summary>${opts}</details>` : ''}
+          ${opts ? `<details class="stances"><summary>Stances <span class="muted">${Object.keys(S.toggles).length ? Object.entries(S.toggles).map(([k, v]) => { const o = c.__combatOptions.find(x => x.id === k); return o ? `${o.name}${v === true ? '' : ': ' + v}` : ''; }).filter(Boolean).join(' · ') : 'none on'}</span></summary>${opts}</details>` : ''}
         </section>
-        <section class="cards-wrap" aria-labelledby="h-atk">
-          <div class="panel-head"><h3 id="h-atk">${S.action === 'cast' ? `Spell and attacks ${pin('L')}` : S.action === 'ability' ? 'Ability and attacks' : 'Attacks'} ${pin('E')}</h3>${(() => { const n = slots.filter(x => x.kind === 'weapon' || x.kind === 'unarmed' || (x.kind === 'spell' && spellInfo(x.spell).attack)).length; return n ? `<span class="count">${n} attack${n === 1 ? '' : 's'} this round</span>` : ''; })()}</div>
-          <div class="cards">${slots.map((sl, i) => attackCard(c, sl, i, visibleFoes, attackAbilities)).join('')}
-            <button type="button" class="card add-card" id="add-attack"><span aria-hidden="true">＋</span> Add attack<span class="muted">when the DM allows one more</span></button>
+        ${slots.length || mainW ? `<section class="cards-wrap" aria-labelledby="h-atk">
+          <div class="panel-head"><h3 id="h-atk">${S.action === 'cast' ? `Spell ${pin('L')}` : S.action === 'ability' ? 'Ability' : 'Attacks'} ${pin('E')}</h3>${attackCount ? `<span class="count">${attackCount} attack${attackCount === 1 ? '' : 's'} this round</span>` : ''}</div>
+          <div class="cards">${slots.map((sl, i) => attackCard(c, sl, i, attackAbilities)).join('')}
+            ${mainW ? `<button type="button" class="card add-card" id="add-attack"><span aria-hidden="true">＋</span> Add attack<span class="muted">when the DM allows one more</span></button>` : ''}
           </div>
-        </section>
+        </section>` : ''}
       </section>
       <div class="side">
         <section class="panel" aria-labelledby="h-party">
@@ -577,26 +571,32 @@ function renderCombat() {
             <span class="hp">${hpBar(p.hp)} ${p.hp[0]}/${p.hp[1]}${p.hp[0] <= 0 ? ` <span class="tag ${tone}">${st}</span>` : ''}</span>
             ${p.conds.length ? `<span class="pmeta">${p.conds.map(x => `<span class="tag">${esc(x)}</span>`).join('')}</span>` : ''}</div>`; }).join('')}</div>
         </section>
-        <section class="panel" aria-labelledby="h-foes">
-          <div class="panel-head"><h2 id="h-foes">Foes</h2><span class="muted" style="font-size:.85rem">What you can see</span></div>
-          <div class="people">${visibleFoes.map(f => `<div class="person ${f.down ? 'down' : ''}"><span class="pname">${esc(f.name)}</span><span class="tag ${f.down ? '' : f.state === 'bloodied' ? 'bad' : ''}">${f.down ? 'Down' : esc(f.state)}</span>${S.foeNotes[f.id] ? `<span class="pmeta foe-note">${esc(S.foeNotes[f.id])}</span>` : ''}</div>`).join('')}</div>
+        <section class="panel" aria-labelledby="h-mobs">
+          <div class="panel-head"><h2 id="h-mobs">Mob tracker ${pin('M')}</h2><span class="muted" style="font-size:.85rem">Only you see this</span></div>
+          ${mobTracker()}
         </section>
         <section class="panel" aria-labelledby="h-ref">
           <div class="panel-head"><h2 id="h-ref">Quick reference ${pin('I')}</h2><span class="muted" style="font-size:.85rem">From your sheet</span></div>
           ${quickRef(c)}
         </section>
-        <section class="panel" aria-labelledby="h-log">
-          <div class="panel-head"><h2 id="h-log">Dice log</h2><span class="muted" style="font-size:.85rem">Everyone sees this</span></div>
-          <div class="log">${S.log.length ? S.log.slice().reverse().map(l => `<div><span>${esc(l.what)}</span><span><span class="num">${l.value}</span> <span class="tag">${l.source}</span></span></div>`).join('') : '<span class="muted">No rolls yet</span>'}</div>
-        </section>
       </div>
     </div>
-    <div class="demo"><b>Demo</b><button type="button" class="btn quiet" id="next-turn">Next turn</button><button type="button" class="btn quiet" id="new-round">New round</button><span class="muted">stand in for the DM</span>
-      <span class="demo-foes">${FOES.filter(f => !f.hidden && !f.removed).map(f => `<button type="button" class="btn quiet" data-down="${f.id}" aria-pressed="${!!f.down}">${f.down ? 'Revive' : 'Down'} ${esc(f.name)}</button>`).join('')}
-      ${FOES.filter(f => !f.hidden && !f.removed).map(f => `<button type="button" class="btn quiet" data-remove="${f.id}">Remove ${esc(f.name)}</button>`).join('')}
-      ${FOES.some(f => f.removed) ? '<button type="button" class="btn quiet" id="restore-foes">Bring removed back</button>' : ''}</span></div>
   </div>`;
   wireCombat(c);
+}
+
+// Your own list of foes: name, AC as you work it out, damage you've dealt, notes
+function mobTracker() {
+  const rows = S.mobs.slice().sort((a, b) => !!a.down - !!b.down);
+  const f = (m, k, label, cls, ph) => `<input class="mob-${k} ${cls}" data-mob="${m.id}|${k}" value="${esc(m[k])}" placeholder="${ph}" aria-label="${label}${m.name ? ' for ' + esc(m.name) : ''}">`;
+  return `<ul class="mobs">${rows.map(m => `<li class="mob ${m.down ? 'down' : ''}">
+      ${f(m, 'name', 'Name', '', 'Foe')}
+      <label class="mob-mini"><span>AC</span>${f(m, 'ac', 'AC', 'num', '?')}</label>
+      <label class="mob-mini"><span>Dmg</span>${f(m, 'dmg', 'Damage dealt', 'num', '0')}</label>
+      ${f(m, 'notes', 'Notes', 'mob-notes-inp', 'Notes')}
+      <span class="mob-actions"><button type="button" class="chip small" data-mob-down="${m.id}" aria-pressed="${m.down}">${m.down ? 'Down' : 'Mark down'}</button><button type="button" class="linkbtn" data-mob-remove="${m.id}" aria-label="Remove ${esc(m.name || 'foe')}">Remove</button></span>
+    </li>`).join('')}</ul>
+    <button type="button" class="btn quiet" id="add-mob">＋ Add foe</button>`;
 }
 
 // Roll needed on the d20 to hit each AC: THAC0 − AC, kept between 1 and 20.
@@ -614,18 +614,7 @@ function acTable(thac0, offThac0) {
       <tbody>${row('Roll', thac0)}${offThac0 != null ? row('Off-hand', offThac0) : ''}</tbody></table></div>`;
 }
 
-// Your notes on a card's target: shown under its Target pills, editable in place
-function targetNote(f, key) {
-  if (!f) return '';
-  const note = S.foeNotes[f.id] || '';
-  if (S.editingNote === key) return `<div class="tnote"><label for="tnote-${key}">Your notes on ${esc(f.name)}</label>
-    <textarea id="tnote-${key}" rows="2" placeholder="AC you've worked out, resistances, what it's done…">${esc(note)}</textarea>
-    <span class="tnote-actions"><button type="button" class="btn quiet" data-note-save="${key}">Save</button><button type="button" class="btn quiet" data-note-cancel="${key}">Cancel</button></span></div>`;
-  return `<div class="tnote"><span class="tnote-text ${note ? '' : 'muted'}">${note ? esc(note) : 'No notes'}</span>
-    <button type="button" class="linkbtn" data-note-edit="${key}" aria-label="${note ? 'Edit' : 'Add'} your notes on ${esc(f.name)}">${note ? 'Edit' : 'Add note'}</button></div>`;
-}
-
-// What a card computes: weapon (shared rules), unarmed (PHB Table 57) or spell
+// What a card computes: weapon (shared rules), spell or ability
 function cardCalc(c, sl) {
   const st = S.cards[sl.key];
   if (sl.kind === 'ability') return { name: sl.ability.name, thac0: null };
@@ -635,67 +624,38 @@ function cardCalc(c, sl) {
   const label = [...picked.map(a => a.name), ...(st.adjust ? ['Quick adjust'] : [])].join(' + ');
   const round = { toggles: effToggles, situation: st.situation, adjust: hit || picked.length ? { hit, label } : undefined };
   if (sl.kind === 'weapon') return computeAttack({ sheet: c, ...sl.pick, round });
-  if (sl.kind === 'unarmed') { const u = Unarmed.unarmedAttack({ sheet: c, round }); return { ...u, name: st.style === 'wrestle' ? 'Wrestle' : 'Punch', damage: null }; }
   const info = spellInfo(sl.spell);
   if (!info.attack) return { name: sl.spell.name, thac0: null };   // no attack roll
   const u = Unarmed.unarmedAttack({ sheet: { ...c, str: '10' }, round });   // touch: base THAC0 and situation, no Strength
   return { ...u, name: sl.spell.name };
 }
-const fmtAc = n => (n < 0 ? `−${-n}` : `${n}`);
-function hitText(thac0, roll) {
-  if (roll === 20) return 'natural 20: hits';
-  const ac = thac0 - roll;
-  if (ac > 10) return 'misses even AC 10';
-  return `hits AC ${fmtAc(Math.max(ac, -10))} or worse`;
-}
-
-function attackCard(c, sl, i, foes, attackAbilities = []) {
+function attackCard(c, sl, i, attackAbilities = []) {
   const st = S.cards[sl.key];
   const calc = cardCalc(c, sl);
-  const title = sl.kind === 'ability' ? `Use ${esc(sl.ability.name)}` : sl.kind === 'spell' ? `Cast ${esc(sl.spell.name)}` : sl.kind === 'unarmed' ? 'Unarmed' : esc(sl.off ? calc.name.replace(/^Off-hand /, '') : calc.name);
+  const title = sl.kind === 'ability' ? esc(sl.ability.name) : sl.kind === 'spell' ? esc(sl.spell.name) : esc(sl.off ? calc.name.replace(/^Off-hand /, '') : calc.name);
   const tag = sl.off ? '<span class="tag">Off-hand</span>' : sl.extra ? '<span class="tag">Extra</span>' : '';
   const info = sl.kind === 'spell' ? spellInfo(sl.spell) : null;
-  const rolls = sl.kind === 'weapon' || sl.kind === 'unarmed' || (sl.kind === 'spell' && info && info.attack);
-  const target = foes.find(f => f.id === st.target);
-  let result = '';
-  if (st.roll) {
-    result = `<p class="result"><span class="num big-roll">${st.roll.value}</span> <span>${hitText(calc.thac0, st.roll.value)}</span></p>`;
-    if (sl.kind === 'unarmed') {
-      const r = Unarmed.unarmedResult(st.roll.value + calc.hitBonus);
-      result += st.style === 'wrestle'
-        ? `<p class="result-sub">If it hits: <b>${r.wrestle.name}</b>${r.wrestle.hold ? ' (hold: keep it up next round without a roll)' : ''}</p>`
-        : `<p class="result-sub">If it hits: <b>${r.punch.name}</b>, ${Math.max(0, r.punch.damage + calc.strDamage)} damage (75% temporary), ${r.punch.knockout}% knockout</p>`;
-    }
-  }
-  if (st.dmg) result += `<p class="result-sub">Damage <span class="num">${st.dmg}</span></p>`;
-  const ac = rolls && calc.thac0 != null ? `<details class="acd"><summary>Roll needed by AC</summary>${acTable(calc.thac0)}</details>` : '';
-  return `<article class="card ${st.roll ? 'done' : ''}" aria-labelledby="card-${sl.key}">
+  const rolls = sl.kind === 'weapon' || (sl.kind === 'spell' && info && info.attack);
+  const dice = calc.damage ? (calc.damage.l !== calc.damage.sm ? `${esc(calc.damage.sm)} vs S/M · ${esc(calc.damage.l)} vs L` : esc(calc.damage.sm)) : '';
+  return `<article class="card" aria-labelledby="card-${sl.key}">
     <div class="card-head"><h4 id="card-${sl.key}"><span class="card-n">${i + 1}</span>${title} ${tag}</h4>
-      ${rolls && calc.thac0 != null ? `<span class="card-nums"><span class="lbl">${ICON.target}THAC0</span> <b class="num">${calc.thac0}</b>${calc.damage ? ` <span class="lbl">${ICON.die}</span> <span class="num">${esc(calc.damage.sm)}${calc.damage.l !== calc.damage.sm ? ' · ' + esc(calc.damage.l) : ''}</span>` : ''}</span>` : ''}</div>
-    ${sl.kind === 'unarmed' ? `<span class="seg fit" role="group" aria-label="Punch or wrestle"><button type="button" data-style="${sl.key}|punch" aria-pressed="${st.style !== 'wrestle'}">Punch</button><button type="button" data-style="${sl.key}|wrestle" aria-pressed="${st.style === 'wrestle'}">Wrestle</button></span>` : ''}
+      ${rolls && calc.thac0 != null ? `<span class="card-nums"><span class="lbl">${ICON.target}THAC0</span> <b class="num">${calc.thac0}</b></span>` : ''}</div>
+    ${sl.kind === 'ability' ? `<p class="spell-line">${sl.ability.uses ? `Uses <b>${esc(sl.ability.uses)}</b> · ` : ''}${sl.ability.save ? `Save ${esc(sl.ability.save)} · ` : ''}Uses your round: no attacks</p><p class="muted spell-line">${esc(firstLine(sl.ability.desc))}</p>${sl.effect && sl.effect.ac ? '<p class="spell-line"><b>Applied:</b> your AC this round, shown above.</p>' : ''}` : ''}
     ${info ? (S.editingSpell === sl.key ? spellForm(sl.spell, sl.key) : `<dl class="spell-stats">
         <div><dt>Cast time</dt><dd class="num">${esc(info.castTime || '—')}</dd></div><div><dt>Range</dt><dd>${esc(info.range || '—')}</dd></div>
         <div><dt>Duration</dt><dd>${esc(info.duration || '—')}</dd></div><div><dt>Area</dt><dd>${esc(info.area || '—')}</dd></div>
         <div><dt>Save</dt><dd>${esc(info.save || '—')}</dd></div><div><dt>Attack roll</dt><dd>${info.attack ? esc(info.attack) : 'none'}</dd></div></dl>
       ${info.summary ? `<p class="spell-line">${esc(info.summary)}</p>` : ''}
+      ${info.dice ? `<p class="roll-line">${ICON.die}<span>Roll <b class="num">${esc(info.dice)}</b> ${info.diceKind === 'heal' ? 'to heal' : 'for damage'}</span></p>` : ''}
       ${info.missing.length ? `<p class="spell-line warn-line">${info.notInCatalog ? 'Not in the catalog yet.' : 'Missing in the catalog:'} ${info.missing.map(f => Spells.SPELL_FIELDS.find(x => x[0] === f)[1].toLowerCase()).join(', ')}.</p>` : ''}
       <p class="spell-line"><button type="button" class="linkbtn" data-spell-edit="${sl.key}">${info.missing.length ? 'Add details' : 'Edit details'}</button>${info.link ? ` · <a href="${esc(info.link)}" target="_blank" rel="noopener">Full spell ↗</a>` : ''}</p>
       <p class="muted spell-line">If you're hit before your turn comes, the spell is lost.</p>`) : ''}
-    ${sl.kind === 'ability' ? `<p class="spell-line">${sl.ability.uses ? `Uses <b>${esc(sl.ability.uses)}</b> · ` : ''}${sl.ability.save ? `Save ${esc(sl.ability.save)} · ` : ''}Uses your round: no attacks</p><p class="muted spell-line">${esc(firstLine(sl.ability.desc))}</p>${sl.effect && sl.effect.ac ? '<p class="spell-line"><b>Applied:</b> your AC this round, shown above.</p>' : ''}` : ''}
-    <div class="chips" role="group" aria-label="Target for attack ${i + 1}">${foes.map(f => `<button type="button" class="chip ${f.down ? 'down' : ''}" data-card-target="${sl.key}|${f.id}" aria-pressed="${st.target === f.id}">${esc(f.name)}${f.down ? ' <span class="tag">Down</span>' : ''}${S.foeNotes[f.id] ? `<span class="note-dot" title="Has your notes"></span><span class="sr-only"> (has notes)</span>` : ''}</button>`).join('')}</div>
-    ${targetNote(target, sl.key)}
     ${rolls && attackAbilities.length ? `<div class="chips" role="group" aria-label="Abilities for attack ${i + 1}">${attackAbilities.map(a => `<button type="button" class="chip small abil" data-card-abil="${sl.key}|${a.id}" aria-pressed="${(st.abilities || []).includes(a.id)}">${esc(a.name)}${parseInt(a.hitAdj, 10) ? ' ' + sign(parseInt(a.hitAdj, 10)) : ''}</button>`).join('')}</div>` : ''}
     ${rolls ? `<div class="chips" role="group" aria-label="Situation for attack ${i + 1}">${Object.entries(SITUATIONS).map(([k, s]) => `<button type="button" class="chip small" data-card-sit="${sl.key}|${k}" aria-pressed="${st.situation.includes(k)}">${esc(s.label)}${s.hit ? ' ' + sign(s.hit) : ''}</button>`).join('')}
-      <span class="seg mini" role="group" aria-label="Quick adjust for attack ${i + 1}"><button type="button" data-card-adj="${sl.key}|-1" aria-label="Lower to-hit">−</button><span class="adj num" aria-live="polite">${st.adjust ? sign(st.adjust) : '±0'}</span><button type="button" data-card-adj="${sl.key}|1" aria-label="Raise to-hit">+</button></span></div>` : ''}
-    ${result}
-    <div class="rollrow">
-      ${rolls ? `<button type="button" class="btn" data-card-roll="${sl.key}">${st.roll ? 'Re-roll' : 'Roll'}</button>
-      <input inputmode="numeric" placeholder="d20" aria-label="Type your d20 for attack ${i + 1}" data-card-input="${sl.key}"><button type="button" class="btn quiet" data-card-enter="${sl.key}">Enter</button>
-      ${calc.damage ? `<button type="button" class="btn secondary" data-card-dmg="${sl.key}">Damage</button>` : ''}` : sl.kind === 'ability' ? `<button type="button" class="btn" data-card-use="${sl.key}">Use</button>` : `<button type="button" class="btn" data-card-cast="${sl.key}">${S.cast[sl.spell.id] ? 'Cast again' : 'Cast'}</button>${info && info.dice ? `<button type="button" class="btn secondary" data-card-spelldice="${sl.key}">${info.diceKind === 'heal' ? 'Heal' : 'Damage'} ${esc(info.dice)}</button>` : ''}`}
-      ${st.roll || st.dmg ? `<button type="button" class="linkbtn" data-card-clear="${sl.key}">Clear</button>` : ''}
-      ${sl.extra ? `<button type="button" class="linkbtn" data-card-remove="${sl.key}">Remove card</button>` : ''}
-    </div>
-    ${ac}
+      <span class="seg mini" role="group" aria-label="Quick adjust for attack ${i + 1}"><button type="button" data-card-adj="${sl.key}|-1" aria-label="Lower to-hit">−</button><span class="adj num" aria-live="polite">${st.adjust ? sign(st.adjust) : '±0'}</span><button type="button" data-card-adj="${sl.key}|1" aria-label="Raise to-hit">+</button></span></div>
+      ${acTable(calc.thac0)}
+      ${dice ? `<p class="roll-line">${ICON.die}<span>On a hit, roll <b class="num">${dice}</b> damage</span></p>` : ''}` : ''}
+    ${sl.extra ? `<button type="button" class="linkbtn" data-card-remove="${sl.key}">Remove card</button>` : ''}
   </article>`;
 }
 
@@ -720,7 +680,7 @@ function quickRef(c) {
 }
 
 // Your HP, changed from Combat: written to the sheet (one character record) and
-// noted in the shared log so the DM and party see it without asking.
+// the party sees it without asking.
 function setHp(value) {
   sheetLive = sheetLive || JSON.parse(JSON.stringify(JAQUE_SHEET));
   sheetLive['hp-current'] = String(value);
@@ -740,57 +700,39 @@ function wireCombat(c) {
     const next = Math.min(hpMax, Math.max(Character.HP_FLOOR, v));
     if (next === hpNow) { e.target.value = hpNow; return; }
     setHp(next);
-    const st = Character.hpState(next);
-    S.log.push({ what: `Jaque · HP ${hpNow} → ${next}/${hpMax}${st ? ` · ${st.toLowerCase()}` : ''}`, value: next, source: 'HP' });
     renderCombat();
   };
   // Two digits wide; grows for −10
   $('hp-inp').oninput = e => { e.target.style.width = `${Math.max(2, e.target.value.length)}ch`; };
   $('hp-inp').onkeydown = e => { if (e.key === 'Enter') e.target.blur(); };
   host.querySelectorAll('[data-opt]').forEach(b => b.onclick = () => { const o = c.__combatOptions.find(x => x.id === b.dataset.opt); const v = b.dataset.val; if (v === 'Off') delete S.toggles[o.id]; else S.toggles[o.id] = o.choice ? v : true; renderCombat(); });
+
   // Your round
   host.querySelectorAll('[data-action]').forEach(b => b.onclick = () => { S.action = b.dataset.action; renderCombat(); });
-  // A different weapon or way of using it starts the cards fresh (results stay in the log)
-  const clearResults = () => { for (const st of Object.values(S.cards)) { st.roll = null; st.dmg = null; } };
-  const mh = $('main-hand'); if (mh) mh.onchange = e => { S.main = e.target.value; clearResults(); renderCombat(); };
-  host.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => { if (S.mode !== b.dataset.mode) clearResults(); S.mode = b.dataset.mode; renderCombat(); });
+  const mh = $('main-hand'); if (mh) mh.onchange = e => { S.main = e.target.value; renderCombat(); };
+  host.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => { S.mode = b.dataset.mode; renderCombat(); });
   host.querySelectorAll('[data-bonus]').forEach(b => b.onclick = () => { S.bonusRound = b.dataset.bonus === '1'; renderCombat(); });
   const po = $('pick-off'); if (po) po.onchange = e => { S.off = e.target.value ? { weaponId: e.target.value.split('|')[0], attackId: e.target.value.split('|')[1] } : false; renderCombat(); };
   host.querySelectorAll('[data-spell]').forEach(b => b.onclick = () => { S.spell = b.dataset.spell; renderCombat(); });
   host.querySelectorAll('[data-ability]').forEach(b => b.onclick = () => { S.ability = b.dataset.ability; renderCombat(); });
-  $('add-attack').onclick = () => { S.extras.push(Date.now().toString(36)); renderCombat(); };
+  const add = $('add-attack'); if (add) add.onclick = () => { S.extras.push(Date.now().toString(36)); renderCombat(); };
+  // Next round: this-round stances go off and extra cards go away; nothing else changes
+  $('next-round').onclick = () => {
+    for (const o of c.__combatOptions || []) if (!o.sticks) delete S.toggles[o.id];
+    for (const id of S.extras) delete S.cards[`extra-${id}`];
+    S.extras = [];
+    renderCombat(); $('next-round').focus();
+  };
 
   // Cards
-  const each = (attr, fn) => host.querySelectorAll(`[${attr}]`).forEach(b => b.onclick = () => { const [key, v] = b.getAttribute(attr).split('|'); fn(S.cards[key], v, key, b); renderCombat(); });
-  const tgtName = st => (FOES.find(f => f.id === st.target) || {}).name || 'no target';
-  const log = (what, value, source) => { S.log.push({ what, value, source }); };
-  const slotOf = key => currentSlots.find(x => x.key === key);
-  const slotName = key => { const sl = slotOf(key); return sl.kind === 'ability' ? sl.ability.name : sl.kind === 'spell' ? sl.spell.name : sl.kind === 'unarmed' ? cardCalc(c, sl).name : cardCalc(c, sl).name; };
-  const thac0Of = key => cardCalc(c, slotOf(key)).thac0;
-  const roll = (key, value, source) => {
-    const st = S.cards[key];
-    st.roll = { value, source }; st.dmg = null;
-    log(`Jaque · ${slotName(key)} → ${tgtName(st)} · ${hitText(thac0Of(key), value)}`, value, source);
-  };
-  each('data-card-target', (st, v) => { st.target = v; S.editingNote = null; });
+  const each = (attr, fn) => host.querySelectorAll(`[${attr}]`).forEach(b => b.onclick = () => { const [key, v] = b.getAttribute(attr).split('|'); fn(S.cards[key], v, key); renderCombat(); host.querySelector(`[${attr}="${CSS.escape(b.getAttribute(attr))}"]`)?.focus(); });
   each('data-card-sit', (st, v) => { st.situation = st.situation.includes(v) ? st.situation.filter(x => x !== v) : [...st.situation, v]; });
   each('data-card-adj', (st, v) => { st.adjust += Number(v); });
-  each('data-style', (st, v) => { st.style = v; });
-  each('data-card-roll', (st, v, key) => roll(key, Math.floor(Math.random() * 20) + 1, 'rolled'));
-  host.querySelectorAll('[data-card-enter]').forEach(b => b.onclick = () => {
-    const key = b.dataset.cardEnter; const inp = host.querySelector(`[data-card-input="${CSS.escape(key)}"]`); const v = parseInt(inp.value, 10);
-    if (v >= 1 && v <= 20) { roll(key, v, 'entered'); renderCombat(); } else { inp.setCustomValidity('Enter a number from 1 to 20'); inp.reportValidity(); inp.setCustomValidity(''); }
-  });
-  host.querySelectorAll('[data-card-input]').forEach(inp => inp.onkeydown = e => { if (e.key === 'Enter') host.querySelector(`[data-card-enter="${CSS.escape(inp.dataset.cardInput)}"]`).click(); });
-  each('data-card-dmg', (st, v, key, b) => {
-    const d = cardCalc(c, slotOf(key)).damage;
-    const dice = d.l !== d.sm ? [d.sm, d.l] : [d.sm];
-    const rollDice = d => { const m = d.match(/^(\d+)d(\d+)([+-]\d+)?$/); if (!m) return parseInt(d, 10) || 0; let t = 0; for (let i = 0; i < +m[1]; i++) t += Math.floor(Math.random() * +m[2]) + 1; return Math.max(1, t + (m[3] ? +m[3] : 0)); };
-    const vals = dice.map(rollDice);
-    st.dmg = vals.length > 1 ? `${vals[0]} vs S/M · ${vals[1]} vs L` : `${vals[0]}`;
-    log(`Jaque · ${slotName(key)} damage → ${tgtName(st)}`, st.dmg, 'rolled');
-  });
+  each('data-card-abil', (st, v) => { const a = st.abilities || []; st.abilities = a.includes(v) ? a.filter(x => x !== v) : [...a, v]; });
+  host.querySelectorAll('[data-card-remove]').forEach(b => b.onclick = () => { const key = b.dataset.cardRemove; S.extras = S.extras.filter(id => `extra-${id}` !== key); delete S.cards[key]; renderCombat(); });
+
   // Spell catalog: add or edit an entry from the card
+  const slotOf = key => currentSlots.find(x => x.key === key);
   host.querySelectorAll('[data-spell-edit]').forEach(b => b.onclick = () => { S.editingSpell = b.dataset.spellEdit; renderCombat(); host.querySelector('[data-spellform] input')?.focus(); });
   host.querySelectorAll('[data-spellform-cancel]').forEach(b => b.onclick = () => { S.editingSpell = null; renderCombat(); host.querySelector('[data-spell-edit]')?.focus(); });
   host.querySelectorAll('[data-spellform]').forEach(f => f.onsubmit = e => {
@@ -801,40 +743,14 @@ function wireCombat(c) {
     for (const [k, v] of new FormData(f)) entry[k] = String(v).trim();
     entry.status = Spells.missingFields(entry).length ? 'needs details' : 'entered by the group';
     S.catalogEdits[entry.id] = entry; S.editingSpell = null;
-    log(`Jaque updated ${entry.name} in the spell catalog`, '✎', 'catalog');
     renderCombat(); host.querySelector('[data-spell-edit]')?.focus();
   });
-  each('data-card-spelldice', (st, v, key) => {
-    const info = spellInfo(slotOf(key).spell);
-    const m = info.dice.match(/^(\d+)d(\d+)([+-]\d+)?$/); let t = 0;
-    if (m) { for (let i = 0; i < +m[1]; i++) t += Math.floor(Math.random() * +m[2]) + 1; t += m[3] ? +m[3] : 0; } else t = parseInt(info.dice, 10) || 0;
-    st.dmg = `${t}${info.diceKind === 'heal' ? ' healed' : ''}`;
-    log(`Jaque · ${info.name} ${info.diceKind === 'heal' ? 'heals' : 'damage'} → ${tgtName(st)}`, t, 'rolled');
-  });
-  each('data-card-cast', (st, v, key) => { S.cast[S.spell] = true; log(`Jaque casts ${slotName(key)} → ${tgtName(st)}`, '✦', 'spell'); });
-  each('data-card-clear', st => { st.roll = null; st.dmg = null; });
-  each('data-card-abil', (st, v) => { const a = st.abilities || []; st.abilities = a.includes(v) ? a.filter(x => x !== v) : [...a, v]; });
-  each('data-card-use', (st, v, key) => log(`Jaque uses ${slotName(key)} → ${tgtName(st)}`, '✦', 'ability'));
-  host.querySelectorAll('[data-card-remove]').forEach(b => b.onclick = () => { const key = b.dataset.cardRemove; S.extras = S.extras.filter(id => `extra-${id}` !== key); delete S.cards[key]; renderCombat(); });
-  // Notes on a card's target
-  host.querySelectorAll('[data-note-edit]').forEach(b => b.onclick = () => { S.editingNote = b.dataset.noteEdit; renderCombat(); $(`tnote-${S.editingNote}`)?.focus(); });
-  host.querySelectorAll('[data-note-save]').forEach(b => b.onclick = () => { const key = b.dataset.noteSave; const f = S.cards[key].target; const v = $(`tnote-${key}`).value.trim(); if (v) S.foeNotes[f] = v; else delete S.foeNotes[f]; S.editingNote = null; renderCombat(); host.querySelector(`[data-note-edit="${CSS.escape(key)}"]`)?.focus(); });
-  host.querySelectorAll('[data-note-cancel]').forEach(b => b.onclick = () => { const key = b.dataset.noteCancel; S.editingNote = null; renderCombat(); host.querySelector(`[data-note-edit="${CSS.escape(key)}"]`)?.focus(); });
-  $('next-turn').onclick = () => { S.turn = (S.turn + 1) % liveOrder().length; renderCombat(); };
-  // DM stand-ins: a foe that goes down stays listed (greyed, last); if it was
-  // your target, the target moves to the first foe still standing
-  const retarget = () => { const up = (shownFoes().find(f => !f.down) || {}).id || null; for (const st of Object.values(S.cards)) { const t = FOES.find(f => f.id === st.target); if (!t || t.down || t.removed) st.target = up; } };
-  host.querySelectorAll('[data-down]').forEach(b => b.onclick = () => { const f = FOES.find(x => x.id === b.dataset.down); f.down = !f.down; retarget(); renderCombat(); });
-  host.querySelectorAll('[data-remove]').forEach(b => b.onclick = () => { FOES.find(x => x.id === b.dataset.remove).removed = true; retarget(); renderCombat(); });
-  const rf = $('restore-foes'); if (rf) rf.onclick = () => { FOES.forEach(f => delete f.removed); renderCombat(); };
-  $('new-round').onclick = () => {
-    for (const o of c.__combatOptions || []) if (!o.sticks) delete S.toggles[o.id];
-    // New round: cards clear (results and extra cards); targets and situations stay as a starting point
-    for (const st of Object.values(S.cards)) { st.roll = null; st.dmg = null; }
-    for (const id of S.extras) delete S.cards[`extra-${id}`];
-    S.extras = [];
-    S.round += 1; S.turn = 0; renderCombat();
-  };
+
+  // Mob tracker
+  host.querySelectorAll('[data-mob]').forEach(inp => inp.onchange = () => { const [id, k] = inp.dataset.mob.split('|'); S.mobs.find(m => m.id === id)[k] = inp.value; });
+  host.querySelectorAll('[data-mob-down]').forEach(b => b.onclick = () => { const m = S.mobs.find(x => x.id === b.dataset.mobDown); m.down = !m.down; renderCombat(); host.querySelector(`[data-mob-down="${m.id}"]`)?.focus(); });
+  host.querySelectorAll('[data-mob-remove]').forEach(b => b.onclick = () => { S.mobs = S.mobs.filter(m => m.id !== b.dataset.mobRemove); renderCombat(); $('add-mob').focus(); });
+  $('add-mob').onclick = () => { const id = 'm' + Date.now().toString(36); S.mobs.push({ id, name: '', ac: '', dmg: '', notes: '', down: false }); renderCombat(); host.querySelector(`[data-mob="${id}|name"]`)?.focus(); };
 }
 
 render();

@@ -402,6 +402,14 @@ Helper pick from (see section 9).
     the whole campaign (`data/spell-catalog.json`), never the book's text;
     anyone in the group can add or edit. PHB stats pre-filled for the spells
     in the current saves (marked "check" until compared with the book).
+20. **Combat is a reference, not a game table (decided):** selections tell
+    the player their options and what to roll (THAC0, roll needed by AC,
+    damage dice, spell stats). No target picking, no in-app dice rolling, no
+    shared dice log, no initiative strip. Players roll their own dice and
+    speak results. A private mob tracker (the sheet's old Enemy Tracker:
+    name, AC, damage dealt, notes, down) replaces DM-fed foes. The DM keeps
+    the existing, simpler DM Helper; no live encounter features are planned
+    for it. Supersedes the foe-list parts of decision 13.
 
 ---
 
