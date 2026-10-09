@@ -836,6 +836,26 @@
       cursor: pointer;
     }
     .ability-combat { flex-wrap: wrap; gap: 0.4rem 0.8rem; }
+    .wpn-hint { margin: 0 0 0.5rem; font-size: 0.85rem; color: var(--ink-muted); }
+    .wpn-total { display: inline-flex; align-items: center; gap: 0.3em; background: none; border: 1px solid transparent; border-radius: var(--radius); padding: 0.1em 0.35em; font-family: var(--font-mono, monospace); font-size: 0.85rem; color: var(--ink); cursor: pointer; }
+    .wpn-total:hover { border-color: var(--rule); }
+    .wpn-total:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .wpn-parts-wrap { flex-basis: 100%; overflow-x: auto; }
+    .wpn-parts { border-collapse: collapse; font-size: 0.8rem; }
+    .wpn-parts caption { text-align: left; font-family: var(--font-display); font-size: 0.68rem; letter-spacing: 0.06em; color: var(--ink-muted); padding-bottom: 0.2rem; }
+    .wpn-parts th { font-weight: 600; text-align: left; padding: 0.15rem 0.4rem 0.15rem 0; white-space: nowrap; }
+    .wpn-parts thead th { font-family: var(--font-display); font-size: 0.65rem; font-weight: 400; color: var(--ink-muted); text-align: center; }
+    .wpn-parts td { padding: 0.15rem 0.2rem; text-align: center; }
+    .wpn-parts select { width: 3.6rem; }
+    .wpn-parts-total { font-weight: 700; min-width: 2.5rem; }
+    .wpn-parts-hint { margin: 0.25rem 0 0; font-size: 0.78rem; color: var(--ink-muted); }
+    .mod-row { display: flex; flex-wrap: wrap; align-items: end; gap: 0.4rem 0.7rem; padding: 0.45rem 0; border-bottom: 1px solid var(--rule); }
+    .mod-field { display: grid; gap: 0.1rem; flex: none; }
+    .mod-row .wpn-inp { width: auto; }
+    .mod-row .mod-label { width: 15rem; max-width: 100%; }
+    .mod-row .mod-num { width: 4.5rem; text-align: center; }
+    .mod-row select.wpn-inp { max-width: 16rem; }
+    .mod-row .nwp-del-btn { margin-left: auto; }
     .nwp-type-wrap { display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; }
     .nwp-type-sel {
       font-family: var(--font-display);
@@ -2684,6 +2704,7 @@
         </div>
       </h2>
       <div id="weapons-panel">
+        <p class="wpn-hint">Hit and damage are your <strong>totals</strong>. Open a weapon's settings to enter the parts: the weapon itself, your ability score, proficiency, and anything else that always applies. Bonuses that only apply sometimes go in Combat modifiers below.</p>
         <div id="weapons-list" aria-label="Weapons list">
           <!-- populated by renderWeapons() -->
         </div>
@@ -2691,6 +2712,14 @@
           <span aria-hidden="true">＋</span> Add Weapon
         </button>
       </div>
+    </section>
+
+    <!-- ── Combat modifiers ───────────────────────────────────── -->
+    <section class="section" id="mods-section" aria-labelledby="mods-heading">
+      <h2 class="section-heading" id="mods-heading">Combat modifiers</h2>
+      <p class="wpn-hint">Bonuses and penalties that only apply sometimes: a stance, a called shot, a bonus against certain foes or sizes. <strong>Switched on</strong>: <em>Always</em> is applied for you wherever it applies (an off-hand penalty); <em>Per attack</em> is a chip on each attack card; <em>Whole round</em> is a stance you switch on for the round.</p>
+      <div id="mods-list" aria-label="Combat modifiers"></div>
+      <button class="add-class-btn" id="add-mod-btn" type="button"><span aria-hidden="true">＋</span> Add modifier</button>
     </section>
 
     <!-- ── Spells ─────────────────────────────────────────────── -->
@@ -4127,6 +4156,150 @@ function migrateV1toV2(input) {
 
 return { guessCategory, sheetWeaponToV2, sheetProficiencies, migrateV1toV2 };
 })();
+// ── rules/combat ──
+__m["rules/combat"] = (() => {
+const {THAC0_TABLE} = __m["rules/tables"];
+const {parseDice, formatDice} = __m["rules/dice"];
+const {PHB_WEAPONS} = __m["rules/weapons"];
+const {guessCategory} = __m["rules/migrate"];
+// Combat, kept simple. A weapon row holds the player's final numbers: its to
+// hit and damage already include Strength or Dexterity, magic, proficiency,
+// specialization and anything else that always applies. The app works out
+// only the base THAC0 from class and level, and adds what's switched on:
+// the character's own modifiers and the shared situations.
+
+
+
+
+
+// Shared situational chips (from the DM Helper's MODS). Campaign-wide.
+const SITUATIONS = {
+  flanking:      { label: 'Flanking',       hit: 2 },
+  charging:      { label: 'Charging',       hit: 2 },
+  higherGround:  { label: 'Higher ground',  hit: 1 },
+  targetUnaware: { label: 'Target unaware', hit: 0 },
+};
+
+// A character's own modifiers (`__combatModifiers` on the sheet):
+//   { id, label, hit, dmg, ac, appliesTo, use, weaponId? }
+// appliesTo — which attacks it can apply to
+const MOD_APPLIES = {
+  all: 'All attacks',
+  melee: 'Melee attacks',
+  ranged: 'Thrown or missile attacks',
+  offhand: 'Off-hand attacks',
+  weapon: 'One weapon',
+};
+// use — how it's switched on
+const MOD_USES = {
+  always: 'Always',
+  attack: 'Per attack',
+  round: 'Whole round',
+};
+
+const num = v => {
+  const n = parseInt(String(v ?? '').replace('−', '-'), 10);
+  return Number.isNaN(n) ? 0 : n;
+};
+
+// Best THAC0 across the character's classes at their levels
+function baseTHAC0(sheet) {
+  const rows = (sheet.__classes || [])
+    .map(c => ({ group: c.group, level: Math.min(Math.max(num(c.level), 1), 20), name: c.name }))
+    .filter(c => THAC0_TABLE[c.group])
+    .map(c => ({ ...c, thac0: THAC0_TABLE[c.group][c.level - 1] }))
+    .sort((a, b) => a.thac0 - b.thac0);
+  return rows[0] || { group: 'warrior', level: 1, thac0: 20, name: '' };
+}
+
+// The ways a weapon row is used: its own setting, then the row's notes or
+// name ("Ranged/Thrown", "Dagger, Thrown"), then the PHB weapon it's based on.
+function weaponModes(w) {
+  if (Array.isArray(w.modes) && w.modes.length) return w.modes.slice();
+  const base = PHB_WEAPONS[w.basedOn || guessCategory(w.name) || ''];
+  const text = `${w.name || ''} ${w.notes || ''}`.toLowerCase();
+  if (/\branged\b|\bthrown\b|\bmissile\b|\bsling\b|\bbow\b/.test(text)) {
+    return base && base.modes.includes('thrown') ? ['thrown'] : ['missile'];
+  }
+  if (/\bmelee\b/.test(text)) return ['melee'];
+  return base ? base.modes.slice() : ['melee'];
+}
+
+// Attacks per round for a row used one way (the row's own setting, else 1 in
+// melee and the PHB rate of fire for thrown/missile)
+function attackRate(w, mode) {
+  if (w.rates && w.rates[mode]) return w.rates[mode];
+  if (mode === 'melee') return '1';
+  const base = PHB_WEAPONS[w.basedOn || guessCategory(w.name) || ''];
+  return (base && base.rateOfFire) || '1';
+}
+
+// Does a modifier apply to this attack?
+function modifierApplies(mod, { weaponId, mode, offHand = false }) {
+  switch (mod.appliesTo || 'all') {
+    case 'melee': return mode === 'melee';
+    case 'ranged': return mode === 'thrown' || mode === 'missile';
+    case 'offhand': return offHand;
+    case 'weapon': return mod.weaponId === weaponId;
+    default: return true;
+  }
+}
+
+// One attack: a weapon row used one way, plus what's switched on.
+//   picked    — ids of per-attack modifiers chosen on this card
+//   stances   — ids of whole-round modifiers switched on
+//   situation — keys of SITUATIONS; adjust — quick +/- to hit
+function attackFor({ sheet, weapon, mode, offHand = false, picked = [], stances = [], situation = [], adjust = 0 }) {
+  const base = baseTHAC0(sheet);
+  const lines = [];
+  const add = (label, hit, dmg) => { if (hit || dmg) lines.push({ label, hit, dmg }); };
+  // The row's total, split into its parts when the sheet has them
+  const PART_LABELS = { weapon: 'Weapon', ability: 'Ability score', prof: 'Proficiency', other: 'Other' };
+  if (weapon.hitParts || weapon.dmgParts) {
+    for (const [k, label] of Object.entries(PART_LABELS)) add(label, num((weapon.hitParts || {})[k]), num((weapon.dmgParts || {})[k]));
+  } else add(weapon.name || 'Weapon', num(weapon.hitAdj), num(weapon.dmgAdj));
+  const ctx = { weaponId: weapon.id, mode, offHand };
+  for (const m of sheet.__combatModifiers || []) {
+    if (!modifierApplies(m, ctx)) continue;
+    const on = m.use === 'always' || (m.use === 'round' ? stances.includes(m.id) : picked.includes(m.id));
+    if (on) add(m.label, num(m.hit), num(m.dmg));
+  }
+  for (const k of situation) if (SITUATIONS[k]) add(SITUATIONS[k].label, SITUATIONS[k].hit || 0, SITUATIONS[k].dmg || 0);
+  if (adjust) add('Quick adjust', adjust, 0);
+  const hit = lines.reduce((t, l) => t + l.hit, 0);
+  const dmg = lines.reduce((t, l) => t + l.dmg, 0);
+  const unrevealed = !!weapon.unrevealed || weapon.hitAdj === '?' || weapon.dmgAdj === '?';
+  const dice = size => {
+    const d = parseDice(size === 'sm' ? weapon.dmgSM : weapon.dmgL);
+    const text = d ? formatDice(d, d.flat + dmg) : (String((size === 'sm' ? weapon.dmgSM : weapon.dmgL) || '').trim() || null);
+    return text && unrevealed ? `${text} + ?` : text;
+  };
+  return {
+    name: `${weapon.name || 'Weapon'}${weaponModes(weapon).length > 1 ? `, ${mode}` : ''}`,
+    weaponId: weapon.id, mode, offHand,
+    base, thac0: base.thac0 - hit, hit, unrevealed,
+    damage: { sm: dice('sm'), l: dice('l') },
+    rate: offHand ? '1' : attackRate(weapon, mode),
+    lines,
+  };
+}
+
+// AC change from modifiers switched on for the round (and "always" ones);
+// a negative number is better
+function acChange(sheet, stances = []) {
+  return (sheet.__combatModifiers || [])
+    .filter(m => m.use === 'always' || (m.use === 'round' && stances.includes(m.id)))
+    .reduce((t, m) => t + num(m.ac), 0);
+}
+
+// The per-attack and whole-round modifiers that can apply to an attack
+function choicesFor(sheet, ctx) {
+  const mods = (sheet.__combatModifiers || []).filter(m => modifierApplies(m, ctx));
+  return { perAttack: mods.filter(m => m.use === 'attack') };
+}
+
+return { SITUATIONS, MOD_APPLIES, MOD_USES, baseTHAC0, weaponModes, attackRate, modifierApplies, attackFor, acChange, choicesFor };
+})();
 // ── adapters/dm-helper ──
 __m["adapters/dm-helper"] = (() => {
 const {migrateV1toV2} = __m["rules/migrate"];
@@ -4342,6 +4515,7 @@ window.SheetTables = { NONPROFICIENT_PENALTY: __m["rules/tables"].NONPROFICIENT_
 window.SheetDice = { parseDice: __m["rules/dice"].parseDice, formatDice: __m["rules/dice"].formatDice };
 window.SheetCharacter = { hpState: __m["rules/character"].hpState, HP_FLOOR: __m["rules/character"].HP_FLOOR };
 window.SheetAbilities = { COMBAT_ROLES: __m["rules/abilities"].COMBAT_ROLES, guessCombatRole: __m["rules/abilities"].guessCombatRole };
+window.SheetCombat = { weaponModes: __m["rules/combat"].weaponModes, attackRate: __m["rules/combat"].attackRate, MOD_APPLIES: __m["rules/combat"].MOD_APPLIES, MOD_USES: __m["rules/combat"].MOD_USES };
 })();
 /* ── end sheet converter ── */
   </script>
@@ -6040,7 +6214,8 @@ window.SheetAbilities = { COMBAT_ROLES: __m["rules/abilities"].COMBAT_ROLES, gue
         racialBonus: false,
         basedOn:     '',     // PHB weapon key (see SheetRules.PHB_WEAPONS); '' = not listed
         modes:       [],     // ['melee', 'thrown'] or ['missile']
-        magicPlus:   0,      // enchantment +N
+        rates:       {},     // attacks per round by use: { melee: '3/2', thrown: '3/1' }
+        unrevealed:  false,  // has a bonus the DM hasn't revealed yet
         ...overrides,
       };
     }
@@ -6065,15 +6240,39 @@ window.SheetAbilities = { COMBAT_ROLES: __m["rules/abilities"].COMBAT_ROLES, gue
         wpn.basedOnGuessed = !!guess;
       }
       if (!Array.isArray(wpn.modes) || !wpn.modes.length) {
-        const base = phbBase(wpn.basedOn);
-        wpn.modes = base ? base.modes.slice() : ['melee'];
+        // From the row's notes or name ("Ranged/Thrown", "Dagger, Thrown"), else the PHB weapon
+        if (window.SheetCombat) wpn.modes = SheetCombat.weaponModes(wpn);
+        else { const base = phbBase(wpn.basedOn); wpn.modes = base ? base.modes.slice() : ['melee']; }
       }
-      if (wpn.magicPlus === undefined) wpn.magicPlus = 0;
+      if (!wpn.rates) wpn.rates = {};
+      // Where the totals come from. Older rows start with everything in Other
+      // until the player splits it.
+      if (!wpn.hitParts || !wpn.dmgParts) {
+        wpn.hitParts = { weapon: '', ability: '', prof: '', other: wpn.hitAdj || '' };
+        wpn.dmgParts = { weapon: '', ability: '', prof: '', other: wpn.dmgAdj || '' };
+        wpn.partsUnsorted = !!(wpn.hitAdj || wpn.dmgAdj);
+      }
       tidyWeaponValues(wpn);
     }
     // Fixed choices for the row's dropdowns
     const SPEED_OPTIONS = ['', ...Array.from({ length: 15 }, (_, i) => String(i + 1))];
-    const ADJ_OPTIONS = ['', '-5', '-4', '-3', '-2', '-1', '+1', '+2', '+3', '+4', '+5', '?'];
+    // Totals: wide enough for Str 18/00 plus magic and specialization
+    const ADJ_OPTIONS = ['', ...Array.from({ length: 8 }, (_, i) => String(i - 8)), ...Array.from({ length: 15 }, (_, i) => `+${i + 1}`), '?'];
+    // The parts a weapon's hit and damage totals are made of
+    const WEAPON_PARTS = [
+      ['weapon', 'Weapon', 'Magic or quality of this weapon'],
+      ['ability', 'Ability score', 'Strength, or Dexterity for thrown and missile to-hit'],
+      ['prof', 'Proficiency', 'Specialization or expertise, or the not-proficient penalty'],
+      ['other', 'Other', 'Race, kit or class bonuses that always apply'],
+    ];
+    function sumParts(parts) {
+      const vals = Object.values(parts || {});
+      if (vals.some(v => String(v).trim() === '?')) return '?';
+      const n = vals.reduce((t, v) => t + (parseInt(String(v).replace('−', '-'), 10) || 0), 0);
+      return n === 0 ? '' : (n > 0 ? `+${n}` : `${n}`);
+    }
+    const RATE_OPTIONS = ['1', '3/2', '2/1', '5/2', '3/1', '7/2', '4/1', '5/1'];
+    const fmtRate = r => { const [a, b] = String(r).split('/'); return !b || b === '1' ? `${a}/round` : `${a} per ${b} rounds`; };
     function diceOptions() {
       const base = ['1', '1d2', '1d3', '1d4', '1d6', '1d8', '1d10', '1d12', '2d4', '2d6', '2d8', '3d4', '3d6'];
       const fromPhb = Object.values((window.SheetRules && SheetRules.PHB_WEAPONS) || {}).flatMap(w => w.damage ? [w.damage.sm, w.damage.l] : []);
@@ -6174,6 +6373,84 @@ window.SheetAbilities = { COMBAT_ROLES: __m["rules/abilities"].COMBAT_ROLES, gue
       el.innerHTML = parts.length > 0 ? 'Racial: ' + parts.join(' &nbsp;·&nbsp; ') : '';
     }
 
+    // ── COMBAT MODIFIERS ────────────────────────────────────────
+    // Bonuses that only apply sometimes. Each: label, to hit, damage, AC,
+    // which attacks it applies to, and how it's switched on in Combat.
+    let combatModifiers = [];
+    let combatModifierCounter = 0;
+    function makeCombatModifier(overrides = {}) {
+      return { id: `mod-${++combatModifierCounter}`, label: '', hit: '', dmg: '', ac: '', appliesTo: 'all', weaponId: '', use: 'attack', ...overrides };
+    }
+    function renderCombatModifiers() {
+      const list = document.getElementById('mods-list');
+      if (!list) return;
+      list.innerHTML = '';
+      if (!combatModifiers.length) {
+        const empty = document.createElement('p');
+        empty.className = 'weapons-empty';
+        empty.textContent = 'No modifiers yet.';
+        list.appendChild(empty);
+        return;
+      }
+      const applies = (window.SheetCombat && SheetCombat.MOD_APPLIES) || { all: 'All attacks' };
+      const uses = (window.SheetCombat && SheetCombat.MOD_USES) || { attack: 'Per attack' };
+      combatModifiers.forEach(m => {
+        const row = document.createElement('div');
+        row.className = 'mod-row';
+        const fieldWrap = (text, control) => {
+          const l = document.createElement('label');
+          l.className = 'mod-field';
+          const t = document.createElement('span');
+          t.className = 'wpn-sub-label';
+          t.textContent = text;
+          l.append(t, control);
+          return l;
+        };
+        const txt = (key, ph, cls) => {
+          const i = document.createElement('input');
+          i.type = 'text';
+          i.className = 'wpn-inp ' + (cls || '');
+          i.value = m[key] || '';
+          i.placeholder = ph;
+          i.addEventListener('input', () => { m[key] = i.value; });
+          i.addEventListener('change', () => saveToItems());
+          return i;
+        };
+        const sel = (key, pairs, onChange) => {
+          const s2 = document.createElement('select');
+          s2.className = 'wpn-inp wpn-select';
+          pairs.forEach(([v, l]) => { const o = document.createElement('option'); o.value = v; o.textContent = l; if ((m[key] || '') === v) o.selected = true; s2.appendChild(o); });
+          s2.addEventListener('change', () => { m[key] = s2.value; saveToItems(); if (onChange) onChange(); });
+          return s2;
+        };
+        row.append(
+          fieldWrap('Name', txt('label', 'e.g. Bladesong, vs orcs', 'mod-label')),
+          fieldWrap('To hit', txt('hit', '±0', 'mod-num')),
+          fieldWrap('Dmg', txt('dmg', '±0', 'mod-num')),
+          fieldWrap('AC', txt('ac', '−1 = better', 'mod-num')),
+          fieldWrap('Applies to', sel('appliesTo', Object.entries(applies), renderCombatModifiers)),
+        );
+        if (m.appliesTo === 'weapon') {
+          row.append(fieldWrap('Weapon', sel('weaponId', [['', '— choose'], ...weapons.map(w => [w.id, w.name || 'Unnamed'])])));
+        }
+        row.append(fieldWrap('Switched on', sel('use', Object.entries(uses))));
+        const del = document.createElement('button');
+        del.type = 'button';
+        del.className = 'nwp-del-btn';
+        del.innerHTML = '&times;';
+        del.setAttribute('aria-label', `Remove ${m.label || 'modifier'}`);
+        del.addEventListener('click', () => { combatModifiers = combatModifiers.filter(x => x.id !== m.id); renderCombatModifiers(); saveToItems(); });
+        row.append(del);
+        list.appendChild(row);
+      });
+    }
+    document.getElementById('add-mod-btn')?.addEventListener('click', () => {
+      combatModifiers.push(makeCombatModifier());
+      renderCombatModifiers();
+      saveToItems();
+      document.querySelector('#mods-list .mod-row:last-child .mod-label')?.focus();
+    });
+
     // Which weapons have their settings panel open (not saved)
     const openWeaponSettings = new Set();
 
@@ -6204,7 +6481,7 @@ window.SheetAbilities = { COMBAT_ROLES: __m["rules/abilities"].COMBAT_ROLES, gue
         { label: 'Size',        cls: 'wpn-hcenter' },
         { label: 'Dmg Type',    cls: 'wpn-hcenter' },
         { label: 'Spd',         cls: 'wpn-hcenter' },
-        { label: 'Hit · Dmg',   cls: 'wpn-hcenter' },
+        { label: 'Total hit · dmg', cls: 'wpn-hcenter' },
         { label: 'Dmg S/M · L', cls: 'wpn-hcenter' },
         { label: 'Notes',       cls: '' },
         { label: '',            cls: '' },
@@ -6347,9 +6624,18 @@ window.SheetAbilities = { COMBAT_ROLES: __m["rules/abilities"].COMBAT_ROLES, gue
 
         // ── 5. Hit / Dmg Adj (split) ───────────────────────────
         const adjCell = mkCell('wpn-center');
-        adjCell.appendChild(pickPair(
-          mkPick('hitAdj', ADJ_OPTIONS, `${wpn.name || 'Weapon'} hit adjustment`, fmtAdj),
-          mkPick('dmgAdj', ADJ_OPTIONS, `${wpn.name || 'Weapon'} damage adjustment`, fmtAdj)));
+        const total = document.createElement('button');
+        total.type = 'button';
+        total.className = 'wpn-total';
+        total.setAttribute('aria-label', `${wpn.name || 'Weapon'}: total ${fmtAdj(wpn.hitAdj || '')} to hit, ${fmtAdj(wpn.dmgAdj || '')} damage. Edit the parts in settings`);
+        total.innerHTML = `<span>${fmtAdj(wpn.hitAdj || '')}</span><span class="wpn-split-div" aria-hidden="true"></span><span>${fmtAdj(wpn.dmgAdj || '')}</span>`;
+        total.title = 'Totals: edit the parts in this weapon\'s settings';
+        total.addEventListener('click', () => {
+          openWeaponSettings.add(wpn.id);
+          renderWeapons();
+          document.querySelector(`#wpn-settings-${CSS.escape(wpn.id)} .wpn-parts select`)?.focus();
+        });
+        adjCell.appendChild(total);
         row.appendChild(adjCell);
 
         // ── 6. Damage S/M · L (split) ─────────────────────────
@@ -6504,31 +6790,85 @@ window.SheetAbilities = { COMBAT_ROLES: __m["rules/abilities"].COMBAT_ROLES, gue
       }
       line.appendChild(used);
 
-      // Magic +
-      const magic = document.createElement('input');
-      magic.type = 'number';
-      magic.min = '0';
-      magic.className = 'wpn-inp wpn-inp-num wpn-sub-magic';
-      magic.id = `wpn-magic-${uid}`;
-      magic.value = wpn.magicPlus || 0;
-      magic.addEventListener('change', () => { wpn.magicPlus = parseInt(magic.value, 10) || 0; saveToItems(); });
-      line.appendChild(field('Magic +', magic, magic.id));
+      // Where the totals come from
+      const parts = document.createElement('table');
+      parts.className = 'wpn-parts';
+      const strRow = typeof getStrRow === 'function' ? getStrRow() : null;
+      const missile = document.getElementById('missile-adj')?.value || '';
+      const cap = document.createElement('caption');
+      cap.textContent = 'Where the totals come from';
+      parts.appendChild(cap);
+      const thead = document.createElement('thead');
+      thead.innerHTML = `<tr><td></td>${WEAPON_PARTS.map(([, l, h]) => `<th scope="col" title="${h}">${l}</th>`).join('')}<th scope="col">Total</th></tr>`;
+      parts.appendChild(thead);
+      const tbody = document.createElement('tbody');
+      [['hit', 'hitParts', 'hitAdj', 'To hit'], ['dmg', 'dmgParts', 'dmgAdj', 'Damage']].forEach(([k, partsKey, totalKey, rowLabel]) => {
+        const tr = document.createElement('tr');
+        const th = document.createElement('th');
+        th.scope = 'row';
+        th.textContent = rowLabel;
+        tr.appendChild(th);
+        WEAPON_PARTS.forEach(([part, label]) => {
+          const td = document.createElement('td');
+          const sel = document.createElement('select');
+          sel.className = 'wpn-inp wpn-select wpn-pick';
+          sel.setAttribute('aria-label', `${rowLabel}: ${label}`);
+          const cur = String(wpn[partsKey][part] ?? '');
+          const opts = ADJ_OPTIONS.includes(cur) ? ADJ_OPTIONS : [...ADJ_OPTIONS, cur];
+          opts.forEach(v => { const o = document.createElement('option'); o.value = v; o.textContent = v === '' ? '—' : v === '?' ? '?' : v.replace('-', '−'); if (v === cur) o.selected = true; sel.appendChild(o); });
+          sel.addEventListener('change', () => {
+            wpn[partsKey][part] = sel.value;
+            wpn[totalKey] = sumParts(wpn[partsKey]);
+            wpn.partsUnsorted = false;
+            renderWeapons();
+            saveToItems();
+            document.querySelector(`#wpn-settings-${CSS.escape(wpn.id)} [aria-label="${rowLabel}: ${label}"]`)?.focus();
+          });
+          td.appendChild(sel);
+          tr.appendChild(td);
+        });
+        const tot = document.createElement('td');
+        tot.className = 'wpn-parts-total';
+        tot.textContent = fmtAdj(wpn[totalKey] || '');
+        tr.appendChild(tot);
+        tbody.appendChild(tr);
+      });
+      parts.appendChild(tbody);
+      const partsWrap = document.createElement('div');
+      partsWrap.className = 'wpn-parts-wrap';
+      partsWrap.appendChild(parts);
+      const hint = document.createElement('p');
+      hint.className = 'wpn-parts-hint';
+      hint.textContent = (wpn.partsUnsorted ? 'From your older sheet, the whole total is in Other until you split it. ' : '')
+        + `Your scores: Strength ${strRow ? `${strRow.hit >= 0 ? '+' : ''}${strRow.hit} hit, ${strRow.dmg >= 0 ? '+' : ''}${strRow.dmg} dmg` : '—'}; Dexterity missile ${missile || '—'}.`;
+      partsWrap.appendChild(hint);
+      line.appendChild(partsWrap);
 
-      // Proficiency: worked out from the proficiency cards' weapon types
-      const types = proficientTypes();
-      const prof = document.createElement('span');
-      prof.className = 'wpn-sub-value';
-      if (!types.length) {
-        prof.classList.add('wpn-sub-muted');
-        prof.textContent = 'Set a weapon type on your proficiency cards';
-      } else if (wpn.basedOn && types.includes(wpn.basedOn)) {
-        prof.classList.add('wpn-sub-good');
-        prof.textContent = '✓ Proficient';
-      } else {
-        prof.classList.add('wpn-sub-warn');
-        prof.textContent = `Not proficient (${String(nonProficientPenalty()).replace('-', '−')} to hit)`;
-      }
-      line.appendChild(field('Proficiency', prof));
+      // Attacks per round, for each way it's used
+      wpn.modes.forEach(mode => {
+        const rs = document.createElement('select');
+        rs.className = 'wpn-inp wpn-select';
+        rs.id = `wpn-rate-${uid}-${mode}`;
+        const dflt = window.SheetCombat ? SheetCombat.attackRate({ ...wpn, rates: {} }, mode) : '1';
+        [['', `Usual (${fmtRate(dflt)})`], ...RATE_OPTIONS.map(r => [r, fmtRate(r)])].forEach(([v, l]) => {
+          const o = document.createElement('option');
+          o.value = v; o.textContent = l;
+          if ((wpn.rates[mode] || '') === v) o.selected = true;
+          rs.appendChild(o);
+        });
+        rs.addEventListener('change', () => { if (rs.value) wpn.rates[mode] = rs.value; else delete wpn.rates[mode]; saveToItems(); });
+        line.appendChild(field(`Attacks, ${mode}`, rs, rs.id));
+      });
+
+      // A bonus the DM hasn't revealed yet
+      const unr = document.createElement('label');
+      unr.className = 'wpn-sub-check';
+      const box = document.createElement('input');
+      box.type = 'checkbox';
+      box.checked = !!wpn.unrevealed;
+      box.addEventListener('change', () => { wpn.unrevealed = box.checked; saveToItems(); });
+      unr.append(box, ' Has a bonus not revealed yet');
+      line.appendChild(unr);
       return line;
     }
 
@@ -7919,6 +8259,8 @@ window.SheetAbilities = { COMBAT_ROLES: __m["rules/abilities"].COMBAT_ROLES, gue
       data['__thiefSkillAlloc']       = JSON.parse(JSON.stringify(thiefSkillAlloc));
       data['__thiefSubclass']         = thiefSubclass;
       data['__weapons']               = weapons;
+      data['__combatModifiers']       = combatModifiers;
+      data['__combatModifierCounter'] = combatModifierCounter;
       data['__weaponCounter']         = weaponCounter;
       data['__spells']                = spells;
       data['__spellCounter']          = spellCounter;
@@ -7973,6 +8315,8 @@ window.SheetAbilities = { COMBAT_ROLES: __m["rules/abilities"].COMBAT_ROLES, gue
       if (data['__thiefSubclass']) {
         thiefSubclass = data['__thiefSubclass'];
       }
+      combatModifiers = Array.isArray(data['__combatModifiers']) ? data['__combatModifiers'] : [];
+      combatModifierCounter = data['__combatModifierCounter'] || combatModifiers.length;
       if (Array.isArray(data['__weapons'])) {
         weapons = data['__weapons'];
         weaponCounter = data['__weaponCounter'] || weapons.length;
@@ -8466,7 +8810,6 @@ window.SheetAbilities = { COMBAT_ROLES: __m["rules/abilities"].COMBAT_ROLES, gue
       if (ab.combatRole === 'round') {
         bar.append(field('uses', 'Uses', 'e.g. 3/day', '5.5rem'), field('save', 'Save', 'e.g. vs para', '6.5rem'));
       }
-      if (ab.combatRole === 'attack') bar.append(field('hitAdj', 'To hit', '±0', '3rem'));
       return bar;
     }
 
@@ -8973,6 +9316,7 @@ window.SheetAbilities = { COMBAT_ROLES: __m["rules/abilities"].COMBAT_ROLES, gue
       renderRacialTraits();
       renderThievingAbilities();
       renderWeapons();
+      renderCombatModifiers();
       renderSpells();
       renderNWPs();
       renderWpnProfCards();

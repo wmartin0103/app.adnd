@@ -1,0 +1,767 @@
+{
+  "__version": 1,
+  "name": "Jaque",
+  "player": "William",
+  "race-group": "elf",
+  "alignment": "True Neutral",
+  "str": "13",
+  "dex": "19",
+  "con": "15",
+  "int": "16",
+  "wis": "13",
+  "cha": "15",
+  "ac": "8",
+  "hp-current": "24",
+  "hp-max": "31",
+  "movement-mod": "",
+  "money": "20 GP, 57 SP, 10 CP",
+  "notes": "Jaque | Age: 118yrs | Sex: Male | Height: 5'1\" | Weight: 108 lbs\nNPC 'Friends': Edward Smith - Sailor | family jewel dude - appraiser | \"Pete\" - info conduit",
+  "__scenarios": [
+    {
+      "id": "sc-3",
+      "name": "Dagger Attack (Specialized",
+      "group": "rogue",
+      "levelMode": "sheet",
+      "customLevel": 1,
+      "active": true,
+      "collapsed": false,
+      "weaponId": "wpn-1",
+      "handedness": "main",
+      "offHandPenalty": "2",
+      "hitMod": "4"
+    },
+    {
+      "id": "sc-5",
+      "name": "Thrown Dagger Attack",
+      "group": "rogue",
+      "levelMode": "sheet",
+      "customLevel": 1,
+      "active": false,
+      "collapsed": false,
+      "weaponId": "wpn-5",
+      "handedness": "main",
+      "offHandPenalty": "2",
+      "hitMod": "4"
+    }
+  ],
+  "__scenarioCounter": 5,
+  "__enemies": [],
+  "__enemyCounter": 10,
+  "__classes": [
+    {
+      "id": "cls-1",
+      "name": "Blade Bard",
+      "group": "rogue",
+      "level": "5",
+      "xp": "13136"
+    }
+  ],
+  "__classCounter": 2,
+  "__saveMods": {
+    "paralysis": 0,
+    "rod": 0,
+    "petrification": 0,
+    "breath": 0,
+    "spell": 0
+  },
+  "__traitState": {
+    "el-infravision": {
+      "active": true,
+      "notes": ""
+    },
+    "el-secret-doors": {
+      "active": true,
+      "notes": ""
+    },
+    "el-charm": {
+      "active": true,
+      "notes": ""
+    },
+    "el-stealth": {
+      "active": true,
+      "notes": ""
+    },
+    "el-bow-bonus": {
+      "active": true,
+      "notes": ""
+    },
+    "el-sword-bonus": {
+      "active": true,
+      "notes": ""
+    },
+    "el-languages": {
+      "active": true,
+      "notes": ""
+    }
+  },
+  "__thiefSkillAlloc": {
+    "points": {
+      "pp": 0,
+      "ol": 20,
+      "frt": 0,
+      "ms": 20,
+      "hs": 30,
+      "dn": 0,
+      "rl": 0,
+      "cw": 10
+    },
+    "kit": {
+      "rl": 0,
+      "frt": 0,
+      "ol": 20
+    },
+    "armor": {}
+  },
+  "__thiefSubclass": "blade",
+  "__weapons": [
+    {
+      "id": "wpn-1",
+      "name": "Superior Dagger",
+      "size": "sm",
+      "dmgType": "piercing",
+      "speed": "2",
+      "hitAdj": "+5",
+      "dmgAdj": "+3",
+      "dmgSM": "1d4",
+      "dmgL": "1d4",
+      "notes": "",
+      "racialBonus": false,
+      "hitParts": {
+        "weapon": "+1",
+        "ability": "+3",
+        "prof": "+1",
+        "other": ""
+      },
+      "dmgParts": {
+        "weapon": "+1",
+        "ability": "",
+        "prof": "+2",
+        "other": ""
+      },
+      "basedOn": "dagger",
+      "modes": [
+        "melee",
+        "thrown"
+      ],
+      "rates": {
+        "melee": "3/2",
+        "thrown": "3/1"
+      },
+      "fieldsV": 2,
+      "unrevealed": false
+    },
+    {
+      "id": "wpn-3",
+      "name": "Leprechaun Dagger",
+      "size": "sm",
+      "dmgType": "piercing",
+      "speed": "2",
+      "hitAdj": "+5",
+      "dmgAdj": "+2",
+      "dmgSM": "1d4",
+      "dmgL": "1d4",
+      "notes": "\"This dagger is nice\"",
+      "racialBonus": false,
+      "hitParts": {
+        "weapon": "+1",
+        "ability": "+3",
+        "prof": "+1",
+        "other": ""
+      },
+      "dmgParts": {
+        "weapon": "",
+        "ability": "",
+        "prof": "+2",
+        "other": ""
+      },
+      "unrevealed": true,
+      "basedOn": "dagger",
+      "modes": [
+        "melee",
+        "thrown"
+      ],
+      "rates": {
+        "melee": "3/2",
+        "thrown": "3/1"
+      },
+      "fieldsV": 2
+    },
+    {
+      "id": "wpn-4",
+      "name": "Wave Dagger",
+      "size": "sm",
+      "dmgType": "piercing",
+      "speed": "2",
+      "hitAdj": "+4",
+      "dmgAdj": "+2",
+      "dmgSM": "1d4",
+      "dmgL": "1d4",
+      "notes": "",
+      "racialBonus": false,
+      "hitParts": {
+        "weapon": "",
+        "ability": "+3",
+        "prof": "+1",
+        "other": ""
+      },
+      "dmgParts": {
+        "weapon": "",
+        "ability": "",
+        "prof": "+2",
+        "other": ""
+      },
+      "basedOn": "dagger",
+      "modes": [
+        "melee",
+        "thrown"
+      ],
+      "rates": {
+        "melee": "3/2",
+        "thrown": "3/1"
+      },
+      "fieldsV": 2,
+      "unrevealed": false
+    },
+    {
+      "id": "wpn-5",
+      "name": "Dagger x6",
+      "size": "sm",
+      "dmgType": "piercing",
+      "speed": "2",
+      "hitAdj": "+4",
+      "dmgAdj": "+2",
+      "dmgSM": "1d4",
+      "dmgL": "1d4",
+      "notes": "",
+      "racialBonus": false,
+      "hitParts": {
+        "weapon": "",
+        "ability": "+3",
+        "prof": "+1",
+        "other": ""
+      },
+      "dmgParts": {
+        "weapon": "",
+        "ability": "",
+        "prof": "+2",
+        "other": ""
+      },
+      "basedOn": "dagger",
+      "modes": [
+        "melee",
+        "thrown"
+      ],
+      "rates": {
+        "melee": "3/2",
+        "thrown": "3/1"
+      },
+      "fieldsV": 2,
+      "unrevealed": false
+    }
+  ],
+  "__weaponCounter": 5,
+  "__spells": [
+    {
+      "id": "spl-1",
+      "name": "Charm Person",
+      "level": 1,
+      "type": "wizard",
+      "isMemorized": false,
+      "sourceId": null,
+      "charges": 1,
+      "url": "https://adnd2e.fandom.com/wiki/Charm_Person_(Wizard_Spell)",
+      "notes": "120 yrd range"
+    },
+    {
+      "id": "spl-2",
+      "name": "Feather Fall",
+      "level": 1,
+      "type": "wizard",
+      "isMemorized": false,
+      "sourceId": null,
+      "charges": 1,
+      "url": "https://adnd2e.fandom.com/wiki/Feather_Fall_(Wizard_Spell)",
+      "notes": "10ft cube & 200lb + 200lb/lvl"
+    },
+    {
+      "id": "spl-3",
+      "name": "Ventriloquism",
+      "level": 1,
+      "type": "wizard",
+      "isMemorized": false,
+      "sourceId": null,
+      "charges": 1,
+      "url": "https://adnd2e.fandom.com/wiki/Ventriloquism_(Wizard_Spell)",
+      "notes": "10 yds/lvl - 4rds + 1rd/lvl"
+    },
+    {
+      "id": "spl-4",
+      "name": "Sound Bubble",
+      "level": 1,
+      "type": "wizard",
+      "isMemorized": false,
+      "sourceId": null,
+      "charges": 1,
+      "url": "https://adnd2e.fandom.com/wiki/Sound_Bubble_(Wizard_Spell)",
+      "notes": "Fixed: 10ft, Mobile: 5ft/lvl - 10rds +1rd/lvl"
+    },
+    {
+      "id": "spl-8",
+      "name": "Charm Person",
+      "level": 1,
+      "type": "wizard",
+      "isMemorized": true,
+      "sourceId": "spl-1",
+      "charges": 1,
+      "url": "https://adnd2e.fandom.com/wiki/Charm_Person_(Wizard_Spell)",
+      "notes": "120 yrd range"
+    },
+    {
+      "id": "spl-9",
+      "name": "Feather Fall",
+      "level": 1,
+      "type": "wizard",
+      "isMemorized": true,
+      "sourceId": "spl-2",
+      "charges": 1,
+      "url": "https://adnd2e.fandom.com/wiki/Feather_Fall_(Wizard_Spell)",
+      "notes": "10ft cube & 200lb + 200lb/lvl"
+    },
+    {
+      "id": "spl-11",
+      "name": "Tasha's Uncontrollable Hideous Laughter",
+      "level": 2,
+      "type": "wizard",
+      "isMemorized": false,
+      "sourceId": null,
+      "charges": 1,
+      "url": "https://adnd2e.fandom.com/wiki/Tasha's_Uncontrollable_Hideous_Laughter_(Wizard_Spell)",
+      "notes": "60 yrd range + 1rd/lvl (check wiki)"
+    }
+  ],
+  "__spellCounter": 26,
+  "__spellbookPagesUsed": "15",
+  "__spellbookPagesTotal": "93",
+  "__spellClass": "blade",
+  "__nwps": [
+    {
+      "id": "nwp-1",
+      "name": "Observation",
+      "desc": "Detect subtleties ",
+      "url": "https://adnd2e.fandom.com/wiki/Observation_(Proficiency)",
+      "ability": "int",
+      "adj": "0",
+      "slots": "1"
+    },
+    {
+      "id": "nwp-2",
+      "name": "Fast-Talking",
+      "desc": "Success in scam - modified by target int/wis",
+      "url": "https://adnd2e.fandom.com/wiki/Fast-talking_(Proficiency)",
+      "ability": "cha",
+      "adj": "0",
+      "slots": "1"
+    },
+    {
+      "id": "nwp-3",
+      "name": "Information Gathering",
+      "desc": "Success = specific information is gained",
+      "url": "https://adnd2e.fandom.com/wiki/Information_Gathering_(Proficiency)",
+      "ability": "int",
+      "adj": "0",
+      "slots": "1"
+    },
+    {
+      "id": "nwp-4",
+      "name": "Quickness",
+      "desc": "Success = -2 bonus to initiative if attacking",
+      "url": "https://adnd2e.fandom.com/wiki/Special_Talents_(POCT)#Quickness",
+      "ability": "int",
+      "adj": "0",
+      "slots": "2"
+    },
+    {
+      "id": "nwp-6",
+      "name": "Locksmithing",
+      "desc": "Treated lik craft prof, +10% to lock picking",
+      "url": "https://adnd2e.fandom.com/wiki/Locksmithing_(Proficiency)",
+      "ability": "dex",
+      "adj": "0",
+      "slots": "1"
+    },
+    {
+      "id": "nwp-7",
+      "name": "Disguise",
+      "desc": "Mods added for complex disguises",
+      "url": "https://adnd2e.fandom.com/wiki/Disguise_(Proficiency)",
+      "ability": "cha",
+      "adj": "-1",
+      "slots": "1"
+    },
+    {
+      "id": "nwp-8",
+      "name": "Blind FIghting",
+      "desc": "-2/-1 attack in total darkness/moonlight, no AC pen. -2 atk pen vs invisible creatures",
+      "url": "https://adnd2e.fandom.com/wiki/Blind-fighting_(Proficiency)",
+      "ability": "none",
+      "adj": "0",
+      "slots": "kit"
+    },
+    {
+      "id": "nwp-9",
+      "name": "Juggling",
+      "desc": "Check w/ feats, Atk roll (AC 0) to catch sm items to harm",
+      "url": "https://adnd2e.fandom.com/wiki/Juggling_(Proficiency)",
+      "ability": "dex",
+      "adj": "-1",
+      "slots": "kit"
+    },
+    {
+      "id": "nwp-10",
+      "name": "Tumbling",
+      "desc": "-4 AC (no atk) | +2 unarmed atk | 60ft falls 1/2 dmg",
+      "url": "https://adnd2e.fandom.com/wiki/Tumbling_(Proficiency)",
+      "ability": "dex",
+      "adj": "0",
+      "slots": "1"
+    },
+    {
+      "id": "nwp-12",
+      "name": "Reading / Writing",
+      "desc": "Any language spoken by character",
+      "url": "https://adnd2e.fandom.com/wiki/Reading/Writing_(Proficiency)",
+      "ability": "int",
+      "adj": "+1",
+      "slots": "Kit"
+    },
+    {
+      "id": "nwp-13",
+      "name": "Local History",
+      "desc": "",
+      "url": "https://adnd2e.fandom.com/wiki/Local_History_(Proficiency)",
+      "ability": "cha",
+      "adj": "0",
+      "slots": "Kit"
+    },
+    {
+      "id": "nwp-14",
+      "name": "Musical Instrument",
+      "desc": "Slappa' Da' Double Whistle",
+      "url": "https://adnd2e.fandom.com/wiki/Musical_Instrument_(Proficiency)",
+      "ability": "dex",
+      "adj": "-1",
+      "slots": "Class"
+    },
+    {
+      "id": "nwp-15",
+      "name": "Intimidation",
+      "desc": "Intimidate others to do as you wish. NPCs who are intimidated are quite likely to do what they're told, out of fear. \n\nModified by (+/-) NPC level (avg for group) and (-) by number of NPCs",
+      "url": "https://adnd2e.fandom.com/wiki/Intimidation_(Proficiency)",
+      "ability": "cha",
+      "adj": "*",
+      "slots": "1"
+    }
+  ],
+  "__nwpCounter": 15,
+  "__abilitiesCards": [
+    {
+      "id": "abc-1",
+      "name": "Weapons Display",
+      "desc": "By whirling a weapon about his body in a display of skill, precision, and deadly grace, the Blade affects the morale and courage of those who watch. One full round, no attack. Choose one effect:\n• Intimidation: functions as a use of the Intimidation NWP, same effects and target rules. A Blade without the proficiency may still attempt it through the display as an unmodified Charisma check. A Blade who HAS Intimidation gets +2 to the check when made through a weapon display.\n• Fascination: onlookers not already in combat who fail a save vs. paralyzation watch the display (up to 1 round/level) and take no other action. Any attack or obvious threat breaks it.\n",
+      "url": ""
+    },
+    {
+      "id": "abc-2",
+      "name": "Handle Weapon",
+      "desc": "Blades train and perform with a weapon in each hand and are considered ambidextrous. With two weapons from his list: no penalty on the primary weapon, -2 on the off-hand, regardless of Dex. Only the primary may be the signature weapon. When catching a small thrown weapon with the Juggling proficiency, he adds his level to the roll.",
+      "url": ""
+    },
+    {
+      "id": "abc-3",
+      "name": "Trick Throw",
+      "desc": "With a thrown knife or dagger, or a hand or light crossbow, he may make a called shot at only -2 (instead of -4) to pin a sleeve or cloak, cut a rope or strap, knock a small object from a hand, or land a blade within an inch of a target without harm. DM adjudicates on success; on a failure the shot misses. Trick shots only, not called shots meant to wound.\n",
+      "url": ""
+    },
+    {
+      "id": "abc-4",
+      "name": "Defensive Spin",
+      "desc": "A continuous defensive pattern. He may not attack, but AC improves by half his level (round up), and any creature that attacks him must save vs. paralyzation or take damage equal to half his level (round up, max = his weapon's maximum damage). Lasts up to a number of rounds equal to his Constitution; ends immediately if he's hit.",
+      "url": "https://adnd2e.fandom.com/wiki/Blade_(Character_Kit)#:~:text=Defensive/Offensive%20Spin"
+    },
+    {
+      "id": "abc-5",
+      "name": "Offensive Spin",
+      "desc": "One full round of menacing weapon display directed at a single opponent, making no attack. Next round he makes a normal attack against that opponent; on a hit, the victim must immediately make a morale check, with the usual consequences for failure. Wasted if the Blade is forced to move, attack, or defend himself during the display round, or if the attack misses.",
+      "url": "https://adnd2e.fandom.com/wiki/Blade_(Character_Kit)#:~:text=Defensive/Offensive%20Spin"
+    },
+    {
+      "id": "abc-8",
+      "name": "Thieves' Cant",
+      "desc": "Secret communication with other thieves",
+      "url": "https://adnd2e.fandom.com/wiki/Thief_Skill_Explanations_(PHB)#:~:text=is%2015th%20level).-,Thieves%27%20Cant,-Thieves%27%20cant%20is"
+    },
+    {
+      "id": "abc-10",
+      "name": "Influence Reactions",
+      "desc": "Watchers roll saving throw vs paralyzation modified by -1 for every 3 bard levels. Failure means their reaction is shifted by 1 in direction of Bard's preference. Success results in opposite. Cannot be used in battle.",
+      "url": "https://adnd2e.fandom.com/wiki/Bard_(PHB)#:~:text=bard%20can%20also-,influence%20reactions,-of%20groups%20of"
+    },
+    {
+      "id": "abc-11",
+      "name": "Inspiration",
+      "desc": "Used before battle: +1 to atk, +1 to saving throws, or +2 to morale for all players within 10ft/per level of bard. Lasts 1 round per level - cannot be renewed while still in combat.\n\nAs the bard ability, performed as a full round of weapon display before combat. That display can't also be used for Intimidation or Fascination. ",
+      "url": "https://adnd2e.fandom.com/wiki/Bard_(PHB)#:~:text=can%20also%20be-,inspirational,-%2C%20rallying%20friends%20and"
+    },
+    {
+      "id": "abc-15",
+      "name": "Signature Weapon (Dagger)",
+      "desc": "+1 hit, +2 dmg\nMelee: 3/2 attacks (2/1 @ 7th, 5/2 @ 13th)\nThrown: 3/1 attacks (4/1 @7th, 5/1 @ 13th)\n",
+      "url": "https://adnd2e.fandom.com/wiki/Specialist_Attacks_Per_Round"
+    },
+    {
+      "id": "abc-16",
+      "name": "Duelist's Precision",
+      "desc": "In melee, use DEX missile attack adjustment (+3) in place of the STR to-hit adjustment.\n• Against a FLANKED or UNAWARE opponent, use INT in place of STR for dmg adjustment (+1), in melee or with a crossbow.\n",
+      "url": ""
+    },
+    {
+      "id": "abc-18",
+      "name": "Limited Legend Lore",
+      "desc": "Legend Lore for WEAPONS only: the lore of a named blade, a famous smith's work, a weapon's enchantment by reputation, at the normal chance for his level. Nothing else.",
+      "url": ""
+    }
+  ],
+  "__abilitiesCardsCounter": 18,
+  "__wpnProfCards": [
+    {
+      "id": "wpc-2",
+      "name": "Daggers (Signature Weapon)",
+      "desc": "+1 hit, +2 dmg\nMelee: 3/2 attacks (2/1 @ 7th, 5/2 @ 13th)\nThrown: 3/1 attacks (4/1 @7th, 5/1 @ 13th)",
+      "url": "https://adnd2e.fandom.com/wiki/Specialist_Attacks_Per_Round",
+      "slots": "1"
+    },
+    {
+      "id": "wpc-3",
+      "name": "Bladesong Fighting Style (lv 1)",
+      "desc": "Pick 1 Per Round:\n+1 bonus to AC | +1 to hit | Attack and parry in same round",
+      "url": "https://adnd2e.fandom.com/wiki/Combat_Modification_(CBE)#Bladesong_Fighting_Style",
+      "slots": "2"
+    }
+  ],
+  "__wpnProfCardsCounter": 7,
+  "__equipment": [
+    {
+      "id": "eq-1",
+      "name": "High soft leather boots",
+      "weight": 3,
+      "notes": "Black w/ sheath"
+    },
+    {
+      "id": "eq-2",
+      "name": "Cloak (black)",
+      "weight": 2,
+      "notes": "Black"
+    },
+    {
+      "id": "eq-3",
+      "name": "Belt",
+      "weight": 0.5,
+      "notes": "Black"
+    },
+    {
+      "id": "eq-4",
+      "name": "Leather Armor",
+      "weight": null,
+      "notes": "Black"
+    },
+    {
+      "id": "eq-5",
+      "name": "Leather Bracers",
+      "weight": 0.5,
+      "notes": "black"
+    },
+    {
+      "id": "eq-6",
+      "name": "leather gloves",
+      "weight": 0.5,
+      "notes": "black"
+    },
+    {
+      "id": "eq-7",
+      "name": "woolen breeches",
+      "weight": 1,
+      "notes": ""
+    },
+    {
+      "id": "eq-9",
+      "name": "dagger sheath x4",
+      "weight": 4,
+      "notes": ""
+    },
+    {
+      "id": "eq-11",
+      "name": "Daggers x9",
+      "weight": 9,
+      "notes": ""
+    },
+    {
+      "id": "eq-12",
+      "name": "caltrops",
+      "weight": null,
+      "notes": "in pouch"
+    },
+    {
+      "id": "eq-13",
+      "name": "Bandolier",
+      "weight": null,
+      "notes": ""
+    }
+  ],
+  "__equipCounter": 13,
+  "__items": [
+    {
+      "id": "itm-1",
+      "name": "Double Whistle",
+      "weight": 1,
+      "notes": "Slappa da' Whistle"
+    },
+    {
+      "id": "itm-2",
+      "name": "Thieves tools",
+      "weight": null,
+      "notes": "+10% to lock picking"
+    },
+    {
+      "id": "itm-3",
+      "name": "glitter bombs x2",
+      "weight": null,
+      "notes": ""
+    },
+    {
+      "id": "itm-4",
+      "name": "Potion of Diminution",
+      "weight": null,
+      "notes": "100%"
+    },
+    {
+      "id": "itm-5",
+      "name": "Scroll of Detect Magic",
+      "weight": null,
+      "notes": ""
+    },
+    {
+      "id": "itm-6",
+      "name": "Potion of Ventriloquism x3",
+      "weight": null,
+      "notes": ""
+    },
+    {
+      "id": "itm-9",
+      "name": "Parchment",
+      "weight": null,
+      "notes": "Material for Ventriloquism"
+    },
+    {
+      "id": "itm-10",
+      "name": "Soap",
+      "weight": null,
+      "notes": "Material for Sound Bubble"
+    },
+    {
+      "id": "itm-11",
+      "name": "Rope",
+      "weight": null,
+      "notes": ""
+    },
+    {
+      "id": "itm-12",
+      "name": "Good Berries x 4",
+      "weight": null,
+      "notes": "lasts 5 days - 1hp each"
+    }
+  ],
+  "__itemsCounter": 12,
+  "__combatModifiers": [
+    {
+      "id": "mod-1",
+      "label": "Bladesong: +1 hit",
+      "hit": "+1",
+      "dmg": "",
+      "ac": "",
+      "appliesTo": "all",
+      "weaponId": "",
+      "use": "round"
+    },
+    {
+      "id": "mod-2",
+      "label": "Bladesong: +1 AC",
+      "hit": "",
+      "dmg": "",
+      "ac": "-1",
+      "appliesTo": "all",
+      "weaponId": "",
+      "use": "round"
+    },
+    {
+      "id": "mod-3",
+      "label": "Trick Throw (called shot)",
+      "hit": "-2",
+      "dmg": "",
+      "ac": "",
+      "appliesTo": "ranged",
+      "weaponId": "",
+      "use": "attack"
+    },
+    {
+      "id": "mod-4",
+      "label": "Duelist's Precision (flanked or unaware)",
+      "hit": "",
+      "dmg": "+1",
+      "ac": "",
+      "appliesTo": "melee",
+      "weaponId": "",
+      "use": "attack"
+    },
+    {
+      "id": "mod-5",
+      "label": "Off-hand (Handle Weapons)",
+      "hit": "-2",
+      "dmg": "",
+      "ac": "",
+      "appliesTo": "offhand",
+      "weaponId": "",
+      "use": "always"
+    },
+    {
+      "id": "mod-6",
+      "label": "vs tiny",
+      "hit": "+1",
+      "dmg": "+1",
+      "ac": "",
+      "appliesTo": "weapon",
+      "weaponId": "wpn-4",
+      "use": "attack"
+    },
+    {
+      "id": "mod-7",
+      "label": "vs small",
+      "hit": "+2",
+      "dmg": "+2",
+      "ac": "",
+      "appliesTo": "weapon",
+      "weaponId": "wpn-4",
+      "use": "attack"
+    },
+    {
+      "id": "mod-8",
+      "label": "Defensive Spin",
+      "hit": "",
+      "dmg": "",
+      "ac": "-3",
+      "appliesTo": "all",
+      "weaponId": "",
+      "use": "round"
+    }
+  ],
+  "__combatModifierCounter": 8
+}

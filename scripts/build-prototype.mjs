@@ -12,6 +12,7 @@ const rules = bundle(RULES_FILES, {
   expose: {
     Rules: ['rules/attacks', ['computeAttack', 'listAttacks', 'weaponAttacks', 'planRound', 'attacksThisRound', 'attacksInRound', 'hasBonusRounds', 'formatRate', 'offHandAttacks', 'effectiveLevel', 'SITUATIONS']],
     Weapons: ['rules/weapons', ['resolveWeapon', 'PHB_WEAPONS']],
+    Combat: ['rules/combat', ['SITUATIONS', 'MOD_APPLIES', 'MOD_USES', 'baseTHAC0', 'weaponModes', 'attackRate', 'attackFor', 'acChange', 'choicesFor']],
     Spells: ['rules/spells', ['findSpell', 'SPELL_FIELDS', 'missingFields']],
     Abilities: ['rules/abilities', ['COMBAT_ROLES', 'guessCombatRole', 'sameAbility']],
     Unarmed: ['rules/unarmed', ['unarmedAttack', 'unarmedResult']],
@@ -23,13 +24,9 @@ const v1 = readFileSync('samples/jaque_09-23.json', 'utf8');
 const v2 = readFileSync('test/fixtures/jaque-v2.json', 'utf8');
 const spellCatalog = readFileSync('data/spell-catalog.json', 'utf8');
 
-// Jaque's current sheet save: the 09-23 save with the thief skill Kit/Misc
-// corrections made on 10-07 (Open Locks +20, Find/Remove Traps 0).
-const current = JSON.parse(v1);
-current.__thiefSkillAlloc.kit = { ...current.__thiefSkillAlloc.kit, ol: 20, frt: 0 };
-// …and Trick Throw's to-hit filled in on its ability card (In combat: Changes an attack)
-const trick = current.__abilitiesCards.find(a => a.name === 'Trick Throw');
-if (trick) trick.hitAdj = '-2';
+// Jaque's current sheet save: weapon rows as totals, with combat modifiers
+// (scripts/convert-jaque.mjs)
+const current = JSON.parse(readFileSync('samples/jaque_10-09.json', 'utf8'));
 // …and Sound Bubble memorized, to show a spell whose catalog entry needs details
 const bubble = current.__spells.find(sp => sp.name === 'Sound Bubble' && !sp.isMemorized);
 if (bubble) current.__spells.push({ ...bubble, id: 'spl-90', isMemorized: true, sourceId: bubble.id });

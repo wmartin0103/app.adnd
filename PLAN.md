@@ -410,6 +410,14 @@ Helper pick from (see section 9).
     name, AC, damage dealt, notes, down) replaces DM-fed foes. The DM keeps
     the existing, simpler DM Helper; no live encounter features are planned
     for it. Supersedes the foe-list parts of decision 13.
+21. **Weapon parts and combat modifiers (decided):** a weapon row's hit and
+    damage totals are the sum of four player-entered parts: Weapon, Ability
+    score, Proficiency, Other. Sometimes-bonuses are combat modifiers (name,
+    to hit, damage, AC; applies to all / melee / thrown or missile /
+    off-hand / one weapon; switched on always, per attack or for the whole
+    round). This replaces the Jaque-specific rules (`__combatBonuses`,
+    `__combatOptions`, `__combatRules`); Jaque's save is converted
+    (`samples/jaque_10-09.json`). Off-hand is open to any weapon row.
 
 ---
 
