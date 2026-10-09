@@ -2023,7 +2023,7 @@
     .scenario-card.is-unavailable { opacity: 0.55; }
     .scenario-away { font-family: var(--font-display); font-size: 0.62rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-muted); }
     .stances { margin: 1rem 0 0.5rem; padding: 0.75rem 0.9rem; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--surface); }
-    .stances-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.5rem; }
+    .stances-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.3rem 1rem; }
     .stances-title { margin: 0; font-family: var(--font-display); font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
     .stances-ac { font-family: var(--font-display); font-size: 0.85rem; font-weight: 600; }
     .stances-hint { margin: 0.3rem 0 0.6rem; font-size: 0.85rem; color: var(--ink-muted); }
@@ -2134,6 +2134,24 @@
       color: var(--ink);
     }
     .scenario-result-value.accent { color: var(--accent); }
+    .scenario-result { display: grid; gap: 0.6rem; }
+    .sr-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem 2rem; }
+    .sr-cell { display: flex; flex-direction: column; gap: 0.15rem; }
+    .sr-val { font-family: var(--font-display); font-size: 1.15rem; font-weight: 600; }
+    .sr-math summary { cursor: pointer; font-family: var(--font-display); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+    .sr-math table { width: 100%; max-width: 34rem; border-collapse: collapse; margin-top: 0.4rem; font-size: 0.9rem; }
+    .sr-math th, .sr-math td { padding: 0.2rem 0.5rem 0.2rem 0; text-align: left; border-bottom: 1px dotted var(--rule); }
+    .sr-math thead th { font-family: var(--font-display); font-size: 0.6rem; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-muted); }
+    .sr-math .n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .sr-math tfoot th, .sr-math tfoot td { border-bottom: none; border-top: 1px solid var(--ink-muted); font-weight: 700; }
+    .sr-math tfoot td { color: var(--accent); }
+    .sr-effect td:first-child { color: var(--accent); }
+    .effects-toggle { display: inline-flex; align-items: center; gap: 0.4rem; background: none; border: none; padding: 0; font: inherit; color: inherit; letter-spacing: inherit; text-transform: inherit; cursor: pointer; }
+    .effects-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .effects-chev { width: 0.5rem; height: 0.5rem; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg) translateY(-2px); transition: transform 0.15s; }
+    .effects-toggle[aria-expanded="false"] .effects-chev { transform: rotate(-45deg); }
+    .stances-on { font-size: 0.85rem; color: var(--ink-muted); margin-right: auto; }
+    .stances { margin: 0 0 1rem; }
 
     /* The AC-to-hit matrix inside a scenario */
     .ac-matrix {
@@ -2605,7 +2623,27 @@
 
     <!-- ── Combat Scenarios ───────────────────────────────── -->
     <section class="section" aria-labelledby="scenarios-heading">
-      <h2 id="scenarios-heading" class="section-heading">Combat Scenarios</h2>
+      <h2 id="scenarios-heading" class="section-heading">Combat</h2>
+
+      <!-- ── Effects: stances, forms, temporary effects ─────── -->
+      <div class="stances">
+        <div class="stances-head">
+          <h3 class="stances-title"><button type="button" id="effects-toggle" class="effects-toggle" aria-expanded="true" aria-controls="effects-body">
+            <span class="effects-chev" aria-hidden="true"></span>Effects</button></h3>
+          <span class="stances-on" id="stances-on" aria-live="polite"></span>
+          <span class="stances-ac" id="stances-ac" aria-live="polite"></span>
+        </div>
+        <div id="effects-body">
+          <p class="stances-hint">Stances, forms and temporary effects. Switch one on and every attack below includes it. A stance with several options (Bladesong) lets you pick one at a time. Temporary effects, like a Bless from a friend, count down with Next round and end on their own.</p>
+          <div id="stances-list" role="list"></div>
+          <div class="stances-actions">
+            <button class="add-class-btn" id="add-stance-btn" type="button"><span aria-hidden="true">＋</span> Add stance</button>
+            <button class="add-class-btn" id="add-effect-btn" type="button"><span aria-hidden="true">＋</span> Add temporary effect</button>
+            <button class="add-class-btn" id="next-round-btn" type="button">Next round</button>
+          </div>
+        </div>
+      </div>
+
       <div class="scenarios-list" id="scenarios-list" role="list">
         <!-- Injected by JS -->
       </div>
@@ -2613,19 +2651,6 @@
         <span aria-hidden="true">＋</span> Add Scenario
       </button>
 
-      <!-- ── Stances & effects ──────────────────────────────── -->
-      <div class="stances" aria-labelledby="stances-heading">
-        <div class="stances-head">
-          <h3 id="stances-heading" class="stances-title">Stances &amp; effects</h3>
-          <span class="stances-ac" id="stances-ac" aria-live="polite"></span>
-        </div>
-        <p class="stances-hint">Switch one on and every scenario includes it. A stance with several options (Bladesong) lets you pick one at a time. Temporary effects, like a Bless from a friend, count down with Next round and end on their own.</p>
-        <div id="stances-list" role="list"></div>
-        <div class="stances-actions">
-          <button class="add-class-btn" id="add-stance-btn" type="button"><span aria-hidden="true">＋</span> Add stance</button>
-          <button class="add-class-btn" id="add-effect-btn" type="button"><span aria-hidden="true">＋</span> Add temporary effect</button>
-          <button class="add-class-btn" id="next-round-btn" type="button">Next round</button>
-        </div>
       </div>
 
       <!-- ── Enemy Tracker ──────────────────────────────────── -->
@@ -3881,63 +3906,45 @@
       return { sm: dice(wpn.dmgSM), l: dice(wpn.dmgL) };
     }
 
+    // Where a scenario's numbers come from: the base THAC0, then one line per
+    // source with its to-hit and damage. THAC0 and damage are worked out from
+    // these lines, so the table and the result always agree.
+    function scenarioBreakdown(scenario) {
+      const sheetLevel = getEffectiveLevel() || 1;
+      const level = scenario.levelMode === 'custom' ? (parseInt(scenario.customLevel) || 1) : sheetLevel;
+      const group = THAC0_GROUPS[scenario.group];
+      if (!group) return null;
+      const base = { label: `Base THAC0 · ${group.label}, level ${level}`, thac0: group.calc(level) };
+      const lines = [];
+      const add = (label, hit, dmg, kind) => { if (hit || dmg) lines.push({ label, hit, dmg, kind }); };
+      const wpn = scenario.weaponId ? weapons.find(w => w.id === scenario.weaponId) : null;
+      if (wpn) {
+        const m = String(wpn.hitAdj || '').match(/[+-]?\d+/);
+        add(wpn.name || 'Weapon', m ? parseInt(m[0], 10) : 0, modNum(wpn.dmgAdj), 'weapon');
+      }
+      const abil = scenarioAbility(scenario);
+      const abilName = scenarioType(scenario) === 'melee' ? 'Strength' : scenarioType(scenario) === 'thrown' ? 'Dexterity (missile), Strength damage' : 'Dexterity (missile)';
+      add(abilName, abil.hit, abil.dmg, 'ability');
+      if (wpn && wpn.name) add('Racial bonus', getRacialWeaponBonus(wpn.name, { forAttack: true }), 0, 'racial');
+      if (scenario.handedness === 'off' && scenario.offHandPenalty) {
+        const m = scenario.offHandPenalty.toString().match(/[+-]?\d+/);
+        if (m) add('Off-hand', -parseInt(m[0], 10), 0, 'offhand');
+      }
+      let hitMod = 0;
+      const hm = String(scenario.hitMod || '').match(/^([+-]?)(\d+)$/);
+      if (hm) hitMod = (hm[1] === '-' ? -1 : 1) * parseInt(hm[2], 10);
+      add('Your bonus (Hit Mod, Dmg Mod)', hitMod, modNum(scenario.dmgMod), 'mods');
+      activeStancesFor(scenario).forEach(st => add(st.name || 'Effect', modNum(st.hit), modNum(st.dmg), 'effect'));
+      const hit = lines.reduce((t, l) => t + l.hit, 0);
+      return { base, lines, wpn, thac0: base.thac0 - hit, hit };
+    }
+
     // Calculate the THAC0 for a scenario: ability score (Str or Dex by attack
     // type), weapon, racial bonus, off-hand, Hit Mod, and active stances.
     function calcScenarioTHAC0(scenario) {
-      // "sheet level" now means the effective level — highest across all classes
-      const sheetLevel = getEffectiveLevel() || 1;
-      const level = scenario.levelMode === 'custom'
-        ? (parseInt(scenario.customLevel) || 1)
-        : sheetLevel;
-
-      const group = THAC0_GROUPS[scenario.group];
-      if (!group) return null;
-
-      const baseTHAC0 = group.calc(level);
-
-      // Str to hit for melee, Dex missile adjustment for thrown and missile
-      const strAdj   = scenarioAbility(scenario).hit;
-      const stanceAdj = activeStancesFor(scenario).reduce((t, st) => t + modNum(st.hit), 0);
-
-      // Pull linked weapon hit adjustment if any
-      let weaponHitAdj = 0;
-      if (scenario.weaponId) {
-        const wpn = weapons.find(w => w.id === scenario.weaponId);
-        if (wpn && wpn.hitAdj) {
-          const match = wpn.hitAdj.match(/[+-]?\d+/);
-          if (match) weaponHitAdj = parseInt(match[0]);
-        }
-      }
-
-      // Racial weapon bonus (e.g. elves +1 with swords and bows), only on
-      // weapons that qualify
-      let racialAdj = 0;
-      if (scenario.weaponId) {
-        const wpn = weapons.find(w => w.id === scenario.weaponId);
-        if (wpn && wpn.name) racialAdj = getRacialWeaponBonus(wpn.name, { forAttack: true });
-      }
-
-      // Off-hand penalty (positive number entered by user = penalty, so we add it as negative)
-      let offHandAdj = 0;
-      if (scenario.handedness === 'off' && scenario.offHandPenalty) {
-        const match = scenario.offHandPenalty.toString().match(/[+-]?\d+/);
-        if (match) offHandAdj = parseInt(match[0]);
-      }
-
-      // Explicit hit mod from the field (+n lowers THAC0, -n raises it)
-      let hitModAdj = 0;
-      if (scenario.hitMod) {
-        const match = scenario.hitMod.toString().match(/^([+-]?)(\d+)$/);
-        if (match) {
-          const sign  = match[1] === '-' ? -1 : 1;
-          hitModAdj = sign * parseInt(match[2]);
-        }
-      }
-
-      // In 2nd Ed., a positive hit adj. LOWERS THAC0 (improves it).
-      return baseTHAC0 - strAdj - weaponHitAdj - racialAdj + offHandAdj - hitModAdj - stanceAdj;
+      const bd = scenarioBreakdown(scenario);
+      return bd ? bd.thac0 : null;
     }
-
     // Given a THAC0, return what you need to roll on a d20 to hit each AC.
     // In 2nd Ed.: roll needed = THAC0 - AC
     // Clamped: you always need at least 1, at most 20 (natural 20 always hits).
@@ -3958,7 +3965,6 @@
 
       scenarios.forEach((scenario, index) => {
         const thac0 = calcScenarioTHAC0(scenario);
-        const matrix = thac0 !== null ? buildACMatrix(thac0) : [];
         const displayLevel = scenario.levelMode === 'custom'
           ? (parseInt(scenario.customLevel) || 1)
           : (getEffectiveLevel() || 1);
@@ -4246,6 +4252,10 @@
             updateActiveTHAC0();
             saveToItems();
           });
+          hitModInp.addEventListener('change', () => {
+            renderScenarios();
+            document.getElementById(`${scenario.id}-hitmod`)?.focus();
+          });
           hitModField.appendChild(hitModLabel);
           hitModField.appendChild(hitModInp);
           body.appendChild(hitModField);
@@ -4341,76 +4351,36 @@
           body.appendChild(customLevelField);
         }
 
-        // ── Result summary ───────────────────────────────────────
+        // ── Result: the numbers, then where they come from ─────────
         if (thac0 !== null) {
+          const bd = scenarioBreakdown(scenario);
+          const dmg = calcScenarioDamage(scenario);
+          const esc = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+          const sg = n => (n ? signed(n) : '');
           const result = document.createElement('div');
           result.className = 'scenario-result';
           result.id = `scenario-result-${scenario.id}`;
-          result.setAttribute('aria-label', 'Scenario result summary');
-
-          const items = [
-            { label: 'THAC0', value: thac0, accent: true },
-            { label: 'Level', value: displayLevel },
-            { label: 'Group', value: THAC0_GROUPS[scenario.group]?.label || '—' },
-          ];
-
-          // Ability score to hit (Str or Dex missile) if non-zero
-          const abil = scenarioAbility(scenario);
-          if (abil.hit !== 0) items.push({ label: abil.hitLabel, value: signed(abil.hit) });
-
-          // Show linked weapon hit adj if any
-          if (scenario.weaponId) {
-            const wpn = weapons.find(w => w.id === scenario.weaponId);
-            if (wpn && wpn.hitAdj) items.push({ label: 'Wpn Hit', value: wpn.hitAdj });
-            const racial = wpn && wpn.name ? getRacialWeaponBonus(wpn.name, { forAttack: true }) : 0;
-            if (racial) items.push({ label: 'Racial', value: racial > 0 ? `+${racial}` : racial });
-          }
-
-          // Off-hand penalty
-          if (scenario.handedness === 'off' && scenario.offHandPenalty) {
-            const match = scenario.offHandPenalty.toString().match(/[+-]?\d+/);
-            if (match) {
-              const pen = parseInt(match[0]);
-              items.push({ label: 'Off-hand', value: pen > 0 ? `+${pen} to THAC0` : `${pen} to THAC0` });
-            }
-          }
-
-          // Hit mod in summary
-          if (scenario.hitMod) {
-            const match = scenario.hitMod.toString().match(/^([+-]?)(\d+)$/);
-            if (match && parseInt(match[2]) !== 0) {
-              const sign = match[1] === '-' ? -1 : 1;
-              const val  = sign * parseInt(match[2]);
-              items.push({ label: 'Hit Mod', value: val > 0 ? `+${val} to hit` : `${val} to hit` });
-            }
-          }
-
-          // Stances and effects that are on
-          activeStancesFor(scenario).forEach(st => {
-            const parts = [modNum(st.hit) && `${signed(modNum(st.hit))} hit`, modNum(st.dmg) && `${signed(modNum(st.dmg))} dmg`].filter(Boolean);
-            if (parts.length) items.push({ label: st.name || 'Stance', value: parts.join(', ') });
-          });
-          // Damage and attacks per round
-          const dmg = calcScenarioDamage(scenario);
-          if (dmg) items.push({ label: 'Damage S/M · L', value: `${dmg.sm} · ${dmg.l}` });
-          if ((scenario.rate || '1') !== '1') items.push({ label: 'Attacks', value: `${scenario.rate} / round` });
-
-          items.forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'scenario-result-item';
-            const lbl = document.createElement('span');
-            lbl.className = 'scenario-result-label';
-            lbl.textContent = item.label;
-            const val = document.createElement('span');
-            val.className = 'scenario-result-value' + (item.accent ? ' accent' : '');
-            if (item.accent) val.id = `scenario-thac0-val-${scenario.id}`;
-            val.textContent = item.value;
-            div.appendChild(lbl);
-            div.appendChild(val);
-            result.appendChild(div);
-          });
-
+          const rate = scenario.rate || '1';
+          result.innerHTML = `
+            <div class="sr-head">
+              <div class="sr-cell"><span class="scenario-result-label">THAC0</span><span class="scenario-result-value accent" id="scenario-thac0-val-${scenario.id}">${thac0}</span></div>
+              ${dmg ? `<div class="sr-cell"><span class="scenario-result-label">Damage S/M · L</span><span class="sr-val">${esc(dmg.sm)} · ${esc(dmg.l)}</span></div>` : ''}
+              <div class="sr-cell"><span class="scenario-result-label">Attacks</span><span class="sr-val">${esc(rate)}/round</span></div>
+            </div>
+            <details class="sr-math" ${scenario.mathOpen ? 'open' : ''}>
+              <summary>How it adds up</summary>
+              <table>
+                <thead><tr><th scope="col">Source</th><th scope="col">To hit</th><th scope="col">Damage</th></tr></thead>
+                <tbody>
+                  <tr><td>${esc(bd.base.label)}</td><td class="n">${bd.base.thac0}</td><td class="n">${bd.wpn ? esc(`${bd.wpn.dmgSM || '—'} · ${bd.wpn.dmgL || '—'}`) : ''}</td></tr>
+                  ${bd.lines.map(l => `<tr class="sr-${l.kind}"><td>${esc(l.label)}</td><td class="n">${sg(l.hit)}</td><td class="n">${sg(l.dmg)}</td></tr>`).join('')}
+                </tbody>
+                <tfoot><tr><th scope="row">Result</th><td class="n">THAC0 ${thac0}</td><td class="n">${dmg ? `${esc(dmg.sm)} · ${esc(dmg.l)}` : ''}</td></tr></tfoot>
+              </table>
+            </details>`;
+          result.querySelector('details').addEventListener('toggle', e => { scenario.mathOpen = e.target.open; });
           body.appendChild(result);
+          const matrix = buildACMatrix(thac0);
 
           // ── AC-to-hit matrix ─────────────────────────────────
           const matrixWrap = document.createElement('div');
@@ -4523,7 +4493,12 @@
       const acEl = document.getElementById('stances-ac');
       const eff = parseInt(document.getElementById('effective-ac')?.textContent, 10);
       const acBonus = stances.filter(st => st.on).reduce((t, st) => t + modNum(stanceEffect(st).ac), 0);
-      if (acEl) acEl.textContent = acBonus && !Number.isNaN(eff) ? `AC ${eff - acBonus} with stances (${eff} without)` : '';
+      if (acEl) acEl.textContent = acBonus && !Number.isNaN(eff) ? `AC ${eff - acBonus} (${eff} without)` : '';
+      const onEl = document.getElementById('stances-on');
+      if (onEl) {
+        const on = stances.filter(st => st.on).map(st => stanceEffect(st).name || 'Unnamed');
+        onEl.textContent = on.length ? `On: ${on.join(' · ')}` : 'None on';
+      }
       if (!stances.length) {
         const p = document.createElement('p');
         p.className = 'stances-empty';
@@ -4686,6 +4661,22 @@
       }
       return box;
     }
+    // Effects collapses; while collapsed, the header still lists what's on
+    (function initEffectsToggle() {
+      const btn = document.getElementById('effects-toggle');
+      const body = document.getElementById('effects-body');
+      if (!btn || !body) return;
+      const set = open => {
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        body.hidden = !open;
+        try { localStorage.setItem('panel-effects', open ? 'open' : 'closed'); } catch (e) { /* storage blocked */ }
+      };
+      let saved = null;
+      try { saved = localStorage.getItem('panel-effects'); } catch (e) { /* storage blocked */ }
+      set(saved !== 'closed');
+      btn.addEventListener('click', () => set(btn.getAttribute('aria-expanded') !== 'true'));
+    })();
+
     document.getElementById('add-stance-btn')?.addEventListener('click', () => {
       const st = makeStance();
       stances.push(st); editingStance = st.id;
