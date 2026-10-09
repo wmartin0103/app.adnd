@@ -125,9 +125,11 @@ select.pick { border: 1px solid var(--rule); border-radius: var(--radius); backg
 .round, .cards-wrap { display: grid; gap: 10px; }
 .round { border: 1px solid var(--rule); border-radius: var(--radius); padding: 10px; background: var(--sunk); }
 .round-grid { display: grid; gap: 8px; }
-.stances summary { cursor: pointer; font-weight: 600; }
-.stances summary .muted { font-weight: 400; font-size: 0.88rem; }
-.stances[open] { display: grid; gap: 8px; }
+.adj-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; }
+.adj-pair { display: inline-flex; align-items: center; gap: 6px; }
+.adj-lbl { font-family: var(--font-display); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-muted); }
+.reminders { display: grid; gap: 4px; border-top: 1px solid var(--rule); padding-top: 8px; }
+.wpn-note { color: var(--ink-muted); }
 .spells { display: grid; gap: 6px; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
 .spell { text-align: left; border: 1px solid var(--rule); background: var(--surface); border-radius: var(--radius); padding: 7px 9px; display: grid; gap: 3px; color: var(--ink); }
 .spell[aria-checked="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
@@ -314,11 +316,15 @@ const ICON = {
 const NOTES = [
   ['A', 'Three tabs, one character', 'Sheet is who your character is, Combat tells you your options and what to roll right now, and DM is the DM\'s existing helper. The tabs share one character record.'],
   ['B', 'The sheet stays the sheet', 'Your existing character sheet. Combat Scenarios and the Enemy Tracker moved to Combat; the THAC0 card shows the base from class and level.'],
-  ['K', 'Your round: what you\'re doing', 'Fight, Cast or Ability, then what\'s in each hand and how the main hand is used (melee or thrown sets how many attacks you get), Standard or Bonus round, and stances (your Whole round modifiers). It tells you what adds to initiative. Next round only clears extra cards; you switch stances off yourself.'],
+  ['K', 'Your round: what you\'re doing', 'Fight, Cast or Ability, then what\'s in each hand and how the main hand is used (melee or thrown sets how many attacks you get) and Standard or Bonus round. All attacks is one adjuster for anything that applies to every attack until you change it, such as a stance (Bladesong +1 hit, or +1 AC). It tells you what adds to initiative.'],
+  ['N', 'Abilities are reminders, not rules', 'Ability and fighting-style cards ticked "Show in Combat" on the sheet are listed here to read. You apply what fits with the adjusters: All attacks for a stance, This attack for a called shot or a bonus against a certain foe. Nothing about an ability has to be set up; whatever the card says is what you go by. The weapon\'s own notes (Wave Dagger: +2 vs small) show on its cards.'],
 
-  ['E', 'One card per attack: what to roll', 'Each card shows the THAC0, the d20 roll needed against every AC, and the damage dice for that attack, with its own situation (flanking, higher ground), your Per attack modifiers that apply to it (Trick Throw on thrown attacks, vs small on Wave Dagger), and a quick adjustment. How it adds up lists base THAC0, the weapon\'s parts and each modifier. You roll your own dice and say the result out loud.'],
 
-  ['F', 'Your numbers come from the sheet', 'Everything here is read from the Sheet tab. Each weapon row holds totals the player enters as parts (the weapon, ability score, proficiency, other); the app adds only base THAC0 from class and level and the modifiers switched on. Sometimes-bonuses live in the sheet\'s new Combat modifiers section.'],
+  ['E', 'One card per attack: what to roll', 'Each card shows the THAC0, the d20 roll needed against every AC, and the damage dice for that attack, with its own situation (flanking, higher ground) and This attack adjuster. How it adds up lists base THAC0, the weapon\'s parts, the off-hand penalty and each adjustment. You roll your own dice and say the result out loud.'],
+
+
+  ['F', 'Your numbers come from the sheet', 'Everything here is read from the Sheet tab. Each weapon row holds totals the player enters as parts (the weapon, ability score, proficiency, other); the app adds only base THAC0 from class and level, the off-hand penalty, situations and your adjustments.'],
+
   ['L', 'Spells come from a shared catalog', 'Each spell is a short stat block (casting time, range, duration, area, save, attack roll, dice, a one-line summary, a link to the full text) kept once for the whole campaign. Anyone can add or edit an entry from the spell card; PHB stats for the spells in your saves are pre-filled.'],
   ['M', 'Mob tracker, yours alone', 'The sheet\'s old Enemy Tracker, in Combat: add the foes you\'re facing and note their AC as you work it out, the damage you\'ve dealt, and anything worth remembering. Mark one down when it falls. Private to you and saved with your character; the DM\'s tool doesn\'t feed it.'],
   ['J', 'Your HP, yours to change', 'Your current HP is an input: type the new number and press Enter or click away. It updates your sheet and the party\'s view, so the DM doesn\'t track it. At 0 you\'re unconscious, −1 to −9 dying, −10 dead.'],
@@ -364,7 +370,7 @@ const PARTY = [
 
 const S = {
   role: 'player', tab: 'sheet', width: 720, notes: true,
-  stances: ['mod-1'],   // whole-round modifiers switched on (Bladesong: +1 hit)
+  allAdjust: { hit: 1, dmg: 0, ac: 0 },   // applied to every attack until changed (Bladesong: +1 hit)
   // Your round: what you're doing and holding (round-wide choices)
   action: 'fight', main: 'wpn-1', mode: 'thrown', off: null, spell: null, ability: null,
   bonusRound: false,   // standard or bonus round: the player's call, never changed by the app
@@ -385,7 +391,6 @@ let sheetLive = null;
 function character() {
   const c = JSON.parse(JSON.stringify(sheetLive || JAQUE_SHEET));
   c.__weapons = (c.__weapons || []).map(w => ({ ...w, modes: Combat.weaponModes(w) }));
-  c.__combatModifiers = c.__combatModifiers || [];
   return c;
 }
 function readSheet() {
@@ -456,24 +461,18 @@ function hpBar([cur, max]) {
 }
 
 let currentSlots = [];
-let effStances = [];
-// "+1 hit · +2 dmg · AC −1"
-const modSummary = m => [m.hit && `${m.hit} hit`, m.dmg && `${m.dmg} dmg`, m.ac && `AC ${m.ac}`].filter(Boolean).join(' · ').replace(/-/g, '−');
+
 // Ability cards with their combat role (the sheet's setting, or a guess for older saves)
-function abilityCards(c) {
-  return (c.__abilitiesCards || []).map(a => ({ ...a, combatRole: a.combatRole !== undefined ? a.combatRole : (Abilities.guessCombatRole(a) || '') }));
+// Cards the player ticked "Show in Combat" on: abilities and fighting styles
+function combatReminders(c) {
+  const show = card => card.showInCombat !== undefined ? card.showInCombat : ['stance', 'attack', 'round'].includes(Abilities.guessCombatRole(card));
+  return [...(c.__abilitiesCards || []), ...(c.__wpnProfCards || [])].filter(show);
 }
 function renderCombat() {
   const c = character();
-  const abil = abilityCards(c);
-  const roundAbilities = abil.filter(a => a.combatRole === 'round');
-  if (S.ability && !roundAbilities.some(a => a.id === S.ability)) S.ability = null;
-  const ability = roundAbilities.find(a => a.id === S.ability);
-  // An ability that uses the round switches on the modifier with its name (Defensive Spin's AC)
-  const modFor = a => c.__combatModifiers.find(m => m.use === 'round' && Abilities.sameAbility(m.label, a.name));
-  effStances = S.stances.slice();
-  if (S.action === 'ability' && ability && modFor(ability)) effStances.push(modFor(ability).id);
-  const stanceMods = c.__combatModifiers.filter(m => m.use === 'round' && !roundAbilities.some(a => Abilities.sameAbility(m.label, a.name)));
+  const reminders = combatReminders(c);
+  if (S.ability && !reminders.some(a => a.id === S.ability)) S.ability = null;
+  const ability = reminders.find(a => a.id === S.ability);
   const hp = [parseInt(c['hp-current'], 10) || 0, parseInt(c['hp-max'], 10) || 0];
   const ac = Character.armorClass(c);
 
@@ -483,7 +482,7 @@ function renderCombat() {
   const mainW = weapons.find(w => w.id === S.main);
   const modes = mainW ? (mainW.modes || ['melee']) : ['melee'];
   if (!modes.includes(S.mode)) S.mode = modes[0];
-  const acUp = -Combat.acChange(c, effStances);
+  const acUp = S.allAdjust.ac;   // AC bonus: positive is better
   const apr = mainW ? Combat.attackRate(mainW, S.mode) : '1';
   const halfAttacks = S.action === 'fight' && !!mainW && hasBonusRounds(apr);
   const count = mainW ? attacksInRound(apr, { bonus: S.bonusRound }) : 0;
@@ -503,23 +502,20 @@ function renderCombat() {
     if (S.off) slots.push({ key: 'off', kind: 'weapon', pick: { ...S.off, offHand: true }, off: true });
   }
   if (S.action === 'cast' && spell) slots.push({ key: 'spell', kind: 'spell', spell });
-  if (S.action === 'ability' && ability) slots.push({ key: 'ability', kind: 'ability', ability, effect: modFor(ability) });
+  if (S.action === 'ability' && ability) slots.push({ key: 'ability', kind: 'ability', ability });
   if (mainW) for (const id of S.extras) slots.push({ key: `extra-${id}`, kind: 'weapon', pick: { weaponId: mainW.id, mode: S.mode }, extra: true });
   currentSlots = slots;
   // A new card starts with the situation of the card before it
   slots.forEach((sl, i) => {
     if (!S.cards[sl.key]) {
       const prev = i > 0 ? S.cards[slots[i - 1].key] : null;
-      S.cards[sl.key] = { situation: prev ? prev.situation.slice() : [], adjust: 0, abilities: [] };
+      S.cards[sl.key] = { situation: prev ? prev.situation.slice() : [], hit: 0, dmg: 0 };
     }
   });
 
-  const opts = stanceMods.map(m => {
-    const on = S.stances.includes(m.id);
-    return `<div class="optrow"><span class="label">${esc(m.label)} <span class="tag">${modSummary(m)}</span></span>
-      <span class="seg fit" role="group" aria-label="${esc(m.label)}"><button type="button" data-stance="${m.id}|0" aria-pressed="${!on}">Off</button><button type="button" data-stance="${m.id}|1" aria-pressed="${on}">On</button></span></div>`;
-  }).join('');
-  const activeStances = stanceMods.filter(m => S.stances.includes(m.id));
+  // A stepper: − value +, for the all-attacks adjust and each card
+  const stepper = (attr, key, value, label) => `<span class="seg mini" role="group" aria-label="${label}"><button type="button" ${attr}="${key}|-1" aria-label="${label}: lower">−</button><span class="adj num" aria-live="polite">${value ? sign(value) : '±0'}</span><button type="button" ${attr}="${key}|1" aria-label="${label}: raise">+</button></span>`;
+  const adjText = [S.allAdjust.hit && `${sign(S.allAdjust.hit)} hit`, S.allAdjust.dmg && `${sign(S.allAdjust.dmg)} dmg`, S.allAdjust.ac && `${sign(S.allAdjust.ac)} AC`].filter(Boolean).join(' · ');
   const attackCount = slots.filter(x => x.kind === 'weapon' || (x.kind === 'spell' && spellInfo(x.spell).attack)).length;
 
   $('tab-combat').innerHTML = `<div class="combat">
@@ -528,8 +524,7 @@ function renderCombat() {
         <div class="panel-head"><h2 id="h-you">You ${pin('F')}${pin('J')}</h2></div>
         <div class="you-stats">
           <div class="stat"><label class="lbl" for="hp-inp">${ICON.heart}HP</label><span class="val"><input id="hp-inp" class="hp-inp" type="number" inputmode="numeric" step="1" min="${Character.HP_FLOOR}" max="${hp[1]}" value="${hp[0]}" style="width:${Math.max(2, String(hp[0]).length)}ch" aria-describedby="hp-of"><span class="muted" id="hp-of" style="font-size:.9rem" aria-label="of ${hp[1]} maximum">/${hp[1]}</span></span>${hpBar(hp)}${Character.hpState(hp[0]) ? `<span class="tag bad">${Character.hpState(hp[0])}</span>` : ''}</div>
-          <div class="stat"><span class="lbl">${ICON.shield}AC</span><span class="val">${ac.ac - acUp}</span><span class="muted" style="font-size:.78rem">${acUp ? `${ac.ac} − ${acUp} this round` : `surprised ${ac.surprised}`}</span></div>
-          <div class="stat"><span class="lbl">Conditions</span><span class="chips">${activeStances.length ? activeStances.map(m => `<span class="tag">${esc(m.label)}</span>`).join('') : '<span class="muted">None</span>'}</span></div>
+          <div class="stat"><span class="lbl">${ICON.shield}AC</span><span class="val">${ac.ac - acUp}</span><span class="muted" style="font-size:.78rem">${acUp ? `${ac.ac} with ${sign(acUp)} adjust` : `surprised ${ac.surprised}`}</span></div>
         </div>
         <section class="round" aria-labelledby="h-round">
           <div class="panel-head"><h3 id="h-round">Your round ${pin('K')}</h3><span class="round-tools">${initMod ? `<span class="count">Adds ${esc(initMod)} to initiative</span>` : ''}<button type="button" class="btn quiet" id="next-round">Next round</button></span></div>
@@ -547,16 +542,21 @@ function renderCombat() {
           ${S.action === 'cast' ? `<div class="spells" role="radiogroup" aria-label="Ready spells">${ready.length ? ready.map(sp => { const info = spellInfo(sp); return `<button type="button" role="radio" class="spell" data-spell="${sp.id}" aria-checked="${S.spell === sp.id}">
               <span class="spell-name">${esc(sp.name)} <span class="tag">L${sp.level}</span>${info.missing.length ? ' <span class="tag warn">needs details</span>' : ''}</span>
               <span class="spell-meta"><span>Cast time <b class="num">${esc(info.castTime || '—')}</b></span><span>Range ${esc(info.range || sp.notes || '—')}</span><span>Save ${esc(info.save || '—')}</span></span></button>`; }).join('') : '<span class="muted">No spells memorized on your sheet</span>'}</div>` : ''}
-          ${S.action === 'ability' ? `<div class="spells" role="radiogroup" aria-label="Abilities that use your round">${roundAbilities.length ? roundAbilities.map(a => `<button type="button" role="radio" class="spell" data-ability="${a.id}" aria-checked="${S.ability === a.id}">
-              <span class="spell-name">${esc(a.name)}${a.combatRoleGuessed ? ' <span class="tag">guessed</span>' : ''}</span>
-              <span class="spell-meta">${a.uses ? `<span>Uses <b>${esc(a.uses)}</b></span>` : ''}${a.save ? `<span>Save ${esc(a.save)}</span>` : ''}<span>${esc(firstLine(a.desc))}</span></span></button>`).join('') : '<span class="muted">No abilities on your sheet are set to "Uses your round".</span>'}</div>` : ''}
-          ${opts ? `<details class="stances"><summary>Stances <span class="muted">${activeStances.length ? activeStances.map(m => esc(m.label)).join(' · ') : 'none on'}</span></summary>${opts}</details>` : ''}
+          ${S.action === 'ability' ? `<div class="spells" role="radiogroup" aria-label="Your combat abilities">${reminders.length ? reminders.map(a => `<button type="button" role="radio" class="spell" data-ability="${a.id}" aria-checked="${S.ability === a.id}">
+              <span class="spell-name">${esc(a.name)}</span>
+              <span class="spell-meta"><span>${esc(firstLine(a.desc))}</span></span></button>`).join('') : '<span class="muted">Tick "Show in Combat" on an ability card in your sheet to see it here.</span>'}</div>` : ''}
+          <div class="optrow all-adjust"><span class="label">All attacks <span class="muted hint">a stance or anything else for every attack, until you change it</span></span>
+            <span class="adj-row"><span class="adj-pair"><span class="adj-lbl">To hit</span>${stepper('data-all-adj', 'hit', S.allAdjust.hit, 'All attacks to hit')}</span><span class="adj-pair"><span class="adj-lbl">Damage</span>${stepper('data-all-adj', 'dmg', S.allAdjust.dmg, 'All attacks damage')}</span><span class="adj-pair"><span class="adj-lbl">AC bonus</span>${stepper('data-all-adj', 'ac', S.allAdjust.ac, 'AC bonus')}</span></span></div>
         </section>
         ${slots.length || mainW ? `<section class="cards-wrap" aria-labelledby="h-atk">
           <div class="panel-head"><h3 id="h-atk">${S.action === 'cast' ? `Spell ${pin('L')}` : S.action === 'ability' ? 'Ability' : 'Attacks'} ${pin('E')}</h3>${attackCount ? `<span class="count">${attackCount} attack${attackCount === 1 ? '' : 's'} this round</span>` : ''}</div>
           <div class="cards">${slots.map((sl, i) => attackCard(c, sl, i)).join('')}
             ${mainW ? `<button type="button" class="card add-card" id="add-attack"><span aria-hidden="true">＋</span> Add attack<span class="muted">when the DM allows one more</span></button>` : ''}
           </div>
+        </section>` : ''}
+        ${reminders.length ? `<section class="reminders" aria-labelledby="h-rem">
+          <div class="panel-head"><h3 id="h-rem">Your combat abilities ${pin('N')}</h3><span class="muted" style="font-size:.85rem">Apply with the adjusters</span></div>
+          ${reminders.map(a => `<details class="qr-ab"><summary><b>${esc(a.name)}</b> <span class="muted">${esc(firstLine(a.desc))}</span></summary><p>${esc(a.desc).replace(/\n/g, '<br>')}</p></details>`).join('')}
         </section>` : ''}
       </section>
       <div class="side">
@@ -615,20 +615,21 @@ function cardCalc(c, sl) {
   if (sl.kind === 'ability') return { name: sl.ability.name, thac0: null };
   if (sl.kind === 'weapon') {
     const weapon = c.__weapons.find(w => w.id === sl.pick.weaponId);
-    return Combat.attackFor({ sheet: c, weapon, mode: sl.pick.mode, offHand: !!sl.pick.offHand, picked: st.abilities || [], stances: effStances, situation: st.situation, adjust: st.adjust });
+    return Combat.attackFor({ sheet: c, weapon, mode: sl.pick.mode, offHand: !!sl.pick.offHand, allAdjust: S.allAdjust, adjust: { hit: st.hit, dmg: st.dmg }, situation: st.situation });
   }
   const info = spellInfo(sl.spell);
   if (!info.attack) return { name: sl.spell.name, thac0: null };   // no attack roll
-  // A touch or ranged spell attack: base THAC0 plus situation, stances and adjustment
+  // A touch or ranged spell attack: base THAC0 plus situation and adjustments
   const base = Combat.baseTHAC0(c);
   const sit = st.situation.reduce((t, k) => t + (SITUATIONS[k]?.hit || 0), 0);
-  return { name: sl.spell.name, thac0: base.thac0 - sit - st.adjust, damage: null };
+  return { name: sl.spell.name, thac0: base.thac0 - sit - st.hit - S.allAdjust.hit, damage: null };
 }
 function attackCard(c, sl, i) {
   const st = S.cards[sl.key];
   const calc = cardCalc(c, sl);
   const title = sl.kind === 'ability' ? esc(sl.ability.name) : sl.kind === 'spell' ? esc(sl.spell.name) : esc(calc.name);
-  const perAttack = sl.kind === 'weapon' ? Combat.choicesFor(c, { weaponId: sl.pick.weaponId, mode: sl.pick.mode, offHand: !!sl.pick.offHand }).perAttack : [];
+  const weapon = sl.kind === 'weapon' ? c.__weapons.find(w => w.id === sl.pick.weaponId) : null;
+  const stepper = (k, v, label) => `<span class="seg mini" role="group" aria-label="${label} for attack ${i + 1}"><button type="button" data-card-adj="${sl.key}|${k}|-1" aria-label="${label}: lower">−</button><span class="adj num" aria-live="polite">${v ? sign(v) : '±0'}</span><button type="button" data-card-adj="${sl.key}|${k}|1" aria-label="${label}: raise">+</button></span>`;
   const tag = sl.off ? '<span class="tag">Off-hand</span>' : sl.extra ? '<span class="tag">Extra</span>' : '';
   const info = sl.kind === 'spell' ? spellInfo(sl.spell) : null;
   const rolls = sl.kind === 'weapon' || (sl.kind === 'spell' && info && info.attack);
@@ -636,7 +637,8 @@ function attackCard(c, sl, i) {
   return `<article class="card" aria-labelledby="card-${sl.key}">
     <div class="card-head"><h4 id="card-${sl.key}"><span class="card-n">${i + 1}</span>${title} ${tag}</h4>
       ${rolls && calc.thac0 != null ? `<span class="card-nums"><span class="lbl">${ICON.target}THAC0</span> <b class="num">${calc.thac0}</b></span>` : ''}</div>
-    ${sl.kind === 'ability' ? `<p class="spell-line">${sl.ability.uses ? `Uses <b>${esc(sl.ability.uses)}</b> · ` : ''}${sl.ability.save ? `Save ${esc(sl.ability.save)} · ` : ''}Uses your round: no attacks</p><p class="muted spell-line">${esc(firstLine(sl.ability.desc))}</p>${sl.effect ? `<p class="spell-line"><b>Applied this round:</b> ${modSummary(sl.effect)}${sl.effect.ac ? ' (your AC above)' : ''}</p>` : ''}` : ''}
+    ${sl.kind === 'ability' ? `<p class="spell-line">${esc(sl.ability.desc).replace(/\n/g, '<br>')}</p><p class="muted spell-line">If it changes your AC or attacks, use the All attacks adjust.</p>` : ''}
+    ${weapon && weapon.notes ? `<p class="spell-line wpn-note"><b>Notes:</b> ${esc(weapon.notes)}</p>` : ''}
     ${info ? (S.editingSpell === sl.key ? spellForm(sl.spell, sl.key) : `<dl class="spell-stats">
         <div><dt>Cast time</dt><dd class="num">${esc(info.castTime || '—')}</dd></div><div><dt>Range</dt><dd>${esc(info.range || '—')}</dd></div>
         <div><dt>Duration</dt><dd>${esc(info.duration || '—')}</dd></div><div><dt>Area</dt><dd>${esc(info.area || '—')}</dd></div>
@@ -646,9 +648,9 @@ function attackCard(c, sl, i) {
       ${info.missing.length ? `<p class="spell-line warn-line">${info.notInCatalog ? 'Not in the catalog yet.' : 'Missing in the catalog:'} ${info.missing.map(f => Spells.SPELL_FIELDS.find(x => x[0] === f)[1].toLowerCase()).join(', ')}.</p>` : ''}
       <p class="spell-line"><button type="button" class="linkbtn" data-spell-edit="${sl.key}">${info.missing.length ? 'Add details' : 'Edit details'}</button>${info.link ? ` · <a href="${esc(info.link)}" target="_blank" rel="noopener">Full spell ↗</a>` : ''}</p>
       <p class="muted spell-line">If you're hit before your turn comes, the spell is lost.</p>`) : ''}
-    ${perAttack.length ? `<div class="chips" role="group" aria-label="Your modifiers for attack ${i + 1}">${perAttack.map(m => `<button type="button" class="chip small abil" data-card-abil="${sl.key}|${m.id}" aria-pressed="${(st.abilities || []).includes(m.id)}">${esc(m.label)} <span class="chip-val">${modSummary(m)}</span></button>`).join('')}</div>` : ''}
     ${rolls ? `<div class="chips" role="group" aria-label="Situation for attack ${i + 1}">${Object.entries(SITUATIONS).map(([k, s]) => `<button type="button" class="chip small" data-card-sit="${sl.key}|${k}" aria-pressed="${st.situation.includes(k)}">${esc(s.label)}${s.hit ? ' ' + sign(s.hit) : ''}</button>`).join('')}
-      <span class="seg mini" role="group" aria-label="Quick adjust for attack ${i + 1}"><button type="button" data-card-adj="${sl.key}|-1" aria-label="Lower to-hit">−</button><span class="adj num" aria-live="polite">${st.adjust ? sign(st.adjust) : '±0'}</span><button type="button" data-card-adj="${sl.key}|1" aria-label="Raise to-hit">+</button></span></div>
+</div>
+      <div class="adj-row" role="group" aria-label="This attack's adjustment"><span class="adj-pair"><span class="adj-lbl">To hit</span>${stepper('hit', st.hit, 'To hit')}</span>${calc.damage ? `<span class="adj-pair"><span class="adj-lbl">Damage</span>${stepper('dmg', st.dmg, 'Damage')}</span>` : ''}</div>
       ${acTable(calc.thac0)}
       ${dice ? `<p class="roll-line">${ICON.die}<span>On a hit, roll <b class="num">${dice}</b> damage</span></p>` : ''}
       ${calc.lines ? `<details class="math"><summary>How it adds up</summary><table><tbody>
@@ -705,7 +707,7 @@ function wireCombat(c) {
   // Two digits wide; grows for −10
   $('hp-inp').oninput = e => { e.target.style.width = `${Math.max(2, e.target.value.length)}ch`; };
   $('hp-inp').onkeydown = e => { if (e.key === 'Enter') e.target.blur(); };
-  host.querySelectorAll('[data-stance]').forEach(b => b.onclick = () => { const [id, on] = b.dataset.stance.split('|'); S.stances = S.stances.filter(x => x !== id).concat(on === '1' ? [id] : []); renderCombat(); host.querySelector(`[data-stance="${CSS.escape(b.dataset.stance)}"]`)?.focus(); });
+  host.querySelectorAll('[data-all-adj]').forEach(b => b.onclick = () => { const [k, d] = b.dataset.allAdj.split('|'); S.allAdjust[k] += Number(d); renderCombat(); host.querySelector(`[data-all-adj="${CSS.escape(b.dataset.allAdj)}"]`)?.focus(); });
 
   // Your round
   host.querySelectorAll('[data-action]').forEach(b => b.onclick = () => { S.action = b.dataset.action; renderCombat(); });
@@ -726,8 +728,7 @@ function wireCombat(c) {
   // Cards
   const each = (attr, fn) => host.querySelectorAll(`[${attr}]`).forEach(b => b.onclick = () => { const [key, v] = b.getAttribute(attr).split('|'); fn(S.cards[key], v, key); renderCombat(); host.querySelector(`[${attr}="${CSS.escape(b.getAttribute(attr))}"]`)?.focus(); });
   each('data-card-sit', (st, v) => { st.situation = st.situation.includes(v) ? st.situation.filter(x => x !== v) : [...st.situation, v]; });
-  each('data-card-adj', (st, v) => { st.adjust += Number(v); });
-  each('data-card-abil', (st, v) => { const a = st.abilities || []; st.abilities = a.includes(v) ? a.filter(x => x !== v) : [...a, v]; });
+  host.querySelectorAll('[data-card-adj]').forEach(b => b.onclick = () => { const [key, k, d] = b.dataset.cardAdj.split('|'); S.cards[key][k] += Number(d); renderCombat(); host.querySelector(`[data-card-adj="${CSS.escape(b.dataset.cardAdj)}"]`)?.focus(); });
   host.querySelectorAll('[data-card-remove]').forEach(b => b.onclick = () => { const key = b.dataset.cardRemove; S.extras = S.extras.filter(id => `extra-${id}` !== key); delete S.cards[key]; renderCombat(); });
 
   // Spell catalog: add or edit an entry from the card

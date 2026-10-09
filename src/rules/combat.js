@@ -1,8 +1,9 @@
 // Combat, kept simple. A weapon row holds the player's final numbers: its to
 // hit and damage already include Strength or Dexterity, magic, proficiency,
 // specialization and anything else that always applies. The app works out
-// only the base THAC0 from class and level, and adds what's switched on:
-// the character's own modifiers and the shared situations.
+// only the base THAC0 from class and level, and adds what the player applies:
+// the shared situations and their own adjustments. Abilities that only apply
+// sometimes stay as text on the sheet; Combat shows them as reminders.
 
 import { THAC0_TABLE } from './tables.js';
 import { parseDice, formatDice } from './dice.js';
@@ -15,23 +16,6 @@ export const SITUATIONS = {
   charging:      { label: 'Charging',       hit: 2 },
   higherGround:  { label: 'Higher ground',  hit: 1 },
   targetUnaware: { label: 'Target unaware', hit: 0 },
-};
-
-// A character's own modifiers (`__combatModifiers` on the sheet):
-//   { id, label, hit, dmg, ac, appliesTo, use, weaponId? }
-// appliesTo — which attacks it can apply to
-export const MOD_APPLIES = {
-  all: 'All attacks',
-  melee: 'Melee attacks',
-  ranged: 'Thrown or missile attacks',
-  offhand: 'Off-hand attacks',
-  weapon: 'One weapon',
-};
-// use — how it's switched on
-export const MOD_USES = {
-  always: 'Always',
-  attack: 'Per attack',
-  round: 'Whole round',
 };
 
 const num = v => {
@@ -71,22 +55,13 @@ export function attackRate(w, mode) {
   return (base && base.rateOfFire) || '1';
 }
 
-// Does a modifier apply to this attack?
-export function modifierApplies(mod, { weaponId, mode, offHand = false }) {
-  switch (mod.appliesTo || 'all') {
-    case 'melee': return mode === 'melee';
-    case 'ranged': return mode === 'thrown' || mode === 'missile';
-    case 'offhand': return offHand;
-    case 'weapon': return mod.weaponId === weaponId;
-    default: return true;
-  }
-}
-
-// One attack: a weapon row used one way, plus what's switched on.
-//   picked    — ids of per-attack modifiers chosen on this card
-//   stances   — ids of whole-round modifiers switched on
-//   situation — keys of SITUATIONS; adjust — quick +/- to hit
-export function attackFor({ sheet, weapon, mode, offHand = false, picked = [], stances = [], situation = [], adjust = 0 }) {
+// One attack: a weapon row used one way, plus what the player has applied.
+//   allAdjust  — { hit, dmg } applied to every attack (e.g. a stance)
+//   adjust     — { hit, dmg } for this attack only (e.g. a called shot)
+//   situation  — keys of SITUATIONS
+// Off-hand attacks also take the character's off-hand penalty
+// (`__offHandPenalty`, e.g. "-2").
+export function attackFor({ sheet, weapon, mode, offHand = false, allAdjust = {}, adjust = {}, situation = [] }) {
   const base = baseTHAC0(sheet);
   const lines = [];
   const add = (label, hit, dmg) => { if (hit || dmg) lines.push({ label, hit, dmg }); };
@@ -95,20 +70,17 @@ export function attackFor({ sheet, weapon, mode, offHand = false, picked = [], s
   if (weapon.hitParts || weapon.dmgParts) {
     for (const [k, label] of Object.entries(PART_LABELS)) add(label, num((weapon.hitParts || {})[k]), num((weapon.dmgParts || {})[k]));
   } else add(weapon.name || 'Weapon', num(weapon.hitAdj), num(weapon.dmgAdj));
-  const ctx = { weaponId: weapon.id, mode, offHand };
-  for (const m of sheet.__combatModifiers || []) {
-    if (!modifierApplies(m, ctx)) continue;
-    const on = m.use === 'always' || (m.use === 'round' ? stances.includes(m.id) : picked.includes(m.id));
-    if (on) add(m.label, num(m.hit), num(m.dmg));
-  }
+  if (offHand) add('Off-hand', num(sheet.__offHandPenalty), 0);
   for (const k of situation) if (SITUATIONS[k]) add(SITUATIONS[k].label, SITUATIONS[k].hit || 0, SITUATIONS[k].dmg || 0);
-  if (adjust) add('Quick adjust', adjust, 0);
+  add('All attacks adjust', num(allAdjust.hit), num(allAdjust.dmg));
+  add('This attack adjust', num(adjust.hit), num(adjust.dmg));
   const hit = lines.reduce((t, l) => t + l.hit, 0);
   const dmg = lines.reduce((t, l) => t + l.dmg, 0);
   const unrevealed = !!weapon.unrevealed || weapon.hitAdj === '?' || weapon.dmgAdj === '?';
   const dice = size => {
-    const d = parseDice(size === 'sm' ? weapon.dmgSM : weapon.dmgL);
-    const text = d ? formatDice(d, d.flat + dmg) : (String((size === 'sm' ? weapon.dmgSM : weapon.dmgL) || '').trim() || null);
+    const raw = size === 'sm' ? weapon.dmgSM : weapon.dmgL;
+    const d = parseDice(raw);
+    const text = d ? formatDice(d, d.flat + dmg) : (String(raw || '').trim() || null);
     return text && unrevealed ? `${text} + ?` : text;
   };
   return {
@@ -119,18 +91,4 @@ export function attackFor({ sheet, weapon, mode, offHand = false, picked = [], s
     rate: offHand ? '1' : attackRate(weapon, mode),
     lines,
   };
-}
-
-// AC change from modifiers switched on for the round (and "always" ones);
-// a negative number is better
-export function acChange(sheet, stances = []) {
-  return (sheet.__combatModifiers || [])
-    .filter(m => m.use === 'always' || (m.use === 'round' && stances.includes(m.id)))
-    .reduce((t, m) => t + num(m.ac), 0);
-}
-
-// The per-attack and whole-round modifiers that can apply to an attack
-export function choicesFor(sheet, ctx) {
-  const mods = (sheet.__combatModifiers || []).filter(m => modifierApplies(m, ctx));
-  return { perAttack: mods.filter(m => m.use === 'attack') };
 }

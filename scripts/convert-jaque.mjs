@@ -1,5 +1,6 @@
 // One-off: Jaque's 09-23 save moved to the "totals" model (weapon rows hold
-// final numbers; sometimes-bonuses are combat modifiers). Totals confirmed
+// final numbers, entered as parts; sometimes-bonuses stay as text on his
+// cards, shown in Combat as reminders). Totals confirmed
 // with his player on 10-09. Output: samples/jaque_10-09.json
 import { readFileSync, writeFileSync } from 'node:fs';
 
@@ -29,17 +30,11 @@ for (const w of s.__weapons) {
   if (!w.unrevealed) w.unrevealed = false;
   if (w.name === 'Wave Dagger') w.notes = '';
 }
-const wave = s.__weapons.find(w => w.name === 'Wave Dagger').id;
-s.__combatModifiers = [
-  { id: 'mod-1', label: 'Bladesong: +1 hit', hit: '+1', dmg: '', ac: '', appliesTo: 'all', weaponId: '', use: 'round' },
-  { id: 'mod-2', label: 'Bladesong: +1 AC', hit: '', dmg: '', ac: '-1', appliesTo: 'all', weaponId: '', use: 'round' },
-  { id: 'mod-3', label: 'Trick Throw (called shot)', hit: '-2', dmg: '', ac: '', appliesTo: 'ranged', weaponId: '', use: 'attack' },
-  { id: 'mod-4', label: "Duelist's Precision (flanked or unaware)", hit: '', dmg: '+1', ac: '', appliesTo: 'melee', weaponId: '', use: 'attack' },
-  { id: 'mod-5', label: 'Off-hand (Handle Weapons)', hit: '-2', dmg: '', ac: '', appliesTo: 'offhand', weaponId: '', use: 'always' },
-  { id: 'mod-6', label: 'vs tiny', hit: '+1', dmg: '+1', ac: '', appliesTo: 'weapon', weaponId: wave, use: 'attack' },
-  { id: 'mod-7', label: 'vs small', hit: '+2', dmg: '+2', ac: '', appliesTo: 'weapon', weaponId: wave, use: 'attack' },
-  { id: 'mod-8', label: 'Defensive Spin', hit: '', dmg: '', ac: '-3', appliesTo: 'all', weaponId: '', use: 'round' },
-];
-s.__combatModifierCounter = 8;
+// Sometimes-bonuses stay as text; these cards show in Combat as reminders
+s.__offHandPenalty = '-2';   // Handle Weapons
+s.__weapons.find(w => w.name === 'Wave Dagger').notes = '+1 hit/dmg vs tiny, +2 hit/dmg vs small';
+const show = ['Weapons Display', 'Trick Throw', 'Defensive Spin', 'Offensive Spin', "Duelist's Precision", 'Handle Weapon'];
+for (const a of s.__abilitiesCards) a.showInCombat = show.includes(a.name);
+for (const c of s.__wpnProfCards) c.showInCombat = /bladesong/i.test(c.name);
 writeFileSync('samples/jaque_10-09.json', JSON.stringify(s, null, 2) + '\n');
 console.log('Wrote samples/jaque_10-09.json');

@@ -12,7 +12,7 @@ const rules = bundle(RULES_FILES, {
   expose: {
     Rules: ['rules/attacks', ['computeAttack', 'listAttacks', 'weaponAttacks', 'planRound', 'attacksThisRound', 'attacksInRound', 'hasBonusRounds', 'formatRate', 'offHandAttacks', 'effectiveLevel', 'SITUATIONS']],
     Weapons: ['rules/weapons', ['resolveWeapon', 'PHB_WEAPONS']],
-    Combat: ['rules/combat', ['SITUATIONS', 'MOD_APPLIES', 'MOD_USES', 'baseTHAC0', 'weaponModes', 'attackRate', 'attackFor', 'acChange', 'choicesFor']],
+    Combat: ['rules/combat', ['SITUATIONS', 'baseTHAC0', 'weaponModes', 'attackRate', 'attackFor']],
     Spells: ['rules/spells', ['findSpell', 'SPELL_FIELDS', 'missingFields']],
     Abilities: ['rules/abilities', ['COMBAT_ROLES', 'guessCombatRole', 'sameAbility']],
     Unarmed: ['rules/unarmed', ['unarmedAttack', 'unarmedResult']],

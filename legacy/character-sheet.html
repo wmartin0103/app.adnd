@@ -836,6 +836,11 @@
       cursor: pointer;
     }
     .ability-combat { flex-wrap: wrap; gap: 0.4rem 0.8rem; }
+    .wpn-offhand { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin: 0.5rem 0; font-size: 0.85rem; }
+    .wpn-offhand label { font-family: var(--font-display); font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-muted); }
+    .wpn-offhand select { width: 4rem; }
+    .show-combat { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.75rem; font-family: var(--font-display); letter-spacing: 0.04em; color: var(--ink-muted); cursor: pointer; }
+    .show-combat input { accent-color: var(--accent); }
     .wpn-hint { margin: 0 0 0.5rem; font-size: 0.85rem; color: var(--ink-muted); }
     .wpn-total { display: inline-flex; align-items: center; gap: 0.3em; background: none; border: 1px solid transparent; border-radius: var(--radius); padding: 0.1em 0.35em; font-family: var(--font-mono, monospace); font-size: 0.85rem; color: var(--ink); cursor: pointer; }
     .wpn-total:hover { border-color: var(--rule); }
@@ -849,12 +854,6 @@
     .wpn-parts select { width: 3.6rem; }
     .wpn-parts-total { font-weight: 700; min-width: 2.5rem; }
     .wpn-parts-hint { margin: 0.25rem 0 0; font-size: 0.78rem; color: var(--ink-muted); }
-    .mod-row { display: flex; flex-wrap: wrap; align-items: end; gap: 0.4rem 0.7rem; padding: 0.45rem 0; border-bottom: 1px solid var(--rule); }
-    .mod-field { display: grid; gap: 0.1rem; flex: none; }
-    .mod-row .wpn-inp { width: auto; }
-    .mod-row .mod-label { width: 15rem; max-width: 100%; }
-    .mod-row .mod-num { width: 4.5rem; text-align: center; }
-    .mod-row select.wpn-inp { max-width: 16rem; }
     .mod-row .nwp-del-btn { margin-left: auto; }
     .nwp-type-wrap { display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; }
     .nwp-type-sel {
@@ -2708,18 +2707,11 @@
         <div id="weapons-list" aria-label="Weapons list">
           <!-- populated by renderWeapons() -->
         </div>
+        <div class="wpn-offhand"><label for="offhand-penalty">Off-hand attacks</label> <select id="offhand-penalty" class="wpn-inp wpn-select wpn-pick"></select> <span class="wpn-hint" style="margin:0">to hit, if you fight with a weapon in each hand</span></div>
         <button class="add-class-btn" id="add-weapon-btn" type="button">
           <span aria-hidden="true">＋</span> Add Weapon
         </button>
       </div>
-    </section>
-
-    <!-- ── Combat modifiers ───────────────────────────────────── -->
-    <section class="section" id="mods-section" aria-labelledby="mods-heading">
-      <h2 class="section-heading" id="mods-heading">Combat modifiers</h2>
-      <p class="wpn-hint">Bonuses and penalties that only apply sometimes: a stance, a called shot, a bonus against certain foes or sizes. <strong>Switched on</strong>: <em>Always</em> is applied for you wherever it applies (an off-hand penalty); <em>Per attack</em> is a chip on each attack card; <em>Whole round</em> is a stance you switch on for the round.</p>
-      <div id="mods-list" aria-label="Combat modifiers"></div>
-      <button class="add-class-btn" id="add-mod-btn" type="button"><span aria-hidden="true">＋</span> Add modifier</button>
     </section>
 
     <!-- ── Spells ─────────────────────────────────────────────── -->
@@ -4165,8 +4157,9 @@ const {guessCategory} = __m["rules/migrate"];
 // Combat, kept simple. A weapon row holds the player's final numbers: its to
 // hit and damage already include Strength or Dexterity, magic, proficiency,
 // specialization and anything else that always applies. The app works out
-// only the base THAC0 from class and level, and adds what's switched on:
-// the character's own modifiers and the shared situations.
+// only the base THAC0 from class and level, and adds what the player applies:
+// the shared situations and their own adjustments. Abilities that only apply
+// sometimes stay as text on the sheet; Combat shows them as reminders.
 
 
 
@@ -4178,23 +4171,6 @@ const SITUATIONS = {
   charging:      { label: 'Charging',       hit: 2 },
   higherGround:  { label: 'Higher ground',  hit: 1 },
   targetUnaware: { label: 'Target unaware', hit: 0 },
-};
-
-// A character's own modifiers (`__combatModifiers` on the sheet):
-//   { id, label, hit, dmg, ac, appliesTo, use, weaponId? }
-// appliesTo — which attacks it can apply to
-const MOD_APPLIES = {
-  all: 'All attacks',
-  melee: 'Melee attacks',
-  ranged: 'Thrown or missile attacks',
-  offhand: 'Off-hand attacks',
-  weapon: 'One weapon',
-};
-// use — how it's switched on
-const MOD_USES = {
-  always: 'Always',
-  attack: 'Per attack',
-  round: 'Whole round',
 };
 
 const num = v => {
@@ -4234,22 +4210,13 @@ function attackRate(w, mode) {
   return (base && base.rateOfFire) || '1';
 }
 
-// Does a modifier apply to this attack?
-function modifierApplies(mod, { weaponId, mode, offHand = false }) {
-  switch (mod.appliesTo || 'all') {
-    case 'melee': return mode === 'melee';
-    case 'ranged': return mode === 'thrown' || mode === 'missile';
-    case 'offhand': return offHand;
-    case 'weapon': return mod.weaponId === weaponId;
-    default: return true;
-  }
-}
-
-// One attack: a weapon row used one way, plus what's switched on.
-//   picked    — ids of per-attack modifiers chosen on this card
-//   stances   — ids of whole-round modifiers switched on
-//   situation — keys of SITUATIONS; adjust — quick +/- to hit
-function attackFor({ sheet, weapon, mode, offHand = false, picked = [], stances = [], situation = [], adjust = 0 }) {
+// One attack: a weapon row used one way, plus what the player has applied.
+//   allAdjust  — { hit, dmg } applied to every attack (e.g. a stance)
+//   adjust     — { hit, dmg } for this attack only (e.g. a called shot)
+//   situation  — keys of SITUATIONS
+// Off-hand attacks also take the character's off-hand penalty
+// (`__offHandPenalty`, e.g. "-2").
+function attackFor({ sheet, weapon, mode, offHand = false, allAdjust = {}, adjust = {}, situation = [] }) {
   const base = baseTHAC0(sheet);
   const lines = [];
   const add = (label, hit, dmg) => { if (hit || dmg) lines.push({ label, hit, dmg }); };
@@ -4258,20 +4225,17 @@ function attackFor({ sheet, weapon, mode, offHand = false, picked = [], stances 
   if (weapon.hitParts || weapon.dmgParts) {
     for (const [k, label] of Object.entries(PART_LABELS)) add(label, num((weapon.hitParts || {})[k]), num((weapon.dmgParts || {})[k]));
   } else add(weapon.name || 'Weapon', num(weapon.hitAdj), num(weapon.dmgAdj));
-  const ctx = { weaponId: weapon.id, mode, offHand };
-  for (const m of sheet.__combatModifiers || []) {
-    if (!modifierApplies(m, ctx)) continue;
-    const on = m.use === 'always' || (m.use === 'round' ? stances.includes(m.id) : picked.includes(m.id));
-    if (on) add(m.label, num(m.hit), num(m.dmg));
-  }
+  if (offHand) add('Off-hand', num(sheet.__offHandPenalty), 0);
   for (const k of situation) if (SITUATIONS[k]) add(SITUATIONS[k].label, SITUATIONS[k].hit || 0, SITUATIONS[k].dmg || 0);
-  if (adjust) add('Quick adjust', adjust, 0);
+  add('All attacks adjust', num(allAdjust.hit), num(allAdjust.dmg));
+  add('This attack adjust', num(adjust.hit), num(adjust.dmg));
   const hit = lines.reduce((t, l) => t + l.hit, 0);
   const dmg = lines.reduce((t, l) => t + l.dmg, 0);
   const unrevealed = !!weapon.unrevealed || weapon.hitAdj === '?' || weapon.dmgAdj === '?';
   const dice = size => {
-    const d = parseDice(size === 'sm' ? weapon.dmgSM : weapon.dmgL);
-    const text = d ? formatDice(d, d.flat + dmg) : (String((size === 'sm' ? weapon.dmgSM : weapon.dmgL) || '').trim() || null);
+    const raw = size === 'sm' ? weapon.dmgSM : weapon.dmgL;
+    const d = parseDice(raw);
+    const text = d ? formatDice(d, d.flat + dmg) : (String(raw || '').trim() || null);
     return text && unrevealed ? `${text} + ?` : text;
   };
   return {
@@ -4284,21 +4248,7 @@ function attackFor({ sheet, weapon, mode, offHand = false, picked = [], stances 
   };
 }
 
-// AC change from modifiers switched on for the round (and "always" ones);
-// a negative number is better
-function acChange(sheet, stances = []) {
-  return (sheet.__combatModifiers || [])
-    .filter(m => m.use === 'always' || (m.use === 'round' && stances.includes(m.id)))
-    .reduce((t, m) => t + num(m.ac), 0);
-}
-
-// The per-attack and whole-round modifiers that can apply to an attack
-function choicesFor(sheet, ctx) {
-  const mods = (sheet.__combatModifiers || []).filter(m => modifierApplies(m, ctx));
-  return { perAttack: mods.filter(m => m.use === 'attack') };
-}
-
-return { SITUATIONS, MOD_APPLIES, MOD_USES, baseTHAC0, weaponModes, attackRate, modifierApplies, attackFor, acChange, choicesFor };
+return { SITUATIONS, baseTHAC0, weaponModes, attackRate, attackFor };
 })();
 // ── adapters/dm-helper ──
 __m["adapters/dm-helper"] = (() => {
@@ -4515,7 +4465,7 @@ window.SheetTables = { NONPROFICIENT_PENALTY: __m["rules/tables"].NONPROFICIENT_
 window.SheetDice = { parseDice: __m["rules/dice"].parseDice, formatDice: __m["rules/dice"].formatDice };
 window.SheetCharacter = { hpState: __m["rules/character"].hpState, HP_FLOOR: __m["rules/character"].HP_FLOOR };
 window.SheetAbilities = { COMBAT_ROLES: __m["rules/abilities"].COMBAT_ROLES, guessCombatRole: __m["rules/abilities"].guessCombatRole };
-window.SheetCombat = { weaponModes: __m["rules/combat"].weaponModes, attackRate: __m["rules/combat"].attackRate, MOD_APPLIES: __m["rules/combat"].MOD_APPLIES, MOD_USES: __m["rules/combat"].MOD_USES };
+window.SheetCombat = { weaponModes: __m["rules/combat"].weaponModes, attackRate: __m["rules/combat"].attackRate };
 })();
 /* ── end sheet converter ── */
   </script>
@@ -6373,89 +6323,27 @@ window.SheetCombat = { weaponModes: __m["rules/combat"].weaponModes, attackRate:
       el.innerHTML = parts.length > 0 ? 'Racial: ' + parts.join(' &nbsp;·&nbsp; ') : '';
     }
 
-    // ── COMBAT MODIFIERS ────────────────────────────────────────
-    // Bonuses that only apply sometimes. Each: label, to hit, damage, AC,
-    // which attacks it applies to, and how it's switched on in Combat.
-    let combatModifiers = [];
-    let combatModifierCounter = 0;
-    function makeCombatModifier(overrides = {}) {
-      return { id: `mod-${++combatModifierCounter}`, label: '', hit: '', dmg: '', ac: '', appliesTo: 'all', weaponId: '', use: 'attack', ...overrides };
-    }
-    function renderCombatModifiers() {
-      const list = document.getElementById('mods-list');
-      if (!list) return;
-      list.innerHTML = '';
-      if (!combatModifiers.length) {
-        const empty = document.createElement('p');
-        empty.className = 'weapons-empty';
-        empty.textContent = 'No modifiers yet.';
-        list.appendChild(empty);
-        return;
-      }
-      const applies = (window.SheetCombat && SheetCombat.MOD_APPLIES) || { all: 'All attacks' };
-      const uses = (window.SheetCombat && SheetCombat.MOD_USES) || { attack: 'Per attack' };
-      combatModifiers.forEach(m => {
-        const row = document.createElement('div');
-        row.className = 'mod-row';
-        const fieldWrap = (text, control) => {
-          const l = document.createElement('label');
-          l.className = 'mod-field';
-          const t = document.createElement('span');
-          t.className = 'wpn-sub-label';
-          t.textContent = text;
-          l.append(t, control);
-          return l;
-        };
-        const txt = (key, ph, cls) => {
-          const i = document.createElement('input');
-          i.type = 'text';
-          i.className = 'wpn-inp ' + (cls || '');
-          i.value = m[key] || '';
-          i.placeholder = ph;
-          i.addEventListener('input', () => { m[key] = i.value; });
-          i.addEventListener('change', () => saveToItems());
-          return i;
-        };
-        const sel = (key, pairs, onChange) => {
-          const s2 = document.createElement('select');
-          s2.className = 'wpn-inp wpn-select';
-          pairs.forEach(([v, l]) => { const o = document.createElement('option'); o.value = v; o.textContent = l; if ((m[key] || '') === v) o.selected = true; s2.appendChild(o); });
-          s2.addEventListener('change', () => { m[key] = s2.value; saveToItems(); if (onChange) onChange(); });
-          return s2;
-        };
-        row.append(
-          fieldWrap('Name', txt('label', 'e.g. Bladesong, vs orcs', 'mod-label')),
-          fieldWrap('To hit', txt('hit', '±0', 'mod-num')),
-          fieldWrap('Dmg', txt('dmg', '±0', 'mod-num')),
-          fieldWrap('AC', txt('ac', '−1 = better', 'mod-num')),
-          fieldWrap('Applies to', sel('appliesTo', Object.entries(applies), renderCombatModifiers)),
-        );
-        if (m.appliesTo === 'weapon') {
-          row.append(fieldWrap('Weapon', sel('weaponId', [['', '— choose'], ...weapons.map(w => [w.id, w.name || 'Unnamed'])])));
-        }
-        row.append(fieldWrap('Switched on', sel('use', Object.entries(uses))));
-        const del = document.createElement('button');
-        del.type = 'button';
-        del.className = 'nwp-del-btn';
-        del.innerHTML = '&times;';
-        del.setAttribute('aria-label', `Remove ${m.label || 'modifier'}`);
-        del.addEventListener('click', () => { combatModifiers = combatModifiers.filter(x => x.id !== m.id); renderCombatModifiers(); saveToItems(); });
-        row.append(del);
-        list.appendChild(row);
+    // Off-hand penalty: applied to every off-hand attack in Combat
+    let offHandPenalty = '';
+    function renderOffHandPenalty() {
+      const sel = document.getElementById('offhand-penalty');
+      if (!sel) return;
+      sel.innerHTML = '';
+      ['', '0', '-1', '-2', '-3', '-4', '-5', '-6'].forEach(v => {
+        const o = document.createElement('option');
+        o.value = v; o.textContent = v === '' ? '—' : v.replace('-', '−');
+        if (String(offHandPenalty) === v) o.selected = true;
+        sel.appendChild(o);
       });
     }
-    document.getElementById('add-mod-btn')?.addEventListener('click', () => {
-      combatModifiers.push(makeCombatModifier());
-      renderCombatModifiers();
-      saveToItems();
-      document.querySelector('#mods-list .mod-row:last-child .mod-label')?.focus();
-    });
+    document.getElementById('offhand-penalty')?.addEventListener('change', e => { offHandPenalty = e.target.value; saveToItems(); });
 
     // Which weapons have their settings panel open (not saved)
     const openWeaponSettings = new Set();
 
     function renderWeapons() {
       updateWeaponRacialHeading();
+      renderOffHandPenalty();
       const list = document.getElementById('weapons-list');
       if (!list) return;
       list.innerHTML = '';
@@ -8259,8 +8147,7 @@ window.SheetCombat = { weaponModes: __m["rules/combat"].weaponModes, attackRate:
       data['__thiefSkillAlloc']       = JSON.parse(JSON.stringify(thiefSkillAlloc));
       data['__thiefSubclass']         = thiefSubclass;
       data['__weapons']               = weapons;
-      data['__combatModifiers']       = combatModifiers;
-      data['__combatModifierCounter'] = combatModifierCounter;
+      data['__offHandPenalty']        = offHandPenalty;
       data['__weaponCounter']         = weaponCounter;
       data['__spells']                = spells;
       data['__spellCounter']          = spellCounter;
@@ -8315,8 +8202,7 @@ window.SheetCombat = { weaponModes: __m["rules/combat"].weaponModes, attackRate:
       if (data['__thiefSubclass']) {
         thiefSubclass = data['__thiefSubclass'];
       }
-      combatModifiers = Array.isArray(data['__combatModifiers']) ? data['__combatModifiers'] : [];
-      combatModifierCounter = data['__combatModifierCounter'] || combatModifiers.length;
+      offHandPenalty = data['__offHandPenalty'] ?? '';
       if (Array.isArray(data['__weapons'])) {
         weapons = data['__weapons'];
         weaponCounter = data['__weaponCounter'] || weapons.length;
@@ -8743,73 +8629,28 @@ window.SheetCombat = { weaponModes: __m["rules/combat"].weaponModes, attackRate:
       });
     }
 
-    // How an ability behaves in combat (used by the Combat tab). Pre-filled from
-    // the card's wording and marked "guessed" until the player confirms it.
-    function normalizeAbilityCard(ab) {
-      if (ab.combatRole === undefined) {
-        const guess = window.SheetAbilities ? SheetAbilities.guessCombatRole(ab) : null;
-        ab.combatRole = guess || '';
-        ab.combatRoleGuessed = !!guess;
+    // "Show in Combat": the card appears in the Combat tab as a reminder of
+    // something the player applies when it fits. Pre-ticked when the card's
+    // wording reads like a combat ability.
+    function normalizeShowInCombat(card) {
+      if (card.showInCombat === undefined) {
+        const role = window.SheetAbilities ? SheetAbilities.guessCombatRole(card) : null;
+        card.showInCombat = ['stance', 'attack', 'round'].includes(role);
       }
     }
-    function abilityCombatBar(ab) {
-      normalizeAbilityCard(ab);
-      const roles = (window.SheetAbilities && SheetAbilities.COMBAT_ROLES) || {};
+    function abilityCombatBar(card, rerender) {
+      normalizeShowInCombat(card);
       const bar = document.createElement('div');
       bar.className = 'nwp-card-bottom ability-combat';
-      const wrap = document.createElement('div');
-      wrap.className = 'nwp-type-wrap';
-      const label = document.createElement('label');
-      label.className = 'nwp-adj-label';
-      label.textContent = 'In combat';
-      label.htmlFor = `abc-role-${ab.id}`;
-      const sel = document.createElement('select');
-      sel.id = `abc-role-${ab.id}`;
-      sel.className = 'nwp-type-sel';
-      [['', '— choose'], ...Object.entries(roles)].forEach(([k, l]) => {
-        const opt = document.createElement('option');
-        opt.value = k; opt.textContent = l;
-        if (ab.combatRole === k) opt.selected = true;
-        sel.appendChild(opt);
-      });
-      sel.addEventListener('change', () => { ab.combatRole = sel.value; ab.combatRoleGuessed = false; renderAbilitiesCards(); saveToItems(); });
-      wrap.append(label, sel);
-      if (ab.combatRoleGuessed) {
-        const tag = document.createElement('span');
-        tag.className = 'wpn-guess';
-        tag.textContent = 'guessed';
-        const ok = document.createElement('button');
-        ok.type = 'button';
-        ok.className = 'wpn-guess-ok';
-        ok.textContent = 'Confirm';
-        ok.setAttribute('aria-label', `Confirm how ${ab.name || 'this ability'} works in combat`);
-        ok.addEventListener('click', () => { ab.combatRoleGuessed = false; renderAbilitiesCards(); saveToItems(); });
-        wrap.append(tag, ok);
-      }
-      bar.appendChild(wrap);
-      // Extra details for the roles Combat lists or applies
-      const field = (key, text, placeholder, width) => {
-        const w = document.createElement('div');
-        w.className = 'nwp-slots-wrap';
-        const l = document.createElement('label');
-        l.className = 'nwp-adj-label';
-        l.textContent = text;
-        l.htmlFor = `abc-${key}-${ab.id}`;
-        const inp = document.createElement('input');
-        inp.type = 'text';
-        inp.id = `abc-${key}-${ab.id}`;
-        inp.className = 'nwp-adj-inp';
-        inp.style.width = width;
-        inp.value = ab[key] || '';
-        inp.placeholder = placeholder;
-        inp.addEventListener('input', () => { ab[key] = inp.value; });
-        inp.addEventListener('change', () => saveToItems());
-        w.append(l, inp);
-        return w;
-      };
-      if (ab.combatRole === 'round') {
-        bar.append(field('uses', 'Uses', 'e.g. 3/day', '5.5rem'), field('save', 'Save', 'e.g. vs para', '6.5rem'));
-      }
+      const lab = document.createElement('label');
+      lab.className = 'show-combat';
+      const box = document.createElement('input');
+      box.type = 'checkbox';
+      box.checked = !!card.showInCombat;
+      box.addEventListener('change', () => { card.showInCombat = box.checked; saveToItems(); });
+      lab.append(box, 'Show in Combat');
+      lab.title = 'Show this in the Combat tab as a reminder when it might apply';
+      bar.appendChild(lab);
       return bar;
     }
 
@@ -8954,6 +8795,8 @@ window.SheetCombat = { weaponModes: __m["rules/combat"].weaponModes, attackRate:
           typeWrap.append(tag, ok);
         }
         bottom.appendChild(typeWrap);
+        if (!ab.weaponType && ab.showInCombat === undefined) ab.showInCombat = /style|stance|song/i.test(`${ab.name} ${ab.desc}`);
+        bottom.appendChild(abilityCombatBar(ab).firstChild);
 
         const slotsWrap = document.createElement('div');
         slotsWrap.className = 'nwp-slots-wrap';
@@ -9316,7 +9159,6 @@ window.SheetCombat = { weaponModes: __m["rules/combat"].weaponModes, attackRate:
       renderRacialTraits();
       renderThievingAbilities();
       renderWeapons();
-      renderCombatModifiers();
       renderSpells();
       renderNWPs();
       renderWpnProfCards();

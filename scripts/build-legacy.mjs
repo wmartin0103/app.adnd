@@ -21,7 +21,7 @@ export const TARGETS = {
     SheetDice: ['rules/dice', ['parseDice', 'formatDice']],
     SheetCharacter: ['rules/character', ['hpState', 'HP_FLOOR']],
     SheetAbilities: ['rules/abilities', ['COMBAT_ROLES', 'guessCombatRole']],
-    SheetCombat: ['rules/combat', ['weaponModes', 'attackRate', 'MOD_APPLIES', 'MOD_USES']],
+    SheetCombat: ['rules/combat', ['weaponModes', 'attackRate']],
   },
 };
 
