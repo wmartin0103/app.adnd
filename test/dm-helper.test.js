@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 import { armorClass, savingThrows, stoutSaveBonus, thiefSkills, proficiencyTargets } from '../src/rules/character.js';
-import { toDMHelper, formatDMHelperConfig, castSpeed, diceAtLevel } from '../src/adapters/dm-helper.js';
+import { toDMHelper, formatDMHelperConfig, castSpeed } from '../src/adapters/dm-helper.js';
+import { diceAtLevel, casterLevel, scenarioContext, scenarioDamage } from '../src/rules/scenarios.js';
 import { diceCap } from '../scripts/import-wiki-spells.mjs';
 
 const jaque = JSON.parse(readFileSync(new URL('./fixtures/jaque-v2.json', import.meta.url)));
@@ -141,7 +142,7 @@ test('spell scenarios: attack rolls, cast time and damage at the caster\'s level
   save.__scenarios = [{ id: 'sc-9', name: 'Shocking Grasp', group: 'rogue', levelMode: 'sheet', attackType: 'spell', spellId: 'spl-77', spell: {}, rate: '1/1' }];
   const r = toDMHelper(save, {}, { catalog });
   assert.deepEqual(r.character.actions, [{ name: 'Shocking Grasp', thac0: 18, speedMin: 0, speedMax: 10, speedDefault: 1 }]);   // touch: Str (13) adds nothing
-  assert.deepEqual(r.damage['Jaque|Shocking Grasp'], { sm: '1d8+5', l: '1d8+5' });
+  assert.deepEqual(r.damage['Jaque|Shocking Grasp'], { sm: '1d8+3', l: '1d8+3' });   // Blade 5 casts as a 3rd-level bard
 });
 
 test('cast times and per-level dice', () => {
@@ -160,6 +161,32 @@ test('per-level spell dice stop growing at the spell\'s cap', () => {
   save.__spells = [{ id: 'spl-80', name: 'Fireball', level: 3, type: 'wizard', isMemorized: true }];
   save.__scenarios = [{ id: 'sc-9', name: 'Fireball', group: 'wizard', levelMode: 'sheet', attackType: 'spell', spellId: 'spl-80', spell: {}, rate: '1/1' }];
   assert.deepEqual(toDMHelper(save, {}, { catalog }).damage['Jaque|Fireball'], { sm: '10d6', l: '10d6' });
+});
+
+test('caster level is the level of the class that casts that kind of spell', () => {
+  const ctx = classes => ({ level: Math.max(...classes.map(c => Number(c.level))), classes });
+  const hanspeter = ctx([{ name: 'Bard', group: 'rogue', level: '2' }, { name: 'Druid', group: 'priest', level: '5' }]);
+  assert.equal(casterLevel(hanspeter, {}, 'priest'), 5);
+  assert.equal(casterLevel(hanspeter, {}, 'wizard'), 2);
+  const tig = ctx([{ name: 'Paladin', group: 'warrior', level: '2' }, { name: 'Bard', group: 'rogue', level: '5' }]);
+  assert.equal(casterLevel(tig, {}, 'wizard'), 5);
+  assert.equal(casterLevel(ctx([{ name: 'Paladin', group: 'warrior', level: '10' }]), {}, 'priest'), 2);   // PHB: paladin 10 casts as 2nd
+  assert.equal(casterLevel(ctx([{ name: 'Ranger', group: 'warrior', level: '9' }]), {}, 'priest'), 2);     // ranger 9 casts as 2nd
+  assert.equal(casterLevel(ctx([{ name: 'Blade Bard', group: 'rogue', level: '5' }]), {}, 'wizard'), 3);   // Delayed Spellcasting
+  assert.equal(casterLevel(hanspeter, { levelMode: 'custom', customLevel: 7 }, 'priest'), 7);              // the scenario's own level wins
+});
+
+test('the sheet shows spell dice worked out at the caster level, like the DM Helper', () => {
+  const save = { ...effectsOff(current), __classes: [{ id: 'c', name: 'Mage', group: 'wizard', level: '12' }] };
+  save.__spells = [{ id: 'spl-80', name: 'Fireball', level: 3, type: 'wizard', isMemorized: true }];
+  const sc = { id: 'sc-9', name: 'Fireball', group: 'wizard', levelMode: 'sheet', attackType: 'spell', spellId: 'spl-80', spell: {}, rate: '1/1' };
+  assert.deepEqual(scenarioDamage(scenarioContext(save, catalog), sc), { sm: '10d6', l: '10d6', heal: false, casterLevel: 12 });
+});
+
+test('"per N levels" dice', () => {
+  assert.equal(diceAtLevel('1d8 per 2 levels', 6), '3d8');
+  assert.equal(diceAtLevel('1d6 per 3 levels', 2), '1d6');      // at least one die
+  assert.equal(diceAtLevel('2d4 per 4 levels', 9), '4d4');
 });
 
 test('the wiki import reads a spell\'s cap from its wording', () => {

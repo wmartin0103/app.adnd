@@ -57,6 +57,7 @@ export function scenarioContext(save, catalog = null) {
   const raceGroup = save['race-group'] || 'human';
   return {
     level: levels.length ? Math.max(...levels) : 0,
+    classes: save.__classes || [],
     str: { hit: str.hit, dmg: str.dmg },
     dexMissile: (DEX_TABLE[num(save.dex)] || { missile: 0 }).missile,
     racialHit: name => racialWeaponBonus(raceGroup, save.__traitState, name),
@@ -115,6 +116,44 @@ export function effectsACBonus(ctx) {
 }
 
 // ── Spells ──
+// Caster level is the level in the class that casts that kind of spell (PHB),
+// not the character's highest level: a Bard 2 / Druid 5 casts druid spells
+// at 5th level and wizard spells at 2nd. Paladins cast priest spells as
+// level − 8 (from 9th), rangers as level − 7 (from 8th). House rule: a Blade
+// casts as a bard two levels lower (Delayed Spellcasting).
+const CASTS = {
+  wizard: c => c.group === 'wizard' || /bard/i.test(c.name || ''),
+  priest: c => c.group === 'priest' || /paladin|ranger/i.test(c.name || ''),
+};
+const classCasterLevel = c => {
+  const name = c.name || '';
+  const level = num(c.level);
+  if (/paladin/i.test(name)) return level - 8;
+  if (/ranger/i.test(name)) return level - 7;
+  if (/blade/i.test(name)) return level - 2;
+  return level;
+};
+export function casterLevel(ctx, sc, spellType) {
+  if (sc.levelMode === 'custom') return num(sc.customLevel) || 1;
+  const levels = (ctx.classes || []).filter(c => (CASTS[spellType] || (() => false))(c)).map(classCasterLevel).filter(l => l > 0);
+  return levels.length ? Math.max(...levels) : (ctx.level || 1);
+}
+
+// Spell dice at a caster level: "1d6/level" → "5d6", "1d8+1/level" → "1d8+5",
+// "1d8 per 2 levels" → "3d8" at 6th. `maxLevel` is where the spell stops
+// growing (Fireball: 10, so 10d6 at most). Null when it isn't dice we can work out.
+export function diceAtLevel(dice, level, maxLevel = 0) {
+  if (num(maxLevel) > 0) level = Math.min(level, num(maxLevel));
+  const d = String(dice || '').replace(/\s+/g, '');
+  let m = d.match(/^(\d*)d(\d+)\/level$/i);
+  if (m) return `${(num(m[1]) || 1) * level}d${m[2]}`;
+  m = d.match(/^(\d*d\d+)\+(\d+)\/level$/i);
+  if (m) return `${m[1]}+${num(m[2]) * level}`;
+  m = d.match(/^(\d*)d(\d+)per(\d+)levels?$/i);
+  if (m) return `${Math.max((num(m[1]) || 1) * Math.floor(level / num(m[3])), 1)}d${m[2]}`;
+  return /^\d*d\d+([+-]\d+)?$/i.test(d) ? d : null;
+}
+
 // A Spell attack reads the spell's casting details from the catalog;
 // anything different is kept on the scenario.
 export function scenarioSpell(ctx, sc) {
@@ -126,9 +165,13 @@ export function scenarioSpell(ctx, sc) {
     : (catalogId && ctx.catalog.spells.find(e => e.id === catalogId)) || findSpell(ctx.catalog, sp, sp.type);
   const own = sc.spell || {};
   const pick = k => (own[k] !== undefined && own[k] !== '' ? own[k] : (cat && cat[k]) || '');
+  const level = casterLevel(ctx, sc, sp.type || (cat && cat.class) || '');
+  const dice = pick('dice');
   return {
     sheet: sp, catalog: cat,
-    name: sp.name, castTime: pick('castTime'), range: pick('range'), save: pick('save'), dice: pick('dice'), diceMaxLevel: pick('diceMaxLevel'),
+    name: sp.name, castTime: pick('castTime'), range: pick('range'), save: pick('save'), dice, diceMaxLevel: pick('diceMaxLevel'),
+    // The dice at this caster's level, or the dice as written when they can't be worked out
+    casterLevel: level, rolled: dice ? diceAtLevel(dice, level, pick('diceMaxLevel')) : '',
     attack: pick('attack') || 'none', heal: (cat && cat.diceKind === 'heal') || /cure|heal/i.test(sp.name),
     link: (cat && cat.link) || sp.url || '',
   };
@@ -155,7 +198,8 @@ export const scenarioWeapon = (ctx, sc) =>
 export function scenarioDamage(ctx, sc) {
   if (scenarioType(sc) === 'spell') {
     const sp = scenarioSpell(ctx, sc);
-    return sp && sp.dice ? { sm: sp.dice, l: sp.dice, heal: sp.heal } : null;
+    const dice = sp && (sp.rolled || sp.dice);
+    return dice ? { sm: dice, l: dice, heal: sp.heal, casterLevel: sp.casterLevel } : null;
   }
   const wpn = scenarioWeapon(ctx, sc);
   if (!wpn) return null;

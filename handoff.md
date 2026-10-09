@@ -374,9 +374,13 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
 
 - Spell damage caps: done 2026-10-09 for the DM Helper. 26 per-level spells
   have `diceMaxLevel` in the catalog (Fireball and Lightning Bolt 10, Chain
-  Lightning 12), read from the wiki with `import-wiki-spells.mjs --caps`. Still
-  not handled: "1d6 per 2 levels" dice (rolled by hand), and caps the wiki
-  words some other way.
+  Lightning 12), read from the wiki with `import-wiki-spells.mjs --caps`. Not
+  handled: caps the wiki words some other way.
+- Caster level (2026-10-09): spells use the level of the class that casts
+  them (PHB: Hanspeter's druid spells at 5, bard spells at 2; paladin −8,
+  ranger −7), and a Blade casts two levels lower (Jaque: 3). The sheet and the
+  DM Helper both show the worked-out dice ("Damage at level 3: 1d8+3"), and
+  "1d8 per 2 levels" dice work too. A scenario's Level Source can override it.
 - The preview viewer blocks file downloads, so the sheet's save-to-file button
   does nothing there; it works in the standalone file.
 - The DM Helper's "effects on" line is a snapshot from the last import: a
