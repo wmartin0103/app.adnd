@@ -7071,7 +7071,13 @@ window.SheetSpellCatalog = {"about":"The campaign's shared spell catalog: short 
       return pool.find(e => e.class === cls && phb(e)) || pool.find(e => e.class === cls) || pool.find(phb) || pool[0] || null;
     }
 
+    // Redraws the spell cards, then the combat scenarios, so a scenario's
+    // "Spell (memorized)" list always matches what is memorized
     function renderSpells() {
+      renderSpellCards();
+      renderScenarios();
+    }
+    function renderSpellCards() {
       const list = document.getElementById('spells-list');
       if (!list) return;
       list.innerHTML = '';
@@ -7253,8 +7259,8 @@ window.SheetSpellCatalog = {"about":"The campaign's shared spell catalog: short 
             if (e.class === 'wizard' && spl.type === 'priest') spl.type = 'wizard';
             // A wiki link follows the spell; a link the player typed stays
             if (e.link && (!spl.url || /adnd2e\.fandom\.com/.test(spl.url))) spl.url = e.link;
-            renderSpells();
           }
+          renderSpells();
           saveToItems();
         });
         card.appendChild(nameInp);
@@ -7320,6 +7326,7 @@ window.SheetSpellCatalog = {"about":"The campaign's shared spell catalog: short 
           lvlBadge.style.background = c.bg;
           lvlBadge.style.color = c.text;
           updateSpellSlotHeader();
+          renderScenarios();
           saveToItems();
         });
         bottomBar.appendChild(lvlSel);
