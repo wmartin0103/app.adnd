@@ -1,28 +1,42 @@
 // ── SHEET → DM HELPER ───────────────────────────────────────────
 // Builds a character's entries for the DM Helper's config block
-// (CHARACTERS, SKILLS, THIEF, SAVES, DAMAGE, CRIT_TYPES) from a character
-// sheet save, so the DM never hand-types PC stats again.
+// (CHARACTERS, SKILLS, THIEF, SAVES, DAMAGE, CRIT_TYPES, WEAPON_MATERIAL) from
+// a character sheet save, so the DM never hand-types PC stats again.
 //
-// Accepts a v1 save (runs the migration first) or a v2 save.
+// Attacks come from the sheet's Combat section, worked out by the same code
+// the sheet uses (rules/scenarios.js), so the DM sees the sheet's numbers:
+//   - each weapon scenario is an attack (its weapon's speed for initiative)
+//   - attacks per round past the first are extra-attack rows (3/2 → one row
+//     on alternate rounds; 3/1 → two rows)
+//   - off-hand scenarios are extra-attack rows
+//   - spell scenarios are cast actions (cast time as speed; a THAC0 when the
+//     spell needs an attack roll)
+//   - effects that are on (stances, Bless …) count, as they do on the sheet,
+//     and their AC bonus lowers the DM's AC for the character
+//
 // `dmSettings` carries the DM's own per-character choices that aren't on the
 // sheet: { legacy, initBonus, parry, parryTargeted, armorSpell, virtue, turn,
-// shield, actions }. They're copied onto the CHARACTERS entry as-is.
+// shield, actions }. They're copied onto the CHARACTERS entry as-is (the DM's
+// own actions come after the sheet's spells).
+// `options.catalog` is the campaign spell catalog, for spell scenarios.
 
-import { migrateV1toV2 } from '../rules/migrate.js';
-import { resolveWeapon } from '../rules/weapons.js';
-import { computeAttack, weaponAttacks, offHandAttacks, effectiveLevel, baseTHAC0 } from '../rules/attacks.js';
+import { migrateV1toV2, guessCategory } from '../rules/migrate.js';
+import { baseTHAC0 } from '../rules/attacks.js';
 import { armorClass, savingThrows, thiefSkills, proficiencyTargets } from '../rules/character.js';
+import {
+  scenarioContext, scenarioType, scenarioRate, rateValue, scenarioWeapon, scenarioSpell,
+  scenarioBreakdown, scenarioDamage, effectsACBonus, effectOption, modNum, signed,
+} from '../rules/scenarios.js';
 
 const num = v => {
   const n = parseInt(v, 10);
   return Number.isNaN(n) ? 0 : n;
 };
-const ORDINAL = ['1st', '2nd', '3rd', '4th', '5th'];
+const ORDINAL = ['1st', '2nd', '3rd', '4th', '5th', '6th'];
 
 // What a weapon breaks as, for the DM Helper's item saves (crits and fumbles),
 // following the DM's existing convention: blades are metal, hafted weapons
-// thick wood, bows thin wood, slings leather. A weapon's own `material`
-// overrides it (e.g. a stone knife).
+// thick wood, bows thin wood, slings leather.
 const MATERIAL_BY_CATEGORY = {
   dagger: 'metal', knife: 'metal', dart: 'metal', 'short-sword': 'metal', 'long-sword': 'metal',
   'broad-sword': 'metal', 'bastard-sword': 'metal', scimitar: 'metal', 'two-handed-sword': 'metal',
@@ -34,113 +48,123 @@ const MATERIAL_BY_CATEGORY = {
   'composite-long-bow': 'woodThin', 'light-crossbow': 'woodThin', 'heavy-crossbow': 'woodThin',
   sling: 'leather',
 };
-const aprValue = apr => { const [a, b] = String(apr).split('/').map(Number); return b ? a / b : a; };
+// The sheet's damage type → the DM Helper's crit tables (P, S, B)
+function critType(dmgType) {
+  const t = String(dmgType || '').toLowerCase();
+  const types = [/pierc|^p$/.test(t) && 'P', /slash|^s$/.test(t) && 'S', /blunt|bludg|crush|^b$/.test(t) && 'B'].filter(Boolean);
+  if (!types.length) return 'B';
+  return types.length > 1 ? types : types[0];
+}
+// A spell's cast time as an initiative speed: segments as written; a round or
+// longer goes last (10)
+export function castSpeed(castTime) {
+  const t = String(castTime || '').toLowerCase();
+  if (/round|turn|hour|day/.test(t)) return 10;
+  const m = t.match(/\d+/);
+  return m ? Math.min(parseInt(m[0], 10), 10) : null;
+}
+// Spell dice at the caster's level: "1d6/level" → "5d6", "1d8+1/level" → "1d8+5"
+export function diceAtLevel(dice, level) {
+  const d = String(dice || '').replace(/\s+/g, '');
+  let m = d.match(/^(\d*)d(\d+)\/level$/i);
+  if (m) return `${(num(m[1]) || 1) * level}d${m[2]}`;
+  m = d.match(/^(\d*d\d+)\+(\d+)\/level$/i);
+  if (m) return `${m[1]}+${num(m[2]) * level}`;
+  return /^\d*d\d+([+-]\d+)?$/i.test(d) ? d : null;
+}
 
-export function toDMHelper(save, dmSettings = {}) {
+export function toDMHelper(save, dmSettings = {}, { catalog = null } = {}) {
+  // Saves, skills and thief skills read the migrated sheet; attacks read the
+  // save exactly as the sheet wrote it
   const sheet = (save.__version || 0) >= 2 ? save : migrateV1toV2(save);
-  const name = (sheet.name || 'Unnamed').trim();
-  const review = (sheet.__review || []).map(r => r.message);
-  const level = effectiveLevel(sheet) || 1;
+  const name = (save.name || sheet.name || 'Unnamed').trim();
+  const review = [];
+  const ctx = scenarioContext(save, catalog);
+  const level = ctx.level || 1;
 
-  // ── Attacks, grouped by weapon ──
-  // Main-hand attacks with no extra modifiers of their own share one entry
-  // per weapon (with melee/thrown modes when it has both). Attacks with their
-  // own modifiers (e.g. Trick Throw) get their own entry. Off-hand attacks
-  // become secondary attacks.
   const weapons = {};
   const secondary = [];
+  const actions = [];
   const damage = {};
   const critTypes = {};
   const material = {};
-  const entryFor = a => ({ thac0: a.thac0, speed: a.speed });
-  const record = (label, a) => {
-    damage[`${name}|${label}`] = { sm: a.damage.sm, l: a.damage.l, ...(a.magicPlus ? { plus: a.magicPlus } : {}) };
-    const types = a.damageTypes.length ? a.damageTypes : ['B'];
-    critTypes[label] = types.length > 1 ? types : types[0];
-    const m = a.material || MATERIAL_BY_CATEGORY[a.category];
-    if (m) material[label] = { m, ...(a.magicPlus ? { plus: a.magicPlus } : {}) };
-    for (const r of a.needsReview) review.push(`${label}: ${r}`);
+  const used = new Set();
+  const unique = label => { let l = label, n = 2; while (used.has(l)) l = `${label} (${n++})`; used.add(l); return l; };
+
+  // Damage for one row. A weapon's own damage adjustment is kept apart as
+  // `plus`, so a critical multiplies everything else and adds it after.
+  const recordWeapon = (label, sc, wpn) => {
+    const plus = wpn.dmgAdj === '?' ? 0 : modNum(wpn.dmgAdj);
+    const bare = { ...ctx, weapons: ctx.weapons.map(w => (w.id === wpn.id && plus ? { ...w, dmgAdj: '' } : w)) };
+    const dmg = scenarioDamage(bare, sc);
+    const clean = v => String(v).replace(/\s*\+\s*\?$/, '');
+    if (dmg && dmg.sm !== '—') damage[`${name}|${label}`] = { sm: clean(dmg.sm), l: clean(dmg.l), ...(plus ? { plus } : {}) };
+    if (wpn.dmgAdj === '?' || wpn.hitAdj === '?') review.push(`${label}: ${wpn.name}'s bonus isn't revealed yet; left out`);
+    critTypes[label] = critType(wpn.dmgType);
+    const m = MATERIAL_BY_CATEGORY[guessCategory(wpn.name || '')];
+    if (m) material[label] = { m, ...(plus ? { plus } : {}) };
   };
 
-  let primaryWeapon = null;
-  for (const raw of sheet.__weapons || []) {
-    const w = resolveWeapon(raw);
-    if (w.carried === false) continue;
-    const attacks = weaponAttacks({ ...raw, modes: w.modes }).map(a => ({
-      def: a, calc: computeAttack({ sheet, weaponId: raw.id, attackId: a.id }),
-    }));
-    if (attacks.some(x => x.def.active)) primaryWeapon = { raw, w, attacks };
+  for (const sc of save.__scenarios || []) {
+    const type = scenarioType(sc);
+    const bd = scenarioBreakdown(ctx, sc);
 
-    const grouped = attacks.filter(x => x.calc.hand === 'main' && !(x.def.mods || []).length);
-    const custom = attacks.filter(x => x.calc.hand === 'main' && (x.def.mods || []).length);
-    // Off-hand: the weapon's own off-hand attacks plus any the two-weapon rule gives it
-    const off = [
-      ...attacks.filter(x => x.calc.hand === 'off'),
-      ...offHandAttacks(sheet, raw).map(a => ({ def: a, calc: computeAttack({ sheet, weaponId: raw.id, attackId: a.id }) })),
-    ];
+    if (type === 'spell') {
+      const sp = scenarioSpell(ctx, sc);
+      if (!sp) { review.push(`${sc.name || 'Spell scenario'}: no memorized spell chosen; left out`); continue; }
+      const label = unique(sc.name || sp.name);
+      const speed = castSpeed(sp.castTime);
+      if (speed === null) review.push(`${label}: no cast time; initiative speed defaults to 1`);
+      actions.push({ name: label, thac0: bd ? bd.thac0 : null, speedMin: 0, speedMax: 10, speedDefault: speed ?? 1 });
+      if (sp.dice) {
+        const dice = diceAtLevel(sp.dice, level);
+        if (dice) damage[`${name}|${label}`] = { sm: dice, l: dice };
+        else review.push(`${label}: damage "${sp.dice}" isn't plain dice; roll it by hand`);
+      }
+      continue;
+    }
 
-    if (grouped.length) {
-      const byMode = {};
-      for (const x of grouped) if (!byMode[x.calc.mode]) byMode[x.calc.mode] = x.calc;
-      const modes = Object.keys(byMode);
-      // A weapon used only thrown says so in its name ("Dagger x6, thrown")
-      const label = modes.length === 1 && modes[0] === 'thrown' ? `${w.name}, thrown` : w.name;
-      weapons[label] = modes.length > 1
-        ? { modes: Object.fromEntries(modes.map(m => [m === 'missile' ? 'thrown' : m, entryFor(byMode[m])])) }
-        : entryFor(byMode[modes[0]]);
-      record(label, byMode[modes[0]]);
+    const wpn = scenarioWeapon(ctx, sc);
+    if (!wpn || !bd) { review.push(`${sc.name || 'A scenario'}: no weapon chosen; left out`); continue; }
+    const label = unique(sc.name || wpn.name);
+    if (sc.handedness === 'off') {
+      secondary.push({ name: label, thac0: bd.thac0 });
+      recordWeapon(label, sc, wpn);
+      continue;
     }
-    for (const x of custom) {
-      weapons[x.calc.name] = entryFor(x.calc);
-      record(x.calc.name, x.calc);
-    }
-    if (off.length) {
-      const label = `Off-hand ${w.name}`;
-      const byMode = {};
-      for (const x of off) if (!byMode[x.calc.mode]) byMode[x.calc.mode] = x.calc;
-      const modes = Object.keys(byMode);
-      secondary.push(modes.length > 1
-        ? { name: label, modes: Object.fromEntries(modes.map(m => [m, { thac0: byMode[m].thac0 }])) }
-        : { name: label, thac0: byMode[modes[0]].thac0 });
-      record(label, byMode[modes[0]]);
-    }
-  }
+    weapons[label] = { thac0: bd.thac0, speed: num(wpn.speed) };
+    recordWeapon(label, sc, wpn);
 
-  // Extra attacks from attacks per round (e.g. 3/2 melee, 3/1 thrown), for the
-  // sheet's current ("active") attack's weapon. Each extra attack is one row;
-  // a mode with a half attack only gets it on alternate rounds.
-  if (primaryWeapon) {
-    const { w, attacks } = primaryWeapon;
-    const byMode = {};
-    for (const x of attacks) if (x.calc.hand === 'main' && !(x.def.mods || []).length && !byMode[x.calc.mode]) byMode[x.calc.mode] = x.calc;
-    const extras = Object.fromEntries(Object.entries(byMode).map(([m, a]) => [m, aprValue(a.attacksPerRound) - 1]));
-    const rows = Math.ceil(Math.max(0, ...Object.values(extras)));
-    for (let k = 1; k <= rows; k++) {
-      const modes = Object.keys(extras).filter(m => extras[m] > k - 1);
-      const alt = modes.filter(m => extras[m] < k);
-      const note = modes.length === 1
-        ? `${modes[0]}${alt.length ? ', alt. rounds' : ''}`
-        : alt.map(m => `${m} alt. rounds`).join(', ');
-      const label = `${w.name} (${ORDINAL[k]}${note ? `; ${note}` : ''})`;
-      secondary.push(modes.length > 1
-        ? { name: label, modes: Object.fromEntries(modes.map(m => [m, { thac0: byMode[m].thac0 }])) }
-        : { name: label, thac0: byMode[modes[0]].thac0 });
-      record(label, byMode[modes[0]]);
+    // Attacks past the first: one row each; a half attack only on alternate rounds
+    const extra = rateValue(scenarioRate(sc)) - 1;
+    for (let k = 1; k <= Math.ceil(extra); k++) {
+      const row = unique(`${label} (${ORDINAL[k]}${extra < k ? ', alt. rounds' : ''})`);
+      secondary.push({ name: row, thac0: bd.thac0 });
+      recordWeapon(row, sc, wpn);
     }
   }
 
   // ── The character entry ──
-  const ac = armorClass(sheet);
-  const groups = (sheet.__classes || []).map(c => [c.group, num(c.level)]);
+  const ac = armorClass(save);
+  const acBonus = effectsACBonus(ctx);
+  const effects = ctx.effects.filter(st => st.on).map(st => {
+    const o = effectOption(st);
+    const nums = [modNum(o.hit) && `${signed(modNum(o.hit))} hit`, modNum(o.dmg) && `${signed(modNum(o.dmg))} dmg`, modNum(o.ac) && `${signed(modNum(o.ac))} AC`].filter(Boolean);
+    const from = [st.from && `from ${st.from}`, st.temporary && st.rounds && `${st.rounds} rounds left`].filter(Boolean);
+    const said = nums.join(', ') === String(st.options.length > 1 ? (st.options[st.choice || 0] || {}).label : '').trim();
+    return `${o.name || 'Effect'}${nums.length && !said ? ` (${nums.join(', ')})` : ''}${from.length ? ` · ${from.join(', ')}` : ''}${o.note ? ` · ${o.note}` : ''}`;
+  });
+  const groups = (save.__classes || []).map(c => [c.group, num(c.level)]);
   const thac0s = groups.map(([g, l]) => baseTHAC0(g, l)).filter(t => t !== null);
-  const stats = Object.fromEntries(['str', 'dex', 'con', 'int', 'wis', 'cha'].map(k => [k, num(sheet[k])]));
-  const pct = String(sheet['str-pct'] ?? '').trim();
-  const caster = (sheet.__spells || []).length > 0 || groups.some(([g]) => g === 'wizard' || g === 'priest');
-  const quickness = (sheet.__nwps || []).some(p => /^quickness$/i.test((p.name || '').trim()));
+  const stats = Object.fromEntries(['str', 'dex', 'con', 'int', 'wis', 'cha'].map(k => [k, num(save[k])]));
+  const pct = String(save['str-pct'] ?? '').trim();
+  const caster = (save.__spells || []).length > 0 || groups.some(([g]) => g === 'wizard' || g === 'priest');
+  const quickness = (save.__nwps || []).some(p => /^quickness$/i.test((p.name || '').trim()));
+  const { actions: dmActions, ...dmRest } = dmSettings;
 
   const character = {
     level,
-    armor: { ac: ac.ac, shieldless: ac.ac, surprised: ac.surprised },
+    armor: { ac: ac.ac - acBonus, shieldless: ac.ac - acBonus, surprised: ac.surprised },
     baseTHAC0: thac0s.length ? Math.min(...thac0s) : 20,
     initBonus: 0,
     stats,
@@ -149,7 +173,9 @@ export function toDMHelper(save, dmSettings = {}) {
     ...(quickness ? { quickness: { bonus: -2 } } : {}),
     weapons,
     ...(secondary.length ? { secondary } : {}),
-    ...dmSettings,
+    ...(actions.length || dmActions ? { actions: [...actions, ...(dmActions || [])] } : {}),
+    ...(effects.length ? { effects } : {}),
+    ...dmRest,
   };
 
   const skills = Object.fromEntries(proficiencyTargets(sheet).map(p => {
@@ -172,11 +198,6 @@ export function toDMHelper(save, dmSettings = {}) {
   };
 }
 
-// Format converted characters as one block of JavaScript for the DM Helper.
-// Paste it into dm-helper.html just above the line
-//   const STORE_KEY='adnd-init-tracker';
-// It replaces those characters' hand-typed entries and leaves everyone
-// else's alone. Re-generate and re-paste whenever a sheet changes.
 export function formatDMHelperConfig(list) {
   const js = v => JSON.stringify(v, null, 2).replace(/\n/g, '\n  ');
   const assign = (table, entries) => entries.length ? `Object.assign(${table}, {\n${entries.join(',\n')}\n});` : '';

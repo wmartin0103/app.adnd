@@ -471,6 +471,14 @@ Helper pick from (see section 9).
     sets level and link and remembers the entry, and Spell attacks fill in
     from it. When the cloud backend exists, the catalog moves into its
     database so corrections are shared.
+29. **DM Helper reads the Combat section (done 10-09):** the scenario math
+    moved to `src/rules/scenarios.js`, used by both the sheet and the DM
+    Helper importer, so they can't disagree. Weapon scenarios become attacks
+    (weapon speed for initiative); attacks past the first become extra-attack
+    rows (3/2: one on alternate rounds); off-hand scenarios are extra-attack
+    rows; spell scenarios are cast actions (cast time as speed, damage at the
+    caster's level). Effects that are on count, as on the sheet, and the DM
+    sees them listed ("On (counted below): Bless … 6 rounds left").
 
 ---
 

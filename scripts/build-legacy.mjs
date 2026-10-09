@@ -16,6 +16,8 @@ export const TARGETS = {
   'legacy/dm-helper.html': { SheetConverter: ['adapters/dm-helper', ['toDMHelper']] },
   'legacy/character-sheet.html': {
     SheetSpells: ['rules/spells', ['findSpell']],
+    SheetScenarios: ['rules/scenarios', ['modNum', 'signed', 'ATTACK_TYPES', 'RATE_OPTIONS', 'scenarioRate', 'scenarioType',
+      'scenarioSpell', 'scenarioAbility', 'activeEffectsFor', 'scenarioDamage', 'scenarioBreakdown', 'normalizeEffects', 'effectOption']],
     SheetRules: ['rules/weapons', ['PHB_WEAPONS']],
     SheetGuess: ['rules/migrate', ['guessCategory']],
   },
@@ -23,6 +25,7 @@ export const TARGETS = {
 // Data a tool gets alongside the rules code, as window globals
 const DATA = {
   'legacy/character-sheet.html': { SheetSpellCatalog: 'data/spell-catalog.json' },
+  'legacy/dm-helper.html': { SheetSpellCatalog: 'data/spell-catalog.json' },
 };
 
 export function bundleFor(file) {

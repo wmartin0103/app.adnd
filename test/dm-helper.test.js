@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 import { armorClass, savingThrows, stoutSaveBonus, thiefSkills, proficiencyTargets } from '../src/rules/character.js';
-import { toDMHelper, formatDMHelperConfig } from '../src/adapters/dm-helper.js';
+import { toDMHelper, formatDMHelperConfig, castSpeed, diceAtLevel } from '../src/adapters/dm-helper.js';
 
 const jaque = JSON.parse(readFileSync(new URL('./fixtures/jaque-v2.json', import.meta.url)));
 const jaqueV1 = JSON.parse(readFileSync(new URL('../samples/jaque_09-23.json', import.meta.url)));
@@ -65,48 +65,86 @@ test('proficiency targets: ability + adjustment; non-checks skipped; "*" flagged
 });
 
 // ── Adapter ──
-test('Jaque becomes a DM Helper character', () => {
-  const r = toDMHelper(jaque);
-  assert.equal(r.name, 'Jaque');
+// Jaque's current save: scenarios, PHB rates, a spell, and effects (Bladesong
+// +1 hit and Bless +1 hit are on)
+const current = JSON.parse(readFileSync(new URL('../samples/jaque_10-09.json', import.meta.url)));
+const catalog = JSON.parse(readFileSync(new URL('../data/spell-catalog.json', import.meta.url)));
+const effectsOff = save => ({ ...save, __stances: save.__stances.map(st => ({ ...st, on: false })) });
+
+test('Jaque\'s scenarios become the DM Helper\'s attacks, with the sheet\'s numbers', () => {
+  const r = toDMHelper(effectsOff(current), {}, { catalog });
   const c = r.character;
+  assert.equal(r.name, 'Jaque');
   assert.deepEqual(c.armor, { ac: 4, shieldless: 4, surprised: 8 });
   assert.equal(c.baseTHAC0, 18);
-  assert.deepEqual(c.quickness, { bonus: -2 });
-  assert.deepEqual(c.weapons['Superior Dagger'], { modes: { melee: { thac0: 13, speed: 2 }, thrown: { thac0: 13, speed: 2 } } });
-  assert.deepEqual(c.weapons['Dagger x6, thrown'], { thac0: 14, speed: 2 });
-  assert.deepEqual(c.weapons['Trick Throw'], { thac0: 16, speed: 2 });
-  assert.deepEqual(c.secondary.map(s => s.name), [
-    'Off-hand Superior Dagger', 'Off-hand Leprechaun Dagger', 'Off-hand Wave Dagger', 'Off-hand Dagger x6',
-    'Superior Dagger (2nd; melee alt. rounds)',
-    'Superior Dagger (3rd; thrown)',
+  assert.deepEqual(c.weapons, {
+    'Dagger, melee': { thac0: 13, speed: 2 },    // 18 − Superior +1 − Hit Mod 4
+    'Dagger, thrown': { thac0: 14, speed: 2 },   // 18 − Dex missile +2 − Hit Mod 1 − weapon +1
+  });
+  // Attacks past the first are rows of their own: 3/2 → one on alternate rounds, 3/1 → two
+  assert.deepEqual(c.secondary, [
+    { name: 'Dagger, melee (2nd, alt. rounds)', thac0: 13 },
+    { name: 'Dagger, thrown (2nd)', thac0: 14 },
+    { name: 'Dagger, thrown (3rd)', thac0: 14 },
+    { name: 'Off-hand dagger', thac0: 15 },      // off-hand −2
   ]);
-  assert.deepEqual(c.secondary[0], { name: 'Off-hand Superior Dagger', modes: { melee: { thac0: 15 }, thrown: { thac0: 15 } } });
-  assert.deepEqual(r.damage['Jaque|Superior Dagger'], { sm: '1d4+3', l: '1d3+3' });
-  assert.equal(r.critTypes['Superior Dagger'], 'P');
-  assert.deepEqual(r.material['Superior Dagger'], { m: 'metal' });
+  // Charm Person: cast time 1, no attack roll
+  assert.deepEqual(c.actions, [{ name: 'Charm Person', thac0: null, speedMin: 0, speedMax: 10, speedDefault: 1 }]);
+  assert.deepEqual(r.damage['Jaque|Dagger, melee'], { sm: '1d4+3', l: '1d3+3' });
+  assert.deepEqual(r.damage['Jaque|Dagger, thrown (3rd)'], { sm: '1d4+2', l: '1d3+2' });
+  assert.equal(r.critTypes['Dagger, melee'], 'P');
+  assert.deepEqual(r.material['Dagger, thrown'], { m: 'metal' });
+  assert.equal(c.effects, undefined);
   assert.equal(r.thief['Open Locks'], 55);
-  assert.equal(r.skills.Disguise.t, 14);
 });
 
-test('DM settings that aren\'t on the sheet are passed through', () => {
-  const r = toDMHelper(jaque, { parry: 2, legacy: true });
+test('effects that are on count, as on the sheet, and are listed for the DM', () => {
+  const c = toDMHelper(current, {}, { catalog }).character;
+  assert.equal(c.weapons['Dagger, thrown'].thac0, 12);   // Bladesong +1, Bless +1
+  assert.deepEqual(c.effects, ['Bladesong: +1 hit', 'Bless (+1 hit) · from Atteroak, 6 rounds left']);
+  // Defensive Spin: +3 AC
+  const spin = { ...effectsOff(current), __stances: current.__stances.map(st => ({ ...st, on: st.name === 'Defensive Spin' })) };
+  assert.deepEqual(toDMHelper(spin).character.armor, { ac: 1, shieldless: 1, surprised: 8 });
+  // An effect for one weapon only (Wave Dagger) leaves the others alone
+  const wave = { ...effectsOff(current), __stances: current.__stances.map(st => ({ ...st, on: st.name === 'Wave Dagger' })) };
+  assert.equal(toDMHelper(wave).character.weapons['Dagger, melee'].thac0, 13);
+});
+
+test('spell scenarios: attack rolls, cast time and damage at the caster\'s level', () => {
+  const save = effectsOff(current);
+  save.__spells = [...save.__spells, { id: 'spl-77', name: 'Shocking Grasp', level: 1, type: 'wizard', isMemorized: true }];
+  save.__scenarios = [{ id: 'sc-9', name: 'Shocking Grasp', group: 'rogue', levelMode: 'sheet', attackType: 'spell', spellId: 'spl-77', spell: {}, rate: '1/1' }];
+  const r = toDMHelper(save, {}, { catalog });
+  assert.deepEqual(r.character.actions, [{ name: 'Shocking Grasp', thac0: 18, speedMin: 0, speedMax: 10, speedDefault: 1 }]);   // touch: Str (13) adds nothing
+  assert.deepEqual(r.damage['Jaque|Shocking Grasp'], { sm: '1d8+5', l: '1d8+5' });
+});
+
+test('cast times and per-level dice', () => {
+  assert.deepEqual(['1', '3', '1 round', '1 turn', '', '½ segment'].map(castSpeed), [1, 3, 10, 10, null, null]);
+  assert.deepEqual([diceAtLevel('1d6/level', 5), diceAtLevel('1d8+1/level', 5), diceAtLevel('2d4', 5), diceAtLevel('1d4+1 per missile', 5)],
+    ['5d6', '1d8+5', '2d4', null]);
+});
+
+test('DM settings that aren\'t on the sheet are passed through; the DM\'s actions follow the spells', () => {
+  const r = toDMHelper(current, { parry: 2, legacy: true, actions: [{ name: 'Bow + spell', baseSpeed: 7 }] }, { catalog });
   assert.equal(r.character.parry, 2);
   assert.equal(r.character.legacy, true);
+  assert.deepEqual(r.character.actions.map(a => a.name), ['Charm Person', 'Bow + spell']);
 });
 
-test('a v1 save is migrated first and its review items come along', () => {
-  const r = toDMHelper(jaqueV1);
-  // The carried-over hit mod makes it a custom attack, so it keeps its sheet name
-  assert.deepEqual(r.character.weapons['Dagger Attack (Specialized'], { thac0: 13, speed: 2 });
-  assert.ok(r.review.some(m => m.includes('Based on Dagger?')));
+test('a weapon with an unrevealed bonus is flagged, and its damage leaves the "?" out', () => {
+  const save = effectsOff(current);
+  save.__scenarios = [{ ...save.__scenarios[0], weaponId: 'wpn-3', name: 'Leprechaun' }];
+  const r = toDMHelper(save, {}, { catalog });
+  assert.deepEqual(r.damage['Jaque|Leprechaun'], { sm: '1d4+2', l: '1d3+2' });
+  assert.ok(r.review.some(m => /Leprechaun.*isn't revealed/.test(m)));
 });
 
 test('the paste block runs and fills the DM Helper\'s tables', () => {
-  const text = formatDMHelperConfig([toDMHelper(jaque)]);
+  const text = formatDMHelperConfig([toDMHelper(current, {}, { catalog })]);
   const tables = { CHARACTERS: {}, SKILLS: {}, THIEF: {}, SAVES: {}, DAMAGE: {}, CRIT_TYPES: {}, WEAPON_MATERIAL: {} };
   new Function(...Object.keys(tables), text)(...Object.values(tables));
   assert.equal(tables.CHARACTERS.Jaque.level, 5);
   assert.equal(tables.SAVES.Jaque.base.PPD, 12);
-  assert.ok(tables.DAMAGE['Jaque|Trick Throw']);
-  assert.match(text, /NEEDS REVIEW[\s\S]*Leprechaun Dagger/);
+  assert.ok(tables.DAMAGE['Jaque|Dagger, thrown']);
 });
