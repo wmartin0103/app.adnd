@@ -18,7 +18,7 @@ export function bundle(files, { expose = {} } = {}) {
     const src = readFileSync(file, 'utf8');
     const imports = [];
     const body = src.replace(/^import\s*\{([^}]*)\}\s*from\s*'([^']+)';\s*$/gm, (_, names, from) => {
-      const target = key(path.join(path.dirname(file), from));
+      const target = key(path.posix.join(path.posix.dirname(file), from));
       imports.push(`const {${names.trim()}} = __m[${JSON.stringify(target)}];`);
       return '';
     });

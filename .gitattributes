@@ -1,0 +1,3 @@
+# Keep LF line endings on every machine. The tests compare the built tools
+# byte for byte, so Windows CRLF checkouts would fail them.
+* text=auto eol=lf
