@@ -163,11 +163,11 @@ basics") reset the direction: it superseded 13–22, except the spell catalog.
 | # | Decision | In force |
 | --- | --- | --- |
 | 1 | Repo is private | Yes |
-| 2 | Do all players use the sheet tool? | Open |
-| 3 | When generated and hand-entered numbers disagree, who decides? (Suggested: the DM, then fix the sheet rule) | Open |
+| 2 | Every player actively uses the sheet tool | Yes |
+| 3 | The sheet is the source of truth; the DM asks for, or makes, changes in the sheet | Yes |
 | 4 | HP synced in real time between DM and player | Yes (future phase) |
 | 5 | Players declare their own actions | Yes (future phase) |
-| 6 | Party visibility: full sheets, a summary or nothing? | Open |
+| 6 | Players see each other's full sheets and can run another player's character (stand-in); party view later | Yes |
 | 7 | Sessions are remote over video; design for a half-width desktop window (600–900px), then tablet, then phone | Yes |
 | 8 | Blade thief skills: only the four Blade skills; Locksmithing grants full Open Locks | Yes |
 | 9 | App = Sheet, Combat and DM tabs sharing one character; DM tab only for DM users | Partly: Combat tab shelved (23) |
@@ -364,11 +364,11 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
 - [ ] Saves from every other active player (PLAN status list).
 - [ ] Leprechaun Dagger damage stays "?" until the DM reveals the effect; then set the value or make it an Effect.
 
-**Product questions still open** (PLAN decisions 2, 3, 6)
+**Product questions** (PLAN decisions 2, 3, 6; decided 2026-10-09)
 
-- [ ] Do all players use the sheet tool?
-- [ ] When the sheet and the DM's hand-entered numbers disagree, who decides?
-- [ ] Party visibility: can players see each other's full sheets?
+- [x] Every player will actively use the sheet tool.
+- [x] The sheet is the source of truth; the DM asks for, or makes, changes in the sheet.
+- [x] Players see each other's full sheets and can run another player's character (stand-in). A party view comes later.
 
 **Known gaps, deliberately deferred**
 

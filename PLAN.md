@@ -83,7 +83,7 @@ the `.html` file is what ships.
   (Supabase calls this *Row Level Security*). Even if someone fiddles with the
   page, the database itself refuses:
   - A player can read and edit **their own** characters.
-  - A player can **read** fellow party members' sheets (configurable; some groups prefer secrecy).
+  - A player can **read** fellow party members' full sheets (decision 6).
   - The DM can read every character in the campaign and edit **combat state**.
   - Only the DM can see encounters, monster stats, and DM notes.
 
@@ -336,15 +336,18 @@ Helper pick from (see section 9).
 ## 8. Decisions for you (UX/product)
 
 1. ~~**Repo visibility.**~~ **Decided:** private.
-2. **Do all players use the sheet tool?** The DM Helper lists 8 PCs, 3 marked
-   legacy. The adapter only helps for characters that have a sheet save.
-3. **Source of truth when they disagree.** When generated numbers differ from
-   the DM's hand-entered ones, who decides? (Suggest: the DM, then fix the
-   sheet's rule.)
+2. ~~**Do all players use the sheet tool?**~~ **Decided (2026-10-09):** yes, every
+   player will actively use it, so every PC gets a sheet save and the DM
+   Helper's hand-typed PCs go away.
+3. ~~**Source of truth when they disagree.**~~ **Decided (2026-10-09):** the sheet.
+   When the DM wants a number changed, they ask for the change or make it in
+   the character sheet; the DM Helper only reads.
 4. ~~**HP in the DM tool.**~~ **Decided:** yes, synced in real time between the DM and the player.
 5. ~~**Player combat view.**~~ **Decided:** players declare their own actions.
    This requires the sheet v2 weapon/attack data (Phase 2).
-6. **Party visibility.** Can players see each other's full sheets, a summary, or nothing?
+6. ~~**Party visibility.**~~ **Decided (2026-10-09):** players see each other's full
+   sheets, and can run another player's character (the stand-in role in
+   section 3). A party view comes later.
 7. ~~**Devices.**~~ **Decided:** sessions are remote over video call. Players mostly use a
    tablet or a desktop browser window beside the call; phones must still work.
    Design target: a half-width desktop window (about 600–900px), then tablet, then phone.
