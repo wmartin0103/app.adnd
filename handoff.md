@@ -352,8 +352,12 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
 
 **Data questions to settle**
 
-- [ ] Nandun's Strength: 18 on the sheet, effectively 18/00 via "Ripped". Enter it as 18/00?
-- [ ] Hanspeter's spells are typed Wizard; as a Bard/Druid, several should be Priest.
+- [x] Nandun's Strength: 18/00 (2026-10-09, `samples/nandun_10-09.json`).
+- [ ] Nandun's thrown attacks (Spear, Harpoon) are 3 worse than his Excel sheet: it added Str to hit, the app uses Dex (decision 26). Keep the app's rule?
+- [ ] Nandun's Maul has +2 to hit with no stated source; kept as Hit Mod.
+- [x] Hanspeter's spells are Priest (druid), spell class Priest (2026-10-09, `samples/hanspeter_10-09.json`).
+- [ ] Hanspeter's Light: assumed druid; confirm with the player (flagged in its notes).
+- [ ] Hanspeter's weapons: two unnamed "Other (Custom)" rows (animal forms?), and +1 hit on rows his Str 10 doesn't explain.
 - [ ] Rifiyr and Borsun: no saves yet; their DM Helper saves are hand-typed.
 - [ ] Saves from every other active player (PLAN status list).
 - [ ] Leprechaun Dagger damage stays "?" until the DM reveals the effect; then set the value or make it an Effect.
