@@ -1,0 +1,611 @@
+{
+  "__version": 1,
+  "name": "Tighkar Talenthos",
+  "player": "",
+  "race-group": "human",
+  "alignment": "Lawful-Good",
+  "str": "16",
+  "dex": "13",
+  "con": "10",
+  "int": "17",
+  "wis": "13",
+  "cha": "17",
+  "ac": "5",
+  "hp-current": "14",
+  "hp-max": "40",
+  "movement-mod": "",
+  "money": "",
+  "notes": "Kit: Gallant (CB 25)\nGender: Male\nRace (full): Human\nWounds: -26 (HP max 40, current 14)\nBase movement: 12\nNWP note: 1 Bonus for Human + Kits\n[Converted from the Advanced D&D (Rev.) Excel sheet. Fields with no JSON equivalent (spell-school access, psionics, stronghold, hirelings, time log, ability sub-scores/overrides) were not carried over.]",
+  "__scenarios": [
+    {
+      "group": "rogue",
+      "levelMode": "sheet",
+      "customLevel": 1,
+      "active": true,
+      "collapsed": false,
+      "handedness": "main",
+      "offHandPenalty": "",
+      "spellId": null,
+      "spell": {},
+      "hitMod": "1",
+      "dmgMod": "",
+      "rate": "3/2",
+      "attackType": "melee",
+      "id": "sc-1",
+      "name": "Bastard sword, two-handed",
+      "weaponId": "wpn-1"
+    },
+    {
+      "group": "rogue",
+      "levelMode": "sheet",
+      "customLevel": 1,
+      "active": false,
+      "collapsed": false,
+      "handedness": "main",
+      "offHandPenalty": "",
+      "spellId": null,
+      "spell": {},
+      "hitMod": "1",
+      "dmgMod": "",
+      "rate": "3/2",
+      "attackType": "melee",
+      "id": "sc-2",
+      "name": "Bastard sword, one-handed",
+      "weaponId": "wpn-2"
+    },
+    {
+      "group": "rogue",
+      "levelMode": "sheet",
+      "customLevel": 1,
+      "active": false,
+      "collapsed": false,
+      "handedness": "main",
+      "offHandPenalty": "",
+      "spellId": null,
+      "spell": {},
+      "hitMod": "1",
+      "dmgMod": "",
+      "rate": "1/1",
+      "attackType": "melee",
+      "id": "sc-3",
+      "name": "Heavy lance",
+      "weaponId": "wpn-7"
+    },
+    {
+      "group": "rogue",
+      "levelMode": "sheet",
+      "customLevel": 1,
+      "active": false,
+      "collapsed": false,
+      "handedness": "main",
+      "offHandPenalty": "",
+      "spellId": null,
+      "spell": {},
+      "hitMod": "-2",
+      "dmgMod": "",
+      "rate": "1/1",
+      "attackType": "melee",
+      "id": "sc-4",
+      "name": "Dagger",
+      "weaponId": "wpn-3"
+    },
+    {
+      "group": "rogue",
+      "levelMode": "sheet",
+      "customLevel": 1,
+      "active": false,
+      "collapsed": false,
+      "handedness": "main",
+      "offHandPenalty": "",
+      "spellId": null,
+      "spell": {},
+      "hitMod": "-2",
+      "dmgMod": "",
+      "rate": "1/1",
+      "attackType": "thrown",
+      "id": "sc-5",
+      "name": "Dagger, thrown",
+      "weaponId": "wpn-3"
+    },
+    {
+      "group": "rogue",
+      "levelMode": "sheet",
+      "customLevel": 1,
+      "active": false,
+      "collapsed": false,
+      "handedness": "main",
+      "offHandPenalty": "",
+      "spellId": null,
+      "spell": {},
+      "hitMod": "-2",
+      "dmgMod": "",
+      "rate": "1/1",
+      "attackType": "melee",
+      "id": "sc-6",
+      "name": "Knife",
+      "weaponId": "wpn-5"
+    },
+    {
+      "group": "rogue",
+      "levelMode": "sheet",
+      "customLevel": 1,
+      "active": false,
+      "collapsed": false,
+      "handedness": "main",
+      "offHandPenalty": "",
+      "spellId": null,
+      "spell": {},
+      "hitMod": "-2",
+      "dmgMod": "",
+      "rate": "1/1",
+      "attackType": "missile",
+      "id": "sc-7",
+      "name": "Sling",
+      "weaponId": "wpn-6"
+    },
+    {
+      "group": "rogue",
+      "levelMode": "sheet",
+      "customLevel": 1,
+      "active": false,
+      "collapsed": false,
+      "handedness": "main",
+      "offHandPenalty": "",
+      "spellId": null,
+      "spell": {},
+      "hitMod": "",
+      "dmgMod": "",
+      "rate": "1/1",
+      "attackType": "melee",
+      "id": "sc-8",
+      "name": "Punch",
+      "weaponId": "wpn-8"
+    }
+  ],
+  "__scenarioCounter": 8,
+  "__enemies": [],
+  "__enemyCounter": 1,
+  "__classes": [
+    {
+      "id": "cls-1",
+      "name": "Paladin",
+      "group": "warrior",
+      "level": "2",
+      "xp": "2025"
+    },
+    {
+      "id": "cls-2",
+      "name": "Bard",
+      "group": "rogue",
+      "level": "5",
+      "xp": "11661.2"
+    }
+  ],
+  "__classCounter": 3,
+  "__saveMods": {
+    "paralysis": 0,
+    "rod": 0,
+    "petrification": 0,
+    "breath": 0,
+    "spell": 0
+  },
+  "__traitState": {},
+  "__thiefSkillAlloc": {
+    "points": {},
+    "kit": {},
+    "armor": {}
+  },
+  "__thiefSubclass": "thief",
+  "__weapons": [
+    {
+      "id": "wpn-1",
+      "name": "Bastard Sword +1, two-handed",
+      "size": "md",
+      "dmgType": "slashing",
+      "speed": "8",
+      "hitAdj": "+1",
+      "dmgAdj": "+1",
+      "dmgSM": "2d4",
+      "dmgL": "2d8",
+      "notes": "Melee",
+      "racialBonus": false
+    },
+    {
+      "id": "wpn-2",
+      "name": "Bastard Sword +1, one-handed",
+      "size": "md",
+      "dmgType": "slashing",
+      "speed": "6",
+      "hitAdj": "+1",
+      "dmgAdj": "+1",
+      "dmgSM": "1d8",
+      "dmgL": "1d12",
+      "notes": "Melee",
+      "racialBonus": false
+    },
+    {
+      "id": "wpn-3",
+      "name": "Dagger",
+      "size": "sm",
+      "dmgType": "piercing",
+      "speed": "2",
+      "hitAdj": "",
+      "dmgAdj": "",
+      "dmgSM": "1d4",
+      "dmgL": "1d3",
+      "notes": "Melee",
+      "racialBonus": false
+    },
+    {
+      "id": "wpn-5",
+      "name": "Knife",
+      "size": "sm",
+      "dmgType": "piercing",
+      "speed": "2",
+      "hitAdj": "",
+      "dmgAdj": "",
+      "dmgSM": "1d3",
+      "dmgL": "1d2",
+      "notes": "Melee",
+      "racialBonus": false
+    },
+    {
+      "id": "wpn-6",
+      "name": "Sling, Bullets",
+      "size": "sm",
+      "dmgType": "bludgeoning",
+      "speed": "6",
+      "hitAdj": "",
+      "dmgAdj": "",
+      "dmgSM": "1d4+1",
+      "dmgL": "1d6+1",
+      "notes": "Ranged/Thrown",
+      "racialBonus": false
+    },
+    {
+      "id": "wpn-7",
+      "name": "Heavy Horse Lance",
+      "size": "lg",
+      "dmgType": "piercing",
+      "speed": "8",
+      "hitAdj": "",
+      "dmgAdj": "",
+      "dmgSM": "1d8+1",
+      "dmgL": "3d6",
+      "notes": "Melee",
+      "racialBonus": false
+    },
+    {
+      "id": "wpn-8",
+      "name": "Punch*, Bare-handed",
+      "size": "md",
+      "dmgType": "bludgeoning",
+      "speed": "3",
+      "hitAdj": "",
+      "dmgAdj": "",
+      "dmgSM": "1d2",
+      "dmgL": "1d2",
+      "notes": "Melee",
+      "racialBonus": false
+    }
+  ],
+  "__weaponCounter": 9,
+  "__spells": [
+    {
+      "id": "spl-1",
+      "name": "Charm Person",
+      "level": 1,
+      "type": "wizard",
+      "isMemorized": false,
+      "sourceId": null,
+      "charges": 1,
+      "url": "",
+      "notes": ""
+    },
+    {
+      "id": "spl-2",
+      "name": "Light",
+      "level": 1,
+      "type": "wizard",
+      "isMemorized": false,
+      "sourceId": null,
+      "charges": 1,
+      "url": "",
+      "notes": ""
+    },
+    {
+      "id": "spl-3",
+      "name": "Run",
+      "level": 1,
+      "type": "wizard",
+      "isMemorized": false,
+      "sourceId": null,
+      "charges": 1,
+      "url": "",
+      "notes": ""
+    },
+    {
+      "id": "spl-4",
+      "name": "Identify",
+      "level": 1,
+      "type": "wizard",
+      "isMemorized": false,
+      "sourceId": null,
+      "charges": 1,
+      "url": "",
+      "notes": ""
+    },
+    {
+      "id": "spl-5",
+      "name": "Read Magic",
+      "level": 1,
+      "type": "wizard",
+      "isMemorized": false,
+      "sourceId": null,
+      "charges": 1,
+      "url": "",
+      "notes": ""
+    },
+    {
+      "id": "spl-6",
+      "name": "Strength",
+      "level": 2,
+      "type": "wizard",
+      "isMemorized": false,
+      "sourceId": null,
+      "charges": 1,
+      "url": "",
+      "notes": ""
+    }
+  ],
+  "__spellCounter": 7,
+  "__spellbookPagesUsed": "",
+  "__spellbookPagesTotal": "",
+  "__spellClass": "warrior",
+  "__nwps": [
+    {
+      "id": "nwp-1",
+      "name": "Folklore G (WPR123)",
+      "desc": "Source: Int",
+      "url": "",
+      "ability": "cha",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-2",
+      "name": "Local History P (82)",
+      "desc": "Source: Int",
+      "url": "",
+      "ability": "int",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-3",
+      "name": "Observation G (MRS87)",
+      "desc": "Source: Int",
+      "url": "",
+      "ability": "int",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-4",
+      "name": "Persuasion G (CR84)",
+      "desc": "Source: Int",
+      "url": "",
+      "ability": "cha",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-5",
+      "name": "Enamour R (CNj34)",
+      "desc": "Source: Hum",
+      "url": "",
+      "ability": "cha",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-6",
+      "name": "Style Analysis W (CNj38)",
+      "desc": "Source: Fighter",
+      "url": "",
+      "ability": "int",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-7",
+      "name": "Swimming G (86)",
+      "desc": "Source: Fighter",
+      "url": "",
+      "ability": "str",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-8",
+      "name": "Tactics W (HRAH42,DSAH49)",
+      "desc": "Source: Fighter",
+      "url": "",
+      "ability": "int",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-9",
+      "name": "Etiquette G (80)",
+      "desc": "Source: Cav + Gal",
+      "url": "",
+      "ability": "cha",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-10",
+      "name": "Appraising GD (79)",
+      "desc": "Source: Bard",
+      "url": "",
+      "ability": "int",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-11",
+      "name": "Dancing G (80)",
+      "desc": "Source: Gal",
+      "url": "",
+      "ability": "",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-12",
+      "name": "Languages, Ancient PH (82)",
+      "desc": "Source: Gal",
+      "url": "",
+      "ability": "",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-13",
+      "name": "Poetry G (CB66,CPn76)",
+      "desc": "Source: Gal",
+      "url": "",
+      "ability": "",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-14",
+      "name": "Riding Horse Spec. W (AQAA76)",
+      "desc": "Source: Gal +\nInt",
+      "url": "",
+      "ability": "",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-15",
+      "name": "Jousting W (CPn74)",
+      "desc": "Source: Lvl-3",
+      "url": "",
+      "ability": "",
+      "adj": "",
+      "slots": ""
+    },
+    {
+      "id": "nwp-16",
+      "name": "Storytelling G (MCGA13)",
+      "desc": "Source: Int",
+      "url": "",
+      "ability": "",
+      "adj": "",
+      "slots": ""
+    }
+  ],
+  "__nwpCounter": 17,
+  "__abilitiesCards": [
+    {
+      "id": "abc-1",
+      "name": "Special Abilities",
+      "desc": "Special Abilities:\nClass Benefits:\n• Weapon Experties: 3/2 Attacks.\n• Suspicious mustache: Detect Evil at will, 60ft Range.\n• Healthy Living: +2 to all saving throw rolls.\n• Pfizericious: Immune to Disease\n• Lay on Hands: Heal 2HP per level\n• It hurts when I: Cure Disease, 1/week\n• Blinded by the light: 10ft Aura of Protection, evil creatures -1 to attack\n• This is my boom stick: Holy Weapon held aloft dispels magic, lvl = caster lvl\n• Improved Parry: +1 + 1/2 Level to AC\n• Bard Spells\n• Theif Skills\n• Influence Reaction, Inspire, Counter Song\n• Legendary Lore 5% per level\n\nClass Hinderances:\n• Unselfish: No more than 10 major magic items.\n• Empty Pockets: Can't keep cash beyond maintenance  except saving for major items (order membership, better armor, better horse, etc.)\n• For the Faith: Tithe to the church, 10%\n• We're all individuals here: Can only employ Lawful Good henchmen.",
+      "url": ""
+    },
+    {
+      "id": "abc-2",
+      "name": "Racial Abilities",
+      "desc": "Racial Abilities: Twice as Bright Half as Long, Bonus Weapon Proficiency, Bonus Non-Weapon Proficiency, XP Reduction\n\nKit Benefits:\n• Skilled: +1 to hit with any Lance or Sword\n• Brave: Immune to fear. Negates fear in allies within 10’.\n• Resolute: +4 to saves vs. mind controlling effects.\n• Mounted: Starts play with a horse, charger quality.\n• Beloved: +3 reaction adjustment from own culture. -3 criminals and evil.\n• Essence of Purity: +1 hp per level. Re-roll any save that would result in death. Linger with death poem. While defending love, innocence, or beauty fight on for 1d4 rounds or till next damage.\n• Code of Gallant: Gain inner confidence bonus. +2 bonus can be applied to attack, damage, AC, or saving throw. Decide any time.\n• Romantic Appeal: Save vs. Paralyzation -2 to adjust encounter more friendly by 1. If mixed sex group, females+1/males-1.\n• Poetic Charm: 1d10 turns to charm a woman with  -2 Paralyzation save.\n\nKit Hinderances:\n• Wanderer: No-stronghold, no troops, just a squire at 5th level.\n• Have-at-you: Must attack in melee if able unless there are special circ.s.\n• Bigger they are: Must seek to attack seemingly most powerful opponent.\n• Finer things: Must accept and purchase only the finest items.",
+      "url": ""
+    },
+    {
+      "id": "abc-3",
+      "name": "Code / Personality",
+      "desc": "Code of Chivalry(ishness)\n•        Cheerfully perform any noble service or request\n•        Defend to the death any person or item in his charge\n•        Show courage and enterprise always\n•        Respect for all peers and equals, if you can find any\n•        Honor all those above his station, unless unworthy\n•        Expect respect and obedience from those below his station\n•        Scorn those who are greedy, cruel, lowly and ignoble\n•        Perform military services when asked by his liege\n•        Show courtesy to all ladies, and appreciate them ...\n•        War is the flowering of Chivalry and a noble enterprise\n•        Battle is a test of manhood and combat is glory\n•        Must achieve personal glory in battle\n•        Slay all those who oppose my cause\n•        Death before dishonor\n\nCode of the Gallant\n•        Defend lovers, the innocent, and the fairer sex, and lend aid\n•        Never marry or vow to love only one person\n•        Never retreat from combat until allies of the fairer sex have retreated\n•        Never overstay your welcome\n•        Spend half his money on the innocent and romance\n•        Own only that which I can take with me.\n\nOther:\n• War wound: Limp, +1 for flankers on right rear. Int check to detect. Infertile.\n• Art: Does nude sketches of people, entirely from imagination.",
+      "url": ""
+    }
+  ],
+  "__abilitiesCardsCounter": 4,
+  "__wpnProfCards": [
+    {
+      "id": "wpc-1",
+      "name": "Weapon Proficiencies",
+      "desc": "Longsword, Longsword Expertise, Heavy Lance, Local Fighting Style - Free Parry",
+      "url": "",
+      "slots": ""
+    },
+    {
+      "id": "wpc-2",
+      "name": "Special Weapon Proficiencies & Slots (Source)",
+      "desc": "Special weapon proficiency slot",
+      "url": "",
+      "slots": ""
+    },
+    {
+      "id": "wpc-3",
+      "name": "Two-Hander Style Spec. 1 (CF62)",
+      "desc": "Special weapon proficiency slot",
+      "url": "",
+      "slots": ""
+    },
+    {
+      "id": "wpc-4",
+      "name": "Local Fighting Style W 1 (POCT78)",
+      "desc": "Special weapon proficiency slot",
+      "url": "",
+      "slots": ""
+    },
+    {
+      "id": "wpc-5",
+      "name": "Single Weapon Style Spec. 1-2 (CF62)",
+      "desc": "Special weapon proficiency slot",
+      "url": "",
+      "slots": ""
+    }
+  ],
+  "__wpnProfCardsCounter": 6,
+  "__equipment": [],
+  "__equipCounter": 1,
+  "__items": [],
+  "__itemsCounter": 1,
+  "__stances": [
+    {
+      "id": "st-1",
+      "name": "Code of Gallant",
+      "on": false,
+      "choice": 0,
+      "target": "all",
+      "temporary": false,
+      "from": "",
+      "rounds": "",
+      "options": [
+        {
+          "label": "+2 hit",
+          "hit": "2",
+          "dmg": "",
+          "ac": "",
+          "note": ""
+        },
+        {
+          "label": "+2 dmg",
+          "hit": "",
+          "dmg": "2",
+          "ac": "",
+          "note": ""
+        },
+        {
+          "label": "+2 AC",
+          "hit": "",
+          "dmg": "",
+          "ac": "2",
+          "note": ""
+        }
+      ]
+    }
+  ],
+  "__stanceCounter": 1
+}

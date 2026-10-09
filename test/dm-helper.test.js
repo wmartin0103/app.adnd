@@ -109,6 +109,19 @@ test('Nandun\'s melee scenarios match his Excel sheet', () => {
   assert.deepEqual(r.damage['Nandun Goroth|Dagger'], { sm: '1d4+6', l: '1d3+6' });
 });
 
+// Tig's current save, rebuilt on PHB values: THAC0 18 (Bard 5)
+test('Tig\'s scenarios use PHB weapons, with Code of Gallant as an effect', () => {
+  const tig = JSON.parse(readFileSync(new URL('../samples/tig_10-09.json', import.meta.url)));
+  const r = toDMHelper(tig);
+  assert.deepEqual(r.character.weapons['Bastard sword, two-handed'], { thac0: 16, speed: 8 });   // 18 − sword +1 − Skilled +1
+  assert.deepEqual(r.damage['Tighkar Talenthos|Bastard sword, two-handed'], { sm: '2d4+2', l: '2d8+2' });
+  assert.equal(r.character.weapons['Heavy lance'].thac0, 17);
+  assert.equal(r.character.weapons.Sling.thac0, 20);                                             // non-proficient −2
+  assert.deepEqual(r.damage['Tighkar Talenthos|Sling'], { sm: '1d4+1', l: '1d6+1' });            // no Str on a sling
+  const gallant = { ...tig, __stances: tig.__stances.map(st => ({ ...st, on: true })) };
+  assert.equal(toDMHelper(gallant).character.weapons['Bastard sword, two-handed'].thac0, 14);
+});
+
 test('effects that are on count, as on the sheet, and are listed for the DM', () => {
   const c = toDMHelper(current, {}, { catalog }).character;
   assert.equal(c.weapons['Dagger, thrown'].thac0, 12);   // Bladesong +1, Bless +1

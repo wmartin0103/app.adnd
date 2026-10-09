@@ -357,6 +357,8 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
 - [ ] Nandun's Maul has +2 to hit with no stated source; kept as Hit Mod.
 - [x] Hanspeter's spells are Priest (druid), spell class Priest (2026-10-09, `samples/hanspeter_10-09.json`).
 - [ ] Hanspeter's Light: assumed druid; confirm with the player (flagged in its notes).
+- [x] Tig: rebuilt on PHB values, since he isn't being played (2026-10-09, `samples/tig_10-09.json`). Kept his written Skilled +1 and Expertise 3/2; Code of Gallant is an Effect.
+- [ ] Atteroak: Horseman's Mace +1 does 1d6+2 vs both sizes (PHB 1d6/1d4, +1 magic); sling stones −2 vs bullets −3; warhammer 1d4+1 vs Large (PHB 1d4).
 - [ ] Hanspeter's weapons: two unnamed "Other (Custom)" rows (animal forms?), and +1 hit on rows his Str 10 doesn't explain.
 - [ ] Rifiyr and Borsun: no saves yet; their DM Helper saves are hand-typed.
 - [ ] Saves from every other active player (PLAN status list).
