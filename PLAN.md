@@ -72,9 +72,11 @@ the `.html` file is what ships.
   in a small server-side function (Supabase Edge Function) that first checks the
   caller is an admin.
 - **Roles:** *admin* (manages accounts; probably you), *DM*, *player*. Per
-  character: the *owner* edits it; the DM can edit any sheet; a *stand-in*
-  chosen by the DM or owner can play a character for a session (declare,
-  roll, track HP) without changing its stats or gear.
+  character: the *owner*, the DM and admins edit it; everyone else in the
+  campaign views it. To have someone run a character for a session, the
+  owner, DM or an admin **grants that player edit access**, and revokes it
+  afterwards (decided 2026-10-09). The sheet stays one sheet; a granted player
+  can change anything on it, and version history can undo a mistake.
 - **The cloud copy is the single source of truth.** The DM Helper reads sheets
   directly; JSON export stays as a backup and import is for moving in.
 - **Version history per character** (the last 20–30 saves, restorable), so a
@@ -83,7 +85,9 @@ the `.html` file is what ships.
   (Supabase calls this *Row Level Security*). Even if someone fiddles with the
   page, the database itself refuses:
   - A player can read and edit **their own** characters.
-  - A player can **read** fellow party members' full sheets (decision 6).
+  - A player can **read** fellow party members' full sheets (decision 6), and
+    edit one only while its owner, the DM or an admin has granted them access.
+  - Only the owner, the DM or an admin can grant or revoke that access.
   - The DM can read every character in the campaign and edit **combat state**.
   - Only the DM can see encounters, monster stats, and DM notes.
 
@@ -346,8 +350,9 @@ Helper pick from (see section 9).
 5. ~~**Player combat view.**~~ **Decided:** players declare their own actions.
    This requires the sheet v2 weapon/attack data (Phase 2).
 6. ~~**Party visibility.**~~ **Decided (2026-10-09):** players see each other's full
-   sheets, and can run another player's character (the stand-in role in
-   section 3). A party view comes later.
+   sheets, view-only. To run another player's character, the owner, DM or an
+   admin grants them edit access for the session and revokes it after
+   (section 3). A party view comes later.
 7. ~~**Devices.**~~ **Decided:** sessions are remote over video call. Players mostly use a
    tablet or a desktop browser window beside the call; phones must still work.
    Design target: a half-width desktop window (about 600–900px), then tablet, then phone.

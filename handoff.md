@@ -167,7 +167,7 @@ basics") reset the direction: it superseded 13–22, except the spell catalog.
 | 3 | The sheet is the source of truth; the DM asks for, or makes, changes in the sheet | Yes |
 | 4 | HP synced in real time between DM and player | Yes (future phase) |
 | 5 | Players declare their own actions | Yes (future phase) |
-| 6 | Players see each other's full sheets and can run another player's character (stand-in); party view later | Yes |
+| 6 | Players see each other's full sheets, view-only; owner, DM or admin grants edit access to run a character for a session, then revokes it; party view later | Yes |
 | 7 | Sessions are remote over video; design for a half-width desktop window (600–900px), then tablet, then phone | Yes |
 | 8 | Blade thief skills: only the four Blade skills; Locksmithing grants full Open Locks | Yes |
 | 9 | App = Sheet, Combat and DM tabs sharing one character; DM tab only for DM users | Partly: Combat tab shelved (23) |
@@ -368,7 +368,7 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
 
 - [x] Every player will actively use the sheet tool.
 - [x] The sheet is the source of truth; the DM asks for, or makes, changes in the sheet.
-- [x] Players see each other's full sheets and can run another player's character (stand-in). A party view comes later.
+- [x] Players see each other's full sheets, view-only. The owner, DM or an admin grants a player edit access to run a character for a session, then revokes it. A party view comes later.
 
 **Known gaps, deliberately deferred**
 
