@@ -617,79 +617,78 @@
   "__stances": [
     {
       "on": true,
-      "hit": "1",
-      "dmg": "",
-      "ac": "",
-      "group": "Bladesong",
+      "choice": 0,
       "target": "all",
       "form": false,
       "temporary": false,
       "from": "",
       "rounds": "",
-      "note": "",
       "id": "st-1",
-      "name": "Bladesong: +1 hit"
+      "name": "Bladesong",
+      "options": [
+        {
+          "label": "+1 hit",
+          "hit": "1",
+          "dmg": "",
+          "ac": "",
+          "note": ""
+        },
+        {
+          "label": "+1 AC",
+          "hit": "",
+          "dmg": "",
+          "ac": "1",
+          "note": ""
+        },
+        {
+          "label": "Attack and parry",
+          "hit": "",
+          "dmg": "",
+          "ac": "",
+          "note": "DM adjudicates"
+        }
+      ]
     },
     {
       "on": false,
-      "hit": "",
-      "dmg": "",
-      "ac": "1",
-      "group": "Bladesong",
+      "choice": 0,
       "target": "all",
       "form": false,
       "temporary": false,
       "from": "",
       "rounds": "",
-      "note": "",
       "id": "st-2",
-      "name": "Bladesong: +1 AC"
-    },
-    {
-      "on": false,
-      "hit": "",
-      "dmg": "",
-      "ac": "",
-      "group": "Bladesong",
-      "target": "all",
-      "form": false,
-      "temporary": false,
-      "from": "",
-      "rounds": "",
-      "note": "DM adjudicates",
-      "id": "st-3",
-      "name": "Bladesong: attack and parry"
-    },
-    {
-      "on": false,
-      "hit": "",
-      "dmg": "",
-      "ac": "3",
-      "group": "",
-      "target": "all",
-      "form": false,
-      "temporary": false,
-      "from": "",
-      "rounds": "",
-      "note": "no attacks; ends if hit",
-      "id": "st-4",
-      "name": "Defensive Spin"
+      "name": "Defensive Spin",
+      "options": [
+        {
+          "label": "",
+          "hit": "",
+          "dmg": "",
+          "ac": "3",
+          "note": "no attacks; ends if hit"
+        }
+      ]
     },
     {
       "on": true,
-      "hit": "1",
-      "dmg": "",
-      "ac": "",
-      "group": "",
+      "choice": 0,
       "target": "all",
       "form": false,
       "temporary": true,
       "from": "Atteroak",
       "rounds": "6",
-      "note": "",
-      "id": "st-5",
-      "name": "Bless"
+      "id": "st-3",
+      "name": "Bless",
+      "options": [
+        {
+          "label": "",
+          "hit": "1",
+          "dmg": "",
+          "ac": "",
+          "note": ""
+        }
+      ]
     }
   ],
-  "__stanceCounter": 5
+  "__stanceCounter": 3
 }

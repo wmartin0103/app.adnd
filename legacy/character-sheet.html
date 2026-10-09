@@ -2028,23 +2028,39 @@
     .stances-ac { font-family: var(--font-display); font-size: 0.85rem; font-weight: 600; }
     .stances-hint { margin: 0.3rem 0 0.6rem; font-size: 0.85rem; color: var(--ink-muted); }
     .stances-empty { margin: 0; font-size: 0.85rem; color: var(--ink-muted); }
-    .stance-row { display: flex; align-items: center; gap: 0.7rem; padding: 0.45rem 0; border-top: 1px solid var(--rule); }
-    .stance-row:first-child { border-top: none; }
-    .stance-main { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.2rem 0.6rem; }
-    .stance-name { font-weight: 600; }
-    .stance-sum { font-family: var(--font-display); font-size: 0.8rem; color: var(--ink-muted); }
-    .stance-row.is-on .stance-sum { color: var(--accent); }
-    .stance-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; flex-basis: 100%; }
+    .stance-card { padding: 0.55rem 0.7rem; margin-top: 0.5rem; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--surface); }
+    .stance-card.is-on { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+    .stance-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.6rem; }
+    .stance-name { font-weight: 600; margin-right: auto; }
+    .stance-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; }
     .stance-tags:empty { display: none; }
     .stance-tag { font-size: 0.7rem; padding: 0 0.4rem; border: 1px solid var(--rule); border-radius: 3px; color: var(--ink-muted); }
+    .stance-btn { background: none; border: 1px solid var(--rule); border-radius: var(--radius); padding: 0.1rem 0.6rem; font-family: var(--font-display); font-size: 0.7rem; color: var(--ink-muted); cursor: pointer; }
+    .stance-btn:hover { color: var(--accent); border-color: var(--accent); }
+    .stance-del:hover { background: rgba(139,46,18,0.06); }
+    .stance-ctl { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; margin-top: 0.45rem; }
+    .stance-sum { font-family: var(--font-display); font-size: 0.8rem; color: var(--ink-muted); }
+    .stance-card.is-on .stance-sum { color: var(--accent); }
+    .stance-seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden; }
+    .stance-seg button { display: grid; gap: 0.05rem; text-align: left; border: none; border-right: 1px solid var(--rule); background: var(--surface); padding: 0.3rem 0.75rem; cursor: pointer; font-size: 0.85rem; color: var(--ink); }
+    .stance-seg button:last-child { border-right: none; }
+    .stance-seg button small { font-family: var(--font-display); font-size: 0.65rem; color: var(--ink-muted); }
+    .stance-seg button[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
+    .stance-seg button[aria-pressed="true"] small { color: var(--surface); opacity: 0.85; }
+    .stance-seg button[data-k="off"][aria-pressed="true"] { background: var(--parchment); color: var(--ink); }
     .stance-switch { flex: none; width: 2.3rem; height: 1.3rem; border-radius: 999px; border: 1px solid var(--rule); background: var(--parchment); position: relative; cursor: pointer; padding: 0; }
     .stance-switch span { position: absolute; top: 2px; left: 2px; width: calc(1.3rem - 6px); height: calc(1.3rem - 6px); border-radius: 50%; background: var(--ink-muted); transition: left 0.15s; }
     .stance-switch[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); }
     .stance-switch[aria-pressed="true"] span { left: calc(100% - 1.3rem + 4px); background: var(--surface); }
-    .stance-switch:focus-visible, .stance-edit:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-    .stance-edit { background: none; border: 1px solid var(--rule); border-radius: var(--radius); padding: 0.1rem 0.6rem; font-family: var(--font-display); font-size: 0.7rem; color: var(--ink-muted); cursor: pointer; }
-    .stance-editor { display: flex; flex-wrap: wrap; gap: 0.6rem 0.9rem; align-items: flex-end; padding: 0.6rem 0.7rem; margin: 0 0 0.4rem 3rem; background: var(--parchment); border: 1px solid var(--rule); border-radius: var(--radius); }
-    .stance-check { display: flex; align-items: center; gap: 0.35rem; font-size: 0.85rem; flex-basis: 100%; }
+    .stance-switch:focus-visible, .stance-btn:focus-visible, .stance-seg button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .stance-editor { display: grid; gap: 0.6rem; margin-top: 0.6rem; padding: 0.6rem 0.7rem; background: var(--parchment); border: 1px solid var(--rule); border-radius: var(--radius); justify-items: start; }
+    .stance-editor-row { display: flex; flex-wrap: wrap; gap: 0.6rem 0.9rem; align-items: flex-end; }
+    .stance-opts-wrap { max-width: 100%; overflow-x: auto; }
+    .stance-opts { border-collapse: collapse; }
+    .stance-opts caption { text-align: left; font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-muted); padding-bottom: 0.25rem; }
+    .stance-opts th { font-family: var(--font-display); font-size: 0.6rem; font-weight: 400; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-muted); text-align: left; padding: 0 0.4rem 0.15rem 0; }
+    .stance-opts td { padding: 0.15rem 0.4rem 0.15rem 0; }
+    .stance-check { display: flex; align-items: center; gap: 0.35rem; font-size: 0.85rem; }
     .stances-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.6rem; }
     .scenario-field-narrow {
       flex: 0 0 auto;
@@ -2605,7 +2621,7 @@
           <h3 id="stances-heading" class="stances-title">Stances &amp; effects</h3>
           <span class="stances-ac" id="stances-ac" aria-live="polite"></span>
         </div>
-        <p class="stances-hint">Switch one on and every scenario includes it. Entries in the same pick-one group replace each other. Temporary effects, like a Bless from a friend, count down with Next round and end on their own.</p>
+        <p class="stances-hint">Switch one on and every scenario includes it. A stance with several options (Bladesong) lets you pick one at a time. Temporary effects, like a Bless from a friend, count down with Next round and end on their own.</p>
         <div id="stances-list" role="list"></div>
         <div class="stances-actions">
           <button class="add-class-btn" id="add-stance-btn" type="button"><span aria-hidden="true">＋</span> Add stance</button>
@@ -3842,9 +3858,10 @@
       if (type === 'melee') return { hitLabel: 'STR Adj.', hit: str.hit, dmg: str.dmg };
       return { hitLabel: 'DEX Missile', hit: dex.missile, dmg: type === 'thrown' ? str.dmg : 0 };
     }
-    // Stances and effects that are on and apply to this scenario's weapon
+    // Stances and effects that are on and apply to this scenario's weapon,
+    // as { name, hit, dmg, ac } of the option chosen
     function activeStancesFor(scenario) {
-      return stances.filter(st => st.on && (st.target === 'all' || !st.target || st.target === scenario.weaponId));
+      return stances.filter(st => st.on && (st.target === 'all' || !st.target || st.target === scenario.weaponId)).map(stanceEffect);
     }
     // An "only in" scenario needs its stance on; while a form is on, the others step aside
     function scenarioAvailable(scenario) {
@@ -4454,29 +4471,51 @@
 
     // ── STANCES & EFFECTS ─────────────────────────────────────────
     // A state the character is in that changes their numbers until it's
-    // switched off: Bladesong, a defensive stance, an animal form (which
-    // replaces normal attacks), or a temporary effect from someone else (Bless)
-    // that counts down by rounds.
+    // switched off. Each has one or more options; with several, you pick one
+    // (Bladesong: +1 hit, +1 AC, or attack and parry). It can be a form that
+    // replaces normal attacks (an animal shape) or a temporary effect from
+    // someone else (Bless) that counts down by rounds.
     let stances = [];
     let stanceCounter = 0;
     let editingStance = null;   // id of the entry being edited (not saved)
+    const makeOption = (o = {}) => ({ label: '', hit: '', dmg: '', ac: '', note: '', ...o });
     function makeStance(overrides = {}) {
-      return { id: `st-${++stanceCounter}`, name: '', on: false, hit: '', dmg: '', ac: '', group: '', target: 'all',
-               form: false, temporary: false, from: '', rounds: '', note: '', ...overrides };
+      return { id: `st-${++stanceCounter}`, name: '', on: false, choice: 0, options: [makeOption()],
+               target: 'all', form: false, temporary: false, from: '', rounds: '', ...overrides };
     }
-    function stanceSummary(st) {
-      const parts = [modNum(st.hit) && `${signed(modNum(st.hit))} hit`, modNum(st.dmg) && `${signed(modNum(st.dmg))} dmg`, modNum(st.ac) && `${signed(modNum(st.ac))} AC`].filter(Boolean);
-      return parts.join(' · ') || (st.note || 'no numbers');
+    // Older entries: flat numbers, and pick-one groups as separate entries
+    function normalizeStances(list) {
+      const out = [];
+      (list || []).forEach(st => {
+        if (Array.isArray(st.options)) { out.push(st); return; }
+        const opt = makeOption({ label: st.group ? String(st.name || '').replace(new RegExp(`^${st.group}:?\\s*`), '') : '', hit: st.hit, dmg: st.dmg, ac: st.ac, note: st.note });
+        const same = st.group && out.find(o => o.group === st.group);
+        if (same) {
+          same.options.push(opt);
+          if (st.on) { same.on = true; same.choice = same.options.length - 1; }
+        } else {
+          out.push({ id: st.id, name: st.group || st.name, group: st.group, on: !!st.on, choice: 0, options: [opt],
+                     target: st.target || 'all', form: !!st.form, temporary: !!st.temporary, from: st.from || '', rounds: st.rounds || '' });
+        }
+      });
+      out.forEach(st => delete st.group);
+      return out;
     }
-    function setStance(st, on) {
-      if (on && st.group) stances.forEach(o => { if (o !== st && o.group && o.group === st.group) o.on = false; });
-      st.on = on;
+    // The chosen option's numbers
+    function stanceEffect(st) {
+      const o = st.options[Math.min(st.choice || 0, st.options.length - 1)] || makeOption();
+      return { name: st.options.length > 1 ? `${st.name}: ${o.label || 'option'}` : st.name, hit: o.hit, dmg: o.dmg, ac: o.ac, note: o.note };
     }
-    function refreshAfterStances() {
+    function optionSummary(o) {
+      const parts = [modNum(o.hit) && `${signed(modNum(o.hit))} hit`, modNum(o.dmg) && `${signed(modNum(o.dmg))} dmg`, modNum(o.ac) && `${signed(modNum(o.ac))} AC`].filter(Boolean);
+      return parts.join(' · ') || o.note || '';
+    }
+    function refreshAfterStances(focusSel) {
       renderStances();
       renderScenarios();
       updateActiveTHAC0();
       saveToItems();
+      if (focusSel) document.querySelector(focusSel)?.focus();
     }
     function renderStances() {
       const list = document.getElementById('stances-list');
@@ -4485,7 +4524,7 @@
       // AC with the stances that are on
       const acEl = document.getElementById('stances-ac');
       const eff = parseInt(document.getElementById('effective-ac')?.textContent, 10);
-      const acBonus = stances.filter(st => st.on).reduce((t, st) => t + modNum(st.ac), 0);
+      const acBonus = stances.filter(st => st.on).reduce((t, st) => t + modNum(stanceEffect(st).ac), 0);
       if (acEl) acEl.textContent = acBonus && !Number.isNaN(eff) ? `AC ${eff - acBonus} with stances (${eff} without)` : '';
       if (!stances.length) {
         const p = document.createElement('p');
@@ -4494,49 +4533,82 @@
         list.appendChild(p);
       }
       stances.forEach(st => {
-        const row = document.createElement('div');
-        row.className = 'stance-row' + (st.on ? ' is-on' : '');
-        row.setAttribute('role', 'listitem');
-        // On/off switch
-        const sw = document.createElement('button');
-        sw.type = 'button';
-        sw.className = 'stance-switch';
-        sw.setAttribute('aria-pressed', st.on ? 'true' : 'false');
-        sw.setAttribute('aria-label', `${st.name || 'Stance'}: ${st.on ? 'on' : 'off'}`);
-        sw.innerHTML = '<span aria-hidden="true"></span>';
-        sw.addEventListener('click', () => { setStance(st, !st.on); refreshAfterStances(); document.querySelector(`[data-stance-id="${st.id}"] .stance-switch`)?.focus(); });
-        const main = document.createElement('div');
-        main.className = 'stance-main';
+        const card = document.createElement('div');
+        card.className = 'stance-card' + (st.on ? ' is-on' : '');
+        card.setAttribute('role', 'listitem');
+        card.dataset.stanceId = st.id;
+        const label = st.name || 'Unnamed';
+
+        // Header: name, tags, Edit, Delete
+        const head = document.createElement('div');
+        head.className = 'stance-head';
         const name = document.createElement('span');
         name.className = 'stance-name';
-        name.textContent = st.name || 'Unnamed';
-        const sum = document.createElement('span');
-        sum.className = 'stance-sum';
-        sum.textContent = stanceSummary(st);
+        name.textContent = label;
         const tags = document.createElement('span');
         tags.className = 'stance-tags';
         const tag = t => { const x = document.createElement('span'); x.className = 'stance-tag'; x.textContent = t; tags.appendChild(x); };
-        if (st.group) tag(`Pick one: ${st.group}`);
         if (st.target && st.target !== 'all') tag(`Only ${weapons.find(w => w.id === st.target)?.name || 'one weapon'}`);
         if (st.form) tag('Replaces normal attacks');
         if (st.temporary) tag([st.from && `from ${st.from}`, st.rounds !== '' && `${st.rounds} rounds left`].filter(Boolean).join(' · ') || 'Temporary');
-        main.append(name, sum, tags);
         const edit = document.createElement('button');
         edit.type = 'button';
-        edit.className = 'stance-edit';
+        edit.className = 'stance-btn';
         edit.textContent = editingStance === st.id ? 'Done' : 'Edit';
         edit.setAttribute('aria-expanded', editingStance === st.id ? 'true' : 'false');
-        edit.addEventListener('click', () => { editingStance = editingStance === st.id ? null : st.id; renderStances(); document.querySelector(`[data-stance-id="${st.id}"] .stance-edit`)?.focus(); });
+        edit.setAttribute('aria-label', `${editingStance === st.id ? 'Done editing' : 'Edit'} ${label}`);
+        edit.addEventListener('click', () => { editingStance = editingStance === st.id ? null : st.id; renderStances(); document.querySelector(`[data-stance-id="${st.id}"] .stance-btn`)?.focus(); });
         const del = document.createElement('button');
         del.type = 'button';
-        del.className = 'scenario-delete-btn';
-        del.innerHTML = '&#x2715;';
-        del.setAttribute('aria-label', `Remove ${st.name || 'stance'}`);
-        del.addEventListener('click', () => { stances = stances.filter(o => o !== st); scenarios.forEach(sc => { if (sc.onlyIn === st.id) sc.onlyIn = ''; }); refreshAfterStances(); });
-        row.dataset.stanceId = st.id;
-        row.append(sw, main, edit, del);
-        list.appendChild(row);
-        if (editingStance === st.id) list.appendChild(stanceEditor(st));
+        del.className = 'stance-btn stance-del';
+        del.textContent = 'Delete';
+        del.setAttribute('aria-label', `Delete ${label}`);
+        del.addEventListener('click', () => {
+          stances = stances.filter(o => o !== st);
+          scenarios.forEach(sc => { if (sc.onlyIn === st.id) sc.onlyIn = ''; });
+          if (editingStance === st.id) editingStance = null;
+          refreshAfterStances('#add-stance-btn');
+        });
+        head.append(name, tags, edit, del);
+
+        // Control: a switch for one option, Off + each option for several
+        const ctl = document.createElement('div');
+        ctl.className = 'stance-ctl';
+        if (st.options.length > 1) {
+          const seg = document.createElement('div');
+          seg.className = 'stance-seg';
+          seg.setAttribute('role', 'group');
+          seg.setAttribute('aria-label', label);
+          [['off', 'Off', ''], ...st.options.map((o, i) => [String(i), o.label || `Option ${i + 1}`, optionSummary(o)])].forEach(([k, t, sub]) => {
+            const b = document.createElement('button');
+            b.type = 'button';
+            const pressed = k === 'off' ? !st.on : (st.on && String(st.choice) === k);
+            b.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+            b.dataset.k = k;
+            b.innerHTML = `<span>${t.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]))}</span>${sub && sub !== t ? `<small>${sub.replace(/[&<>]/g, '')}</small>` : ''}`;
+            b.addEventListener('click', () => {
+              if (k === 'off') st.on = false; else { st.on = true; st.choice = parseInt(k, 10); }
+              refreshAfterStances(`[data-stance-id="${st.id}"] .stance-seg [data-k="${k}"]`);
+            });
+            seg.appendChild(b);
+          });
+          ctl.appendChild(seg);
+        } else {
+          const sw = document.createElement('button');
+          sw.type = 'button';
+          sw.className = 'stance-switch';
+          sw.setAttribute('aria-pressed', st.on ? 'true' : 'false');
+          sw.setAttribute('aria-label', `${label}: ${st.on ? 'on' : 'off'}`);
+          sw.innerHTML = '<span aria-hidden="true"></span>';
+          sw.addEventListener('click', () => { st.on = !st.on; refreshAfterStances(`[data-stance-id="${st.id}"] .stance-switch`); });
+          const sum = document.createElement('span');
+          sum.className = 'stance-sum';
+          sum.textContent = optionSummary(st.options[0]) || 'no numbers yet';
+          ctl.append(sw, sum);
+        }
+        card.append(head, ctl);
+        if (editingStance === st.id) card.appendChild(stanceEditor(st));
+        list.appendChild(card);
       });
       const next = document.getElementById('next-round-btn');
       if (next) next.hidden = !stances.some(st => st.temporary && st.on && st.rounds !== '');
@@ -4545,11 +4617,12 @@
       const box = document.createElement('div');
       box.className = 'stance-editor';
       const field = (label, control) => { const l = document.createElement('label'); l.className = 'scenario-field'; const t = document.createElement('span'); t.className = 'scenario-field-label'; t.textContent = label; l.append(t, control); return l; };
-      const text = (key, ph, width) => {
+      const input = (obj, key, ph, width, aria) => {
         const i = document.createElement('input');
-        i.type = 'text'; i.className = 'scenario-select'; i.value = st[key] || ''; i.placeholder = ph;
+        i.type = 'text'; i.className = 'scenario-select'; i.value = obj[key] || ''; i.placeholder = ph;
         if (width) i.style.width = width;
-        i.addEventListener('change', () => { st[key] = i.value.trim(); refreshAfterStances(); });
+        if (aria) i.setAttribute('aria-label', aria);
+        i.addEventListener('change', () => { obj[key] = i.value.trim(); refreshAfterStances(); });
         return i;
       };
       const check = (key, label) => {
@@ -4562,29 +4635,67 @@
       target.className = 'scenario-select';
       [['all', 'All attacks'], ...weapons.map(w => [w.id, `Only ${w.name || 'unnamed weapon'}`])].forEach(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; o.selected = (st.target || 'all') === v; target.appendChild(o); });
       target.addEventListener('change', () => { st.target = target.value; refreshAfterStances(); });
-      box.append(
-        field('Name', text('name', 'e.g. Bladesong, Bless')),
-        field('Hit', text('hit', '±0', '4rem')),
-        field('Dmg', text('dmg', '±0', '4rem')),
-        field('AC bonus', text('ac', '+1 = better', '5.5rem')),
-        field('Applies to', target),
-        field('Pick-one group', text('group', 'e.g. Bladesong', '8rem')),
-        field('Note', text('note', 'e.g. no attacks this round')),
-        check('form', 'Replaces normal attacks (a form, like an animal shape)'),
-        check('temporary', 'Temporary (ends after some rounds)'),
-      );
-      if (st.temporary) box.append(field('From', text('from', 'e.g. Atteroak', '8rem')), field('Rounds left', text('rounds', 'e.g. 6', '4rem')));
+      const top = document.createElement('div');
+      top.className = 'stance-editor-row';
+      top.append(field('Name', input(st, 'name', 'e.g. Bladesong, Bless')), field('Applies to', target));
+      box.appendChild(top);
+
+      // Options: one row each; more than one makes it pick-one
+      const opts = document.createElement('table');
+      opts.className = 'stance-opts';
+      const several = st.options.length > 1;
+      opts.innerHTML = `<caption>${several ? 'Options (pick one at a time)' : 'Effect'}</caption><thead><tr>${several ? '<th scope="col">Option</th>' : ''}<th scope="col">Hit</th><th scope="col">Dmg</th><th scope="col">AC bonus</th><th scope="col">Note</th><th></th></tr></thead>`;
+      const tb = document.createElement('tbody');
+      st.options.forEach((o, i) => {
+        const tr = document.createElement('tr');
+        const cell = el => { const td = document.createElement('td'); td.appendChild(el); tr.appendChild(td); };
+        const n = several ? (o.label || `option ${i + 1}`) : (st.name || 'this');
+        if (several) cell(input(o, 'label', 'e.g. +1 hit', '8rem', `Option ${i + 1} name`));
+        cell(input(o, 'hit', '±0', '3.5rem', `${n}: to hit`));
+        cell(input(o, 'dmg', '±0', '3.5rem', `${n}: damage`));
+        cell(input(o, 'ac', '+1 = better', '5rem', `${n}: AC bonus`));
+        cell(input(o, 'note', 'e.g. no attacks', '10rem', `${n}: note`));
+        const td = document.createElement('td');
+        if (several) {
+          const rm = document.createElement('button');
+          rm.type = 'button'; rm.className = 'stance-btn'; rm.textContent = 'Remove';
+          rm.setAttribute('aria-label', `Remove option ${n}`);
+          rm.addEventListener('click', () => { st.options.splice(i, 1); if (st.choice >= st.options.length) st.choice = 0; refreshAfterStances(); });
+          td.appendChild(rm);
+        }
+        tr.appendChild(td);
+        tb.appendChild(tr);
+      });
+      opts.appendChild(tb);
+      const optsWrap = document.createElement('div');
+      optsWrap.className = 'stance-opts-wrap';
+      optsWrap.appendChild(opts);
+      box.appendChild(optsWrap);
+      const addOpt = document.createElement('button');
+      addOpt.type = 'button'; addOpt.className = 'stance-btn';
+      addOpt.textContent = '＋ Add option';
+      addOpt.title = 'More than one option makes this a pick-one, like Bladesong';
+      addOpt.addEventListener('click', () => { st.options.push(makeOption()); refreshAfterStances(`[data-stance-id="${st.id}"] .stance-opts tbody tr:last-child input`); });
+      box.appendChild(addOpt);
+
+      box.append(check('form', 'Replaces normal attacks (a form, like an animal shape)'), check('temporary', 'Temporary (ends after some rounds)'));
+      if (st.temporary) {
+        const row = document.createElement('div');
+        row.className = 'stance-editor-row';
+        row.append(field('From', input(st, 'from', 'e.g. Atteroak', '8rem')), field('Rounds left', input(st, 'rounds', 'e.g. 6', '4rem')));
+        box.appendChild(row);
+      }
       return box;
     }
     document.getElementById('add-stance-btn')?.addEventListener('click', () => {
       const st = makeStance();
-      stances.push(st); editingStance = st.id; refreshAfterStances();
-      document.querySelector(`[data-stance-id="${st.id}"] + .stance-editor input`)?.focus();
+      stances.push(st); editingStance = st.id;
+      refreshAfterStances(`[data-stance-id="${st.id}"] .stance-editor input`);
     });
     document.getElementById('add-effect-btn')?.addEventListener('click', () => {
       const st = makeStance({ temporary: true, on: true });
-      stances.push(st); editingStance = st.id; refreshAfterStances();
-      document.querySelector(`[data-stance-id="${st.id}"] + .stance-editor input`)?.focus();
+      stances.push(st); editingStance = st.id;
+      refreshAfterStances(`[data-stance-id="${st.id}"] .stance-editor input`);
     });
     // Next round: temporary effects count down; at 0 they end and leave the list
     document.getElementById('next-round-btn')?.addEventListener('click', () => {
@@ -6424,7 +6535,7 @@
         scenarios = data['__scenarios'];
         scenarioCounter = data['__scenarioCounter'] || scenarios.length;
       }
-      stances = Array.isArray(data['__stances']) ? data['__stances'] : [];
+      stances = normalizeStances(Array.isArray(data['__stances']) ? data['__stances'] : []);
       stanceCounter = data['__stanceCounter'] || stances.length;
       if (Array.isArray(data['__enemies'])) {
         enemies = data['__enemies'];

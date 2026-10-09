@@ -23,14 +23,15 @@ s.__scenarios = [
   sc({ id: 'sc-3', name: 'Off-hand dagger', weaponId: sup, attackType: 'melee', handedness: 'off', offHandPenalty: '2', hitMod: '4', dmgMod: '2', rate: '1' }),
 ];
 s.__scenarioCounter = 3;
-const st = (o) => ({ on: false, hit: '', dmg: '', ac: '', group: '', target: 'all', form: false, temporary: false, from: '', rounds: '', note: '', ...o });
+const opt = (o) => ({ label: '', hit: '', dmg: '', ac: '', note: '', ...o });
+const st = (o) => ({ on: false, choice: 0, target: 'all', form: false, temporary: false, from: '', rounds: '', ...o });
 s.__stances = [
-  st({ id: 'st-1', name: 'Bladesong: +1 hit', hit: '1', group: 'Bladesong', on: true }),
-  st({ id: 'st-2', name: 'Bladesong: +1 AC', ac: '1', group: 'Bladesong' }),
-  st({ id: 'st-3', name: 'Bladesong: attack and parry', group: 'Bladesong', note: 'DM adjudicates' }),
-  st({ id: 'st-4', name: 'Defensive Spin', ac: '3', note: 'no attacks; ends if hit' }),
-  st({ id: 'st-5', name: 'Bless', hit: '1', temporary: true, from: 'Atteroak', rounds: '6', on: true }),
+  st({ id: 'st-1', name: 'Bladesong', on: true, choice: 0, options: [
+    opt({ label: '+1 hit', hit: '1' }), opt({ label: '+1 AC', ac: '1' }), opt({ label: 'Attack and parry', note: 'DM adjudicates' }),
+  ] }),
+  st({ id: 'st-2', name: 'Defensive Spin', options: [opt({ ac: '3', note: 'no attacks; ends if hit' })] }),
+  st({ id: 'st-3', name: 'Bless', on: true, temporary: true, from: 'Atteroak', rounds: '6', options: [opt({ hit: '1' })] }),
 ];
-s.__stanceCounter = 5;
+s.__stanceCounter = 3;
 writeFileSync('samples/jaque_10-09.json', JSON.stringify(s, null, 2) + '\n');
 console.log('Wrote samples/jaque_10-09.json');

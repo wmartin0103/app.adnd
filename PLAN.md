@@ -446,7 +446,10 @@ Helper pick from (see section 9).
     damage or AC while on: stances (Bladesong, pick-one groups), forms that
     replace normal attacks (Hanspeter's animal shapes), and temporary
     effects from others (Bless from Atteroak) that count down with Next
-    round. They apply to all attacks or one weapon.
+    round. They apply to all attacks or one weapon. Each stance is one card
+    with one or more options: one option is an on/off switch; several are
+    pick-one (Off | +1 hit | +1 AC | Attack and parry), and the player can
+    add or remove options. Every card has Edit and Delete.
 
 ---
 
