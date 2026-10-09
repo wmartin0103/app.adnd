@@ -22,16 +22,24 @@ export const TARGETS = {
     SheetGuess: ['rules/migrate', ['guessCategory']],
   },
 };
-// Data a tool gets alongside the rules code, as window globals
-const DATA = {
-  'legacy/character-sheet.html': { SheetSpellCatalog: 'data/spell-catalog.json' },
-  'legacy/dm-helper.html': { SheetSpellCatalog: 'data/spell-catalog.json' },
-};
+// The campaign spell catalog lives in one file, data/spell-catalog.js, made
+// from data/spell-catalog.json. Both tools load it with
+//   <script src="../data/spell-catalog.js"></script>
+// (which works straight from disk). Inside the app prototype the page loads it
+// once and the embedded tools borrow the page's copy.
+export const CATALOG_JSON = 'data/spell-catalog.json';
+export const CATALOG_JS = 'data/spell-catalog.js';
+export const CATALOG_TAG = '<script src="../data/spell-catalog.js"></script>';
+export function catalogScript() {
+  const json = JSON.stringify(JSON.parse(readFileSync(CATALOG_JSON, 'utf8')));
+  return `// Generated from ${CATALOG_JSON} by scripts/build-legacy.mjs — do not edit by hand.\n`
+    + `// The campaign spell catalog, shared by the character sheet and the DM Helper.\n`
+    + `window.SheetSpellCatalog = ${json};\n`;
+}
+const BORROW = `if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.SheetSpellCatalog = window.parent.SheetSpellCatalog; } catch (e) { /* not allowed */ } }`;
 
 export function bundleFor(file) {
-  const data = Object.entries(DATA[file] || {})
-    .map(([name, path]) => `window.${name} = ${JSON.stringify(JSON.parse(readFileSync(path, 'utf8')))};`);
-  return [bundle(RULES_FILES, { expose: TARGETS[file] }), ...data].join('\n');
+  return [bundle(RULES_FILES, { expose: TARGETS[file] }), BORROW].join('\n');
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
@@ -43,7 +51,15 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       console.error(`Markers not found in ${file}`);
       process.exit(1);
     }
-    writeFileSync(file, html.slice(0, a + START.length) + '\n' + bundleFor(file) + '\n' + html.slice(b));
+    let out = html.slice(0, a + START.length) + '\n' + bundleFor(file) + '\n' + html.slice(b);
+    // The shared catalog loads just before the rules code's <script>
+    if (!out.includes(CATALOG_TAG)) {
+      const tag = out.lastIndexOf('<script>', a);
+      out = out.slice(0, tag) + CATALOG_TAG + '\n' + out.slice(tag);
+    }
+    writeFileSync(file, out);
     console.log(`Updated ${file}`);
   }
+  writeFileSync(CATALOG_JS, catalogScript());
+  console.log(`Updated ${CATALOG_JS}`);
 }
