@@ -25,7 +25,7 @@ import { baseTHAC0 } from '../rules/attacks.js';
 import { armorClass, savingThrows, thiefSkills, proficiencyTargets } from '../rules/character.js';
 import {
   scenarioContext, scenarioType, scenarioRate, rateValue, scenarioWeapon, scenarioSpell,
-  scenarioBreakdown, scenarioDamage, effectsACBonus, effectOption, modNum, signed, weaponMagic,
+  scenarioBreakdown, scenarioDamage, effectsACBonus, effectOption, modNum, signed,
 } from '../rules/scenarios.js';
 
 const num = v => {
@@ -91,19 +91,15 @@ export function toDMHelper(save, dmSettings = {}, { catalog = null } = {}) {
   const used = new Set();
   const unique = label => { let l = label, n = 2; while (used.has(l)) l = `${label} (${n++})`; used.add(l); return l; };
 
-  // Damage for one row. The weapon's magic bonus is kept apart as `plus`, so a
-  // critical multiplies everything else (dice, Str, a superior weapon's +1 …)
-  // and adds the magic after.
+  // Damage for one row: the sheet's total, all of which a critical multiplies
   const recordWeapon = (label, sc, wpn) => {
-    const plus = weaponMagic(wpn);
-    const bare = { ...ctx, weapons: ctx.weapons.map(w => (w.id === wpn.id && plus ? { ...w, magic: '' } : w)) };
-    const dmg = scenarioDamage(bare, sc);
+    const dmg = scenarioDamage(ctx, sc);
     const clean = v => String(v).replace(/\s*\+\s*\?$/, '');
-    if (dmg && dmg.sm !== '—') damage[`${name}|${label}`] = { sm: clean(dmg.sm), l: clean(dmg.l), ...(plus ? { plus } : {}) };
-    if ([wpn.dmgAdj, wpn.hitAdj, wpn.magic].includes('?')) review.push(`${label}: ${wpn.name}'s bonus isn't revealed yet; left out`);
+    if (dmg && dmg.sm !== '—') damage[`${name}|${label}`] = { sm: clean(dmg.sm), l: clean(dmg.l) };
+    if (wpn.dmgAdj === '?' || wpn.hitAdj === '?') review.push(`${label}: ${wpn.name}'s bonus isn't revealed yet; left out`);
     critTypes[label] = critType(wpn.dmgType);
     const m = MATERIAL_BY_CATEGORY[guessCategory(wpn.name || '')];
-    if (m) material[label] = { m, ...(plus ? { plus } : {}) };
+    if (m) material[label] = { m };
   };
 
   for (const sc of save.__scenarios || []) {

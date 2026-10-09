@@ -1462,13 +1462,7 @@ function scenarioAbility(ctx, sc) {
 const scenarioWeapon = (ctx, sc) =>
   scenarioType(sc) !== 'spell' && sc.weaponId ? ctx.weapons.find(w => w.id === sc.weaponId) || null : null;
 
-// A weapon's magic bonus ("+1 weapon": +1 to hit and damage), kept apart from
-// its other adjustments (e.g. a superior weapon's +1) so a critical can treat
-// it differently. "?" is a bonus the DM hasn't revealed.
-const weaponMagic = wpn => modNum(wpn && wpn.magic);
-const unrevealed = wpn => ({ hit: wpn.hitAdj === '?' || wpn.magic === '?', dmg: wpn.dmgAdj === '?' || wpn.magic === '?' });
-
-// Damage vs S/M and L: weapon dice, adjustment and magic, ability, Dmg Mod, effects
+// Damage vs S/M and L: weapon dice and adjustment, ability, Dmg Mod, effects
 function scenarioDamage(ctx, sc) {
   if (scenarioType(sc) === 'spell') {
     const sp = scenarioSpell(ctx, sc);
@@ -1476,14 +1470,14 @@ function scenarioDamage(ctx, sc) {
   }
   const wpn = scenarioWeapon(ctx, sc);
   if (!wpn) return null;
-  const extra = modNum(wpn.dmgAdj) + weaponMagic(wpn) + scenarioAbility(ctx, sc).dmg + modNum(sc.dmgMod)
+  const extra = modNum(wpn.dmgAdj) + scenarioAbility(ctx, sc).dmg + modNum(sc.dmgMod)
     + activeEffectsFor(ctx, sc).reduce((t, st) => t + modNum(st.dmg), 0);
   const dice = raw => {
     const m = String(raw || '').trim().match(/^(\d*d\d+)\s*(?:([+-])\s*(\d+))?$/i);
     if (!m) return raw ? String(raw) : '—';
     const flat = (m[2] === '-' ? -1 : 1) * (parseInt(m[3] || '0', 10)) + extra;
     const text = flat ? `${m[1]}${flat > 0 ? '+' : ''}${flat}` : m[1];
-    return unrevealed(wpn).dmg ? `${text} + ?` : text;
+    return wpn.dmgAdj === '?' ? `${text} + ?` : text;
   };
   return { sm: dice(wpn.dmgSM), l: dice(wpn.dmgL) };
 }
@@ -1509,9 +1503,7 @@ function scenarioBreakdown(ctx, sc) {
   if (wpn) {
     const m = String(wpn.hitAdj || '').match(/^[+-]?\d+$/);
     add(wpn.name || 'Weapon', m ? parseInt(m[0], 10) : 0, modNum(wpn.dmgAdj), 'weapon');
-    add(`${wpn.name || 'Weapon'}: magic`, weaponMagic(wpn), weaponMagic(wpn), 'magic');
-    const unk = unrevealed(wpn);
-    if (unk.hit || unk.dmg) lines.push({ label: `${wpn.name || 'Weapon'}: not revealed yet`, hit: unk.hit ? '?' : 0, dmg: unk.dmg ? '?' : 0, kind: 'unknown' });
+    if (wpn.hitAdj === '?' || wpn.dmgAdj === '?') lines.push({ label: `${wpn.name || 'Weapon'}: not revealed yet`, hit: wpn.hitAdj === '?' ? '?' : 0, dmg: wpn.dmgAdj === '?' ? '?' : 0, kind: 'unknown' });
   }
   const abil = scenarioAbility(ctx, sc);
   const abilName = abil.hitLabel === 'STR Adj.' ? 'Strength' : scenarioType(sc) === 'thrown' ? 'Dexterity (missile), Strength damage' : 'Dexterity (missile)';
@@ -1527,7 +1519,7 @@ function scenarioBreakdown(ctx, sc) {
   add(isSpell ? 'Your bonus (Hit Mod)' : 'Your bonus (Hit Mod, Dmg Mod)', hitMod, isSpell ? 0 : modNum(sc.dmgMod), 'mods');
   activeEffectsFor(ctx, sc).forEach(st => add(st.name || 'Effect', modNum(st.hit), modNum(st.dmg), 'effect'));
   const hit = lines.reduce((t, l) => t + (typeof l.hit === 'number' ? l.hit : 0), 0);
-  return { base, lines, wpn, thac0: base.thac0 - hit, hit, unknownHit: !!(wpn && unrevealed(wpn).hit) };
+  return { base, lines, wpn, thac0: base.thac0 - hit, hit, unknownHit: !!(wpn && wpn.hitAdj === '?') };
 }
 
 function scenarioTHAC0(ctx, sc) {
@@ -1535,7 +1527,7 @@ function scenarioTHAC0(ctx, sc) {
   return bd ? bd.thac0 : null;
 }
 
-return { modNum, signed, ATTACK_TYPES, RATE_OPTIONS, racialWeaponBonus, strengthRow, scenarioContext, scenarioRate, rateValue, scenarioType, normalizeEffects, effectOption, activeEffectsFor, effectsACBonus, scenarioSpell, scenarioAbility, scenarioWeapon, weaponMagic, scenarioDamage, scenarioBreakdown, scenarioTHAC0 };
+return { modNum, signed, ATTACK_TYPES, RATE_OPTIONS, racialWeaponBonus, strengthRow, scenarioContext, scenarioRate, rateValue, scenarioType, normalizeEffects, effectOption, activeEffectsFor, effectsACBonus, scenarioSpell, scenarioAbility, scenarioWeapon, scenarioDamage, scenarioBreakdown, scenarioTHAC0 };
 })();
 // ── rules/character ──
 __m["rules/character"] = (() => {
@@ -2125,7 +2117,7 @@ const {migrateV1toV2, guessCategory} = __m["rules/migrate"];
 const {baseTHAC0} = __m["rules/attacks"];
 const {armorClass, savingThrows, thiefSkills, proficiencyTargets} = __m["rules/character"];
 const {scenarioContext, scenarioType, scenarioRate, rateValue, scenarioWeapon, scenarioSpell,
-  scenarioBreakdown, scenarioDamage, effectsACBonus, effectOption, modNum, signed, weaponMagic,} = __m["rules/scenarios"];
+  scenarioBreakdown, scenarioDamage, effectsACBonus, effectOption, modNum, signed,} = __m["rules/scenarios"];
 // ── SHEET → DM HELPER ───────────────────────────────────────────
 // Builds a character's entries for the DM Helper's config block
 // (CHARACTERS, SKILLS, THIEF, SAVES, DAMAGE, CRIT_TYPES, WEAPON_MATERIAL) from
@@ -2215,19 +2207,15 @@ function toDMHelper(save, dmSettings = {}, { catalog = null } = {}) {
   const used = new Set();
   const unique = label => { let l = label, n = 2; while (used.has(l)) l = `${label} (${n++})`; used.add(l); return l; };
 
-  // Damage for one row. The weapon's magic bonus is kept apart as `plus`, so a
-  // critical multiplies everything else (dice, Str, a superior weapon's +1 …)
-  // and adds the magic after.
+  // Damage for one row: the sheet's total, all of which a critical multiplies
   const recordWeapon = (label, sc, wpn) => {
-    const plus = weaponMagic(wpn);
-    const bare = { ...ctx, weapons: ctx.weapons.map(w => (w.id === wpn.id && plus ? { ...w, magic: '' } : w)) };
-    const dmg = scenarioDamage(bare, sc);
+    const dmg = scenarioDamage(ctx, sc);
     const clean = v => String(v).replace(/\s*\+\s*\?$/, '');
-    if (dmg && dmg.sm !== '—') damage[`${name}|${label}`] = { sm: clean(dmg.sm), l: clean(dmg.l), ...(plus ? { plus } : {}) };
-    if ([wpn.dmgAdj, wpn.hitAdj, wpn.magic].includes('?')) review.push(`${label}: ${wpn.name}'s bonus isn't revealed yet; left out`);
+    if (dmg && dmg.sm !== '—') damage[`${name}|${label}`] = { sm: clean(dmg.sm), l: clean(dmg.l) };
+    if (wpn.dmgAdj === '?' || wpn.hitAdj === '?') review.push(`${label}: ${wpn.name}'s bonus isn't revealed yet; left out`);
     critTypes[label] = critType(wpn.dmgType);
     const m = MATERIAL_BY_CATEGORY[guessCategory(wpn.name || '')];
-    if (m) material[label] = { m, ...(plus ? { plus } : {}) };
+    if (m) material[label] = { m };
   };
 
   for (const sc of save.__scenarios || []) {

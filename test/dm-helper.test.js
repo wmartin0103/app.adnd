@@ -149,17 +149,10 @@ test('the paste block runs and fills the DM Helper\'s tables', () => {
   assert.ok(tables.DAMAGE['Jaque|Dagger, thrown']);
 });
 
-test('a weapon\'s magic bonus counts to hit and damage, and is kept apart for criticals', () => {
+test('no separate magic bonus: a critical multiplies the whole damage', () => {
   const save = effectsOff(current);
-  save.__weapons = save.__weapons.map(w => (w.id === 'wpn-1' ? { ...w, magic: '+1' } : w));
+  save.__weapons = save.__weapons.map(w => (w.id === 'wpn-1' ? { ...w, dmgSM: '1d4', dmgL: '1d3', dmgAdj: '+1' } : w));
   const r = toDMHelper(save, {}, { catalog });
-  assert.equal(r.character.weapons['Dagger, melee'].thac0, 12);                        // one better than without
-  // Superior Dagger: 1d4+1 dice (its own +1 multiplies on a crit) + Str 0 + Dmg Mod 2, then +1 magic after
-  assert.deepEqual(r.damage['Jaque|Dagger, melee'], { sm: '1d4+3', l: '1d3+3', plus: 1 });
-  assert.deepEqual(r.material['Dagger, melee'], { m: 'metal', plus: 1 });
-  // Unrevealed magic: flagged, and not counted
-  save.__weapons = save.__weapons.map(w => (w.id === 'wpn-1' ? { ...w, magic: '?' } : w));
-  const u = toDMHelper(save, {}, { catalog });
-  assert.equal(u.character.weapons['Dagger, melee'].thac0, 13);
-  assert.ok(u.review.some(m => /isn't revealed/.test(m)));
+  assert.deepEqual(r.damage['Jaque|Dagger, melee'], { sm: '1d4+3', l: '1d3+3' });
+  assert.deepEqual(r.material['Dagger, melee'], { m: 'metal' });
 });
