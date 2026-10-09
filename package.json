@@ -4,6 +4,7 @@
   "type": "module",
   "description": "Web app for our homegrown AD&D campaign",
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "build": "node scripts/build-site.mjs"
   }
 }

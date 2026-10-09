@@ -386,7 +386,9 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
 
 **Roadmap after that** (PLAN section 7)
 
-1. Phase 1: put it online (Netlify or Cloudflare Pages), behind an access gate.
+1. Phase 1: put it online (Cloudflare Pages), behind Cloudflare Access. The
+   repo side is ready (2026-10-09): `site/index.html` landing page and
+   `npm run build` → `dist/`. The owner's account steps are in `docs/deploy.md`.
 2. Phase 3: Supabase accounts and cloud saves; admin-issued temporary
    passwords; the catalog moves into the database.
 3. Phases 4–5: encounters in the cloud, then live table play (player combat
