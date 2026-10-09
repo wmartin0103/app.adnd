@@ -390,8 +390,8 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
    repo side is ready (2026-10-09): `site/index.html` landing page and
    `npm run build` → `dist/`. The owner's account steps are in `docs/deploy.md`.
 2. Phase 3: Supabase accounts and cloud saves; admin-issued temporary
-   passwords; the catalog moves into the database. A reviewed-but-unrun
-   database draft is in `supabase/schema.sql` (tables, view/edit/grant rules,
+   passwords; the catalog moves into the database. A database draft, not
+   yet run or reviewed, is in `supabase/schema.sql` (tables, view/edit/grant rules,
    version history, "changed since you opened it").
 3. Phases 4–5: encounters in the cloud, then live table play (player combat
    view, HP sync).
