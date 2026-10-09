@@ -2020,6 +2020,32 @@
     }
 
     /* Narrow fields — hit mod, penalty, custom level */
+    .scenario-card.is-unavailable { opacity: 0.55; }
+    .scenario-away { font-family: var(--font-display); font-size: 0.62rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-muted); }
+    .stances { margin: 1rem 0 0.5rem; padding: 0.75rem 0.9rem; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--surface); }
+    .stances-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.5rem; }
+    .stances-title { margin: 0; font-family: var(--font-display); font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+    .stances-ac { font-family: var(--font-display); font-size: 0.85rem; font-weight: 600; }
+    .stances-hint { margin: 0.3rem 0 0.6rem; font-size: 0.85rem; color: var(--ink-muted); }
+    .stances-empty { margin: 0; font-size: 0.85rem; color: var(--ink-muted); }
+    .stance-row { display: flex; align-items: center; gap: 0.7rem; padding: 0.45rem 0; border-top: 1px solid var(--rule); }
+    .stance-row:first-child { border-top: none; }
+    .stance-main { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.2rem 0.6rem; }
+    .stance-name { font-weight: 600; }
+    .stance-sum { font-family: var(--font-display); font-size: 0.8rem; color: var(--ink-muted); }
+    .stance-row.is-on .stance-sum { color: var(--accent); }
+    .stance-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; flex-basis: 100%; }
+    .stance-tags:empty { display: none; }
+    .stance-tag { font-size: 0.7rem; padding: 0 0.4rem; border: 1px solid var(--rule); border-radius: 3px; color: var(--ink-muted); }
+    .stance-switch { flex: none; width: 2.3rem; height: 1.3rem; border-radius: 999px; border: 1px solid var(--rule); background: var(--parchment); position: relative; cursor: pointer; padding: 0; }
+    .stance-switch span { position: absolute; top: 2px; left: 2px; width: calc(1.3rem - 6px); height: calc(1.3rem - 6px); border-radius: 50%; background: var(--ink-muted); transition: left 0.15s; }
+    .stance-switch[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); }
+    .stance-switch[aria-pressed="true"] span { left: calc(100% - 1.3rem + 4px); background: var(--surface); }
+    .stance-switch:focus-visible, .stance-edit:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .stance-edit { background: none; border: 1px solid var(--rule); border-radius: var(--radius); padding: 0.1rem 0.6rem; font-family: var(--font-display); font-size: 0.7rem; color: var(--ink-muted); cursor: pointer; }
+    .stance-editor { display: flex; flex-wrap: wrap; gap: 0.6rem 0.9rem; align-items: flex-end; padding: 0.6rem 0.7rem; margin: 0 0 0.4rem 3rem; background: var(--parchment); border: 1px solid var(--rule); border-radius: var(--radius); }
+    .stance-check { display: flex; align-items: center; gap: 0.35rem; font-size: 0.85rem; flex-basis: 100%; }
+    .stances-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.6rem; }
     .scenario-field-narrow {
       flex: 0 0 auto;
     }
@@ -2572,6 +2598,21 @@
       <button class="add-scenario-btn" id="add-scenario-btn" type="button" aria-label="Add combat scenario">
         <span aria-hidden="true">＋</span> Add Scenario
       </button>
+
+      <!-- ── Stances & effects ──────────────────────────────── -->
+      <div class="stances" aria-labelledby="stances-heading">
+        <div class="stances-head">
+          <h3 id="stances-heading" class="stances-title">Stances &amp; effects</h3>
+          <span class="stances-ac" id="stances-ac" aria-live="polite"></span>
+        </div>
+        <p class="stances-hint">Switch one on and every scenario includes it. Entries in the same pick-one group replace each other. Temporary effects, like a Bless from a friend, count down with Next round and end on their own.</p>
+        <div id="stances-list" role="list"></div>
+        <div class="stances-actions">
+          <button class="add-class-btn" id="add-stance-btn" type="button"><span aria-hidden="true">＋</span> Add stance</button>
+          <button class="add-class-btn" id="add-effect-btn" type="button"><span aria-hidden="true">＋</span> Add temporary effect</button>
+          <button class="add-class-btn" id="next-round-btn" type="button">Next round</button>
+        </div>
+      </div>
 
       <!-- ── Enemy Tracker ──────────────────────────────────── -->
       <div class="enemy-tracker">
@@ -3770,11 +3811,63 @@
         handedness:    'main',
         offHandPenalty: '',
         hitMod:         '',
+        attackType:     'melee',   // melee: Str hit & dmg · thrown: Dex hit, Str dmg · missile: Dex hit
+        dmgMod:         '',
+        rate:           '1',       // attacks per round
+        onlyIn:         '',        // a stance id: only available while it's on (e.g. an animal form)
         ...overrides,
       };
     }
 
-    // Calculate the THAC0 for a scenario, factoring in STR hit adj.
+    // ── Scenario helpers ─────────────────────────────────────────
+    const modNum = v => { const m = String(v ?? '').replace('−', '-').match(/^\s*([+-]?\d+)/); return m ? parseInt(m[1], 10) : 0; };
+    const signed = n => (n > 0 ? `+${n}` : `${n}`);
+    // Melee: Str to hit and damage · Thrown: Dex to hit, Str damage · Missile: Dex to hit
+    const ATTACK_TYPES = { melee: 'Melee', thrown: 'Thrown', missile: 'Missile' };
+    const RATE_OPTIONS = ['1', '3/2', '2', '5/2', '3', '7/2', '4', '5'];
+    // Older scenarios have no attack type; read it from the name
+    function scenarioType(scenario) {
+      if (!scenario.attackType) {
+        const n = (scenario.name || '').toLowerCase();
+        scenario.attackType = /thrown|throw/.test(n) ? 'thrown' : /bow|sling|missile|crossbow/.test(n) ? 'missile' : 'melee';
+      }
+      return scenario.attackType;
+    }
+    // The ability score part: Str for melee; Dex missile adj. to hit for thrown and
+    // missile; Str damage for melee and thrown only
+    function scenarioAbility(scenario) {
+      const type = scenarioType(scenario);
+      const str = getStrRow() || { hit: 0, dmg: 0 };
+      const dex = DEX_TABLE[parseInt(document.getElementById('ability-dex').value) || 0] || { missile: 0 };
+      if (type === 'melee') return { hitLabel: 'STR Adj.', hit: str.hit, dmg: str.dmg };
+      return { hitLabel: 'DEX Missile', hit: dex.missile, dmg: type === 'thrown' ? str.dmg : 0 };
+    }
+    // Stances and effects that are on and apply to this scenario's weapon
+    function activeStancesFor(scenario) {
+      return stances.filter(st => st.on && (st.target === 'all' || !st.target || st.target === scenario.weaponId));
+    }
+    // An "only in" scenario needs its stance on; while a form is on, the others step aside
+    function scenarioAvailable(scenario) {
+      if (scenario.onlyIn) return stances.some(st => st.id === scenario.onlyIn && st.on);
+      return !stances.some(st => st.on && st.form);
+    }
+    // Damage vs S/M and L: weapon dice and adjustment, ability, Dmg Mod, stances
+    function calcScenarioDamage(scenario) {
+      const wpn = scenario.weaponId ? weapons.find(w => w.id === scenario.weaponId) : null;
+      if (!wpn) return null;
+      const extra = modNum(wpn.dmgAdj) + scenarioAbility(scenario).dmg + modNum(scenario.dmgMod)
+        + activeStancesFor(scenario).reduce((t, st) => t + modNum(st.dmg), 0);
+      const dice = raw => {
+        const m = String(raw || '').trim().match(/^(\d*d\d+)\s*(?:([+-])\s*(\d+))?$/i);
+        if (!m) return raw ? String(raw) : '—';
+        const flat = (m[2] === '-' ? -1 : 1) * (parseInt(m[3] || '0', 10)) + extra;
+        return flat ? `${m[1]}${flat > 0 ? '+' : ''}${flat}` : m[1];
+      };
+      return { sm: dice(wpn.dmgSM), l: dice(wpn.dmgL) };
+    }
+
+    // Calculate the THAC0 for a scenario: ability score (Str or Dex by attack
+    // type), weapon, racial bonus, off-hand, Hit Mod, and active stances.
     function calcScenarioTHAC0(scenario) {
       // "sheet level" now means the effective level — highest across all classes
       const sheetLevel = getEffectiveLevel() || 1;
@@ -3787,9 +3880,9 @@
 
       const baseTHAC0 = group.calc(level);
 
-      // Pull STR hit adjustment from the ability score table
-      const strRow   = getStrRow();
-      const strAdj   = strRow ? strRow.hit : 0;
+      // Str to hit for melee, Dex missile adjustment for thrown and missile
+      const strAdj   = scenarioAbility(scenario).hit;
+      const stanceAdj = activeStancesFor(scenario).reduce((t, st) => t + modNum(st.hit), 0);
 
       // Pull linked weapon hit adjustment if any
       let weaponHitAdj = 0;
@@ -3827,7 +3920,7 @@
       }
 
       // In 2nd Ed., a positive hit adj. LOWERS THAC0 (improves it).
-      return baseTHAC0 - strAdj - weaponHitAdj - racialAdj + offHandAdj - hitModAdj;
+      return baseTHAC0 - strAdj - weaponHitAdj - racialAdj + offHandAdj - hitModAdj - stanceAdj;
     }
 
     // Given a THAC0, return what you need to roll on a d20 to hit each AC.
@@ -3857,9 +3950,11 @@
 
         // ── Outer card ──────────────────────────────────────────
         const card = document.createElement('article');
+        const available = scenarioAvailable(scenario);
         card.className = 'scenario-card'
           + (scenario.active    ? ' is-active'   : '')
-          + (scenario.collapsed ? ' is-collapsed' : '');
+          + (scenario.collapsed ? ' is-collapsed' : '')
+          + (available ? '' : ' is-unavailable');
         card.setAttribute('role', 'listitem');
         card.dataset.scenarioId = scenario.id;
 
@@ -3960,6 +4055,14 @@
           headerRight.appendChild(headerHandToggle);
         }
 
+        if (!available) {
+          const away = document.createElement('span');
+          away.className = 'scenario-away';
+          const form = stances.find(st => st.on && st.form);
+          const need = stances.find(st => st.id === scenario.onlyIn);
+          away.textContent = scenario.onlyIn ? `Only in ${need ? need.name || 'its stance' : 'its stance'}` : `Not in ${form ? form.name || 'this form' : 'this form'}`;
+          headerRight.appendChild(away);
+        }
         headerRight.appendChild(badge);
         header.appendChild(headerRight);
         header.appendChild(deleteBtn);
@@ -4077,6 +4180,24 @@
           body.appendChild(wpnField);
         }
 
+        // Attack type: which ability score applies
+        const smallSelect = (label, id, pairs, value, onChange, narrow) => {
+          const f = document.createElement('div');
+          f.className = 'scenario-field ' + (narrow ? 'scenario-field-narrow' : 'scenario-field-wide');
+          const l = document.createElement('label');
+          l.className = 'scenario-field-label';
+          l.textContent = label;
+          l.htmlFor = id;
+          const sel = document.createElement('select');
+          sel.id = id;
+          sel.className = 'scenario-select';
+          pairs.forEach(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; o.selected = String(value) === v; sel.appendChild(o); });
+          sel.addEventListener('change', () => { onChange(sel.value); renderScenarios(); updateActiveTHAC0(); saveToItems(); });
+          f.append(l, sel);
+          return f;
+        };
+        body.appendChild(smallSelect('Attack', `${scenario.id}-type`, Object.entries(ATTACK_TYPES), scenarioType(scenario), v => { scenario.attackType = v; }, true));
+
         // Hit Mod — standalone grid field, always shown
         {
           const hitModField = document.createElement('div');
@@ -4113,6 +4234,39 @@
           hitModField.appendChild(hitModLabel);
           hitModField.appendChild(hitModInp);
           body.appendChild(hitModField);
+        }
+
+        // Dmg Mod — the character's own damage bonus (specialization etc.)
+        {
+          const f = document.createElement('div');
+          f.className = 'scenario-field scenario-field-narrow';
+          const l = document.createElement('label');
+          l.className = 'scenario-field-label';
+          l.textContent = 'Dmg Mod';
+          l.htmlFor = `${scenario.id}-dmgmod`;
+          const inp = document.createElement('input');
+          inp.type = 'number';
+          inp.id = `${scenario.id}-dmgmod`;
+          inp.className = 'scenario-select hitmod-inp';
+          inp.style.width = '4.5rem';
+          inp.style.textAlign = 'center';
+          inp.style.fontFamily = 'var(--font-display)';
+          inp.style.fontWeight = '600';
+          inp.value = scenario.dmgMod || '';
+          inp.placeholder = '0';
+          inp.step = 1;
+          inp.setAttribute('aria-label', 'Damage modifier');
+          inp.addEventListener('change', () => { scenario.dmgMod = inp.value.trim(); renderScenarios(); saveToItems(); });
+          f.append(l, inp);
+          body.appendChild(f);
+        }
+
+        // Attacks per round (the DM Helper shows extra attacks from this)
+        body.appendChild(smallSelect('Attacks / round', `${scenario.id}-rate`, RATE_OPTIONS.map(r => [r, r]), scenario.rate || '1', v => { scenario.rate = v; }, true));
+
+        // Only in a stance (an animal form, say)
+        if (stances.length) {
+          body.appendChild(smallSelect('Only in', `${scenario.id}-onlyin`, [['', 'Any time'], ...stances.map(st => [st.id, st.name || 'Unnamed stance'])], scenario.onlyIn || '', v => { scenario.onlyIn = v; }));
         }
 
         // Off-hand penalty — standalone grid field, only when off-hand + weapon linked
@@ -4185,11 +4339,9 @@
             { label: 'Group', value: THAC0_GROUPS[scenario.group]?.label || '—' },
           ];
 
-          // Show STR hit adj if non-zero
-          const strRow = getStrRow();
-          if (strRow && strRow.hit !== 0) {
-            items.push({ label: 'STR Adj.', value: strRow.hit > 0 ? `+${strRow.hit}` : strRow.hit });
-          }
+          // Ability score to hit (Str or Dex missile) if non-zero
+          const abil = scenarioAbility(scenario);
+          if (abil.hit !== 0) items.push({ label: abil.hitLabel, value: signed(abil.hit) });
 
           // Show linked weapon hit adj if any
           if (scenario.weaponId) {
@@ -4217,6 +4369,16 @@
               items.push({ label: 'Hit Mod', value: val > 0 ? `+${val} to hit` : `${val} to hit` });
             }
           }
+
+          // Stances and effects that are on
+          activeStancesFor(scenario).forEach(st => {
+            const parts = [modNum(st.hit) && `${signed(modNum(st.hit))} hit`, modNum(st.dmg) && `${signed(modNum(st.dmg))} dmg`].filter(Boolean);
+            if (parts.length) items.push({ label: st.name || 'Stance', value: parts.join(', ') });
+          });
+          // Damage and attacks per round
+          const dmg = calcScenarioDamage(scenario);
+          if (dmg) items.push({ label: 'Damage S/M · L', value: `${dmg.sm} · ${dmg.l}` });
+          if ((scenario.rate || '1') !== '1') items.push({ label: 'Attacks', value: `${scenario.rate} / round` });
 
           items.forEach(item => {
             const div = document.createElement('div');
@@ -4289,6 +4451,151 @@
         list.appendChild(card);
       });
     }
+
+    // ── STANCES & EFFECTS ─────────────────────────────────────────
+    // A state the character is in that changes their numbers until it's
+    // switched off: Bladesong, a defensive stance, an animal form (which
+    // replaces normal attacks), or a temporary effect from someone else (Bless)
+    // that counts down by rounds.
+    let stances = [];
+    let stanceCounter = 0;
+    let editingStance = null;   // id of the entry being edited (not saved)
+    function makeStance(overrides = {}) {
+      return { id: `st-${++stanceCounter}`, name: '', on: false, hit: '', dmg: '', ac: '', group: '', target: 'all',
+               form: false, temporary: false, from: '', rounds: '', note: '', ...overrides };
+    }
+    function stanceSummary(st) {
+      const parts = [modNum(st.hit) && `${signed(modNum(st.hit))} hit`, modNum(st.dmg) && `${signed(modNum(st.dmg))} dmg`, modNum(st.ac) && `${signed(modNum(st.ac))} AC`].filter(Boolean);
+      return parts.join(' · ') || (st.note || 'no numbers');
+    }
+    function setStance(st, on) {
+      if (on && st.group) stances.forEach(o => { if (o !== st && o.group && o.group === st.group) o.on = false; });
+      st.on = on;
+    }
+    function refreshAfterStances() {
+      renderStances();
+      renderScenarios();
+      updateActiveTHAC0();
+      saveToItems();
+    }
+    function renderStances() {
+      const list = document.getElementById('stances-list');
+      if (!list) return;
+      list.innerHTML = '';
+      // AC with the stances that are on
+      const acEl = document.getElementById('stances-ac');
+      const eff = parseInt(document.getElementById('effective-ac')?.textContent, 10);
+      const acBonus = stances.filter(st => st.on).reduce((t, st) => t + modNum(st.ac), 0);
+      if (acEl) acEl.textContent = acBonus && !Number.isNaN(eff) ? `AC ${eff - acBonus} with stances (${eff} without)` : '';
+      if (!stances.length) {
+        const p = document.createElement('p');
+        p.className = 'stances-empty';
+        p.textContent = 'None yet.';
+        list.appendChild(p);
+      }
+      stances.forEach(st => {
+        const row = document.createElement('div');
+        row.className = 'stance-row' + (st.on ? ' is-on' : '');
+        row.setAttribute('role', 'listitem');
+        // On/off switch
+        const sw = document.createElement('button');
+        sw.type = 'button';
+        sw.className = 'stance-switch';
+        sw.setAttribute('aria-pressed', st.on ? 'true' : 'false');
+        sw.setAttribute('aria-label', `${st.name || 'Stance'}: ${st.on ? 'on' : 'off'}`);
+        sw.innerHTML = '<span aria-hidden="true"></span>';
+        sw.addEventListener('click', () => { setStance(st, !st.on); refreshAfterStances(); document.querySelector(`[data-stance-id="${st.id}"] .stance-switch`)?.focus(); });
+        const main = document.createElement('div');
+        main.className = 'stance-main';
+        const name = document.createElement('span');
+        name.className = 'stance-name';
+        name.textContent = st.name || 'Unnamed';
+        const sum = document.createElement('span');
+        sum.className = 'stance-sum';
+        sum.textContent = stanceSummary(st);
+        const tags = document.createElement('span');
+        tags.className = 'stance-tags';
+        const tag = t => { const x = document.createElement('span'); x.className = 'stance-tag'; x.textContent = t; tags.appendChild(x); };
+        if (st.group) tag(`Pick one: ${st.group}`);
+        if (st.target && st.target !== 'all') tag(`Only ${weapons.find(w => w.id === st.target)?.name || 'one weapon'}`);
+        if (st.form) tag('Replaces normal attacks');
+        if (st.temporary) tag([st.from && `from ${st.from}`, st.rounds !== '' && `${st.rounds} rounds left`].filter(Boolean).join(' · ') || 'Temporary');
+        main.append(name, sum, tags);
+        const edit = document.createElement('button');
+        edit.type = 'button';
+        edit.className = 'stance-edit';
+        edit.textContent = editingStance === st.id ? 'Done' : 'Edit';
+        edit.setAttribute('aria-expanded', editingStance === st.id ? 'true' : 'false');
+        edit.addEventListener('click', () => { editingStance = editingStance === st.id ? null : st.id; renderStances(); document.querySelector(`[data-stance-id="${st.id}"] .stance-edit`)?.focus(); });
+        const del = document.createElement('button');
+        del.type = 'button';
+        del.className = 'scenario-delete-btn';
+        del.innerHTML = '&#x2715;';
+        del.setAttribute('aria-label', `Remove ${st.name || 'stance'}`);
+        del.addEventListener('click', () => { stances = stances.filter(o => o !== st); scenarios.forEach(sc => { if (sc.onlyIn === st.id) sc.onlyIn = ''; }); refreshAfterStances(); });
+        row.dataset.stanceId = st.id;
+        row.append(sw, main, edit, del);
+        list.appendChild(row);
+        if (editingStance === st.id) list.appendChild(stanceEditor(st));
+      });
+      const next = document.getElementById('next-round-btn');
+      if (next) next.hidden = !stances.some(st => st.temporary && st.on && st.rounds !== '');
+    }
+    function stanceEditor(st) {
+      const box = document.createElement('div');
+      box.className = 'stance-editor';
+      const field = (label, control) => { const l = document.createElement('label'); l.className = 'scenario-field'; const t = document.createElement('span'); t.className = 'scenario-field-label'; t.textContent = label; l.append(t, control); return l; };
+      const text = (key, ph, width) => {
+        const i = document.createElement('input');
+        i.type = 'text'; i.className = 'scenario-select'; i.value = st[key] || ''; i.placeholder = ph;
+        if (width) i.style.width = width;
+        i.addEventListener('change', () => { st[key] = i.value.trim(); refreshAfterStances(); });
+        return i;
+      };
+      const check = (key, label) => {
+        const l = document.createElement('label'); l.className = 'stance-check';
+        const c = document.createElement('input'); c.type = 'checkbox'; c.checked = !!st[key];
+        c.addEventListener('change', () => { st[key] = c.checked; refreshAfterStances(); });
+        l.append(c, ' ' + label); return l;
+      };
+      const target = document.createElement('select');
+      target.className = 'scenario-select';
+      [['all', 'All attacks'], ...weapons.map(w => [w.id, `Only ${w.name || 'unnamed weapon'}`])].forEach(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; o.selected = (st.target || 'all') === v; target.appendChild(o); });
+      target.addEventListener('change', () => { st.target = target.value; refreshAfterStances(); });
+      box.append(
+        field('Name', text('name', 'e.g. Bladesong, Bless')),
+        field('Hit', text('hit', '±0', '4rem')),
+        field('Dmg', text('dmg', '±0', '4rem')),
+        field('AC bonus', text('ac', '+1 = better', '5.5rem')),
+        field('Applies to', target),
+        field('Pick-one group', text('group', 'e.g. Bladesong', '8rem')),
+        field('Note', text('note', 'e.g. no attacks this round')),
+        check('form', 'Replaces normal attacks (a form, like an animal shape)'),
+        check('temporary', 'Temporary (ends after some rounds)'),
+      );
+      if (st.temporary) box.append(field('From', text('from', 'e.g. Atteroak', '8rem')), field('Rounds left', text('rounds', 'e.g. 6', '4rem')));
+      return box;
+    }
+    document.getElementById('add-stance-btn')?.addEventListener('click', () => {
+      const st = makeStance();
+      stances.push(st); editingStance = st.id; refreshAfterStances();
+      document.querySelector(`[data-stance-id="${st.id}"] + .stance-editor input`)?.focus();
+    });
+    document.getElementById('add-effect-btn')?.addEventListener('click', () => {
+      const st = makeStance({ temporary: true, on: true });
+      stances.push(st); editingStance = st.id; refreshAfterStances();
+      document.querySelector(`[data-stance-id="${st.id}"] + .stance-editor input`)?.focus();
+    });
+    // Next round: temporary effects count down; at 0 they end and leave the list
+    document.getElementById('next-round-btn')?.addEventListener('click', () => {
+      stances.forEach(st => {
+        if (st.temporary && st.on && st.rounds !== '') st.rounds = String(Math.max(0, (parseInt(st.rounds, 10) || 0) - 1));
+      });
+      stances = stances.filter(st => !(st.temporary && st.rounds === '0'));
+      refreshAfterStances();
+    });
+    // Weapon edits change scenario numbers
+    document.getElementById('weapons-list')?.addEventListener('change', () => { renderScenarios(); updateActiveTHAC0(); });
 
     // Update the THAC0 display in the combat block to reflect the active scenario
     function updateActiveTHAC0() {
@@ -6076,6 +6383,8 @@
       data['__scenarios']             = scenarios;
       data['__scenarioCounter']       = scenarioCounter;
       data['__enemies']               = enemies;
+      data['__stances']               = stances;
+      data['__stanceCounter']         = stanceCounter;
       data['__enemyCounter']          = enemyCounter;
       data['__classes']               = characterClasses;
       data['__classCounter']          = classCounter;
@@ -6115,6 +6424,8 @@
         scenarios = data['__scenarios'];
         scenarioCounter = data['__scenarioCounter'] || scenarios.length;
       }
+      stances = Array.isArray(data['__stances']) ? data['__stances'] : [];
+      stanceCounter = data['__stanceCounter'] || stances.length;
       if (Array.isArray(data['__enemies'])) {
         enemies = data['__enemies'];
         enemyCounter = data['__enemyCounter'] || enemies.length;
@@ -7018,6 +7329,7 @@
       updateProfSlotBadges();
       updateHpBar();
       updateConHpBadge();
+      renderStances();
       renderScenarios();
       updateActiveTHAC0();
       renderSavingThrows();
@@ -7055,6 +7367,11 @@
         // DEX affects thieving ability adjustments
         if (target.dataset.ability === 'dex') {
           renderThievingAbilities();
+        }
+        // STR and DEX feed scenario to-hit and damage
+        if (target.dataset.ability === 'str' || target.dataset.ability === 'dex') {
+          renderScenarios();
+          updateActiveTHAC0();
         }
         // INT/WIS affect spell slots
         if (target.dataset.ability === 'int' || target.dataset.ability === 'wis') {

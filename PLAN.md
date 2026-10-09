@@ -434,6 +434,19 @@ Helper pick from (see section 9).
     save. Abilities and proficiencies are announced, not automated. The
     Combat tab is shelved. Open: how weapon rows and scenarios share the
     character's bonuses (being workshopped).
+24. **Weapons and scenarios (decided 10-09):** a weapon row is the weapon
+    only (its own magic or quality). A Combat Scenario is one way the
+    character attacks: weapon, attack type (melee: Str to hit and damage;
+    thrown: Dex to hit, Str damage; missile: Dex to hit), hand, Hit Mod and
+    Dmg Mod for the character's own bonuses, attacks per round, and
+    optionally "only in" a stance. The DM Helper reads scenarios as each
+    character's attacks. Test for where a bonus goes: if someone else picked
+    up the weapon, would they get it?
+25. **Stances & effects (decided):** a list of states that change hit,
+    damage or AC while on: stances (Bladesong, pick-one groups), forms that
+    replace normal attacks (Hanspeter's animal shapes), and temporary
+    effects from others (Bless from Atteroak) that count down with Next
+    round. They apply to all attacks or one weapon.
 
 ---
 

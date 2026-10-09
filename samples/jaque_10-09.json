@@ -18,33 +18,58 @@
   "notes": "Jaque | Age: 118yrs | Sex: Male | Height: 5'1\" | Weight: 108 lbs\nNPC 'Friends': Edward Smith - Sailor | family jewel dude - appraiser | \"Pete\" - info conduit",
   "__scenarios": [
     {
-      "id": "sc-3",
-      "name": "Dagger Attack (Specialized",
       "group": "rogue",
       "levelMode": "sheet",
       "customLevel": 1,
       "active": true,
       "collapsed": false,
-      "weaponId": "wpn-1",
       "handedness": "main",
-      "offHandPenalty": "2",
-      "hitMod": "4"
+      "offHandPenalty": "",
+      "onlyIn": "",
+      "id": "sc-1",
+      "name": "Dagger, melee",
+      "weaponId": "wpn-1",
+      "attackType": "melee",
+      "hitMod": "4",
+      "dmgMod": "2",
+      "rate": "3/2"
     },
     {
-      "id": "sc-5",
-      "name": "Thrown Dagger Attack",
       "group": "rogue",
       "levelMode": "sheet",
       "customLevel": 1,
       "active": false,
       "collapsed": false,
-      "weaponId": "wpn-5",
       "handedness": "main",
+      "offHandPenalty": "",
+      "onlyIn": "",
+      "id": "sc-2",
+      "name": "Dagger, thrown",
+      "weaponId": "wpn-5",
+      "attackType": "thrown",
+      "hitMod": "1",
+      "dmgMod": "2",
+      "rate": "3"
+    },
+    {
+      "group": "rogue",
+      "levelMode": "sheet",
+      "customLevel": 1,
+      "active": false,
+      "collapsed": false,
+      "handedness": "off",
       "offHandPenalty": "2",
-      "hitMod": "4"
+      "onlyIn": "",
+      "id": "sc-3",
+      "name": "Off-hand dagger",
+      "weaponId": "wpn-1",
+      "attackType": "melee",
+      "hitMod": "4",
+      "dmgMod": "2",
+      "rate": "1"
     }
   ],
-  "__scenarioCounter": 5,
+  "__scenarioCounter": 3,
   "__enemies": [],
   "__enemyCounter": 10,
   "__classes": [
@@ -588,5 +613,83 @@
       "notes": "lasts 5 days - 1hp each"
     }
   ],
-  "__itemsCounter": 12
+  "__itemsCounter": 12,
+  "__stances": [
+    {
+      "on": true,
+      "hit": "1",
+      "dmg": "",
+      "ac": "",
+      "group": "Bladesong",
+      "target": "all",
+      "form": false,
+      "temporary": false,
+      "from": "",
+      "rounds": "",
+      "note": "",
+      "id": "st-1",
+      "name": "Bladesong: +1 hit"
+    },
+    {
+      "on": false,
+      "hit": "",
+      "dmg": "",
+      "ac": "1",
+      "group": "Bladesong",
+      "target": "all",
+      "form": false,
+      "temporary": false,
+      "from": "",
+      "rounds": "",
+      "note": "",
+      "id": "st-2",
+      "name": "Bladesong: +1 AC"
+    },
+    {
+      "on": false,
+      "hit": "",
+      "dmg": "",
+      "ac": "",
+      "group": "Bladesong",
+      "target": "all",
+      "form": false,
+      "temporary": false,
+      "from": "",
+      "rounds": "",
+      "note": "DM adjudicates",
+      "id": "st-3",
+      "name": "Bladesong: attack and parry"
+    },
+    {
+      "on": false,
+      "hit": "",
+      "dmg": "",
+      "ac": "3",
+      "group": "",
+      "target": "all",
+      "form": false,
+      "temporary": false,
+      "from": "",
+      "rounds": "",
+      "note": "no attacks; ends if hit",
+      "id": "st-4",
+      "name": "Defensive Spin"
+    },
+    {
+      "on": true,
+      "hit": "1",
+      "dmg": "",
+      "ac": "",
+      "group": "",
+      "target": "all",
+      "form": false,
+      "temporary": true,
+      "from": "Atteroak",
+      "rounds": "6",
+      "note": "",
+      "id": "st-5",
+      "name": "Bless"
+    }
+  ],
+  "__stanceCounter": 5
 }
