@@ -14,7 +14,11 @@ const END = '/* ── end sheet converter ── */';
 // What each tool gets from the rules code
 export const TARGETS = {
   'legacy/dm-helper.html': { SheetConverter: ['adapters/dm-helper', ['toDMHelper']] },
-  'legacy/character-sheet.html': { SheetSpells: ['rules/spells', ['findSpell']] },
+  'legacy/character-sheet.html': {
+    SheetSpells: ['rules/spells', ['findSpell']],
+    SheetRules: ['rules/weapons', ['PHB_WEAPONS']],
+    SheetGuess: ['rules/migrate', ['guessCategory']],
+  },
 };
 // Data a tool gets alongside the rules code, as window globals
 const DATA = {

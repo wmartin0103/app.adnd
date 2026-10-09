@@ -456,6 +456,12 @@ Helper pick from (see section 9).
     time, range, save, attack roll and dice come from the spell catalog
     (bundled with the sheet) and can be changed per scenario. Touch spells
     roll with Str, ranged with Dex; a spell without a roll shows its save.
+27. **Weapon row values (decided):** Spd, Hit/Dmg adj and the S/M and L dice
+    are fixed-choice dropdowns, with "?" for a bonus not revealed yet
+    (scenarios show "+ ?"). Older free text is tidied once: a sometimes-bonus
+    like "*+1/2" moves to Notes; a flat bonus in the dice moves to Dmg adj
+    unless the PHB weapon has it built in. Bonuses against certain target
+    sizes are an Effect on that weapon (Wave Dagger: vs tiny, vs small).
 
 ---
 

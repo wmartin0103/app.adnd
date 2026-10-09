@@ -791,6 +791,19 @@
     .wpn-inp-num::-webkit-inner-spin-button { -webkit-appearance: none; }
 
     .wpn-select { cursor: pointer; }
+    /* Compact dropdowns: a small drawn arrow instead of the browser's wide one */
+    .wpn-inp.wpn-pick {
+      -webkit-appearance: none;
+      appearance: none;
+      padding: 0.2em 0.85em 0.2em 0.3em;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 5'%3E%3Cpath d='M.5.5 4 4 7.5.5' fill='none' stroke='%235a534e' stroke-width='1.2'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.28em center;
+      background-size: 0.5em auto;
+      text-overflow: ellipsis;
+      min-width: 0;
+    }
+    .wpn-split-pick .wpn-inp.wpn-pick { border: none; text-align: center; text-align-last: center; width: 50%; }
 
     /* Split input — two fields sharing one visual container */
     .wpn-split {
@@ -1452,7 +1465,7 @@
         -webkit-overflow-scrolling: touch;
       }
       #weapons-list .wpn-row {
-        min-width: 860px;
+        min-width: 620px;
       }
     }
 
@@ -2143,7 +2156,7 @@
     .sr-math table { width: 100%; max-width: 34rem; border-collapse: collapse; margin-top: 0.4rem; font-size: 0.9rem; }
     .sr-math th, .sr-math td { padding: 0.2rem 0.5rem 0.2rem 0; text-align: left; border-bottom: 1px dotted var(--rule); }
     .sr-math thead th { font-family: var(--font-display); font-size: 0.6rem; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-muted); }
-    .sr-math .n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .sr-math .n { text-align: left; font-variant-numeric: tabular-nums; white-space: nowrap; }
     .sr-math tfoot th, .sr-math tfoot td { border-bottom: none; border-top: 1px solid var(--ink-muted); font-weight: 700; }
     .sr-math tfoot td { color: var(--accent); }
     .sr-effect td:first-child { color: var(--accent); }
@@ -4435,6 +4448,8 @@ function formatDMHelperConfig(list) {
 return { toDMHelper, formatDMHelperConfig };
 })();
 window.SheetSpells = { findSpell: __m["rules/spells"].findSpell };
+window.SheetRules = { PHB_WEAPONS: __m["rules/weapons"].PHB_WEAPONS };
+window.SheetGuess = { guessCategory: __m["rules/migrate"].guessCategory };
 })();
 window.SheetSpellCatalog = {"about":"The campaign's shared spell catalog: short stat blocks only, never the book's description text (link to it instead). Anyone in the group can add or edit entries. PHB entries were filled in from the Player's Handbook (2nd ed.); status 'check' means nobody has compared them with the book yet.","spells":[{"id":"charm-person","name":"Charm Person","class":"wizard","level":1,"school":"Enchantment/Charm","castTime":"1","range":"120 yds","duration":"Special","area":"1 person","save":"Negates","attack":"none","dice":"","summary":"One humanoid regards you as a trusted friend; checks to break free depend on its Int.","source":"PHB","status":"check","link":"https://adnd2e.fandom.com/wiki/Charm_Person_(Wizard_Spell)"},{"id":"feather-fall","name":"Feather Fall","class":"wizard","level":1,"school":"Alteration","castTime":"1","range":"10 yds/level","duration":"1 rd/level","area":"Creatures or objects in a 10-ft cube, up to 200 lbs/level","save":"None","attack":"none","dice":"","summary":"Falling creatures or objects drift down slowly and take no falling damage.","source":"PHB","status":"check","link":"https://adnd2e.fandom.com/wiki/Feather_Fall_(Wizard_Spell)"},{"id":"ventriloquism","name":"Ventriloquism","class":"wizard","level":1,"school":"Illusion/Phantasm","castTime":"1","range":"10 yds/level (90 yds max)","duration":"4 rds + 1 rd/level","area":"1 creature or object","save":"Negates","attack":"none","dice":"","summary":"Your voice seems to come from somewhere else.","source":"PHB","status":"check","link":"https://adnd2e.fandom.com/wiki/Ventriloquism_(Wizard_Spell)"},{"id":"identify","name":"Identify","class":"wizard","level":1,"school":"Divination","castTime":"Special","range":"Touch","duration":"1 rd/level","area":"1 item/level","save":"None","attack":"none","dice":"","summary":"Learn a magic item's properties, one per round, with a chance per item.","source":"PHB","status":"check","link":"https://adnd2e.fandom.com/wiki/Identify_(Wizard_Spell)"},{"id":"read-magic","name":"Read Magic","class":"wizard","level":1,"school":"Divination","castTime":"1 rd","range":"0","duration":"2 rds/level","area":"Special","save":"None","attack":"none","dice":"","summary":"Read magical writing on scrolls and in spellbooks.","source":"PHB","status":"check","link":"https://adnd2e.fandom.com/wiki/Read_Magic_(Wizard_Spell)"},{"id":"light-wizard","name":"Light","class":"wizard","level":1,"school":"Alteration","castTime":"1","range":"60 yds","duration":"1 turn/level","area":"20-ft-radius globe","save":"Special","attack":"none","dice":"","summary":"Torch-bright light; cast at a creature's eyes it can blind (save negates).","source":"PHB","status":"check","link":"https://adnd2e.fandom.com/wiki/Light_(Wizard_Spell)"},{"id":"light-priest","name":"Light","class":"priest","level":1,"school":"Alteration (Sun)","castTime":"4","range":"120 yds","duration":"1 hr + 1 turn/level","area":"20-ft-radius globe","save":"Special","attack":"none","dice":"","summary":"Torch-bright light; cast at a creature's eyes it can blind (save negates).","source":"PHB","status":"check","link":"https://adnd2e.fandom.com/wiki/Light_(Priest_Spell)"},{"id":"strength","name":"Strength","class":"wizard","level":2,"school":"Alteration","castTime":"1 rd","range":"Touch","duration":"1 hr/level","area":"1 person","save":"None","attack":"none","dice":"","summary":"Raises the target's Strength by a die roll set by their class (warrior 1d8, priest and rogue 1d6, wizard 1d4).","source":"PHB","status":"check","link":"https://adnd2e.fandom.com/wiki/Strength_(Wizard_Spell)"},{"id":"tashas-uncontrollable-hideous-laughter","name":"Tasha's Uncontrollable Hideous Laughter","class":"wizard","level":2,"school":"Enchantment/Charm","castTime":"2","range":"60 yds","duration":"1 rd/level","area":"1 creature","save":"Negates","attack":"none","dice":"","summary":"The target collapses laughing and can't act; its Int changes the save.","source":"PHB","status":"check","link":"https://adnd2e.fandom.com/wiki/Tasha%27s_Uncontrollable_Hideous_Laughter_(Wizard_Spell)"},{"id":"cure-light-wounds","name":"Cure Light Wounds","aliases":["Cure L Wounds","CLW"],"class":"priest","level":1,"school":"Necromancy (Healing)","castTime":"5","range":"Touch","duration":"Permanent","area":"Creature touched","save":"None","attack":"none","dice":"1d8","diceKind":"heal","summary":"Heals 1d8 hit points.","source":"PHB","status":"check","link":"https://adnd2e.fandom.com/wiki/Cure_Light_Wounds_(Priest_Spell)"},{"id":"entangle","name":"Entangle","class":"priest","level":1,"school":"Alteration (Plant)","castTime":"4","range":"80 yds","duration":"1 turn","area":"40-ft cube","save":"½","attack":"none","dice":"","summary":"Plants grab everything in the area; a successful save means moving at half speed instead.","source":"PHB","status":"check","link":"https://adnd2e.fandom.com/wiki/Entangle_(Priest_Spell)"},{"id":"barkskin","name":"Barkskin","class":"priest","level":2,"school":"Alteration (Plant)","castTime":"5","range":"Touch","duration":"4 rds + 1 rd/level","area":"Creature touched","save":"None","attack":"none","dice":"","summary":"Skin becomes bark: base AC 6, 1 better per 4 levels, and +1 to saves except against spells.","source":"PHB","status":"check","link":"https://adnd2e.fandom.com/wiki/Barkskin_(Priest_Spell)"},{"id":"cure-moderate-wounds","name":"Cure Moderate Wounds","aliases":["Cure M Wounds","CMW"],"class":"priest","level":2,"school":"","castTime":"","range":"","duration":"","area":"","save":"","attack":"none","dice":"","diceKind":"heal","summary":"","source":"Not in the PHB","status":"needs details","link":""},{"id":"run","name":"Run","class":"wizard","level":1,"school":"","castTime":"","range":"","duration":"","area":"","save":"","attack":"none","dice":"","summary":"","source":"Not in the PHB","status":"needs details","link":""},{"id":"sound-bubble","name":"Sound Bubble","class":"wizard","level":1,"school":"","castTime":"","range":"Fixed: 10 ft; mobile: 5 ft/level","duration":"10 rds + 1 rd/level","area":"","save":"","attack":"none","dice":"","summary":"","source":"Not in the PHB (details from Jaque's sheet notes)","status":"needs details","link":"https://adnd2e.fandom.com/wiki/Sound_Bubble_(Wizard_Spell)"}]};
 /* ── end sheet converter ── */
@@ -5490,7 +5505,8 @@ window.SheetSpellCatalog = {"about":"The campaign's shared spell catalog: short 
         const m = String(raw || '').trim().match(/^(\d*d\d+)\s*(?:([+-])\s*(\d+))?$/i);
         if (!m) return raw ? String(raw) : '—';
         const flat = (m[2] === '-' ? -1 : 1) * (parseInt(m[3] || '0', 10)) + extra;
-        return flat ? `${m[1]}${flat > 0 ? '+' : ''}${flat}` : m[1];
+        const text = flat ? `${m[1]}${flat > 0 ? '+' : ''}${flat}` : m[1];
+        return wpn.dmgAdj === '?' ? `${text} + ?` : text;
       };
       return { sm: dice(wpn.dmgSM), l: dice(wpn.dmgL) };
     }
@@ -5514,8 +5530,9 @@ window.SheetSpellCatalog = {"about":"The campaign's shared spell catalog: short 
       }
       const wpn = !isSpell && scenario.weaponId ? weapons.find(w => w.id === scenario.weaponId) : null;
       if (wpn) {
-        const m = String(wpn.hitAdj || '').match(/[+-]?\d+/);
+        const m = String(wpn.hitAdj || '').match(/^[+-]?\d+$/);
         add(wpn.name || 'Weapon', m ? parseInt(m[0], 10) : 0, modNum(wpn.dmgAdj), 'weapon');
+        if (wpn.hitAdj === '?' || wpn.dmgAdj === '?') lines.push({ label: `${wpn.name || 'Weapon'}: not revealed yet`, hit: wpn.hitAdj === '?' ? '?' : 0, dmg: wpn.dmgAdj === '?' ? '?' : 0, kind: 'unknown' });
       }
       const abil = scenarioAbility(scenario);
       const abilName = abil.hitLabel === 'STR Adj.' ? 'Strength' : scenarioType(scenario) === 'thrown' ? 'Dexterity (missile), Strength damage' : 'Dexterity (missile)';
@@ -5530,8 +5547,8 @@ window.SheetSpellCatalog = {"about":"The campaign's shared spell catalog: short 
       if (hm) hitMod = (hm[1] === '-' ? -1 : 1) * parseInt(hm[2], 10);
       add(isSpell ? 'Your bonus (Hit Mod)' : 'Your bonus (Hit Mod, Dmg Mod)', hitMod, isSpell ? 0 : modNum(scenario.dmgMod), 'mods');
       activeStancesFor(scenario).forEach(st => add(st.name || 'Effect', modNum(st.hit), modNum(st.dmg), 'effect'));
-      const hit = lines.reduce((t, l) => t + l.hit, 0);
-      return { base, lines, wpn, thac0: base.thac0 - hit, hit };
+      const hit = lines.reduce((t, l) => t + (typeof l.hit === 'number' ? l.hit : 0), 0);
+      return { base, lines, wpn, thac0: base.thac0 - hit, hit, unknownHit: !!(wpn && wpn.hitAdj === '?') };
     }
 
     // Calculate the THAC0 for a scenario: ability score (Str or Dex by attack
@@ -5615,7 +5632,8 @@ window.SheetSpellCatalog = {"about":"The campaign's shared spell catalog: short 
         badge.className = 'scenario-thac0-badge';
         badge.id = `thac0-badge-${scenario.id}`;
         badge.setAttribute('aria-label', `THAC0 ${thac0 !== null ? thac0 : '—'}`);
-        badge.textContent = thac0 !== null ? `THAC0 ${thac0}` : spellInfo ? `Cast ${spellInfo.castTime || '?'}` : '—';
+        const unknownHit = !isSpell && scenario.weaponId && (weapons.find(w => w.id === scenario.weaponId) || {}).hitAdj === '?';
+        badge.textContent = thac0 !== null ? `THAC0 ${thac0}${unknownHit ? ' − ?' : ''}` : spellInfo ? `Cast ${spellInfo.castTime || '?'}` : '—';
 
         // Chevron toggle
         const chevron = document.createElement('span');
@@ -5966,7 +5984,7 @@ window.SheetSpellCatalog = {"about":"The campaign's shared spell catalog: short 
           const bd = scenarioBreakdown(scenario);
           const dmg = calcScenarioDamage(scenario);
           const esc = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-          const sg = n => (n ? signed(n) : '');
+          const sg = n => (n === '?' ? '?' : n ? signed(n) : '');
           const result = document.createElement('div');
           result.className = 'scenario-result';
           result.id = `scenario-result-${scenario.id}`;
@@ -6570,8 +6588,44 @@ window.SheetSpellCatalog = {"about":"The campaign's shared spell catalog: short 
       el.innerHTML = parts.length > 0 ? 'Racial: ' + parts.join(' &nbsp;·&nbsp; ') : '';
     }
 
+    // Fixed choices for the weapon row. "?" marks a bonus the DM hasn't revealed.
+    const SPEED_OPTIONS = ['', ...Array.from({ length: 15 }, (_, i) => String(i + 1))];
+    const ADJ_OPTIONS = ['', ...Array.from({ length: 6 }, (_, i) => String(i - 6)), ...Array.from({ length: 8 }, (_, i) => `+${i + 1}`), '?'];
+    const DICE_OPTIONS = ['', '1', '1d2', '1d3', '1d4', '1d6', '1d8', '1d10', '1d12', '2d4', '2d6', '2d8', '3d4', '3d6', '1d4+1', '1d6+1', '2d4+1'];
+    const fmtAdj = v => (v === '' ? '—' : v === '?' ? '?' : v.replace('-', '−'));
+    // One-time tidy of older free-text values so they fit the dropdowns:
+    //  • Hit/Dmg adj: whole numbers become "+1"/"-1"; "?" stays; anything else
+    //    (e.g. "*+1/2") moves into Notes and the field is cleared, so a
+    //    scenario never counts a bonus that only applies sometimes.
+    //  • Damage: a bonus written into the dice ("1d4+1" on both sizes) moves to
+    //    Dmg adj when that's empty, unless the PHB weapon has it built in
+    //    (a warhammer is 1d4+1).
+    function tidyWeaponValues(wpn) {
+      if (wpn.fieldsV >= 2) return;
+      const moved = [];
+      ['hitAdj', 'dmgAdj'].forEach(field => {
+        const raw = String(wpn[field] ?? '').trim();
+        if (raw === '' || raw === '?') { wpn[field] = raw; return; }
+        if (/^[+-]?\d+$/.test(raw)) { const n = parseInt(raw, 10); wpn[field] = n === 0 ? '' : (n > 0 ? `+${n}` : `${n}`); return; }
+        moved.push(`${field === 'hitAdj' ? 'hit' : 'dmg'} adj was "${raw}"`);
+        wpn[field] = '';
+      });
+      const parse = d => { const m = String(d || '').trim().match(/^(\d*)d(\d+)\s*(?:([+-])\s*(\d+))?$/i); return m ? { dice: `${m[1] || 1}d${m[2]}`, flat: m[3] ? (m[3] === '-' ? -1 : 1) * parseInt(m[4], 10) : 0 } : null; };
+      const sm = parse(wpn.dmgSM), l = parse(wpn.dmgL);
+      const key = window.SheetGuess ? SheetGuess.guessCategory(wpn.name) : null;
+      const phb = key && window.SheetRules ? SheetRules.PHB_WEAPONS[key] : null;
+      const builtIn = phb && sm && parse(phb.damage.sm) && parse(phb.damage.sm).flat === sm.flat;
+      if (sm && l && sm.flat && sm.flat === l.flat && !builtIn && (wpn.dmgAdj === '' || wpn.dmgAdj === undefined)) {
+        wpn.dmgSM = sm.dice; wpn.dmgL = l.dice;
+        wpn.dmgAdj = sm.flat > 0 ? `+${sm.flat}` : `${sm.flat}`;
+      }
+      if (moved.length) wpn.notes = [wpn.notes, `(${moved.join('; ')})`].filter(Boolean).join(' ');
+      wpn.fieldsV = 2;
+    }
+
     function renderWeapons() {
       updateWeaponRacialHeading();
+      weapons.forEach(tidyWeaponValues);
       const list = document.getElementById('weapons-list');
       if (!list) return;
       list.innerHTML = '';
@@ -6585,7 +6639,7 @@ window.SheetSpellCatalog = {"about":"The campaign's shared spell catalog: short 
       }
 
       // Col: Name | Size | DmgType | Spd | Hit/DmgAdj | Damage | Notes | Del
-      const COL = '210px 60px 100px 44px 90px 170px 140px 24px';
+      const COL = 'minmax(8rem, 1.6fr) 3.4rem 4.6rem 3rem 5.6rem 7.4rem minmax(6rem, 1.4fr) 1.4rem';
 
       // ── Header ──────────────────────────────────────────────
       const header = document.createElement('div');
@@ -6665,6 +6719,31 @@ window.SheetSpellCatalog = {"about":"The campaign's shared spell catalog: short 
           return sel;
         }
 
+        // Dropdown with fixed choices; a value not on the list stays as its own option
+        function mkPick(field, values, label, show = v => v || '—') {
+          const sel = document.createElement('select');
+          sel.className = 'wpn-inp wpn-select wpn-pick';
+          sel.setAttribute('aria-label', label);
+          const cur = String(wpn[field] ?? '');
+          (values.includes(cur) ? values : [...values, cur]).forEach(v => {
+            const o = document.createElement('option');
+            o.value = v; o.textContent = show(v);
+            if (v === cur) o.selected = true;
+            sel.appendChild(o);
+          });
+          sel.addEventListener('change', () => { wpn[field] = sel.value; saveToItems(); renderScenarios(); updateActiveTHAC0(); });
+          return sel;
+        }
+        function pickPair(a, b) {
+          const wrap = document.createElement('div');
+          wrap.className = 'wpn-split wpn-split-pick';
+          const div = document.createElement('span');
+          div.className = 'wpn-split-div';
+          div.setAttribute('aria-hidden', 'true');
+          wrap.append(a, div, b);
+          return wrap;
+        }
+
         // Split input — two inputs side by side with a divider between them
         function mkSplit(fieldA, fieldB, placeholderA, placeholderB, numericA = false, numericB = false) {
           const wrap = document.createElement('div');
@@ -6695,25 +6774,29 @@ window.SheetSpellCatalog = {"about":"The campaign's shared spell catalog: short 
         // ── 3. Dmg Type ────────────────────────────────────────
         const typeCell = mkCell('wpn-center');
         typeCell.appendChild(mkSelect('dmgType', [
-          ['slashing',    'Slashing'],
-          ['piercing',    'Piercing'],
-          ['bludgeoning', 'Bludgeoning'],
+          ['slashing',    'Slash'],
+          ['piercing',    'Pierce'],
+          ['bludgeoning', 'Blunt'],
         ]));
         row.appendChild(typeCell);
 
         // ── 4. Speed ───────────────────────────────────────────
         const spdCell = mkCell('wpn-center');
-        spdCell.appendChild(mkNum('speed', '—'));
+        spdCell.appendChild(mkPick('speed', SPEED_OPTIONS, `${wpn.name || 'Weapon'} speed`));
         row.appendChild(spdCell);
 
         // ── 5. Hit / Dmg Adj (split) ───────────────────────────
         const adjCell = mkCell('wpn-center');
-        adjCell.appendChild(mkSplit('hitAdj', 'dmgAdj', '+0', '+0', false, false));
+        adjCell.appendChild(pickPair(
+          mkPick('hitAdj', ADJ_OPTIONS, `${wpn.name || 'Weapon'} hit adjustment`, fmtAdj),
+          mkPick('dmgAdj', ADJ_OPTIONS, `${wpn.name || 'Weapon'} damage adjustment`, fmtAdj)));
         row.appendChild(adjCell);
 
         // ── 6. Damage S/M · L (split) ─────────────────────────
         const dmgCell = mkCell('wpn-center');
-        dmgCell.appendChild(mkSplit('dmgSM', 'dmgL', '1d6', '1d8', false, false));
+        dmgCell.appendChild(pickPair(
+          mkPick('dmgSM', DICE_OPTIONS, `${wpn.name || 'Weapon'} damage vs small and medium`),
+          mkPick('dmgL', DICE_OPTIONS, `${wpn.name || 'Weapon'} damage vs large`)));
         row.appendChild(dmgCell);
 
         // ── 7. Notes ───────────────────────────────────────────

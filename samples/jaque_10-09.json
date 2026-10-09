@@ -189,11 +189,11 @@
       "size": "sm",
       "dmgType": "piercing",
       "speed": "2",
-      "hitAdj": "*+1/2",
-      "dmgAdj": "*+1/2",
+      "hitAdj": "",
+      "dmgAdj": "",
       "dmgSM": "1d4",
       "dmgL": "1d3",
-      "notes": "*For Tiny/Small",
+      "notes": "+1 vs tiny, +2 vs small (see Effects)",
       "racialBonus": false
     },
     {
@@ -686,6 +686,32 @@
       ]
     },
     {
+      "on": false,
+      "choice": 0,
+      "target": "wpn-4",
+      "temporary": false,
+      "from": "",
+      "rounds": "",
+      "id": "st-4",
+      "name": "Wave Dagger",
+      "options": [
+        {
+          "label": "vs tiny",
+          "hit": "1",
+          "dmg": "1",
+          "ac": "",
+          "note": ""
+        },
+        {
+          "label": "vs small",
+          "hit": "2",
+          "dmg": "2",
+          "ac": "",
+          "note": ""
+        }
+      ]
+    },
+    {
       "on": true,
       "choice": 0,
       "target": "all",
@@ -705,5 +731,5 @@
       ]
     }
   ],
-  "__stanceCounter": 3
+  "__stanceCounter": 4
 }

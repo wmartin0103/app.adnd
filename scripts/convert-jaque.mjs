@@ -24,6 +24,10 @@ s.__scenarios = [
   sc({ id: 'sc-4', name: 'Charm Person', attackType: 'spell', spellId: 'spl-8', rate: '1/1' }),
 ];
 s.__scenarioCounter = 4;
+// Wave Dagger's "*+1/2" is a bonus against small and tiny targets, so it's an
+// effect on that dagger rather than part of its row
+const wave = s.__weapons.find(w => w.name === 'Wave Dagger');
+wave.hitAdj = ''; wave.dmgAdj = ''; wave.notes = '+1 vs tiny, +2 vs small (see Effects)';
 const opt = (o) => ({ label: '', hit: '', dmg: '', ac: '', note: '', ...o });
 const st = (o) => ({ on: false, choice: 0, target: 'all', temporary: false, from: '', rounds: '', ...o });
 s.__stances = [
@@ -31,8 +35,11 @@ s.__stances = [
     opt({ label: '+1 hit', hit: '1' }), opt({ label: '+1 AC', ac: '1' }), opt({ label: 'Attack and parry', note: 'DM adjudicates' }),
   ] }),
   st({ id: 'st-2', name: 'Defensive Spin', options: [opt({ ac: '3', note: 'no attacks; ends if hit' })] }),
+  st({ id: 'st-4', name: 'Wave Dagger', target: wave.id, options: [
+    opt({ label: 'vs tiny', hit: '1', dmg: '1' }), opt({ label: 'vs small', hit: '2', dmg: '2' }),
+  ] }),
   st({ id: 'st-3', name: 'Bless', on: true, temporary: true, from: 'Atteroak', rounds: '6', options: [opt({ hit: '1' })] }),
 ];
-s.__stanceCounter = 3;
+s.__stanceCounter = 4;
 writeFileSync('samples/jaque_10-09.json', JSON.stringify(s, null, 2) + '\n');
 console.log('Wrote samples/jaque_10-09.json');
