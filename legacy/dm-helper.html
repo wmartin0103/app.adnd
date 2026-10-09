@@ -193,7 +193,9 @@
   .lightdetail .ldact.hit{color:var(--verdigris);font-weight:600}
   .lightdetail .ldhead{margin-top:2px}
   tr.lightdetail-row td{border-bottom:1px solid var(--edge)}
-  #lightBody > tr.act > td.name{display:flex;align-items:center;gap:10px}
+  /* stays a table cell (flex here pulled its border out of line with the row); the Quickness button sits beside the name */
+  #lightBody > tr.act > td.name{vertical-align:middle;white-space:nowrap}
+  #lightBody > tr.act > td.name > span + span{margin-left:10px}
   #lightBody > tr.baddycard-row > td{padding:6px 0 !important;border:none !important}
   #lightBody > tr.baddycard-row .char{margin:0}
   .bdid{font-family:var(--sans);font-size:.72rem;font-weight:700;letter-spacing:.04em;color:var(--brass);border:1px solid var(--edge);border-radius:4px;padding:2px 7px;white-space:nowrap}
