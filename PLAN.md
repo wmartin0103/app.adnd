@@ -450,6 +450,12 @@ Helper pick from (see section 9).
     with one or more options: one option is an on/off switch; several are
     pick-one (Off | +1 hit | +1 AC | Attack and parry), and the player can
     add or remove options. Every card has Edit and Delete.
+26. **Scenario details (decided):** attacks per round are written the PHB
+    way (1/1, 3/2, 2/1 …). No "only in" link and no form flag; players manage
+    forms themselves. A scenario can be a Spell: pick a memorized spell; cast
+    time, range, save, attack roll and dice come from the spell catalog
+    (bundled with the sheet) and can be changed per scenario. Touch spells
+    roll with Str, ranged with Dex; a spell without a roll shows its save.
 
 ---
 

@@ -2,7 +2,7 @@
 //   • 10-07: thief skill Kit/Misc (Open Locks +20, Find/Remove Traps 0)
 //   • 10-09: daggers do 1d3 against Large targets (PHB), not 1d4
 //   • 10-09: weapon rows hold the weapon only; Jaque's own bonuses live in
-//     three scenarios (melee, thrown, off-hand); Bladesong and Defensive
+//     scenarios for melee, thrown, off-hand and a memorized spell; Bladesong and Defensive
 //     Spin are stances; a Bless from Atteroak shows a temporary effect
 // Signature Weapon (dagger): +1 hit, +2 dmg. Duelist's Precision: Dex instead
 // of Str to hit in melee (Dex 19 missile adj. +3, entered as Hit Mod there).
@@ -16,15 +16,16 @@ for (const w of s.__weapons) {
 }
 const sup = s.__weapons.find(w => w.name === 'Superior Dagger').id;
 const six = s.__weapons.find(w => w.name === 'Dagger x6').id;
-const sc = (o) => ({ group: 'rogue', levelMode: 'sheet', customLevel: 1, active: false, collapsed: false, handedness: 'main', offHandPenalty: '', onlyIn: '', ...o });
+const sc = (o) => ({ group: 'rogue', levelMode: 'sheet', customLevel: 1, active: false, collapsed: false, handedness: 'main', offHandPenalty: '', spellId: null, spell: {}, ...o });
 s.__scenarios = [
   sc({ id: 'sc-1', name: 'Dagger, melee', active: true, weaponId: sup, attackType: 'melee', hitMod: '4', dmgMod: '2', rate: '3/2' }),
-  sc({ id: 'sc-2', name: 'Dagger, thrown', weaponId: six, attackType: 'thrown', hitMod: '1', dmgMod: '2', rate: '3' }),
-  sc({ id: 'sc-3', name: 'Off-hand dagger', weaponId: sup, attackType: 'melee', handedness: 'off', offHandPenalty: '2', hitMod: '4', dmgMod: '2', rate: '1' }),
+  sc({ id: 'sc-2', name: 'Dagger, thrown', weaponId: six, attackType: 'thrown', hitMod: '1', dmgMod: '2', rate: '3/1' }),
+  sc({ id: 'sc-3', name: 'Off-hand dagger', weaponId: sup, attackType: 'melee', handedness: 'off', offHandPenalty: '2', hitMod: '4', dmgMod: '2', rate: '1/1' }),
+  sc({ id: 'sc-4', name: 'Charm Person', attackType: 'spell', spellId: 'spl-8', rate: '1/1' }),
 ];
-s.__scenarioCounter = 3;
+s.__scenarioCounter = 4;
 const opt = (o) => ({ label: '', hit: '', dmg: '', ac: '', note: '', ...o });
-const st = (o) => ({ on: false, choice: 0, target: 'all', form: false, temporary: false, from: '', rounds: '', ...o });
+const st = (o) => ({ on: false, choice: 0, target: 'all', temporary: false, from: '', rounds: '', ...o });
 s.__stances = [
   st({ id: 'st-1', name: 'Bladesong', on: true, choice: 0, options: [
     opt({ label: '+1 hit', hit: '1' }), opt({ label: '+1 AC', ac: '1' }), opt({ label: 'Attack and parry', note: 'DM adjudicates' }),

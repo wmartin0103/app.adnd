@@ -14,10 +14,17 @@ const END = '/* ── end sheet converter ── */';
 // What each tool gets from the rules code
 export const TARGETS = {
   'legacy/dm-helper.html': { SheetConverter: ['adapters/dm-helper', ['toDMHelper']] },
+  'legacy/character-sheet.html': { SheetSpells: ['rules/spells', ['findSpell']] },
+};
+// Data a tool gets alongside the rules code, as window globals
+const DATA = {
+  'legacy/character-sheet.html': { SheetSpellCatalog: 'data/spell-catalog.json' },
 };
 
 export function bundleFor(file) {
-  return bundle(RULES_FILES, { expose: TARGETS[file] });
+  const data = Object.entries(DATA[file] || {})
+    .map(([name, path]) => `window.${name} = ${JSON.stringify(JSON.parse(readFileSync(path, 'utf8')))};`);
+  return [bundle(RULES_FILES, { expose: TARGETS[file] }), ...data].join('\n');
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
