@@ -2041,13 +2041,11 @@
     .stance-ctl { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; margin-top: 0.45rem; }
     .stance-sum { font-family: var(--font-display); font-size: 0.8rem; color: var(--ink-muted); }
     .stance-card.is-on .stance-sum { color: var(--accent); }
-    .stance-seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden; }
-    .stance-seg button { display: grid; gap: 0.05rem; text-align: left; border: none; border-right: 1px solid var(--rule); background: var(--surface); padding: 0.3rem 0.75rem; cursor: pointer; font-size: 0.85rem; color: var(--ink); }
+    /* Segmented control, as in the Combat prototype's Bladesong row */
+    .stance-seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden; background: var(--surface); }
+    .stance-seg button { border: none; background: transparent; padding: 4px 11px; border-right: 1px solid var(--rule); font-family: var(--font-body); font-size: 0.93rem; line-height: 1.45; color: var(--ink); cursor: pointer; }
     .stance-seg button:last-child { border-right: none; }
-    .stance-seg button small { font-family: var(--font-display); font-size: 0.65rem; color: var(--ink-muted); }
     .stance-seg button[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
-    .stance-seg button[aria-pressed="true"] small { color: var(--surface); opacity: 0.85; }
-    .stance-seg button[data-k="off"][aria-pressed="true"] { background: var(--parchment); color: var(--ink); }
     .stance-switch { flex: none; width: 2.3rem; height: 1.3rem; border-radius: 999px; border: 1px solid var(--rule); background: var(--parchment); position: relative; cursor: pointer; padding: 0; }
     .stance-switch span { position: absolute; top: 2px; left: 2px; width: calc(1.3rem - 6px); height: calc(1.3rem - 6px); border-radius: 50%; background: var(--ink-muted); transition: left 0.15s; }
     .stance-switch[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); }
@@ -4585,7 +4583,8 @@
             const pressed = k === 'off' ? !st.on : (st.on && String(st.choice) === k);
             b.setAttribute('aria-pressed', pressed ? 'true' : 'false');
             b.dataset.k = k;
-            b.innerHTML = `<span>${t.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]))}</span>${sub && sub !== t ? `<small>${sub.replace(/[&<>]/g, '')}</small>` : ''}`;
+            b.textContent = t;
+            if (sub && sub !== t) b.title = sub;
             b.addEventListener('click', () => {
               if (k === 'off') st.on = false; else { st.on = true; st.choice = parseInt(k, 10); }
               refreshAfterStances(`[data-stance-id="${st.id}"] .stance-seg [data-k="${k}"]`);
