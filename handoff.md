@@ -372,13 +372,17 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
 
 **Known gaps, deliberately deferred**
 
-- Spell damage caps are not applied (Fireball shows 12d6 at level 12, not 10d6).
+- Spell damage caps: done 2026-10-09 for the DM Helper. 26 per-level spells
+  have `diceMaxLevel` in the catalog (Fireball and Lightning Bolt 10, Chain
+  Lightning 12), read from the wiki with `import-wiki-spells.mjs --caps`. Still
+  not handled: "1d6 per 2 levels" dice (rolled by hand), and caps the wiki
+  words some other way.
 - The preview viewer blocks file downloads, so the sheet's save-to-file button
   does nothing there; it works in the standalone file.
 - The DM Helper's "effects on" line is a snapshot from the last import: a
   player turns Bless off when it expires, and the DM re-imports.
-- Not yet checked on the hosted preview: that typing "Bless" still offers
-  "Priest · Level 1" now the catalog is a separate file.
+- Checked 2026-10-09: with the catalog as a separate file, typing "Bless"
+  still offers "Priest · Level 1", and both tools share the page's one copy.
 
 **Roadmap after that** (PLAN section 7)
 

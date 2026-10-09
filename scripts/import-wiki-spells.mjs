@@ -2,6 +2,7 @@
 // text under CC BY-SA) into data/spell-catalog.json:
 //
 //   NODE_USE_ENV_PROXY=1 node scripts/import-wiki-spells.mjs
+//   node scripts/import-wiki-spells.mjs --caps   (only where per-level dice stop growing)
 //
 // Only the facts in each spell's infobox are kept (class, school or sphere,
 // level, range, casting time, duration, area, save, source) plus a link to
@@ -13,6 +14,7 @@
 // fills fields that are empty.
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
 
 // Set SPELL_CACHE=<dir> to keep the downloaded pages and re-run without fetching
 const CACHE = process.env.SPELL_CACHE || '';
@@ -115,7 +117,7 @@ function guess(fields, rest) {
   // The first dice roll that is damage or hit points ("2d4 Hit Dice" and
   // "1d4 persons" are not): "1d4+1", "1d6 points of damage per level",
   // "1d8 points of damage, plus 1 point per level", "1d6 for every two levels"
-  let dice = '';
+  let dice = '', diceMaxLevel = 0;
   for (const m of text.matchAll(/(\d+d\d+(?:\s*[+-]\s*\d+)?)/g)) {
     const after = text.slice(m.index + m[0].length, m.index + m[0].length + 90).split('.')[0];
     const before = text.slice(Math.max(0, m.index - 40), m.index);
@@ -125,6 +127,7 @@ function guess(fields, rest) {
     const perLevel = !plus && !every && /^\s*(?:points?\s+)?(?:of\s+)?(?:[a-z]+\s+){0,2}?(?:damage\s+|hit points?\s+)?(?:per|for each)\s+(?:experience\s+)?level/.test(after);
     const n = every ? ({ two: 2, three: 3, four: 4 }[every[1]] || every[1]) : 0;
     dice = m[1].replace(/\s+/g, '') + (plus ? `+${plus[1]}/level` : every ? ` per ${n} levels` : perLevel ? '/level' : '');
+    diceMaxLevel = diceCap(dice, text.slice(m.index, m.index + 300).split(/\.(?!\d)/)[0]);
     break;
   }
   const heal = /\b(cure|heal|regenerat|restor)/.test(name) || /\b(heals|restores|cures)\b[^.]{0,60}\bhit points?\b/.test(text);
@@ -136,8 +139,26 @@ function guess(fields, rest) {
   if (heal) attack = 'none';
   else if (rolls) attack = touchy ? 'touch' : 'ranged';
   else if (range.includes('touch') && dice && (save === 'none' || save === '')) attack = 'touch';
-  return { dice, diceKind: dice ? (heal ? 'heal' : 'damage') : '', attack };
+  return { dice, diceKind: dice ? (heal ? 'heal' : 'damage') : '', attack, diceMaxLevel };
 }
+
+// The caster level where per-level dice stop growing, from the sentence that
+// gives the dice: "1d6/level" with "up to a maximum of 10d6" → 10;
+// "1d3+2/level" with "to a maximum of 1d3+20" → 10; "maximum of 10 dice" → 10;
+// "maximum of 12th level" → 12. 0 when there's no cap (or no per-level dice).
+export function diceCap(dice, sentence) {
+  const d = String(dice).match(/^(\d*)d\d+(?:\+(\d+))?\/level$/);
+  if (!d) return 0;
+  const s = String(sentence).toLowerCase();
+  // "maximum of 10d6", "max. 10d6", "maximum damage per level of 10d6"
+  const max = s.match(/max(?:imum|\.)?(?:\s+(?:damage|per|level|of|is)){0,4}\s+(\d+)d\d+(?:\s*\+\s*(\d+))?/);
+  if (max) return d[2] ? (max[2] ? Math.floor(Number(max[2]) / Number(d[2])) : 0) : Math.floor(Number(max[1]) / (Number(d[1]) || 1));
+  const n = s.match(/max(?:imum|\.)?(?:\s+of)?\s+(\d+)\s*(?:dice|d\b|(?:st|nd|rd|th)?\s+(?:caster\s+)?level)/);
+  return n ? Number(n[1]) : 0;
+}
+
+// Fields an import fills on entries that already exist, when they're empty
+const FILLED = ['school', 'castTime', 'range', 'duration', 'area', 'save', 'dice', 'diceKind', 'diceMaxLevel', 'source', 'link'];
 
 const slug = s => s.toLowerCase().replace(/['’]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
@@ -173,13 +194,14 @@ async function main() {
           link: WIKI + encodeURIComponent(page.title.replace(/ /g, '_')).replace(/%2F/g, '/'),
         };
         if (!entry.dice) delete entry.diceKind;
+        if (g.diceMaxLevel) entry.diceMaxLevel = g.diceMaxLevel;
         // "Run (Lvl 1)", "Sound Bubble - Bard": also answer to the plain name
         const plain = entry.name.replace(/\s*\((?:lvl|level)[^)]*\).*$/i, '').replace(/\s+[-–]\s+[^-–]+$/, '').replace(/[;,]?\s*\((?:chant|cooperative)\)$/i, '').trim();
         if (plain && plain !== entry.name) entry.aliases = [plain];
         const key = `${entry.class}|${slug(entry.name)}|${entry.level}`;
         const existing = byKey.get(key);
         if (existing) {
-          for (const k of ['school', 'castTime', 'range', 'duration', 'area', 'save', 'dice', 'diceKind', 'source', 'link']) {
+          for (const k of FILLED) {
             if ((existing[k] === undefined || existing[k] === '') && entry[k]) { existing[k] = entry[k]; filled++; }
           }
           continue;
@@ -203,7 +225,7 @@ async function main() {
     const key = e.name.toLowerCase();
     const src = catalog.spells.find(x => x !== e && x.class === e.class && x.status === 'imported'
       && (x.name.toLowerCase() === key || (x.aliases || []).some(a => a.toLowerCase() === key)));
-    if (src) for (const k of ['school', 'castTime', 'range', 'duration', 'area', 'save', 'dice', 'diceKind', 'source', 'link']) {
+    if (src) for (const k of FILLED) {
       if ((e[k] === undefined || e[k] === '') && src[k]) { e[k] = src[k]; filled++; }
     }
     if (!missing(e).length) e.status = 'imported';
@@ -214,4 +236,32 @@ async function main() {
   console.log(`added ${added}, filled ${filled} empty fields on existing entries, ${skipped} pages without an infobox`);
 }
 
-main().catch(e => { console.error(e); process.exit(1); });
+// --caps: only fill in where per-level dice stop growing, for the catalog's
+// per-level spells that don't have it yet (fetches just those pages)
+async function caps() {
+  const catalog = JSON.parse(readFileSync('data/spell-catalog.json', 'utf8'));
+  const todo = catalog.spells.filter(e => /\/level$/.test(e.dice || '') && !e.diceMaxLevel && (e.link || '').startsWith(WIKI));
+  const byTitle = new Map(todo.map(e => [decodeURIComponent(e.link.slice(WIKI.length)).replace(/_/g, ' '), e]));
+  let found = 0;
+  const titles = [...byTitle.keys()];
+  for (let i = 0; i < titles.length; i += 50) {
+    const d = await api({ action: 'query', prop: 'revisions', rvprop: 'content', rvslots: 'main', titles: titles.slice(i, i + 50).join('|') });
+    const renamed = new Map([...(d.query.normalized || []), ...(d.query.redirects || [])].map(n => [n.to, n.from]));
+    for (const page of Object.values(d.query.pages || {})) {
+      const e = byTitle.get(page.title) || byTitle.get(renamed.get(page.title));
+      const text = page.revisions?.[0]?.slots?.main?.['*'] || page.revisions?.[0]?.['*'] || '';
+      const box = e && infobox(text);
+      if (!box) continue;
+      const g = guess(box.fields, box.rest);
+      // Only when the page still gives the same dice the catalog has
+      if (g.diceMaxLevel && g.dice === e.dice) { e.diceMaxLevel = g.diceMaxLevel; found++; console.log(`${e.name}: ${e.dice}, stops at level ${g.diceMaxLevel}`); }
+    }
+    await sleep(400);
+  }
+  writeFileSync('data/spell-catalog.json', JSON.stringify(catalog, null, 1) + '\n');
+  console.log(`${todo.length} per-level spells checked, ${found} caps found`);
+}
+
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+  (process.argv.includes('--caps') ? caps() : main()).catch(e => { console.error(e); process.exit(1); });
+}

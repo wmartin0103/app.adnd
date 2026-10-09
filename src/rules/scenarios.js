@@ -128,7 +128,7 @@ export function scenarioSpell(ctx, sc) {
   const pick = k => (own[k] !== undefined && own[k] !== '' ? own[k] : (cat && cat[k]) || '');
   return {
     sheet: sp, catalog: cat,
-    name: sp.name, castTime: pick('castTime'), range: pick('range'), save: pick('save'), dice: pick('dice'),
+    name: sp.name, castTime: pick('castTime'), range: pick('range'), save: pick('save'), dice: pick('dice'), diceMaxLevel: pick('diceMaxLevel'),
     attack: pick('attack') || 'none', heal: (cat && cat.diceKind === 'heal') || /cure|heal/i.test(sp.name),
     link: (cat && cat.link) || sp.url || '',
   };

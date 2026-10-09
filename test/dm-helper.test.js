@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 
 import { armorClass, savingThrows, stoutSaveBonus, thiefSkills, proficiencyTargets } from '../src/rules/character.js';
 import { toDMHelper, formatDMHelperConfig, castSpeed, diceAtLevel } from '../src/adapters/dm-helper.js';
+import { diceCap } from '../scripts/import-wiki-spells.mjs';
 
 const jaque = JSON.parse(readFileSync(new URL('./fixtures/jaque-v2.json', import.meta.url)));
 const jaqueV1 = JSON.parse(readFileSync(new URL('../samples/jaque_09-23.json', import.meta.url)));
@@ -147,6 +148,27 @@ test('cast times and per-level dice', () => {
   assert.deepEqual(['1', '3', '1 round', '1 turn', '', '½ segment'].map(castSpeed), [1, 3, 10, 10, null, null]);
   assert.deepEqual([diceAtLevel('1d6/level', 5), diceAtLevel('1d8+1/level', 5), diceAtLevel('2d4', 5), diceAtLevel('1d4+1 per missile', 5)],
     ['5d6', '1d8+5', '2d4', null]);
+});
+
+test('per-level spell dice stop growing at the spell\'s cap', () => {
+  assert.equal(diceAtLevel('1d6/level', 12, 10), '10d6');
+  assert.equal(diceAtLevel('1d6/level', 7, 10), '7d6');
+  assert.equal(diceAtLevel('1d3+2/level', 12, 10), '1d3+20');
+  assert.equal(diceAtLevel('1d8+1/level', 12), '1d8+12');               // no cap (Shocking Grasp)
+  // The catalog's Fireball, cast by a 12th-level wizard
+  const save = { ...effectsOff(current), __classes: [{ id: 'c', name: 'Mage', group: 'wizard', level: '12' }] };
+  save.__spells = [{ id: 'spl-80', name: 'Fireball', level: 3, type: 'wizard', isMemorized: true }];
+  save.__scenarios = [{ id: 'sc-9', name: 'Fireball', group: 'wizard', levelMode: 'sheet', attackType: 'spell', spellId: 'spl-80', spell: {}, rate: '1/1' }];
+  assert.deepEqual(toDMHelper(save, {}, { catalog }).damage['Jaque|Fireball'], { sm: '10d6', l: '10d6' });
+});
+
+test('the wiki import reads a spell\'s cap from its wording', () => {
+  assert.equal(diceCap('1d6/level', 'inflicts 1d6 points of fire damage per level (up to a maximum of 10d6)'), 10);
+  assert.equal(diceCap('1d6/level', '1d6 points of damage per level of the spellcaster (maximum damage per level of 10d6)'), 10);
+  assert.equal(diceCap('1d3+2/level', '1d3 points of fire damage + 2 points per level, to a maximum of 1d3+20'), 10);
+  assert.equal(diceCap('1d4/level', '1d4 points per level, to a maximum of 12 dice'), 12);
+  assert.equal(diceCap('1d8+1/level', '1d8 points of damage, plus 1 point per level'), 0);
+  assert.equal(diceCap('2d4', 'up to a maximum of 10d6'), 0);           // not per-level dice
 });
 
 test('DM settings that aren\'t on the sheet are passed through; the DM\'s actions follow the spells', () => {

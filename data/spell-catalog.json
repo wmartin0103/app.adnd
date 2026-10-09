@@ -12601,7 +12601,8 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Tumblethorns_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Tumblethorns_(Priest_Spell)",
+   "diceMaxLevel": 10
   },
   {
    "id": "understand-curse-priest",
@@ -15314,7 +15315,8 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Eye_of_Fire_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Eye_of_Fire_(Priest_Spell)",
+   "diceMaxLevel": 10
   },
   {
    "id": "eyes-of-the-undead-priest",
@@ -18041,7 +18043,8 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Speed_Rot_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Speed_Rot_(Priest_Spell)",
+   "diceMaxLevel": 10
   },
   {
    "id": "spell-shield-of-mystra-priest",
@@ -22382,7 +22385,8 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Hurl_Thunderbolt_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Hurl_Thunderbolt_(Priest_Spell)",
+   "diceMaxLevel": 10
   },
   {
    "id": "ice-blade-priest",
@@ -36262,7 +36266,8 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Akadi's_Vortex_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Akadi's_Vortex_(Priest_Spell)",
+   "diceMaxLevel": 12
   },
   {
    "id": "ancient-curse-priest",
@@ -43183,7 +43188,8 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Burning_Hands_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Burning_Hands_(Wizard_Spell)",
+   "diceMaxLevel": 10
   },
   {
    "id": "burning-sands-wizard",
@@ -46538,7 +46544,8 @@
    "link": "https://adnd2e.fandom.com/wiki/Magic_Disk_(Wizard_Spell)",
    "aliases": [
     "Magic Disk"
-   ]
+   ],
+   "diceMaxLevel": 10
   },
   {
    "id": "magic-fist-wizard",
@@ -51287,7 +51294,8 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Darsson's_Fiery_Cube_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Darsson's_Fiery_Cube_(Wizard_Spell)",
+   "diceMaxLevel": 10
   },
   {
    "id": "dazzle-red-wizard-wizard",
@@ -52790,7 +52798,8 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Fist_of_the_Adder_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Fist_of_the_Adder_(Wizard_Spell)",
+   "diceMaxLevel": 10
   },
   {
    "id": "flame-dagger-red-wizard-wizard",
@@ -56377,7 +56386,8 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Snilloc's_Snowball_Swarm_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Snilloc's_Snowball_Swarm_(Wizard_Spell)",
+   "diceMaxLevel": 8
   },
   {
    "id": "snow-tread-wizard",
@@ -59768,7 +59778,8 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Dissipate_Vapor_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Dissipate_Vapor_(Wizard_Spell)",
+   "diceMaxLevel": 10
   },
   {
    "id": "distract-wizard-3",
@@ -60723,7 +60734,8 @@
    "link": "https://adnd2e.fandom.com/wiki/Fire_Lance_(Wizard_Spell)",
    "aliases": [
     "Fire Lance"
-   ]
+   ],
+   "diceMaxLevel": 10
   },
   {
    "id": "fire-phantom-wizard",
@@ -60817,7 +60829,8 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Fireball_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Fireball_(Wizard_Spell)",
+   "diceMaxLevel": 10
   },
   {
    "id": "fireflow-wizard",
@@ -62185,7 +62198,8 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Lightning_Bolt_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Lightning_Bolt_(Wizard_Spell)",
+   "diceMaxLevel": 10
   },
   {
    "id": "lightning-reflection-wizard-3",
@@ -65286,7 +65300,8 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Steam_Blast_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Steam_Blast_(Wizard_Spell)",
+   "diceMaxLevel": 10
   },
   {
    "id": "steam-breath-wizard",
@@ -65309,7 +65324,8 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Steam_Breath_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Steam_Breath_(Wizard_Spell)",
+   "diceMaxLevel": 10
   },
   {
    "id": "steeldance-wizard",
@@ -65854,7 +65870,8 @@
    "link": "https://adnd2e.fandom.com/wiki/Trap_Spellbook_(Wizard_Spell)",
    "aliases": [
     "Trap Spellbook"
-   ]
+   ],
+   "diceMaxLevel": 5
   },
   {
    "id": "undead-control-wizard",
@@ -67105,7 +67122,8 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Blacksphere_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Blacksphere_(Wizard_Spell)",
+   "diceMaxLevel": 10
   },
   {
    "id": "blood-lightning-wizard",
@@ -67832,7 +67850,8 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Darkning_Bolt_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Darkning_Bolt_(Wizard_Spell)",
+   "diceMaxLevel": 10
   },
   {
    "id": "darssons-eye-in-the-sky-wizard",
@@ -71348,7 +71367,8 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Nystul's_Lightburst_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Nystul's_Lightburst_(Wizard_Spell)",
+   "diceMaxLevel": 10
   },
   {
    "id": "odeens-impenetrable-lock-wizard",
@@ -73801,7 +73821,8 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Sunfire_-_At'ar's_Fire_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Sunfire_-_At'ar's_Fire_(Wizard_Spell)",
+   "diceMaxLevel": 10
   },
   {
    "id": "sunwarp-wizard",
@@ -78142,7 +78163,8 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Lightning_Lash_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Lightning_Lash_(Wizard_Spell)",
+   "diceMaxLevel": 6
   },
   {
    "id": "lightning-reflection-wizard",
@@ -78992,7 +79014,8 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Nystul's_Radiant_Arch_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Nystul's_Radiant_Arch_(Wizard_Spell)",
+   "diceMaxLevel": 15
   },
   {
    "id": "oathbinding-wizard",
@@ -80543,7 +80566,8 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Shipshock_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Shipshock_(Wizard_Spell)",
+   "diceMaxLevel": 15
   },
   {
    "id": "shock-shield-wizard",
@@ -82897,7 +82921,8 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Chain_Lightning_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Chain_Lightning_(Wizard_Spell)",
+   "diceMaxLevel": 12
   },
   {
    "id": "claws-of-the-umber-hulk-wizard",
@@ -85994,7 +86019,8 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Ring_of_Disintegration_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Ring_of_Disintegration_(Wizard_Spell)",
+   "diceMaxLevel": 15
   },
   {
    "id": "salamanders-seismic-seizure-wizard",

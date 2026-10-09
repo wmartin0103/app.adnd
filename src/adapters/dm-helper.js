@@ -63,8 +63,10 @@ export function castSpeed(castTime) {
   const m = t.match(/\d+/);
   return m ? Math.min(parseInt(m[0], 10), 10) : null;
 }
-// Spell dice at the caster's level: "1d6/level" → "5d6", "1d8+1/level" → "1d8+5"
-export function diceAtLevel(dice, level) {
+// Spell dice at the caster's level: "1d6/level" → "5d6", "1d8+1/level" → "1d8+5".
+// `maxLevel` is where the spell stops growing (Fireball: 10, so 10d6 at most).
+export function diceAtLevel(dice, level, maxLevel = 0) {
+  if (num(maxLevel) > 0) level = Math.min(level, num(maxLevel));
   const d = String(dice || '').replace(/\s+/g, '');
   let m = d.match(/^(\d*)d(\d+)\/level$/i);
   if (m) return `${(num(m[1]) || 1) * level}d${m[2]}`;
@@ -114,7 +116,7 @@ export function toDMHelper(save, dmSettings = {}, { catalog = null } = {}) {
       if (speed === null) review.push(`${label}: no cast time; initiative speed defaults to 1`);
       actions.push({ name: label, thac0: bd ? bd.thac0 : null, speedMin: 0, speedMax: 10, speedDefault: speed ?? 1 });
       if (sp.dice) {
-        const dice = diceAtLevel(sp.dice, level);
+        const dice = diceAtLevel(sp.dice, level, sp.diceMaxLevel);
         if (dice) damage[`${name}|${label}`] = { sm: dice, l: dice };
         else review.push(`${label}: damage "${sp.dice}" isn't plain dice; roll it by hand`);
       }
