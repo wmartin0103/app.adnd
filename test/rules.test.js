@@ -337,3 +337,16 @@ test('spell catalog: every spell in the saves has an entry, matched by name or a
   const ids = catalog.spells.map(e => e.id);
   assert.equal(new Set(ids).size, ids.length);
 });
+
+test('spell catalog: wiki import has PHB stat blocks with guessed dice and attack rolls', async () => {
+  const catalog = JSON.parse(readFileSync(new URL('../data/spell-catalog.json', import.meta.url)));
+  const get = (name, cls) => catalog.spells.find(e => e.name === name && e.class === cls);
+  assert.ok(catalog.spells.length > 4000);
+  assert.deepEqual(['castTime', 'range', 'save', 'dice', 'attack'].map(k => get('Magic Missile', 'wizard')[k]), ['1', '60 yds.+ 10 yds./level', 'None', '1d4+1', 'none']);
+  assert.equal(get('Fireball', 'wizard').dice, '1d6/level');
+  assert.deepEqual([get('Shocking Grasp', 'wizard').attack, get('Shocking Grasp', 'wizard').dice], ['touch', '1d8+1/level']);
+  assert.equal(get('Sleep', 'wizard').dice || '', '');           // 2d4 Hit Dice is not damage
+  assert.equal(get('Charm Person', 'wizard').status, 'check');   // hand-entered entry kept
+  const ids = catalog.spells.map(e => e.id);
+  assert.equal(new Set(ids).size, ids.length);
+});

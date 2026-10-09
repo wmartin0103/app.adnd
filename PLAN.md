@@ -462,6 +462,15 @@ Helper pick from (see section 9).
     like "*+1/2" moves to Notes; a flat bonus in the dice moves to Dmg adj
     unless the PHB weapon has it built in. Bonuses against certain target
     sizes are an Effect on that weapon (Wave Dagger: vs tiny, vs small).
+28. **Spell catalog import (done 10-09):** `scripts/import-wiki-spells.mjs`
+    imports ~4,400 wizard and priest spells (incl. cantrips and orisons) from
+    the AD&D 2e wiki (CC BY-SA): infobox facts plus a link; attack roll and
+    dice are guessed from the description and listed under `check`. No
+    description text is stored. Hand-entered entries keep their values.
+    The sheet bundles the catalog: spell names suggest from it, picking one
+    sets level and link and remembers the entry, and Spell attacks fill in
+    from it. When the cloud backend exists, the catalog moves into its
+    database so corrections are shared.
 
 ---
 
