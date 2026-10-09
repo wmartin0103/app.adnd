@@ -5803,7 +5803,6 @@ window.SheetSpellCatalog = {"about":"The campaign's shared spell catalog: short 
             const opt = document.createElement('option');
             opt.value = wpn.id;
             opt.textContent = wpn.name || '(unnamed weapon)';
-            if (wpn.hitAdj) opt.textContent += ` (Hit ${wpn.hitAdj})`;
             if (scenario.weaponId === wpn.id) opt.selected = true;
             wpnSelect.appendChild(opt);
           });
