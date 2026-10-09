@@ -492,7 +492,19 @@ Helper pick from (see section 9).
     multiplies the whole damage. (A Magic column was tried and dropped: not
     every magic weapon adds damage, and the split added little.) The spell
     catalog is one shared file, `data/spell-catalog.js`, loaded by both tools.
-    Spell damage caps (Fireball's 10d6) wait until later.
+    Spell damage caps (Fireball's 10d6) wait until later. *(Done 10-09: caps
+    from the catalog's `diceMaxLevel`.)*
+31. **Caster level (decided 10-09):** a spell uses the level of the class
+    that casts it: wizard spells at the bard/mage level, priest spells at the
+    cleric/druid level; paladins cast at level − 8 and rangers at level − 7
+    (PHB casting-level tables). A Blade casts as a bard two levels lower
+    (house rule). The sheet and the DM Helper show the dice worked out at that
+    level. Open: whether paladin/ranger casting level stops at 9 (check the PHB).
+32. **Multi-classing (house rule, 10-09):** the PHB's racial limits on
+    multi- and dual-classing don't apply. A character who lists more than one
+    class is multi-classed in all of them, whatever their race (Hanspeter,
+    human, is a multi-class Bard 2 / Druid 5): each class works at its own
+    level, and saves and THAC0 use the best of them.
 
 ---
 

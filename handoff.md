@@ -381,6 +381,9 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
   ranger −7), and a Blade casts two levels lower (Jaque: 3). The sheet and the
   DM Helper both show the worked-out dice ("Damage at level 3: 1d8+3"), and
   "1d8 per 2 levels" dice work too. A scenario's Level Source can override it.
+  To check in the PHB: whether paladin/ranger casting level stops at 9.
+- House rule: the PHB's racial limits on multi- and dual-classing don't
+  apply; a character listing several classes is multi-classed (PLAN 32).
 - The preview viewer blocks file downloads, so the sheet's save-to-file button
   does nothing there; it works in the standalone file.
 - The DM Helper's "effects on" line is a snapshot from the last import: a
