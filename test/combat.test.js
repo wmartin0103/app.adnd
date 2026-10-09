@@ -50,20 +50,3 @@ test('a bonus not revealed yet shows as "+ ?"', () => {
   assert.equal(attackFor({ sheet, weapon: w, mode: 'melee' }).damage.sm, '1d4+2 + ?');
 });
 
-test('Jaque on the totals model matches the numbers confirmed with his player', () => {
-  const j = load('jaque_10-09.json');
-  const at = (name, mode, opts = {}) => attackFor({ sheet: j, weapon: row(j, name), mode, ...opts });
-  assert.deepEqual([at('Superior Dagger', 'thrown').thac0, at('Superior Dagger', 'thrown').damage.sm, at('Superior Dagger', 'thrown').rate], [13, '1d4+3', '3/1']);
-  assert.deepEqual([at('Superior Dagger', 'melee').thac0, at('Superior Dagger', 'melee').rate], [13, '3/2']);
-  assert.equal(at('Leprechaun Dagger', 'melee').damage.sm, '1d4+2 + ?');
-  assert.deepEqual([at('Wave Dagger', 'melee').thac0, at('Dagger x6', 'thrown').damage.sm], [14, '1d4+2']);
-  assert.equal(at('Superior Dagger', 'melee', { offHand: true }).thac0, 15);
-  // The parts are listed and add up to the row's total
-  const sup = at('Superior Dagger', 'thrown');
-  assert.deepEqual(sup.lines.map(l => [l.label, l.hit, l.dmg]), [['Weapon', 1, 1], ['Ability score', 3, 0], ['Proficiency', 1, 2]]);
-  for (const w of j.__weapons) {
-    const sum = o => Object.values(o).reduce((t, v) => t + (parseInt(v, 10) || 0), 0);
-    assert.equal(sum(w.hitParts), parseInt(w.hitAdj, 10), w.name);
-    assert.equal(sum(w.dmgParts), parseInt(w.dmgAdj, 10), w.name);
-  }
-});

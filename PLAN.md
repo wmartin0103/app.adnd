@@ -425,6 +425,15 @@ Helper pick from (see section 9).
     damage, AC bonus; for stances, until changed) and This attack (to hit,
     damage). Weapon notes show on that weapon's cards. The only always-on
     extra is one Off-hand penalty field on the Weapons section.
+23. **Back to basics (decided 10-09; supersedes 13–22 except the spell
+    catalog):** the sheet returns to the original with only the confirmed
+    corrections (priest THAC0, exceptional Strength, racial weapon bonuses,
+    Blade thief skills, Con save bonus), Combat Scenarios and Enemy Tracker
+    included. The DM Helper stays as it was plus Import sheets, reading basic
+    details, saves, proficiency checks, thief skills and weapons from each
+    save. Abilities and proficiencies are announced, not automated. The
+    Combat tab is shelved. Open: how weapon rows and scenarios share the
+    character's bonuses (being workshopped).
 
 ---
 

@@ -14,15 +14,6 @@ const END = '/* ── end sheet converter ── */';
 // What each tool gets from the rules code
 export const TARGETS = {
   'legacy/dm-helper.html': { SheetConverter: ['adapters/dm-helper', ['toDMHelper']] },
-  'legacy/character-sheet.html': {
-    SheetRules: ['rules/weapons', ['PHB_WEAPONS', 'resolveWeapon']],
-    SheetGuess: ['rules/migrate', ['guessCategory']],
-    SheetTables: ['rules/tables', ['NONPROFICIENT_PENALTY']],
-    SheetDice: ['rules/dice', ['parseDice', 'formatDice']],
-    SheetCharacter: ['rules/character', ['hpState', 'HP_FLOOR']],
-    SheetAbilities: ['rules/abilities', ['COMBAT_ROLES', 'guessCombatRole']],
-    SheetCombat: ['rules/combat', ['weaponModes', 'attackRate']],
-  },
 };
 
 export function bundleFor(file) {

@@ -120,35 +120,12 @@
       "size": "sm",
       "dmgType": "piercing",
       "speed": "2",
-      "hitAdj": "+5",
-      "dmgAdj": "+3",
-      "dmgSM": "1d4",
-      "dmgL": "1d4",
+      "hitAdj": "+1",
+      "dmgAdj": "",
+      "dmgSM": "1d4+1",
+      "dmgL": "1d3+1",
       "notes": "",
-      "racialBonus": false,
-      "hitParts": {
-        "weapon": "+1",
-        "ability": "+3",
-        "prof": "+1",
-        "other": ""
-      },
-      "dmgParts": {
-        "weapon": "+1",
-        "ability": "",
-        "prof": "+2",
-        "other": ""
-      },
-      "basedOn": "dagger",
-      "modes": [
-        "melee",
-        "thrown"
-      ],
-      "rates": {
-        "melee": "3/2",
-        "thrown": "3/1"
-      },
-      "fieldsV": 2,
-      "unrevealed": false
+      "racialBonus": false
     },
     {
       "id": "wpn-3",
@@ -156,35 +133,12 @@
       "size": "sm",
       "dmgType": "piercing",
       "speed": "2",
-      "hitAdj": "+5",
-      "dmgAdj": "+2",
+      "hitAdj": "+1",
+      "dmgAdj": "?",
       "dmgSM": "1d4",
-      "dmgL": "1d4",
+      "dmgL": "1d3",
       "notes": "\"This dagger is nice\"",
-      "racialBonus": false,
-      "hitParts": {
-        "weapon": "+1",
-        "ability": "+3",
-        "prof": "+1",
-        "other": ""
-      },
-      "dmgParts": {
-        "weapon": "",
-        "ability": "",
-        "prof": "+2",
-        "other": ""
-      },
-      "unrevealed": true,
-      "basedOn": "dagger",
-      "modes": [
-        "melee",
-        "thrown"
-      ],
-      "rates": {
-        "melee": "3/2",
-        "thrown": "3/1"
-      },
-      "fieldsV": 2
+      "racialBonus": false
     },
     {
       "id": "wpn-4",
@@ -192,35 +146,12 @@
       "size": "sm",
       "dmgType": "piercing",
       "speed": "2",
-      "hitAdj": "+4",
-      "dmgAdj": "+2",
+      "hitAdj": "*+1/2",
+      "dmgAdj": "*+1/2",
       "dmgSM": "1d4",
-      "dmgL": "1d4",
-      "notes": "+1 hit/dmg vs tiny, +2 hit/dmg vs small",
-      "racialBonus": false,
-      "hitParts": {
-        "weapon": "",
-        "ability": "+3",
-        "prof": "+1",
-        "other": ""
-      },
-      "dmgParts": {
-        "weapon": "",
-        "ability": "",
-        "prof": "+2",
-        "other": ""
-      },
-      "basedOn": "dagger",
-      "modes": [
-        "melee",
-        "thrown"
-      ],
-      "rates": {
-        "melee": "3/2",
-        "thrown": "3/1"
-      },
-      "fieldsV": 2,
-      "unrevealed": false
+      "dmgL": "1d3",
+      "notes": "*For Tiny/Small",
+      "racialBonus": false
     },
     {
       "id": "wpn-5",
@@ -228,35 +159,12 @@
       "size": "sm",
       "dmgType": "piercing",
       "speed": "2",
-      "hitAdj": "+4",
-      "dmgAdj": "+2",
+      "hitAdj": "",
+      "dmgAdj": "",
       "dmgSM": "1d4",
-      "dmgL": "1d4",
+      "dmgL": "1d3",
       "notes": "",
-      "racialBonus": false,
-      "hitParts": {
-        "weapon": "",
-        "ability": "+3",
-        "prof": "+1",
-        "other": ""
-      },
-      "dmgParts": {
-        "weapon": "",
-        "ability": "",
-        "prof": "+2",
-        "other": ""
-      },
-      "basedOn": "dagger",
-      "modes": [
-        "melee",
-        "thrown"
-      ],
-      "rates": {
-        "melee": "3/2",
-        "thrown": "3/1"
-      },
-      "fieldsV": 2,
-      "unrevealed": false
+      "racialBonus": false
     }
   ],
   "__weaponCounter": 5,
@@ -468,78 +376,67 @@
       "id": "abc-1",
       "name": "Weapons Display",
       "desc": "By whirling a weapon about his body in a display of skill, precision, and deadly grace, the Blade affects the morale and courage of those who watch. One full round, no attack. Choose one effect:\n• Intimidation: functions as a use of the Intimidation NWP, same effects and target rules. A Blade without the proficiency may still attempt it through the display as an unmodified Charisma check. A Blade who HAS Intimidation gets +2 to the check when made through a weapon display.\n• Fascination: onlookers not already in combat who fail a save vs. paralyzation watch the display (up to 1 round/level) and take no other action. Any attack or obvious threat breaks it.\n",
-      "url": "",
-      "showInCombat": true
+      "url": ""
     },
     {
       "id": "abc-2",
       "name": "Handle Weapon",
       "desc": "Blades train and perform with a weapon in each hand and are considered ambidextrous. With two weapons from his list: no penalty on the primary weapon, -2 on the off-hand, regardless of Dex. Only the primary may be the signature weapon. When catching a small thrown weapon with the Juggling proficiency, he adds his level to the roll.",
-      "url": "",
-      "showInCombat": true
+      "url": ""
     },
     {
       "id": "abc-3",
       "name": "Trick Throw",
       "desc": "With a thrown knife or dagger, or a hand or light crossbow, he may make a called shot at only -2 (instead of -4) to pin a sleeve or cloak, cut a rope or strap, knock a small object from a hand, or land a blade within an inch of a target without harm. DM adjudicates on success; on a failure the shot misses. Trick shots only, not called shots meant to wound.\n",
-      "url": "",
-      "showInCombat": true
+      "url": ""
     },
     {
       "id": "abc-4",
       "name": "Defensive Spin",
       "desc": "A continuous defensive pattern. He may not attack, but AC improves by half his level (round up), and any creature that attacks him must save vs. paralyzation or take damage equal to half his level (round up, max = his weapon's maximum damage). Lasts up to a number of rounds equal to his Constitution; ends immediately if he's hit.",
-      "url": "https://adnd2e.fandom.com/wiki/Blade_(Character_Kit)#:~:text=Defensive/Offensive%20Spin",
-      "showInCombat": true
+      "url": "https://adnd2e.fandom.com/wiki/Blade_(Character_Kit)#:~:text=Defensive/Offensive%20Spin"
     },
     {
       "id": "abc-5",
       "name": "Offensive Spin",
       "desc": "One full round of menacing weapon display directed at a single opponent, making no attack. Next round he makes a normal attack against that opponent; on a hit, the victim must immediately make a morale check, with the usual consequences for failure. Wasted if the Blade is forced to move, attack, or defend himself during the display round, or if the attack misses.",
-      "url": "https://adnd2e.fandom.com/wiki/Blade_(Character_Kit)#:~:text=Defensive/Offensive%20Spin",
-      "showInCombat": true
+      "url": "https://adnd2e.fandom.com/wiki/Blade_(Character_Kit)#:~:text=Defensive/Offensive%20Spin"
     },
     {
       "id": "abc-8",
       "name": "Thieves' Cant",
       "desc": "Secret communication with other thieves",
-      "url": "https://adnd2e.fandom.com/wiki/Thief_Skill_Explanations_(PHB)#:~:text=is%2015th%20level).-,Thieves%27%20Cant,-Thieves%27%20cant%20is",
-      "showInCombat": false
+      "url": "https://adnd2e.fandom.com/wiki/Thief_Skill_Explanations_(PHB)#:~:text=is%2015th%20level).-,Thieves%27%20Cant,-Thieves%27%20cant%20is"
     },
     {
       "id": "abc-10",
       "name": "Influence Reactions",
       "desc": "Watchers roll saving throw vs paralyzation modified by -1 for every 3 bard levels. Failure means their reaction is shifted by 1 in direction of Bard's preference. Success results in opposite. Cannot be used in battle.",
-      "url": "https://adnd2e.fandom.com/wiki/Bard_(PHB)#:~:text=bard%20can%20also-,influence%20reactions,-of%20groups%20of",
-      "showInCombat": false
+      "url": "https://adnd2e.fandom.com/wiki/Bard_(PHB)#:~:text=bard%20can%20also-,influence%20reactions,-of%20groups%20of"
     },
     {
       "id": "abc-11",
       "name": "Inspiration",
       "desc": "Used before battle: +1 to atk, +1 to saving throws, or +2 to morale for all players within 10ft/per level of bard. Lasts 1 round per level - cannot be renewed while still in combat.\n\nAs the bard ability, performed as a full round of weapon display before combat. That display can't also be used for Intimidation or Fascination. ",
-      "url": "https://adnd2e.fandom.com/wiki/Bard_(PHB)#:~:text=can%20also%20be-,inspirational,-%2C%20rallying%20friends%20and",
-      "showInCombat": false
+      "url": "https://adnd2e.fandom.com/wiki/Bard_(PHB)#:~:text=can%20also%20be-,inspirational,-%2C%20rallying%20friends%20and"
     },
     {
       "id": "abc-15",
       "name": "Signature Weapon (Dagger)",
       "desc": "+1 hit, +2 dmg\nMelee: 3/2 attacks (2/1 @ 7th, 5/2 @ 13th)\nThrown: 3/1 attacks (4/1 @7th, 5/1 @ 13th)\n",
-      "url": "https://adnd2e.fandom.com/wiki/Specialist_Attacks_Per_Round",
-      "showInCombat": false
+      "url": "https://adnd2e.fandom.com/wiki/Specialist_Attacks_Per_Round"
     },
     {
       "id": "abc-16",
       "name": "Duelist's Precision",
       "desc": "In melee, use DEX missile attack adjustment (+3) in place of the STR to-hit adjustment.\n• Against a FLANKED or UNAWARE opponent, use INT in place of STR for dmg adjustment (+1), in melee or with a crossbow.\n",
-      "url": "",
-      "showInCombat": true
+      "url": ""
     },
     {
       "id": "abc-18",
       "name": "Limited Legend Lore",
       "desc": "Legend Lore for WEAPONS only: the lore of a named blade, a famous smith's work, a weapon's enchantment by reputation, at the normal chance for his level. Nothing else.",
-      "url": "",
-      "showInCombat": false
+      "url": ""
     }
   ],
   "__abilitiesCardsCounter": 18,
@@ -549,16 +446,14 @@
       "name": "Daggers (Signature Weapon)",
       "desc": "+1 hit, +2 dmg\nMelee: 3/2 attacks (2/1 @ 7th, 5/2 @ 13th)\nThrown: 3/1 attacks (4/1 @7th, 5/1 @ 13th)",
       "url": "https://adnd2e.fandom.com/wiki/Specialist_Attacks_Per_Round",
-      "slots": "1",
-      "showInCombat": false
+      "slots": "1"
     },
     {
       "id": "wpc-3",
       "name": "Bladesong Fighting Style (lv 1)",
       "desc": "Pick 1 Per Round:\n+1 bonus to AC | +1 to hit | Attack and parry in same round",
       "url": "https://adnd2e.fandom.com/wiki/Combat_Modification_(CBE)#Bladesong_Fighting_Style",
-      "slots": "2",
-      "showInCombat": true
+      "slots": "2"
     }
   ],
   "__wpnProfCardsCounter": 7,
@@ -693,6 +588,5 @@
       "notes": "lasts 5 days - 1hp each"
     }
   ],
-  "__itemsCounter": 12,
-  "__offHandPenalty": "-2"
+  "__itemsCounter": 12
 }
