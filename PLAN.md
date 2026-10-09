@@ -479,6 +479,12 @@ Helper pick from (see section 9).
     rows; spell scenarios are cast actions (cast time as speed, damage at the
     caster's level). Effects that are on count, as on the sheet, and the DM
     sees them listed ("On (counted below): Bless … 6 rounds left").
+30. **Magic kept separate (10-09):** weapon rows have a Magic column (+1 to
+    +5, or ? unrevealed) that adds to hit and damage; Hit · Dmg adj are the
+    non-magic bonuses (a superior weapon's +1). On a critical the DM Helper
+    multiplies everything except the magic, then adds it. The spell catalog
+    is one shared file, `data/spell-catalog.js`, loaded by both tools.
+    Spell damage caps (Fireball's 10d6) wait until later.
 
 ---
 

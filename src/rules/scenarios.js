@@ -151,7 +151,13 @@ export function scenarioAbility(ctx, sc) {
 export const scenarioWeapon = (ctx, sc) =>
   scenarioType(sc) !== 'spell' && sc.weaponId ? ctx.weapons.find(w => w.id === sc.weaponId) || null : null;
 
-// Damage vs S/M and L: weapon dice and adjustment, ability, Dmg Mod, effects
+// A weapon's magic bonus ("+1 weapon": +1 to hit and damage), kept apart from
+// its other adjustments (e.g. a superior weapon's +1) so a critical can treat
+// it differently. "?" is a bonus the DM hasn't revealed.
+export const weaponMagic = wpn => modNum(wpn && wpn.magic);
+const unrevealed = wpn => ({ hit: wpn.hitAdj === '?' || wpn.magic === '?', dmg: wpn.dmgAdj === '?' || wpn.magic === '?' });
+
+// Damage vs S/M and L: weapon dice, adjustment and magic, ability, Dmg Mod, effects
 export function scenarioDamage(ctx, sc) {
   if (scenarioType(sc) === 'spell') {
     const sp = scenarioSpell(ctx, sc);
@@ -159,14 +165,14 @@ export function scenarioDamage(ctx, sc) {
   }
   const wpn = scenarioWeapon(ctx, sc);
   if (!wpn) return null;
-  const extra = modNum(wpn.dmgAdj) + scenarioAbility(ctx, sc).dmg + modNum(sc.dmgMod)
+  const extra = modNum(wpn.dmgAdj) + weaponMagic(wpn) + scenarioAbility(ctx, sc).dmg + modNum(sc.dmgMod)
     + activeEffectsFor(ctx, sc).reduce((t, st) => t + modNum(st.dmg), 0);
   const dice = raw => {
     const m = String(raw || '').trim().match(/^(\d*d\d+)\s*(?:([+-])\s*(\d+))?$/i);
     if (!m) return raw ? String(raw) : '—';
     const flat = (m[2] === '-' ? -1 : 1) * (parseInt(m[3] || '0', 10)) + extra;
     const text = flat ? `${m[1]}${flat > 0 ? '+' : ''}${flat}` : m[1];
-    return wpn.dmgAdj === '?' ? `${text} + ?` : text;
+    return unrevealed(wpn).dmg ? `${text} + ?` : text;
   };
   return { sm: dice(wpn.dmgSM), l: dice(wpn.dmgL) };
 }
@@ -192,7 +198,9 @@ export function scenarioBreakdown(ctx, sc) {
   if (wpn) {
     const m = String(wpn.hitAdj || '').match(/^[+-]?\d+$/);
     add(wpn.name || 'Weapon', m ? parseInt(m[0], 10) : 0, modNum(wpn.dmgAdj), 'weapon');
-    if (wpn.hitAdj === '?' || wpn.dmgAdj === '?') lines.push({ label: `${wpn.name || 'Weapon'}: not revealed yet`, hit: wpn.hitAdj === '?' ? '?' : 0, dmg: wpn.dmgAdj === '?' ? '?' : 0, kind: 'unknown' });
+    add(`${wpn.name || 'Weapon'}: magic`, weaponMagic(wpn), weaponMagic(wpn), 'magic');
+    const unk = unrevealed(wpn);
+    if (unk.hit || unk.dmg) lines.push({ label: `${wpn.name || 'Weapon'}: not revealed yet`, hit: unk.hit ? '?' : 0, dmg: unk.dmg ? '?' : 0, kind: 'unknown' });
   }
   const abil = scenarioAbility(ctx, sc);
   const abilName = abil.hitLabel === 'STR Adj.' ? 'Strength' : scenarioType(sc) === 'thrown' ? 'Dexterity (missile), Strength damage' : 'Dexterity (missile)';
@@ -208,7 +216,7 @@ export function scenarioBreakdown(ctx, sc) {
   add(isSpell ? 'Your bonus (Hit Mod)' : 'Your bonus (Hit Mod, Dmg Mod)', hitMod, isSpell ? 0 : modNum(sc.dmgMod), 'mods');
   activeEffectsFor(ctx, sc).forEach(st => add(st.name || 'Effect', modNum(st.hit), modNum(st.dmg), 'effect'));
   const hit = lines.reduce((t, l) => t + (typeof l.hit === 'number' ? l.hit : 0), 0);
-  return { base, lines, wpn, thac0: base.thac0 - hit, hit, unknownHit: !!(wpn && wpn.hitAdj === '?') };
+  return { base, lines, wpn, thac0: base.thac0 - hit, hit, unknownHit: !!(wpn && unrevealed(wpn).hit) };
 }
 
 export function scenarioTHAC0(ctx, sc) {
