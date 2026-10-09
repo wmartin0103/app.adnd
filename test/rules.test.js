@@ -332,7 +332,8 @@ test('spell catalog: every spell in the saves has an entry, matched by name or a
   assert.equal(findSpell(catalog, { name: 'Cure L Wounds', level: 1 }).id, 'cure-light-wounds');
   assert.equal(findSpell(catalog, { name: 'Light', level: 1 }, 'priest').castTime, '4');
   assert.equal(findSpell(catalog, { name: 'Light', level: 1, type: 'wizard' }).castTime, '1');
-  assert.deepEqual(missingFields(findSpell(catalog, { name: 'Run' })), ['castTime', 'range', 'duration', 'save']);
+  assert.deepEqual(missingFields(findSpell(catalog, { name: 'Run' })), []);                 // placeholder filled from "Run (Lvl 1)"
+  assert.ok(findSpell(catalog, { name: 'Bless', level: 1 }, 'priest'));
   assert.deepEqual(missingFields(findSpell(catalog, { name: 'Charm Person' })), []);
   const ids = catalog.spells.map(e => e.id);
   assert.equal(new Set(ids).size, ids.length);

@@ -815,7 +815,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Hammer_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Hammer_(Priest_Spell)",
+   "aliases": [
+    "Hammer"
+   ]
   },
   {
    "id": "handfire-priest-0",
@@ -1366,7 +1369,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Miner's_Chant_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Miner's_Chant_(Priest_Spell)",
+   "aliases": [
+    "Miner's Chant"
+   ]
   },
   {
    "id": "mouse-priest",
@@ -2691,7 +2697,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Animate_Stalactite_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Animate_Stalactite_(Priest_Spell)",
+   "aliases": [
+    "Animate Stalactite"
+   ]
   },
   {
    "id": "animate-weapon-priest",
@@ -2779,7 +2788,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Arboreal_Scamper_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Arboreal_Scamper_(Priest_Spell)",
+   "aliases": [
+    "Arboreal Scamper"
+   ]
   },
   {
    "id": "assess-value-priest",
@@ -2845,7 +2857,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Augment_Artistry_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Augment_Artistry_(Priest_Spell)",
+   "aliases": [
+    "Augment Artistry"
+   ]
   },
   {
    "id": "augury-shukenja-priest",
@@ -2867,7 +2882,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Augury_-_Shukenja_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Augury_-_Shukenja_(Priest_Spell)",
+   "aliases": [
+    "Augury"
+   ]
   },
   {
    "id": "banish-flame-priest",
@@ -2933,7 +2951,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Beast_Tattoo_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Beast_Tattoo_(Priest_Spell)",
+   "aliases": [
+    "Beast Tattoo"
+   ]
   },
   {
    "id": "beastmask-priest",
@@ -3197,7 +3218,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Ceremony_-_Cleric_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Ceremony_-_Cleric_(Priest_Spell)",
+   "aliases": [
+    "Ceremony"
+   ]
   },
   {
    "id": "ceremony-druid-priest",
@@ -3219,7 +3243,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Ceremony_-_Druid_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Ceremony_-_Druid_(Priest_Spell)",
+   "aliases": [
+    "Ceremony"
+   ]
   },
   {
    "id": "claws-of-thard-harr-priest",
@@ -3352,7 +3379,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Combine_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Combine_(Priest_Spell)",
+   "aliases": [
+    "Combine"
+   ]
   },
   {
    "id": "comforts-of-home-priest",
@@ -5181,7 +5211,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Moonbeam_-_Cerilia_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Moonbeam_-_Cerilia_(Priest_Spell)",
+   "aliases": [
+    "Moonbeam"
+   ]
   },
   {
    "id": "morale-priest",
@@ -6573,7 +6606,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Stainless_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Stainless_(Priest_Spell)",
+   "aliases": [
+    "Stainless"
+   ]
   },
   {
    "id": "steal-psionic-strength-priest",
@@ -6728,7 +6764,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Suregrip_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Suregrip_(Priest_Spell)",
+   "aliases": [
+    "Suregrip"
+   ]
   },
   {
    "id": "surface-sojourn-priest",
@@ -7214,7 +7253,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Acorn_Barrage_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Acorn_Barrage_(Priest_Spell)",
+   "aliases": [
+    "Acorn Barrage"
+   ]
   },
   {
    "id": "aid-priest",
@@ -7259,7 +7301,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Alert_Allies_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Alert_Allies_(Priest_Spell)",
+   "aliases": [
+    "Alert Allies"
+   ]
   },
   {
    "id": "alicorn-lance-priest",
@@ -7370,7 +7415,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Ancestral_Blessing_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Ancestral_Blessing_(Priest_Spell)",
+   "aliases": [
+    "Ancestral Blessing"
+   ]
   },
   {
    "id": "animal-eyes-priest",
@@ -7458,7 +7506,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Animal_Spy_-_Shaman_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Animal_Spy_-_Shaman_(Priest_Spell)",
+   "aliases": [
+    "Animal Spy"
+   ]
   },
   {
    "id": "arm-hammers-priest",
@@ -7547,7 +7598,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Augment_Psionics_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Augment_Psionics_(Priest_Spell)",
+   "aliases": [
+    "Augment Psionics"
+   ]
   },
   {
    "id": "augury-priest",
@@ -7853,7 +7907,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Blessing_of_Vhaeraun_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Blessing_of_Vhaeraun_(Priest_Spell)",
+   "aliases": [
+    "Blessing of Vhaeraun"
+   ]
   },
   {
    "id": "bliss-priest",
@@ -8009,7 +8066,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Brightmantle_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Brightmantle_(Priest_Spell)",
+   "aliases": [
+    "Brightmantle"
+   ]
   },
   {
    "id": "burrow-gnome-priest",
@@ -8032,7 +8092,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Burrow_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Burrow_(Priest_Spell)",
+   "aliases": [
+    "Burrow"
+   ]
   },
   {
    "id": "call-animal-priest",
@@ -8607,7 +8670,7 @@
    "diceKind": "heal",
    "summary": "",
    "source": "Not in the PHB",
-   "status": "needs details",
+   "status": "imported",
    "link": "https://adnd2e.fandom.com/wiki/Cure_Moderate_Wounds_(Priest_Spell)"
   },
   {
@@ -9404,7 +9467,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Eversharp_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Eversharp_(Priest_Spell)",
+   "aliases": [
+    "Eversharp"
+   ]
   },
   {
    "id": "exorcism-priest",
@@ -10561,7 +10627,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Know_Motivation_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Know_Motivation_(Priest_Spell)",
+   "aliases": [
+    "Know Motivation"
+   ]
   },
   {
    "id": "leaf-ears-priest",
@@ -11003,7 +11072,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Moondance_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Moondance_(Priest_Spell)",
+   "aliases": [
+    "Moondance"
+   ]
   },
   {
    "id": "moradins-metal-chant-priest",
@@ -11025,7 +11097,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Moradin's_Metal_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Moradin's_Metal_(Priest_Spell)",
+   "aliases": [
+    "Moradin's Metal"
+   ]
   },
   {
    "id": "music-of-the-spheres-priest",
@@ -11069,7 +11144,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Mystic_Transfer_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Mystic_Transfer_(Priest_Spell)",
+   "aliases": [
+    "Mystic Transfer"
+   ]
   },
   {
    "id": "nap-priest",
@@ -11201,7 +11279,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Omen_-_Old_Empire_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Omen_-_Old_Empire_(Priest_Spell)",
+   "aliases": [
+    "Omen"
+   ]
   },
   {
    "id": "omen-i-priest",
@@ -11643,7 +11724,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Revenance_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Revenance_(Priest_Spell)",
+   "aliases": [
+    "Revenance"
+   ]
   },
   {
    "id": "ripen-plant-priest",
@@ -12043,7 +12127,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Slow_Poison_-_Shukenja_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Slow_Poison_-_Shukenja_(Priest_Spell)",
+   "aliases": [
+    "Slow Poison"
+   ]
   },
   {
    "id": "snake-charm-priest",
@@ -12308,7 +12395,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Steelskin_-_Chant_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Steelskin_-_Chant_(Priest_Spell)",
+   "aliases": [
+    "Steelskin"
+   ]
   },
   {
    "id": "steep-soma-juice-priest",
@@ -12352,7 +12442,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Stoker's_Chant_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Stoker's_Chant_(Priest_Spell)",
+   "aliases": [
+    "Stoker's Chant"
+   ]
   },
   {
    "id": "stormvoice-priest",
@@ -13062,7 +13155,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Abbathor's_Greed_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Abbathor's_Greed_(Priest_Spell)",
+   "aliases": [
+    "Abbathor's Greed"
+   ]
   },
   {
    "id": "ability-alteration-priest",
@@ -13195,7 +13291,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Analyze_Contraption_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Analyze_Contraption_(Priest_Spell)",
+   "aliases": [
+    "Analyze Contraption"
+   ]
   },
   {
    "id": "animal-trick-priest",
@@ -13261,7 +13360,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Archer's_Redoubt_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Archer's_Redoubt_(Priest_Spell)",
+   "aliases": [
+    "Archer's Redoubt"
+   ]
   },
   {
    "id": "armor-of-darkness-priest",
@@ -13349,7 +13451,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Bellows_Breath_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Bellows_Breath_(Priest_Spell)",
+   "aliases": [
+    "Bellows Breath"
+   ]
   },
   {
    "id": "bestow-minor-curse-priest",
@@ -13483,7 +13588,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Bladedance_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Bladedance_(Priest_Spell)",
+   "aliases": [
+    "Bladedance"
+   ]
   },
   {
    "id": "blessed-craftsmanship-dwarf-priest",
@@ -13505,7 +13613,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Blessed_Craftsmanship_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Blessed_Craftsmanship_(Priest_Spell)",
+   "aliases": [
+    "Blessed Craftsmanship"
+   ]
   },
   {
    "id": "bloodiron-chant-priest",
@@ -13528,7 +13639,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Bloodiron_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Bloodiron_(Priest_Spell)",
+   "aliases": [
+    "Bloodiron"
+   ]
   },
   {
    "id": "boon-of-fortune-priest",
@@ -13883,7 +13997,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Circle_of_Secrets_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Circle_of_Secrets_(Priest_Spell)",
+   "aliases": [
+    "Circle of Secrets"
+   ]
   },
   {
    "id": "cleanse-hearth-priest",
@@ -14280,7 +14397,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Crown_of_Radiance_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Crown_of_Radiance_(Priest_Spell)",
+   "aliases": [
+    "Crown of Radiance"
+   ]
   },
   {
    "id": "cure-blindness-priest",
@@ -14413,7 +14533,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Dark_Alloy_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Dark_Alloy_(Priest_Spell)",
+   "aliases": [
+    "Dark Alloy"
+   ]
   },
   {
    "id": "deaths-door-priest",
@@ -14545,7 +14668,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Detect_Curse_-_Shukenja_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Detect_Curse_-_Shukenja_(Priest_Spell)",
+   "aliases": [
+    "Detect Curse"
+   ]
   },
   {
    "id": "detect-cursed-item-priest",
@@ -14765,7 +14891,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Divination_-_Shukenja_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Divination_-_Shukenja_(Priest_Spell)",
+   "aliases": [
+    "Divination"
+   ]
   },
   {
    "id": "divine-purpose-priest",
@@ -15985,7 +16114,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Invisibility_Purge_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Invisibility_Purge_(Priest_Spell)",
+   "aliases": [
+    "Invisibility Purge"
+   ]
   },
   {
    "id": "invisibility-to-animals-10-radius-priest",
@@ -16408,7 +16540,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Magical_Vestment_-_Shukenja_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Magical_Vestment_-_Shukenja_(Priest_Spell)",
+   "aliases": [
+    "Magical Vestment"
+   ]
   },
   {
    "id": "magma-jet-priest",
@@ -17320,7 +17455,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Remove_Paralysis_%E2%80%93_Shukenja_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Remove_Paralysis_%E2%80%93_Shukenja_(Priest_Spell)",
+   "aliases": [
+    "Remove Paralysis"
+   ]
   },
   {
    "id": "renew-earth-priest",
@@ -17497,7 +17635,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Rites_of_Istishia_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Rites_of_Istishia_(Priest_Spell)",
+   "aliases": [
+    "Rites of Istishia"
+   ]
   },
   {
    "id": "rooting-priest",
@@ -17852,7 +17993,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Speak_with_Dead_-_Shukenja_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Speak_with_Dead_-_Shukenja_(Priest_Spell)",
+   "aliases": [
+    "Speak with Dead"
+   ]
   },
   {
    "id": "speak-with-the-drowned-dead-priest",
@@ -18120,7 +18264,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Starflight_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Starflight_(Priest_Spell)",
+   "aliases": [
+    "Starflight"
+   ]
   },
   {
    "id": "starshine-priest",
@@ -18476,7 +18623,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Sunstroke_-_Old_Empire_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Sunstroke_-_Old_Empire_(Priest_Spell)",
+   "aliases": [
+    "Sunstroke"
+   ]
   },
   {
    "id": "surf-priest",
@@ -18786,7 +18936,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Unearthly_Choir_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Unearthly_Choir_(Priest_Spell)",
+   "aliases": [
+    "Unearthly Choir"
+   ]
   },
   {
    "id": "unfailing-premonition-priest",
@@ -19275,7 +19428,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Abjure_-_Shukenja_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Abjure_-_Shukenja_(Priest_Spell)",
+   "aliases": [
+    "Abjure"
+   ]
   },
   {
    "id": "acid-rain-priest",
@@ -19408,7 +19564,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Amber_Prison_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Amber_Prison_(Priest_Spell)",
+   "aliases": [
+    "Amber Prison"
+   ]
   },
   {
    "id": "animal-sight-priest",
@@ -19541,7 +19700,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Ashen_Steed_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Ashen_Steed_(Priest_Spell)",
+   "aliases": [
+    "Ashen Steed"
+   ]
   },
   {
    "id": "attunement-drow-priest",
@@ -19563,7 +19725,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Attunement_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Attunement_(Priest_Spell)",
+   "aliases": [
+    "Attunement"
+   ]
   },
   {
    "id": "awakening-priest",
@@ -19607,7 +19772,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Axe_Storm_of_Clangeddin_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Axe_Storm_of_Clangeddin_(Priest_Spell)",
+   "aliases": [
+    "Axe Storm of Clangeddin"
+   ]
   },
   {
    "id": "azuths-fedensor-priest",
@@ -19674,7 +19842,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Badger_Form_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Badger_Form_(Priest_Spell)",
+   "aliases": [
+    "Badger Form"
+   ]
   },
   {
    "id": "battle-trident-priest",
@@ -19764,7 +19935,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Blazing_Sword_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Blazing_Sword_(Priest_Spell)",
+   "aliases": [
+    "Blazing Sword"
+   ]
   },
   {
    "id": "blessed-forgetfulness-priest",
@@ -21511,7 +21685,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Fire_Purge_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Fire_Purge_(Priest_Spell)",
+   "aliases": [
+    "Fire Purge"
+   ]
   },
   {
    "id": "flight-of-remnis-priest",
@@ -21578,7 +21755,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Focus_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Focus_(Priest_Spell)",
+   "aliases": [
+    "Focus"
+   ]
   },
   {
    "id": "foesight-priest",
@@ -21644,7 +21824,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Fortify_Healing_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Fortify_Healing_(Priest_Spell)",
+   "aliases": [
+    "Fortify Healing"
+   ]
   },
   {
    "id": "free-action-priest",
@@ -22665,7 +22848,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Magefire_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Magefire_(Priest_Spell)",
+   "aliases": [
+    "Magefire"
+   ]
   },
   {
    "id": "magma-blade-priest",
@@ -23265,7 +23451,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Pech_Chant_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Pech_Chant_(Priest_Spell)",
+   "aliases": [
+    "Pech Chant"
+   ]
   },
   {
    "id": "penetrate-disguise-priest",
@@ -24779,7 +24968,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Spell_Immunity_-_Shukenja_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Spell_Immunity_-_Shukenja_(Priest_Spell)",
+   "aliases": [
+    "Spell Immunity"
+   ]
   },
   {
    "id": "spelltouch-priest",
@@ -24938,7 +25130,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Stone_Walk_-_Drow_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Stone_Walk_-_Drow_(Priest_Spell)",
+   "aliases": [
+    "Stone Walk"
+   ]
   },
   {
    "id": "stonefall-priest",
@@ -25564,7 +25759,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Uplift_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Uplift_(Priest_Spell)",
+   "aliases": [
+    "Uplift"
+   ]
   },
   {
    "id": "veil-of-djalice-priest",
@@ -25986,7 +26184,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/A_Day_in_the_Life_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/A_Day_in_the_Life_(Priest_Spell)",
+   "aliases": [
+    "A Day in the Life"
+   ]
   },
   {
    "id": "abeyance-priest",
@@ -26030,7 +26231,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Adaptation_-_Lvl_5_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Adaptation_-_Lvl_5_(Priest_Spell)",
+   "aliases": [
+    "Adaptation"
+   ]
   },
   {
    "id": "advice-priest",
@@ -26118,7 +26322,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Amorphous_Form_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Amorphous_Form_(Priest_Spell)",
+   "aliases": [
+    "Amorphous Form"
+   ]
   },
   {
    "id": "animal-growth-priest",
@@ -26184,7 +26391,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Animal's_View_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Animal's_View_(Priest_Spell)",
+   "aliases": [
+    "Animal's View"
+   ]
   },
   {
    "id": "animate-dead-monsters-priest",
@@ -26383,7 +26593,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Bane_of_Yondalla_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Bane_of_Yondalla_(Priest_Spell)",
+   "aliases": [
+    "Bane of Yondalla"
+   ]
   },
   {
    "id": "barrier-of-retention-priest",
@@ -26449,7 +26662,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Berronar's_Favor_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Berronar's_Favor_(Priest_Spell)",
+   "aliases": [
+    "Berronar's Favor"
+   ]
   },
   {
    "id": "berserk-priest",
@@ -26493,7 +26709,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Bestow_Hit_Points_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Bestow_Hit_Points_(Priest_Spell)",
+   "aliases": [
+    "Bestow Hit Points"
+   ]
   },
   {
    "id": "bind-guardian-priest",
@@ -26537,7 +26756,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Bladebend_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Bladebend_(Priest_Spell)",
+   "aliases": [
+    "Bladebend"
+   ]
   },
   {
    "id": "blaenthers-bowls-priest",
@@ -26868,7 +27090,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Circle_of_Stone_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Circle_of_Stone_(Priest_Spell)",
+   "aliases": [
+    "Circle of Stone"
+   ]
   },
   {
    "id": "cleanse-community-priest",
@@ -27755,7 +27980,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Earthshake_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Earthshake_(Priest_Spell)",
+   "aliases": [
+    "Earthshake"
+   ]
   },
   {
    "id": "easy-march-priest",
@@ -27933,7 +28161,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Enchant_Stones_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Enchant_Stones_(Priest_Spell)",
+   "aliases": [
+    "Enchant Stones"
+   ]
   },
   {
    "id": "eternal-flame-priest",
@@ -28445,7 +28676,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Grounding_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Grounding_(Priest_Spell)",
+   "aliases": [
+    "Grounding"
+   ]
   },
   {
    "id": "hamatree-priest",
@@ -29065,7 +29299,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Meld_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Meld_(Priest_Spell)",
+   "aliases": [
+    "Meld"
+   ]
   },
   {
    "id": "melisanders-harp-priest",
@@ -29575,7 +29812,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Plane_Shift_-_Shukenja_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Plane_Shift_-_Shukenja_(Priest_Spell)",
+   "aliases": [
+    "Plane Shift"
+   ]
   },
   {
    "id": "pool-of-deeds-priest",
@@ -30289,7 +30529,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Secrets_of_Stone_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Secrets_of_Stone_(Priest_Spell)",
+   "aliases": [
+    "Secrets of Stone"
+   ]
   },
   {
    "id": "seed-of-moander-priest",
@@ -30870,7 +31113,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Strength_-_Dwarf_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Strength_-_Dwarf_(Priest_Spell)",
+   "aliases": [
+    "Strength"
+   ]
   },
   {
    "id": "strength-shukenja-priest",
@@ -30892,7 +31138,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Strength_-_Shukenja_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Strength_-_Shukenja_(Priest_Spell)",
+   "aliases": [
+    "Strength"
+   ]
   },
   {
    "id": "strengthen-stone-priest",
@@ -31069,7 +31318,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Tempering_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Tempering_(Priest_Spell)",
+   "aliases": [
+    "Tempering"
+   ]
   },
   {
    "id": "thornwrack-priest",
@@ -31114,7 +31366,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Thoughtwave_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Thoughtwave_(Priest_Spell)",
+   "aliases": [
+    "Thoughtwave"
+   ]
   },
   {
    "id": "threefold-boon-priest",
@@ -31268,7 +31523,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/True_Seeing_-_Shukenja_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/True_Seeing_-_Shukenja_(Priest_Spell)",
+   "aliases": [
+    "True Seeing"
+   ]
   },
   {
    "id": "unceasing-vigilance-of-the-holy-sentinel-priest",
@@ -31784,7 +32042,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Air_Tread_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Air_Tread_(Priest_Spell)",
+   "aliases": [
+    "Air Tread"
+   ]
   },
   {
    "id": "all-seeing-crystal-ball-priest",
@@ -31918,7 +32179,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Anneal_Clan_Spirit_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Anneal_Clan_Spirit_(Priest_Spell)",
+   "aliases": [
+    "Anneal Clan Spirit"
+   ]
   },
   {
    "id": "anti-animal-shell-priest",
@@ -32452,7 +32716,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Create_Machine_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Create_Machine_(Priest_Spell)",
+   "aliases": [
+    "Create Machine"
+   ]
   },
   {
    "id": "create-thassaloss-priest",
@@ -32608,7 +32875,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Dance_of_Life_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Dance_of_Life_(Priest_Spell)",
+   "aliases": [
+    "Dance of Life"
+   ]
   },
   {
    "id": "dance-of-the-fallen-priest",
@@ -34261,7 +34531,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Purifying_Fire_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Purifying_Fire_(Priest_Spell)",
+   "aliases": [
+    "Purifying Fire"
+   ]
   },
   {
    "id": "quench-the-spirit-priest",
@@ -34862,7 +35135,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Spellsong_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Spellsong_(Priest_Spell)",
+   "aliases": [
+    "Spellsong"
+   ]
   },
   {
    "id": "spider-bite-priest",
@@ -34996,7 +35272,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Spiritual_Wrath_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Spiritual_Wrath_(Priest_Spell)",
+   "aliases": [
+    "Spiritual Wrath"
+   ]
   },
   {
    "id": "spring-mastery-priest",
@@ -36519,7 +36798,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Compel_-_Shukenja_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Compel_-_Shukenja_(Priest_Spell)",
+   "aliases": [
+    "Compel"
+   ]
   },
   {
    "id": "confusion-priest",
@@ -36651,7 +36933,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Conjure_Greater_Elemental_-_Dark_Sun_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Conjure_Greater_Elemental_-_Dark_Sun_(Priest_Spell)",
+   "aliases": [
+    "Conjure Greater Elemental"
+   ]
   },
   {
    "id": "conjure-nature-elemental-priest",
@@ -37878,7 +38163,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Masterwork_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Masterwork_(Priest_Spell)",
+   "aliases": [
+    "Masterwork"
+   ]
   },
   {
    "id": "mind-tracker-priest",
@@ -38211,7 +38499,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Reincarnate_-_Shukenja_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Reincarnate_-_Shukenja_(Priest_Spell)",
+   "aliases": [
+    "Reincarnate"
+   ]
   },
   {
    "id": "renew-deposit-priest",
@@ -38366,7 +38657,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Resurrection_-_Shukenja_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Resurrection_-_Shukenja_(Priest_Spell)",
+   "aliases": [
+    "Resurrection"
+   ]
   },
   {
    "id": "ritual-of-transference-cooperative-priest",
@@ -38388,7 +38682,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Ritual_of_Transference_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Ritual_of_Transference_(Priest_Spell)",
+   "aliases": [
+    "Ritual of Transference"
+   ]
   },
   {
    "id": "rune-chant-priest",
@@ -38432,7 +38729,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Rune_of_Impregnable_Defense_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Rune_of_Impregnable_Defense_(Priest_Spell)",
+   "aliases": [
+    "Rune of Impregnable Defense"
+   ]
   },
   {
    "id": "sacred-link-priest",
@@ -38788,7 +39088,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Spirit_of_Power_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Spirit_of_Power_(Priest_Spell)",
+   "aliases": [
+    "Spirit of Power"
+   ]
   },
   {
    "id": "stone-storm-priest",
@@ -39055,7 +39358,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Tomb_Ward_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Tomb_Ward_(Priest_Spell)",
+   "aliases": [
+    "Tomb Ward"
+   ]
   },
   {
    "id": "transmute-metal-to-wood-priest",
@@ -39145,7 +39451,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Tsunami_-_Shukenja_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Tsunami_-_Shukenja_(Priest_Spell)",
+   "aliases": [
+    "Tsunami"
+   ]
   },
   {
    "id": "tyranny-priest",
@@ -39434,7 +39743,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Weavesong_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Weavesong_(Priest_Spell)",
+   "aliases": [
+    "Weavesong"
+   ]
   },
   {
    "id": "whirlwind-of-akadi-priest",
@@ -39523,7 +39835,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Wind_Walk_-_Shukenja_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Wind_Walk_-_Shukenja_(Priest_Spell)",
+   "aliases": [
+    "Wind Walk"
+   ]
   },
   {
    "id": "zin-carla-priest",
@@ -39679,7 +39994,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Symbol_-_Reworked_(Priest_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Symbol_-_Reworked_(Priest_Spell)",
+   "aliases": [
+    "Symbol"
+   ]
   },
   {
    "id": "wild-weather-dark-sun-psionic-enhancement-priest",
@@ -41442,7 +41760,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Silence%2C_15'_Radius_-_Red_Wizard_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Silence%2C_15'_Radius_-_Red_Wizard_(Wizard_Spell)",
+   "aliases": [
+    "Silence, 15' Radius"
+   ]
   },
   {
    "id": "slaying-wind-wizard",
@@ -42653,7 +42974,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Barrier_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Barrier_(Wizard_Spell)",
+   "aliases": [
+    "Barrier"
+   ]
   },
   {
    "id": "bigbys-bookworm-bane-wizard",
@@ -42719,7 +43043,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Bird_Charm_I_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Bird_Charm_I_(Wizard_Spell)",
+   "aliases": [
+    "Bird Charm I"
+   ]
   },
   {
    "id": "blacksteel-wizard",
@@ -42808,7 +43135,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Breathe_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Breathe_(Wizard_Spell)",
+   "aliases": [
+    "Breathe"
+   ]
   },
   {
    "id": "bugmans-mug-wizard",
@@ -42963,7 +43293,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Cat_Charm_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Cat_Charm_(Wizard_Spell)",
+   "aliases": [
+    "Cat Charm"
+   ]
   },
   {
    "id": "catapult-wizard",
@@ -43160,7 +43493,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Circle_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Circle_(Wizard_Spell)",
+   "aliases": [
+    "Circle"
+   ]
   },
   {
    "id": "claws-of-velsharoon-wizard",
@@ -43204,7 +43540,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Cling_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Cling_(Wizard_Spell)",
+   "aliases": [
+    "Cling"
+   ]
   },
   {
    "id": "cloud-ladder-alteration-wizard",
@@ -43446,7 +43785,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Cool_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Cool_(Wizard_Spell)",
+   "aliases": [
+    "Cool"
+   ]
   },
   {
    "id": "cool-strength-wizard",
@@ -43734,7 +44076,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Deflection_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Deflection_(Wizard_Spell)",
+   "aliases": [
+    "Deflection"
+   ]
   },
   {
    "id": "delay-image-wizard",
@@ -43888,7 +44233,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Detect_Life_-_Alhoon_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Detect_Life_-_Alhoon_(Wizard_Spell)",
+   "aliases": [
+    "Detect Life"
+   ]
   },
   {
    "id": "detect-machine-wizard",
@@ -44086,7 +44434,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Detect_Untruth_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Detect_Untruth_(Wizard_Spell)",
+   "aliases": [
+    "Detect Untruth"
+   ]
   },
   {
    "id": "dethos-delirium-wizard",
@@ -44196,7 +44547,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Disguise_-_Hishna_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Disguise_-_Hishna_(Wizard_Spell)",
+   "aliases": [
+    "Disguise"
+   ]
   },
   {
    "id": "distort-wizard",
@@ -44284,7 +44638,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Dragon_Tongues_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Dragon_Tongues_(Wizard_Spell)",
+   "aliases": [
+    "Dragon Tongues"
+   ]
   },
   {
    "id": "draw-forth-the-truth-wizard",
@@ -44418,7 +44775,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Elevate_I_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Elevate_I_(Wizard_Spell)",
+   "aliases": [
+    "Elevate I"
+   ]
   },
   {
    "id": "emirikols-question-wizard",
@@ -44767,7 +45127,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Featherweaving_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Featherweaving_(Wizard_Spell)",
+   "aliases": [
+    "Featherweaving"
+   ]
   },
   {
    "id": "fiery-eyes-wizard",
@@ -45099,7 +45462,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Fogbolt_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Fogbolt_(Wizard_Spell)",
+   "aliases": [
+    "Fogbolt"
+   ]
   },
   {
    "id": "friends-wizard",
@@ -45565,7 +45931,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Huntsman's_Call_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Huntsman's_Call_(Wizard_Spell)",
+   "aliases": [
+    "Huntsman's Call"
+   ]
   },
   {
    "id": "hypnotism-wizard",
@@ -45628,7 +45997,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Ignite_Flame_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Ignite_Flame_(Wizard_Spell)",
+   "aliases": [
+    "Ignite Flame"
+   ]
   },
   {
    "id": "illusory-talent-wizard",
@@ -45672,7 +46044,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Immunity_to_Adherence_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Immunity_to_Adherence_(Wizard_Spell)",
+   "aliases": [
+    "Immunity to Adherence"
+   ]
   },
   {
    "id": "insulation-wizard",
@@ -45936,7 +46311,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Ladder_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Ladder_(Wizard_Spell)",
+   "aliases": [
+    "Ladder"
+   ]
   },
   {
    "id": "laerals-dancing-whip-wizard",
@@ -46157,7 +46535,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Magic_Disk_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Magic_Disk_(Wizard_Spell)",
+   "aliases": [
+    "Magic Disk"
+   ]
   },
   {
    "id": "magic-fist-wizard",
@@ -46247,7 +46628,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Masque_Mask_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Masque_Mask_(Wizard_Spell)",
+   "aliases": [
+    "Masque Mask"
+   ]
   },
   {
    "id": "melt-wizard",
@@ -46358,7 +46742,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Minor_Quest_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Minor_Quest_(Wizard_Spell)",
+   "aliases": [
+    "Minor Quest"
+   ]
   },
   {
    "id": "moonglow-wizard",
@@ -46578,7 +46965,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Nybor's_Gentle_Reminder_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Nybor's_Gentle_Reminder_(Wizard_Spell)",
+   "aliases": [
+    "Nybor's Gentle Reminder"
+   ]
   },
   {
    "id": "nystuls-dancing-werelight-wizard",
@@ -47062,7 +47452,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Protection_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Protection_(Wizard_Spell)",
+   "aliases": [
+    "Protection"
+   ]
   },
   {
    "id": "protection-from-evil-wizard",
@@ -47300,7 +47693,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Read_Paramandic_Magic_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Read_Paramandic_Magic_(Wizard_Spell)",
+   "aliases": [
+    "Read Paramandic Magic"
+   ]
   },
   {
    "id": "read-southern-magic-old-empire-wizard",
@@ -47322,7 +47718,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Read_Southern_Magic_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Read_Southern_Magic_(Wizard_Spell)",
+   "aliases": [
+    "Read Southern Magic"
+   ]
   },
   {
    "id": "reflected-image-witch-wizard",
@@ -47344,7 +47743,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Reflected_Image_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Reflected_Image_(Wizard_Spell)",
+   "aliases": [
+    "Reflected Image"
+   ]
   },
   {
    "id": "regenerate-self-wizard",
@@ -47439,18 +47841,18 @@
    "name": "Run",
    "class": "wizard",
    "level": 1,
-   "school": "",
-   "castTime": "",
-   "range": "",
-   "duration": "",
-   "area": "",
-   "save": "",
+   "school": "Enchantment",
+   "castTime": "1 rd.",
+   "range": "Touch",
+   "duration": "4 hrs. - 1d4 hrs.",
+   "area": "One or more persons",
+   "save": "None",
    "attack": "none",
    "dice": "",
    "summary": "",
    "source": "Not in the PHB",
-   "status": "needs details",
-   "link": ""
+   "status": "imported",
+   "link": "https://adnd2e.fandom.com/wiki/Run_-_Lvl_1_(Wizard_Spell)"
   },
   {
    "id": "run-lvl-1-wizard",
@@ -47472,7 +47874,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Run_-_Lvl_1_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Run_-_Lvl_1_(Wizard_Spell)",
+   "aliases": [
+    "Run"
+   ]
   },
   {
    "id": "sand-jambiya-wizard",
@@ -47716,7 +48121,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Shadow_Scry_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Shadow_Scry_(Wizard_Spell)",
+   "aliases": [
+    "Shadow Scry"
+   ]
   },
   {
    "id": "sharpen-wizard",
@@ -47760,7 +48168,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Sharptooth_-_Lvl_1_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Sharptooth_-_Lvl_1_(Wizard_Spell)",
+   "aliases": [
+    "Sharptooth"
+   ]
   },
   {
    "id": "shield-wizard",
@@ -47938,7 +48349,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Snake_Charm_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Snake_Charm_(Wizard_Spell)",
+   "aliases": [
+    "Snake Charm"
+   ]
   },
   {
    "id": "snillocs-snowball-wizard",
@@ -48034,17 +48448,17 @@
    "name": "Sound Bubble",
    "class": "wizard",
    "level": 1,
-   "school": "",
-   "castTime": "",
+   "school": "Abjuration, Evocation",
+   "castTime": "1",
    "range": "Fixed: 10 ft; mobile: 5 ft/level",
    "duration": "10 rds + 1 rd/level",
-   "area": "",
-   "save": "",
+   "area": "Special",
+   "save": "None",
    "attack": "none",
    "dice": "",
    "summary": "",
    "source": "Not in the PHB (details from Jaque's sheet notes)",
-   "status": "needs details",
+   "status": "imported",
    "link": "https://adnd2e.fandom.com/wiki/Sound_Bubble_(Wizard_Spell)"
   },
   {
@@ -48067,7 +48481,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Sound_Bubble_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Sound_Bubble_(Wizard_Spell)",
+   "aliases": [
+    "Sound Bubble"
+   ]
   },
   {
    "id": "spearflight-pluma-wizard",
@@ -48089,7 +48506,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Spearflight_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Spearflight_(Wizard_Spell)",
+   "aliases": [
+    "Spearflight"
+   ]
   },
   {
    "id": "spectral-ears-wizard",
@@ -48331,7 +48751,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Stoneflight_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Stoneflight_(Wizard_Spell)",
+   "aliases": [
+    "Stoneflight"
+   ]
   },
   {
    "id": "storms-frozen-moment-wizard",
@@ -48419,7 +48842,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Summon_Undead_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Summon_Undead_(Wizard_Spell)",
+   "aliases": [
+    "Summon Undead (Wizard)"
+   ]
   },
   {
    "id": "surics-swift-perusal-wizard",
@@ -48551,7 +48977,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Talonblade_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Talonblade_(Wizard_Spell)",
+   "aliases": [
+    "Talonblade"
+   ]
   },
   {
    "id": "tassos-shriek-wizard",
@@ -49033,7 +49462,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Ward_-_Old_Empire_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Ward_-_Old_Empire_(Wizard_Spell)",
+   "aliases": [
+    "Ward"
+   ]
   },
   {
    "id": "wardaway-wizard",
@@ -49078,7 +49510,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Warmth_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Warmth_(Wizard_Spell)",
+   "aliases": [
+    "Warmth"
+   ]
   },
   {
    "id": "warp-wood-wizard",
@@ -49631,7 +50066,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Bafflement_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Bafflement_(Wizard_Spell)",
+   "aliases": [
+    "Bafflement"
+   ]
   },
   {
    "id": "balliards-rejuvenating-touch-wizard",
@@ -50141,7 +50579,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Breathsense_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Breathsense_(Wizard_Spell)",
+   "aliases": [
+    "Breathsense"
+   ]
   },
   {
    "id": "calders-starry-sky-wizard",
@@ -50207,7 +50648,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Calm_-_Draconomicon_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Calm_-_Draconomicon_(Wizard_Spell)",
+   "aliases": [
+    "Calm"
+   ]
   },
   {
    "id": "camouflage-wizard",
@@ -50406,7 +50850,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Circle_Dance_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Circle_Dance_(Wizard_Spell)",
+   "aliases": [
+    "Circle Dance"
+   ]
   },
   {
    "id": "circle-of-flame-wizard",
@@ -50541,7 +50988,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Combust_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Combust_(Wizard_Spell)",
+   "aliases": [
+    "Combust"
+   ]
   },
   {
    "id": "compose-mind-wizard",
@@ -50585,7 +51035,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Comprehend_Magics_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Comprehend_Magics_(Wizard_Spell)",
+   "aliases": [
+    "Comprehend Magics"
+   ]
   },
   {
    "id": "continual-light-wizard",
@@ -50651,7 +51104,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Create_Enchanted_Tattoo_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Create_Enchanted_Tattoo_(Wizard_Spell)",
+   "aliases": [
+    "Create Enchanted Tattoo"
+   ]
   },
   {
    "id": "create-water-wizard-wizard",
@@ -50717,7 +51173,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Damage_Mirror_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Damage_Mirror_(Wizard_Spell)",
+   "aliases": [
+    "Damage Mirror"
+   ]
   },
   {
    "id": "dancing-shadows-wizard",
@@ -50850,7 +51309,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Dazzle_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Dazzle_(Wizard_Spell)",
+   "aliases": [
+    "Dazzle"
+   ]
   },
   {
    "id": "deafness-wizard",
@@ -51050,7 +51512,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Delayed_Light_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Delayed_Light_(Wizard_Spell)",
+   "aliases": [
+    "Delayed Light"
+   ]
   },
   {
    "id": "deny-cold-deny-fire-wizard",
@@ -51204,7 +51669,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Detect_Poison_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Detect_Poison_(Wizard_Spell)",
+   "aliases": [
+    "Detect Poison"
+   ]
   },
   {
    "id": "detect-psionics-wizard",
@@ -51380,7 +51848,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Dragon_Message_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Dragon_Message_(Wizard_Spell)",
+   "aliases": [
+    "Dragon Message"
+   ]
   },
   {
    "id": "dragonbane-wizard",
@@ -51909,7 +52380,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/ESP_-_Witch_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/ESP_-_Witch_(Wizard_Spell)",
+   "aliases": [
+    "ESP"
+   ]
   },
   {
    "id": "everwatching-skull-wizard",
@@ -51998,7 +52472,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Fang_Fist_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Fang_Fist_(Wizard_Spell)",
+   "aliases": [
+    "Fang Fist"
+   ]
   },
   {
    "id": "fascinate-wizard",
@@ -52265,7 +52742,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Fisher's_Luck_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Fisher's_Luck_(Wizard_Spell)",
+   "aliases": [
+    "Fisher's Luck"
+   ]
   },
   {
    "id": "fisheye-wizard",
@@ -52333,7 +52813,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Flame_Dagger_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Flame_Dagger_(Wizard_Spell)",
+   "aliases": [
+    "Flame Dagger"
+   ]
   },
   {
    "id": "flame-ray-wizard",
@@ -52467,7 +52950,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Flashpuff_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Flashpuff_(Wizard_Spell)",
+   "aliases": [
+    "Flashpuff"
+   ]
   },
   {
    "id": "flying-fist-wizard",
@@ -52866,7 +53352,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Guardian_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Guardian_(Wizard_Spell)",
+   "aliases": [
+    "Guardian"
+   ]
   },
   {
    "id": "hand-dragon-wizard",
@@ -52888,7 +53377,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Hand_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Hand_(Wizard_Spell)",
+   "aliases": [
+    "Hand"
+   ]
   },
   {
    "id": "heartsense-hishna-wizard",
@@ -52910,7 +53402,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Heartsense_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Heartsense_(Wizard_Spell)",
+   "aliases": [
+    "Heartsense"
+   ]
   },
   {
    "id": "helmsman-wizard",
@@ -52998,7 +53493,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Hypnosis_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Hypnosis_(Wizard_Spell)",
+   "aliases": [
+    "Hypnosis (Spell)"
+   ]
   },
   {
    "id": "hypnotic-pattern-wizard",
@@ -53064,7 +53562,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Immunity_to_Spider_Venom_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Immunity_to_Spider_Venom_(Wizard_Spell)",
+   "aliases": [
+    "Immunity to Spider Venom"
+   ]
   },
   {
    "id": "immurks-distraction-wizard",
@@ -53153,7 +53654,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Improved_Spider_Climb_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Improved_Spider_Climb_(Wizard_Spell)",
+   "aliases": [
+    "Improved Spider Climb"
+   ]
   },
   {
    "id": "infratorch-wizard",
@@ -53351,7 +53855,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Know_Intent_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Know_Intent_(Wizard_Spell)",
+   "aliases": [
+    "Know Intent"
+   ]
   },
   {
    "id": "laerals-cutting-hand-wizard",
@@ -53772,7 +54279,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Mind_Mantle_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Mind_Mantle_(Wizard_Spell)",
+   "aliases": [
+    "Mind Mantle"
+   ]
   },
   {
    "id": "mirror-image-wizard",
@@ -53838,7 +54348,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Misfortune_-_Lvl_2_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Misfortune_-_Lvl_2_(Wizard_Spell)",
+   "aliases": [
+    "Misfortune"
+   ]
   },
   {
    "id": "mist-magic-wizard",
@@ -53948,7 +54461,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Move_Object_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Move_Object_(Wizard_Spell)",
+   "aliases": [
+    "Move Object"
+   ]
   },
   {
    "id": "murmuring-masses-wizard",
@@ -54036,7 +54552,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Nature_Call_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Nature_Call_(Wizard_Spell)",
+   "aliases": [
+    "Nature Call"
+   ]
   },
   {
    "id": "net-wizard",
@@ -54393,7 +54912,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Pacify_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Pacify_(Wizard_Spell)",
+   "aliases": [
+    "Pacify"
+   ]
   },
   {
    "id": "past-life-wizard",
@@ -54460,7 +54982,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Pit_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Pit_(Wizard_Spell)",
+   "aliases": [
+    "Pit (Spell)"
+   ]
   },
   {
    "id": "plant-renewal-wizard",
@@ -54504,7 +55029,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Poisonstar_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Poisonstar_(Wizard_Spell)",
+   "aliases": [
+    "Poisonstar"
+   ]
   },
   {
    "id": "portal-alarm-wizard",
@@ -54570,7 +55098,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Power_Word%2C_Sleep_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Power_Word%2C_Sleep_(Wizard_Spell)",
+   "aliases": [
+    "Power Word, Sleep"
+   ]
   },
   {
    "id": "preservation-wizard-wizard",
@@ -54856,7 +55387,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Protection_from_Poison_-_Red_Wizard_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Protection_from_Poison_-_Red_Wizard_(Wizard_Spell)",
+   "aliases": [
+    "Protection from Poison (Red Wizard)"
+   ]
   },
   {
    "id": "protection-from-prime-wizard",
@@ -55142,7 +55676,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Run_-_Lvl_2_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Run_-_Lvl_2_(Wizard_Spell)",
+   "aliases": [
+    "Run"
+   ]
   },
   {
    "id": "ruornils-tracks-wizard",
@@ -55252,7 +55789,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Scalesnare_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Scalesnare_(Wizard_Spell)",
+   "aliases": [
+    "Scalesnare"
+   ]
   },
   {
    "id": "scare-wizard",
@@ -55318,7 +55858,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Scrollsee_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Scrollsee_(Wizard_Spell)",
+   "aliases": [
+    "Scrollsee"
+   ]
   },
   {
    "id": "seal-wizard",
@@ -55608,7 +56151,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Silence%2C_15'_Radius_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Silence%2C_15'_Radius_(Wizard_Spell)",
+   "aliases": [
+    "Silence 15' Radius"
+   ]
   },
   {
    "id": "sinister-cantrip-wizard",
@@ -55920,7 +56466,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Speak_in_Tongues_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Speak_in_Tongues_(Wizard_Spell)",
+   "aliases": [
+    "Speak in Tongues"
+   ]
   },
   {
    "id": "speak-with-dead-wizard-wizard",
@@ -56031,7 +56580,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Speedmount_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Speedmount_(Wizard_Spell)",
+   "aliases": [
+    "Speedmount"
+   ]
   },
   {
    "id": "spelltouch-wizard",
@@ -56076,7 +56628,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Spider_Gout_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Spider_Gout_(Wizard_Spell)",
+   "aliases": [
+    "Spider Gout"
+   ]
   },
   {
    "id": "stairway-wizard",
@@ -56489,7 +57044,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Thunderball_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Thunderball_(Wizard_Spell)",
+   "aliases": [
+    "Thunderball"
+   ]
   },
   {
    "id": "timeslip-wizard",
@@ -56534,7 +57092,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Toothed_Tentacle_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Toothed_Tentacle_(Wizard_Spell)",
+   "aliases": [
+    "Toothed Tentacle"
+   ]
   },
   {
    "id": "train-vegetation-wizard",
@@ -56600,7 +57161,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Tumble_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Tumble_(Wizard_Spell)",
+   "aliases": [
+    "Tumble"
+   ]
   },
   {
    "id": "tunnel-vision-wizard",
@@ -56755,7 +57319,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Venom_Bite_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Venom_Bite_(Wizard_Spell)",
+   "aliases": [
+    "Venom Bite"
+   ]
   },
   {
    "id": "venoms-thicketgrowth-wizard",
@@ -56909,7 +57476,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Waves_of_Weariness_-_Lvl_2_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Waves_of_Weariness_-_Lvl_2_(Wizard_Spell)",
+   "aliases": [
+    "Waves of Weariness"
+   ]
   },
   {
    "id": "web-wizard",
@@ -57065,7 +57635,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Witch's_Glamor_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Witch's_Glamor_(Wizard_Spell)",
+   "aliases": [
+    "Witch's Glamor"
+   ]
   },
   {
    "id": "withstand-water-wizard",
@@ -57597,7 +58170,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Backblast_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Backblast_(Wizard_Spell)",
+   "aliases": [
+    "Backblast"
+   ]
   },
   {
    "id": "ball-lightning-wizard",
@@ -57775,7 +58351,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Blast_Jewel_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Blast_Jewel_(Wizard_Spell)",
+   "aliases": [
+    "Blast Jewel"
+   ]
   },
   {
    "id": "blend-with-shadows-wizard",
@@ -57998,7 +58577,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Cache_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Cache_(Wizard_Spell)",
+   "aliases": [
+    "Cache"
+   ]
   },
   {
    "id": "call-undead-wizard",
@@ -58439,7 +59021,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Cloak_of_Insanity_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Cloak_of_Insanity_(Wizard_Spell)",
+   "aliases": [
+    "Cloak of Insanity"
+   ]
   },
   {
    "id": "cloak-of-warding-wizard",
@@ -58638,7 +59223,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Create_Darkness_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Create_Darkness_(Wizard_Spell)",
+   "aliases": [
+    "Create Darkness"
+   ]
   },
   {
    "id": "crew-of-phantoms-wizard",
@@ -58949,7 +59537,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Detect_Charm_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Detect_Charm_(Wizard_Spell)",
+   "aliases": [
+    "Detect Charm"
+   ]
   },
   {
    "id": "detect-lycanthrope-gypsy-wizard",
@@ -58971,7 +59562,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Detect_Lycanthrope_-_Gypsy_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Detect_Lycanthrope_-_Gypsy_(Wizard_Spell)",
+   "aliases": [
+    "Detect Lycanthrope"
+   ]
   },
   {
    "id": "detect-shapechanger-wizard",
@@ -59059,7 +59653,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Disguise_-_Wu_Jen_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Disguise_-_Wu_Jen_(Wizard_Spell)",
+   "aliases": [
+    "Disguise"
+   ]
   },
   {
    "id": "dispel-fog-wizard",
@@ -59303,7 +59900,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Dragon_Fall_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Dragon_Fall_(Wizard_Spell)",
+   "aliases": [
+    "Dragon Fall"
+   ]
   },
   {
    "id": "drawmijs-iron-sack-wizard",
@@ -59436,7 +60036,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Drought_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Drought_(Wizard_Spell)",
+   "aliases": [
+    "Drought"
+   ]
   },
   {
    "id": "dweomer-vortex-phaerimm-wizard",
@@ -59458,7 +60061,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Dweomer_Vortex_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Dweomer_Vortex_(Wizard_Spell)",
+   "aliases": [
+    "Dweomer Vortex"
+   ]
   },
   {
    "id": "eagle-vision-wizard",
@@ -59502,7 +60108,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Elevate_II_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Elevate_II_(Wizard_Spell)",
+   "aliases": [
+    "Elevate II"
+   ]
   },
   {
    "id": "elminsters-multiple-mouths-wizard",
@@ -59769,7 +60378,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Eye-Shield_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Eye-Shield_(Wizard_Spell)",
+   "aliases": [
+    "Eye-Shield"
+   ]
   },
   {
    "id": "fabricate-wu-jen-wizard",
@@ -59791,7 +60403,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Fabricate_-_Wu_Jen_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Fabricate_-_Wu_Jen_(Wizard_Spell)",
+   "aliases": [
+    "Fabricate"
+   ]
   },
   {
    "id": "face-wizard",
@@ -60057,7 +60672,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Find_Traps_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Find_Traps_(Wizard_Spell)",
+   "aliases": [
+    "Find Traps (Wizard)"
+   ]
   },
   {
    "id": "find-water-wizard",
@@ -60102,7 +60720,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Fire_Lance_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Fire_Lance_(Wizard_Spell)",
+   "aliases": [
+    "Fire Lance"
+   ]
   },
   {
    "id": "fire-phantom-wizard",
@@ -60170,7 +60791,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Fire_Wings_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Fire_Wings_(Wizard_Spell)",
+   "aliases": [
+    "Fire Wings"
+   ]
   },
   {
    "id": "fireball-wizard",
@@ -60260,7 +60884,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Flashburst_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Flashburst_(Wizard_Spell)",
+   "aliases": [
+    "Flashburst"
+   ]
   },
   {
    "id": "fleet-feet-wizard",
@@ -60348,7 +60975,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Foothold_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Foothold_(Wizard_Spell)",
+   "aliases": [
+    "Foothold"
+   ]
   },
   {
    "id": "freezefire-wizard",
@@ -60634,7 +61264,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Hand_of_Darkness_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Hand_of_Darkness_(Wizard_Spell)",
+   "aliases": [
+    "Hand of Darkness"
+   ]
   },
   {
    "id": "haste-wizard",
@@ -61033,7 +61666,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Improved_Magic_Mouth_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Improved_Magic_Mouth_(Wizard_Spell)",
+   "aliases": [
+    "Improved Magic Mouth"
+   ]
   },
   {
    "id": "improved-mind-mantle-alhoon-wizard",
@@ -61055,7 +61691,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Improved_Mind_Mantle_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Improved_Mind_Mantle_(Wizard_Spell)",
+   "aliases": [
+    "Improved Mind Mantle"
+   ]
   },
   {
    "id": "improved-whispering-wind-wizard",
@@ -61121,7 +61760,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Instant_Audience_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Instant_Audience_(Wizard_Spell)",
+   "aliases": [
+    "Instant Audience"
+   ]
   },
   {
    "id": "interruptible-light-wizard",
@@ -62253,7 +62895,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Mystic_Rope_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Mystic_Rope_(Wizard_Spell)",
+   "aliases": [
+    "Mystic Rope"
+   ]
   },
   {
    "id": "nautical-ironwood-wizard",
@@ -62320,7 +62965,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Net_-_Mazitica_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Net_-_Mazitica_(Wizard_Spell)",
+   "aliases": [
+    "Net (Mazitica)"
+   ]
   },
   {
    "id": "nights-jambiya-wizard",
@@ -62452,7 +63100,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Nybor's_Mild_Admonishment_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Nybor's_Mild_Admonishment_(Wizard_Spell)",
+   "aliases": [
+    "Nybor's Mild Admonishment"
+   ]
   },
   {
    "id": "nystuls-crystal-dirk-wizard",
@@ -62609,7 +63260,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Organic_Disruption_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Organic_Disruption_(Wizard_Spell)",
+   "aliases": [
+    "Organic Disruption"
+   ]
   },
   {
    "id": "otilukes-acid-cloud-wizard",
@@ -62808,7 +63462,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Pestilence_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Pestilence_(Wizard_Spell)",
+   "aliases": [
+    "Pestilence"
+   ]
   },
   {
    "id": "phantom-light-witch-wizard",
@@ -62830,7 +63487,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Phantom_Light_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Phantom_Light_(Wizard_Spell)",
+   "aliases": [
+    "Phantom Light"
+   ]
   },
   {
    "id": "phantom-sail-wizard",
@@ -63337,7 +63997,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Protection_from_Telekinesis_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Protection_from_Telekinesis_(Wizard_Spell)",
+   "aliases": [
+    "Protection from Telekinesis"
+   ]
   },
   {
    "id": "pseudodragon-spell-dragon-wizard",
@@ -63359,7 +64022,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Pseudodragon_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Pseudodragon_(Wizard_Spell)",
+   "aliases": [
+    "Pseudodragon (Spell)"
+   ]
   },
   {
    "id": "randoms-commodious-pocket-wizard",
@@ -63557,7 +64223,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Ritual_Strength_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Ritual_Strength_(Wizard_Spell)",
+   "aliases": [
+    "Ritual Strength"
+   ]
   },
   {
    "id": "robust-construction-wizard",
@@ -63760,7 +64429,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Scarf_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Scarf_(Wizard_Spell)",
+   "aliases": [
+    "Scarf"
+   ]
   },
   {
    "id": "scattergloom-wizard",
@@ -63938,7 +64610,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/See_Hidden_Doors_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/See_Hidden_Doors_(Wizard_Spell)",
+   "aliases": [
+    "See Hidden Doors"
+   ]
   },
   {
    "id": "seelie-spell-of-forgetting-wizard",
@@ -64137,7 +64812,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Sharptooth_-_Lvl_3_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Sharptooth_-_Lvl_3_(Wizard_Spell)",
+   "aliases": [
+    "Sharptooth"
+   ]
   },
   {
    "id": "shield-vessel-wizard",
@@ -64876,7 +65554,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Talon's_Skitmaster_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Talon's_Skitmaster_(Wizard_Spell)",
+   "aliases": [
+    "Talon's Skitmaster"
+   ]
   },
   {
    "id": "talons-soundmaster-bard-wizard",
@@ -64898,7 +65579,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Talon's_Soundmaster_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Talon's_Soundmaster_(Wizard_Spell)",
+   "aliases": [
+    "Talon's Soundmaster"
+   ]
   },
   {
    "id": "target-old-empire-wizard",
@@ -64920,7 +65604,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Target_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Target_(Wizard_Spell)",
+   "aliases": [
+    "Target"
+   ]
   },
   {
    "id": "tasirins-haunted-sleep-wizard",
@@ -65164,7 +65851,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Trap_Spellbook_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Trap_Spellbook_(Wizard_Spell)",
+   "aliases": [
+    "Trap Spellbook"
+   ]
   },
   {
    "id": "undead-control-wizard",
@@ -65321,7 +66011,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Venom_Bolt_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Venom_Bolt_(Wizard_Spell)",
+   "aliases": [
+    "Venom Bolt"
+   ]
   },
   {
    "id": "venomdust-dragon-wizard",
@@ -65344,7 +66037,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Venomdust_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Venomdust_(Wizard_Spell)",
+   "aliases": [
+    "Venomdust"
+   ]
   },
   {
    "id": "wall-of-paper-wizard",
@@ -65389,7 +66085,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Wall_of_Sound_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Wall_of_Sound_(Wizard_Spell)",
+   "aliases": [
+    "Wall of Sound"
+   ]
   },
   {
    "id": "wall-of-water-wizard",
@@ -65477,7 +66176,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Water_Summoning_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Water_Summoning_(Wizard_Spell)",
+   "aliases": [
+    "Water Summoning"
+   ]
   },
   {
    "id": "watery-double-wizard",
@@ -65698,7 +66400,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Windrider_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Windrider_(Wizard_Spell)",
+   "aliases": [
+    "Windrider"
+   ]
   },
   {
    "id": "wings-lvl-3-dragonknight-wizard",
@@ -65720,7 +66425,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Wings_-_Lvl_3_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Wings_-_Lvl_3_(Wizard_Spell)",
+   "aliases": [
+    "Wings"
+   ]
   },
   {
    "id": "witchweed-old-empire-wizard",
@@ -65742,7 +66450,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Witchweed_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Witchweed_(Wizard_Spell)",
+   "aliases": [
+    "Witchweed"
+   ]
   },
   {
    "id": "wizard-sight-wizard",
@@ -66368,7 +67079,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Bird_Charm_II_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Bird_Charm_II_(Wizard_Spell)",
+   "aliases": [
+    "Bird Charm II"
+   ]
   },
   {
    "id": "blacksphere-wizard",
@@ -66703,7 +67417,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Command_Elementals_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Command_Elementals_(Wizard_Spell)",
+   "aliases": [
+    "Command Elementals"
+   ]
   },
   {
    "id": "confusion-wizard",
@@ -66747,7 +67464,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Conjure_Cabinet_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Conjure_Cabinet_(Wizard_Spell)",
+   "aliases": [
+    "Conjure Cabinet"
+   ]
   },
   {
    "id": "conjure-dream-object-wizard",
@@ -66857,7 +67577,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Control_Death_Tyrant_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Control_Death_Tyrant_(Wizard_Spell)",
+   "aliases": [
+    "Control Death Tyrant"
+   ]
   },
   {
    "id": "control-fluid-wizard",
@@ -66990,7 +67713,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Cursed_Image_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Cursed_Image_(Wizard_Spell)",
+   "aliases": [
+    "Cursed Image"
+   ]
   },
   {
    "id": "daltims-flaming-fist-wizard",
@@ -67058,7 +67784,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Dancing_Weapon_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Dancing_Weapon_(Wizard_Spell)",
+   "aliases": [
+    "Dancing Weapon"
+   ]
   },
   {
    "id": "dariastrens-shadow-well-wizard",
@@ -67414,7 +68143,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Disfigure_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Disfigure_(Wizard_Spell)",
+   "aliases": [
+    "Disfigure"
+   ]
   },
   {
    "id": "disguise-wizard",
@@ -67747,7 +68479,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Dune_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Dune_(Wizard_Spell)",
+   "aliases": [
+    "Dune"
+   ]
   },
   {
    "id": "duplicate-wizard",
@@ -68190,7 +68925,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Fatigue_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Fatigue_(Wizard_Spell)",
+   "aliases": [
+    "Fatigue (Spell)"
+   ]
   },
   {
    "id": "fear-wizard",
@@ -68301,7 +69039,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Fire_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Fire_(Wizard_Spell)",
+   "aliases": [
+    "Fire (Spell)"
+   ]
   },
   {
    "id": "fire-aura-wizard",
@@ -68504,7 +69245,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Firetrail_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Firetrail_(Wizard_Spell)",
+   "aliases": [
+    "Firetrail"
+   ]
   },
   {
    "id": "fistandantiluss-firequench-wizard",
@@ -68638,7 +69382,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Forcelash_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Forcelash_(Wizard_Spell)",
+   "aliases": [
+    "Forcelash"
+   ]
   },
   {
    "id": "fumble-wizard",
@@ -68906,7 +69653,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Great_Thump_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Great_Thump_(Wizard_Spell)",
+   "aliases": [
+    "Great Thump"
+   ]
   },
   {
    "id": "greater-malison-wizard",
@@ -69084,7 +69834,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Heroism_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Heroism_(Wizard_Spell)",
+   "aliases": [
+    "Heroism"
+   ]
   },
   {
    "id": "hiding-place-wizard",
@@ -69128,7 +69881,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Hoardguard_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Hoardguard_(Wizard_Spell)",
+   "aliases": [
+    "Hoardguard"
+   ]
   },
   {
    "id": "hold-giant-wizard",
@@ -69217,7 +69973,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Identify_Race_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Identify_Race_(Wizard_Spell)",
+   "aliases": [
+    "Identify Race"
+   ]
   },
   {
    "id": "identify-tighmaevril-wizard",
@@ -69773,7 +70532,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Life_Force_Transfer_-_Lvl_4_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Life_Force_Transfer_-_Lvl_4_(Wizard_Spell)",
+   "aliases": [
+    "Life Force Transfer"
+   ]
   },
   {
    "id": "lifesurge-ghul-wizard",
@@ -69796,7 +70558,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Lifesurge_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Lifesurge_(Wizard_Spell)",
+   "aliases": [
+    "Lifesurge"
+   ]
   },
   {
    "id": "lightning-shield-wizard",
@@ -69862,7 +70627,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Loyalty_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Loyalty_(Wizard_Spell)",
+   "aliases": [
+    "Loyalty"
+   ]
   },
   {
    "id": "mage-seeker-wizard",
@@ -69928,7 +70696,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Magic_Resistance_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Magic_Resistance_(Wizard_Spell)",
+   "aliases": [
+    "Magic Resistance"
+   ]
   },
   {
    "id": "mask-light-wizard",
@@ -70462,7 +71233,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Negate_Magical_Weapon_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Negate_Magical_Weapon_(Wizard_Spell)",
+   "aliases": [
+    "Negate Magical Weapon"
+   ]
   },
   {
    "id": "neutralize-components-wizard",
@@ -70906,7 +71680,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Phase_Shift_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Phase_Shift_(Wizard_Spell)",
+   "aliases": [
+    "Phase Shift"
+   ]
   },
   {
    "id": "phase-trap-wizard",
@@ -72059,7 +72836,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Sending_-_Lvl_4_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Sending_-_Lvl_4_(Wizard_Spell)",
+   "aliases": [
+    "Sending"
+   ]
   },
   {
    "id": "serpent-garland-wizard",
@@ -72347,7 +73127,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Shock_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Shock_(Wizard_Spell)",
+   "aliases": [
+    "Shock"
+   ]
   },
   {
    "id": "shout-wizard",
@@ -72459,7 +73242,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Slumber_-_Lvl_4_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Slumber_-_Lvl_4_(Wizard_Spell)",
+   "aliases": [
+    "Slumber"
+   ]
   },
   {
    "id": "smooth-sailing-wizard",
@@ -72615,7 +73401,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Spell_Fangs_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Spell_Fangs_(Wizard_Spell)",
+   "aliases": [
+    "Spell Fangs"
+   ]
   },
   {
    "id": "spelltouch-lvl-4-wizard",
@@ -72637,7 +73426,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Spelltouch_-_Lvl_4_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Spelltouch_-_Lvl_4_(Wizard_Spell)",
+   "aliases": [
+    "Spelltouch"
+   ]
   },
   {
    "id": "spelltrap-lvl-4-paramander-wizard",
@@ -72660,7 +73452,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Spelltrap_-_Lvl_4_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Spelltrap_-_Lvl_4_(Wizard_Spell)",
+   "aliases": [
+    "Spelltrap"
+   ]
   },
   {
    "id": "spendelardes-chaser-wizard",
@@ -72748,7 +73543,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Spider_Leap_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Spider_Leap_(Wizard_Spell)",
+   "aliases": [
+    "Spider Leap"
+   ]
   },
   {
    "id": "spider-shape-drow-wizard",
@@ -72770,7 +73568,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Spider_Shape_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Spider_Shape_(Wizard_Spell)",
+   "aliases": [
+    "Spider Shape"
+   ]
   },
   {
    "id": "spider-strand-wizard",
@@ -72948,7 +73749,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Sunbolt_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Sunbolt_(Wizard_Spell)",
+   "aliases": [
+    "Sunbolt"
+   ]
   },
   {
    "id": "sunburst-lvl-4-wizard",
@@ -72971,7 +73775,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Sunburst_-_Lvl_4_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Sunburst_-_Lvl_4_(Wizard_Spell)",
+   "aliases": [
+    "Sunburst"
+   ]
   },
   {
    "id": "sunfire-atars-fire-wizard",
@@ -73505,7 +74312,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Turn_Undead_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Turn_Undead_(Wizard_Spell)",
+   "aliases": [
+    "Turn Undead (Wizard)"
+   ]
   },
   {
    "id": "ultravision-wizard",
@@ -73905,7 +74715,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Water_Move_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Water_Move_(Wizard_Spell)",
+   "aliases": [
+    "Water Move"
+   ]
   },
   {
    "id": "weave-mythal-wizard",
@@ -74062,7 +74875,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Wingbind_-_Lvl_4_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Wingbind_-_Lvl_4_(Wizard_Spell)",
+   "aliases": [
+    "Wingbind"
+   ]
   },
   {
    "id": "wizard-eye-wizard",
@@ -74615,7 +75431,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Blastcloak_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Blastcloak_(Wizard_Spell)",
+   "aliases": [
+    "Blastcloak"
+   ]
   },
   {
    "id": "blinkship-wizard",
@@ -74725,7 +75544,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Breathblock_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Breathblock_(Wizard_Spell)",
+   "aliases": [
+    "Breathblock"
+   ]
   },
   {
    "id": "breathe-earth-wizard",
@@ -74879,7 +75701,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Calm_Wind_-_Lvl_5_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Calm_Wind_-_Lvl_5_(Wizard_Spell)",
+   "aliases": [
+    "Calm Wind"
+   ]
   },
   {
    "id": "cause-critical-wounds-wizard",
@@ -75036,7 +75861,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Conduit_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Conduit_(Wizard_Spell)",
+   "aliases": [
+    "Conduit"
+   ]
   },
   {
    "id": "conduit-pierce-wizard",
@@ -75193,7 +76021,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Control_Undead_-_Witch_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Control_Undead_-_Witch_(Wizard_Spell)",
+   "aliases": [
+    "Control Undead"
+   ]
   },
   {
    "id": "create-chosen-one-red-wizard-wizard",
@@ -75216,7 +76047,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Create_Chosen_One_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Create_Chosen_One_(Wizard_Spell)",
+   "aliases": [
+    "Create Chosen One"
+   ]
   },
   {
    "id": "create-portal-wizard",
@@ -75395,7 +76229,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Darkbolt_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Darkbolt_(Wizard_Spell)",
+   "aliases": [
+    "Darkbolt"
+   ]
   },
   {
    "id": "darssons-music-box-wizard",
@@ -75440,7 +76277,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Death_Bump_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Death_Bump_(Wizard_Spell)",
+   "aliases": [
+    "Death Bump"
+   ]
   },
   {
    "id": "death-smoke-wizard",
@@ -75597,7 +76437,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Discord_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Discord_(Wizard_Spell)",
+   "aliases": [
+    "Discord"
+   ]
   },
   {
    "id": "disguise-bloodline-wizard",
@@ -75862,7 +76705,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Eagle_Form_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Eagle_Form_(Wizard_Spell)",
+   "aliases": [
+    "Eagle Form"
+   ]
   },
   {
    "id": "elemental-control-wizard",
@@ -75906,7 +76752,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Enchanted_Mirrors_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Enchanted_Mirrors_(Wizard_Spell)",
+   "aliases": [
+    "Enchanted Mirrors"
+   ]
   },
   {
    "id": "enhance-maneuverability-wizard",
@@ -75994,7 +76843,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Ethereal_Banishment_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Ethereal_Banishment_(Wizard_Spell)",
+   "aliases": [
+    "Ethereal Banishment"
+   ]
   },
   {
    "id": "extension-ii-wizard",
@@ -76327,7 +77179,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Fire_Stones_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Fire_Stones_(Wizard_Spell)",
+   "aliases": [
+    "Fire Stones"
+   ]
   },
   {
    "id": "fire-track-wizard",
@@ -76924,7 +77779,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Jaguar_Form_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Jaguar_Form_(Wizard_Spell)",
+   "aliases": [
+    "Jaguar Form"
+   ]
   },
   {
    "id": "jhanifers-deliquescence-wizard",
@@ -77210,7 +78068,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Lethal_Hatchling_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Lethal_Hatchling_(Wizard_Spell)",
+   "aliases": [
+    "Lethal Hatchling"
+   ]
   },
   {
    "id": "life-steal-savant-wizard",
@@ -77232,7 +78093,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Life_Steal_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Life_Steal_(Wizard_Spell)",
+   "aliases": [
+    "Life Steal"
+   ]
   },
   {
    "id": "lightning-curtain-wizard",
@@ -77587,7 +78451,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Maximum_Damage_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Maximum_Damage_(Wizard_Spell)",
+   "aliases": [
+    "Maximum Damage"
+   ]
   },
   {
    "id": "melisanders-harp-wizard",
@@ -77697,7 +78564,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Misspell_Mantle_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Misspell_Mantle_(Wizard_Spell)",
+   "aliases": [
+    "Misspell Mantle"
+   ]
   },
   {
    "id": "monster-summoning-iii-wizard",
@@ -77985,7 +78855,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Mummy_Creation_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Mummy_Creation_(Wizard_Spell)",
+   "aliases": [
+    "Mummy Creation"
+   ]
   },
   {
    "id": "mummy-production-wizard",
@@ -78341,7 +79214,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Passweb_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Passweb_(Wizard_Spell)",
+   "aliases": [
+    "Passweb"
+   ]
   },
   {
    "id": "persona-of-death-wizard",
@@ -78564,7 +79440,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Produce_Flame_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Produce_Flame_(Wizard_Spell)",
+   "aliases": [
+    "Produce Flame (Wizard)"
+   ]
   },
   {
    "id": "proofing-versus-combustion-wizard",
@@ -78806,7 +79685,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Question_Ball_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Question_Ball_(Wizard_Spell)",
+   "aliases": [
+    "Question Ball"
+   ]
   },
   {
    "id": "ragestorm-wizard",
@@ -78962,7 +79844,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Razorfangs_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Razorfangs_(Wizard_Spell)",
+   "aliases": [
+    "Razorfangs"
+   ]
   },
   {
    "id": "read-banned-letters-wizard",
@@ -79228,7 +80113,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Sandstorm_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Sandstorm_(Wizard_Spell)",
+   "aliases": [
+    "Sandstorm"
+   ]
   },
   {
    "id": "satire-bard-wizard",
@@ -79250,7 +80138,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Satire_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Satire_(Wizard_Spell)",
+   "aliases": [
+    "Satire"
+   ]
   },
   {
    "id": "seal-path-wizard",
@@ -79471,7 +80362,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Shadow_Dragon_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Shadow_Dragon_(Wizard_Spell)",
+   "aliases": [
+    "Shadow Dragon (Spell)"
+   ]
   },
   {
    "id": "shadow-hand-wizard",
@@ -79961,7 +80855,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Spidercloak_Armor_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Spidercloak_Armor_(Wizard_Spell)",
+   "aliases": [
+    "Spidercloak Armor"
+   ]
   },
   {
    "id": "spirit-form-witch-wizard",
@@ -79983,7 +80880,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Spirit_Form_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Spirit_Form_(Wizard_Spell)",
+   "aliases": [
+    "Spirit Form"
+   ]
   },
   {
    "id": "spirit-self-wizard",
@@ -80250,7 +81150,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Superheroism_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Superheroism_(Wizard_Spell)",
+   "aliases": [
+    "Superheroism"
+   ]
   },
   {
    "id": "suspension-wizard",
@@ -81032,7 +81935,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Weakness_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Weakness_(Wizard_Spell)",
+   "aliases": [
+    "Weakness"
+   ]
   },
   {
    "id": "wild-jibe-wizard",
@@ -81144,7 +82050,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Wonderform_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Wonderform_(Wizard_Spell)",
+   "aliases": [
+    "Wonderform"
+   ]
   },
   {
    "id": "wood-rot-wu-jen-wizard",
@@ -82165,7 +83074,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Construct_Undead_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Construct_Undead_(Wizard_Spell)",
+   "aliases": [
+    "Construct Undead"
+   ]
   },
   {
    "id": "construction-elf-wizard",
@@ -82187,7 +83099,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Construction_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Construction_(Wizard_Spell)",
+   "aliases": [
+    "Construction"
+   ]
   },
   {
    "id": "contingency-wizard",
@@ -82253,7 +83168,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Control_Winds_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Control_Winds_(Wizard_Spell)",
+   "aliases": [
+    "Control Winds"
+   ]
   },
   {
    "id": "corpse-host-wizard",
@@ -82320,7 +83238,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Crushing_Sphere_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Crushing_Sphere_(Wizard_Spell)",
+   "aliases": [
+    "Crushing Sphere"
+   ]
   },
   {
    "id": "cubehopper-wizard",
@@ -82921,7 +83842,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Enfeeble_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Enfeeble_(Wizard_Spell)",
+   "aliases": [
+    "Enfeeble"
+   ]
   },
   {
    "id": "enhance-water-creature-wizard",
@@ -83010,7 +83934,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Evaporate_Fluid_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Evaporate_Fluid_(Wizard_Spell)",
+   "aliases": [
+    "Evaporate Fluid"
+   ]
   },
   {
    "id": "extension-iii-wizard",
@@ -83524,7 +84451,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Heal_Self_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Heal_Self_(Wizard_Spell)",
+   "aliases": [
+    "Heal Self (Wizard)"
+   ]
   },
   {
    "id": "howl-of-pandemonium-wizard",
@@ -83812,7 +84742,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Javelin_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Javelin_(Wizard_Spell)",
+   "aliases": [
+    "Javelin (Spell)"
+   ]
   },
   {
    "id": "jonstals-improved-double-wizardry-wizard",
@@ -84966,7 +85899,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Remove_Life_Level_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Remove_Life_Level_(Wizard_Spell)",
+   "aliases": [
+    "Remove Life Level"
+   ]
   },
   {
    "id": "repulsion-wizard",
@@ -85032,7 +85968,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Reverse_Missile_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Reverse_Missile_(Wizard_Spell)",
+   "aliases": [
+    "Reverse Missile"
+   ]
   },
   {
    "id": "ring-of-disintegration-wizard",
@@ -85343,7 +86282,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Shadow_Veil_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Shadow_Veil_(Wizard_Spell)",
+   "aliases": [
+    "Shadow Veil"
+   ]
   },
   {
    "id": "shadowsteal-wizard",
@@ -85498,7 +86440,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Speak_with_Dead_-_Wu_Jen_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Speak_with_Dead_-_Wu_Jen_(Wizard_Spell)",
+   "aliases": [
+    "Speak with Dead"
+   ]
   },
   {
    "id": "spectral-guard-lvl-6-wizard",
@@ -85520,7 +86465,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Spectral_Guard_-_Lvl_6_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Spectral_Guard_-_Lvl_6_(Wizard_Spell)",
+   "aliases": [
+    "Spectral Guard"
+   ]
   },
   {
    "id": "spell-mirror-wizard",
@@ -85653,7 +86601,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Stone_Barrier_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Stone_Barrier_(Wizard_Spell)",
+   "aliases": [
+    "Stone Barrier"
+   ]
   },
   {
    "id": "stone-to-flesh-wizard",
@@ -85765,7 +86716,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Summon_Spider_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Summon_Spider_(Wizard_Spell)",
+   "aliases": [
+    "Summon Spider"
+   ]
   },
   {
    "id": "summon-wind-dragons-wizard",
@@ -86099,7 +87053,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/True_Name_-_Lvl_6_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/True_Name_-_Lvl_6_(Wizard_Spell)",
+   "aliases": [
+    "True Name"
+   ]
   },
   {
    "id": "true-seeing-wizard",
@@ -86277,7 +87234,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Vampiric_Lash_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Vampiric_Lash_(Wizard_Spell)",
+   "aliases": [
+    "Vampiric Lash"
+   ]
   },
   {
    "id": "veil-wizard",
@@ -86365,7 +87325,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Wards_of_Defense_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Wards_of_Defense_(Wizard_Spell)",
+   "aliases": [
+    "Wards of Defense"
+   ]
   },
   {
    "id": "warp-stone-wizard",
@@ -86563,7 +87526,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Worship_-_Old_Empire_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Worship_-_Old_Empire_(Wizard_Spell)",
+   "aliases": [
+    "Worship (Old Empire)"
+   ]
   },
   {
    "id": "zalas-disruption-wizard",
@@ -87236,7 +88202,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Contact_Archetype_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Contact_Archetype_(Wizard_Spell)",
+   "aliases": [
+    "Contact Archetype"
+   ]
   },
   {
    "id": "control-destiny-wizard",
@@ -87612,7 +88581,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Door_of_Death_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Door_of_Death_(Wizard_Spell)",
+   "aliases": [
+    "Door of Death"
+   ]
   },
   {
    "id": "double-dweomer-wizard",
@@ -87679,7 +88651,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Draincone_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Draincone_(Wizard_Spell)",
+   "aliases": [
+    "Draincone"
+   ]
   },
   {
    "id": "drawmijs-instant-summons-wizard",
@@ -87857,7 +88832,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Faerie_Sword_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Faerie_Sword_(Wizard_Spell)",
+   "aliases": [
+    "Faerie Sword"
+   ]
   },
   {
    "id": "find-the-path-wizard-wizard",
@@ -88035,7 +89013,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Gullship_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Gullship_(Wizard_Spell)",
+   "aliases": [
+    "Gullship"
+   ]
   },
   {
    "id": "harm-wizard",
@@ -88369,7 +89350,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Love_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Love_(Wizard_Spell)",
+   "aliases": [
+    "Love (Spell)"
+   ]
   },
   {
    "id": "lullaby-wizard",
@@ -88770,7 +89754,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Nybor's_Joyful_Voyage_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Nybor's_Joyful_Voyage_(Wizard_Spell)",
+   "aliases": [
+    "Nybor's Joyful Voyage"
+   ]
   },
   {
    "id": "nybors-stern-reproof-red-wizard-wizard",
@@ -88792,7 +89779,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Nybor's_Stern_Reproof_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Nybor's_Stern_Reproof_(Wizard_Spell)",
+   "aliases": [
+    "Nybor's Stern Reproof"
+   ]
   },
   {
    "id": "obedience-wizard",
@@ -88951,7 +89941,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Paralyzing_Field_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Paralyzing_Field_(Wizard_Spell)",
+   "aliases": [
+    "Paralyzing Field"
+   ]
   },
   {
    "id": "paralyzing-pit-witch-wizard",
@@ -88974,7 +89967,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Paralyzing_Pit_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Paralyzing_Pit_(Wizard_Spell)",
+   "aliases": [
+    "Paralyzing Pit"
+   ]
   },
   {
    "id": "persistence-wizard",
@@ -89195,7 +90191,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Protection_from_Hunger_and_Thirst_-_Lvl_7_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Protection_from_Hunger_and_Thirst_-_Lvl_7_(Wizard_Spell)",
+   "aliases": [
+    "Protection from Hunger and Thirst"
+   ]
   },
   {
    "id": "rarys-plane-truth-wizard",
@@ -89305,7 +90304,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Resist_Injury_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Resist_Injury_(Wizard_Spell)",
+   "aliases": [
+    "Resist Injury"
+   ]
   },
   {
    "id": "resist-magic-wizard-wizard",
@@ -89680,7 +90682,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Spell_Drain_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Spell_Drain_(Wizard_Spell)",
+   "aliases": [
+    "Spell Drain"
+   ]
   },
   {
    "id": "spell-shape-wizard",
@@ -89990,7 +90995,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Summon_Sha'ir_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Summon_Sha'ir_(Wizard_Spell)",
+   "aliases": [
+    "Summon Sha'ir"
+   ]
   },
   {
    "id": "summon-wind-wizard",
@@ -90278,7 +91286,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Time_Loop_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Time_Loop_(Wizard_Spell)",
+   "aliases": [
+    "Time Loop"
+   ]
   },
   {
    "id": "timed-stasis-wizard",
@@ -90388,7 +91399,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Trick_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Trick_(Wizard_Spell)",
+   "aliases": [
+    "Trick"
+   ]
   },
   {
    "id": "true-name-wizard",
@@ -90740,7 +91754,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Weirdshield_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Weirdshield_(Wizard_Spell)",
+   "aliases": [
+    "Weirdshield"
+   ]
   },
   {
    "id": "wesleys-delayed-damage-wizard",
@@ -91321,7 +92338,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Bombard_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Bombard_(Wizard_Spell)",
+   "aliases": [
+    "Bombard"
+   ]
   },
   {
    "id": "bone-blade-wizard",
@@ -91455,7 +92475,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Call_of_Despair_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Call_of_Despair_(Wizard_Spell)",
+   "aliases": [
+    "Call of Despair"
+   ]
   },
   {
    "id": "change-form-wizard",
@@ -91589,7 +92612,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Cold_Curtain_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Cold_Curtain_(Wizard_Spell)",
+   "aliases": [
+    "Cold Curtain"
+   ]
   },
   {
    "id": "collapse-portal-wizard",
@@ -91677,7 +92703,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Create_Death_Tyrant_-_Beholder_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Create_Death_Tyrant_-_Beholder_(Wizard_Spell)",
+   "aliases": [
+    "Create Death Tyrant"
+   ]
   },
   {
    "id": "create-spectral-wizard-wizard",
@@ -91812,7 +92841,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Death_Spider_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Death_Spider_(Wizard_Spell)",
+   "aliases": [
+    "Death Spider"
+   ]
   },
   {
    "id": "deathbolt-old-empire-wizard",
@@ -91835,7 +92867,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Deathbolt_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Deathbolt_(Wizard_Spell)",
+   "aliases": [
+    "Deathbolt"
+   ]
   },
   {
    "id": "deathshroud-wizard",
@@ -91990,7 +93025,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Devastate_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Devastate_(Wizard_Spell)",
+   "aliases": [
+    "Devastate"
+   ]
   },
   {
    "id": "discharge-wizard",
@@ -92079,7 +93117,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Dragonrage_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Dragonrage_(Wizard_Spell)",
+   "aliases": [
+    "Dragonrage"
+   ]
   },
   {
    "id": "dweomerdeny-wizard",
@@ -92302,7 +93343,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Flensing_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Flensing_(Wizard_Spell)",
+   "aliases": [
+    "Flensing"
+   ]
   },
   {
    "id": "gateway-wizard",
@@ -92748,7 +93792,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Leviathan_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Leviathan_(Wizard_Spell)",
+   "aliases": [
+    "Leviathan (Spell)"
+   ]
   },
   {
    "id": "life-force-transfer-wizard",
@@ -92814,7 +93861,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Lifedrain_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Lifedrain_(Wizard_Spell)",
+   "aliases": [
+    "Lifedrain"
+   ]
   },
   {
    "id": "lightning-ring-wizard",
@@ -93058,7 +94108,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Mystic_Shield_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Mystic_Shield_(Wizard_Spell)",
+   "aliases": [
+    "Mystic Shield"
+   ]
   },
   {
    "id": "net-of-stars-wizard",
@@ -93103,7 +94156,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Nybor's_Wrathful_Castigation_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Nybor's_Wrathful_Castigation_(Wizard_Spell)",
+   "aliases": [
+    "Nybor's Wrathful Castigation"
+   ]
   },
   {
    "id": "nymphs-aura-elf-wizard",
@@ -93125,7 +94181,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Nymph's_Aura_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Nymph's_Aura_(Wizard_Spell)",
+   "aliases": [
+    "Nymph's Aura"
+   ]
   },
   {
    "id": "obsidian-death-wizard",
@@ -93438,7 +94497,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Rusting_Touch_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Rusting_Touch_(Wizard_Spell)",
+   "aliases": [
+    "Rusting Touch"
+   ]
   },
   {
    "id": "sand-worm-wizard",
@@ -93682,7 +94744,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Song_of_Battle_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Song_of_Battle_(Wizard_Spell)",
+   "aliases": [
+    "Song of Battle"
+   ]
   },
   {
    "id": "spell-engine-wizard",
@@ -94218,7 +95283,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Unlife_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Unlife_(Wizard_Spell)",
+   "aliases": [
+    "Unlife"
+   ]
   },
   {
    "id": "wasting-wizard",
@@ -94442,7 +95510,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Youth_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Youth_(Wizard_Spell)",
+   "aliases": [
+    "Youth"
+   ]
   },
   {
    "id": "a-summons-one-dares-not-deny-wizard",
@@ -94732,7 +95803,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Black_Blade_of_Disaster_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Black_Blade_of_Disaster_(Wizard_Spell)",
+   "aliases": [
+    "Black Blade of Disaster"
+   ]
   },
   {
    "id": "blade-in-the-soul-wizard",
@@ -94845,7 +95919,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Call_-_Old_Empire_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Call_-_Old_Empire_(Wizard_Spell)",
+   "aliases": [
+    "Call"
+   ]
   },
   {
    "id": "celestial-army-elf-wizard",
@@ -94867,7 +95944,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Celestial_Army_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Celestial_Army_(Wizard_Spell)",
+   "aliases": [
+    "Celestial Army"
+   ]
   },
   {
    "id": "chain-contingency-wizard",
@@ -95200,7 +96280,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Disintegrate_Flesh_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Disintegrate_Flesh_(Wizard_Spell)",
+   "aliases": [
+    "Disintegrate Flesh"
+   ]
   },
   {
    "id": "dismind-wizard",
@@ -95288,7 +96371,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Draindoom_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Draindoom_(Wizard_Spell)",
+   "aliases": [
+    "Draindoom"
+   ]
   },
   {
    "id": "elemental-aura-wizard",
@@ -95509,7 +96595,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Gift_of_Life_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Gift_of_Life_(Wizard_Spell)",
+   "aliases": [
+    "Gift of Life"
+   ]
   },
   {
    "id": "glorious-transmutation-wizard",
@@ -96198,7 +97287,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Mystic_Sphere_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Mystic_Sphere_(Wizard_Spell)",
+   "aliases": [
+    "Mystic Sphere"
+   ]
   },
   {
    "id": "pact-of-darkness-wizard",
@@ -96418,7 +97510,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Reflection_-_Witch_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Reflection_-_Witch_(Wizard_Spell)",
+   "aliases": [
+    "Reflection (Witch)"
+   ]
   },
   {
    "id": "ring-of-swords-wizard",
@@ -96595,7 +97690,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Seek_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Seek_(Wizard_Spell)",
+   "aliases": [
+    "Seek"
+   ]
   },
   {
    "id": "sever-lifeline-wizard",
@@ -96705,7 +97803,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Solidify_Air_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Solidify_Air_(Wizard_Spell)",
+   "aliases": [
+    "Solidify Air"
+   ]
   },
   {
    "id": "soul-freedom-elf-wizard",
@@ -96727,7 +97828,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Soul_Freedom_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Soul_Freedom_(Wizard_Spell)",
+   "aliases": [
+    "Soul Freedom"
+   ]
   },
   {
    "id": "soul-shift-old-empire-wizard",
@@ -96749,7 +97853,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Soul_Shift_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Soul_Shift_(Wizard_Spell)",
+   "aliases": [
+    "Soul Shift"
+   ]
   },
   {
    "id": "spell-invulnerability-wizard",
@@ -96794,7 +97901,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Spell-Lash_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Spell-Lash_(Wizard_Spell)",
+   "aliases": [
+    "Spell-Lash"
+   ]
   },
   {
    "id": "spellstorm-wizard",
@@ -97015,7 +98125,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Summon_Spirit_-_Wu_Jen_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Summon_Spirit_-_Wu_Jen_(Wizard_Spell)",
+   "aliases": [
+    "Summon Spirit (Wu Jen)"
+   ]
   },
   {
    "id": "sungate-wizard",
@@ -97548,7 +98661,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Vaporize_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Vaporize_(Wizard_Spell)",
+   "aliases": [
+    "Vaporize"
+   ]
   },
   {
    "id": "virus-charm-wizard",
@@ -97593,7 +98709,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Volcanic_Circle_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Volcanic_Circle_(Wizard_Spell)",
+   "aliases": [
+    "Volcanic Circle"
+   ]
   },
   {
    "id": "wail-of-the-banshee-wizard",
@@ -97661,7 +98780,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Web_of_Shadows_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Web_of_Shadows_(Wizard_Spell)",
+   "aliases": [
+    "Web of Shadows"
+   ]
   },
   {
    "id": "weight-concentration-witch-wizard",
@@ -97683,7 +98805,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Weight_Concentration_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Weight_Concentration_(Wizard_Spell)",
+   "aliases": [
+    "Weight Concentration"
+   ]
   },
   {
    "id": "weird-wizard",
@@ -97820,7 +98945,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Wingbind_-_Lvl_9_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Wingbind_-_Lvl_9_(Wizard_Spell)",
+   "aliases": [
+    "Wingbind"
+   ]
   },
   {
    "id": "wish-wizard",
@@ -97909,7 +99037,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Wrath_of_the_Just_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Wrath_of_the_Just_(Wizard_Spell)",
+   "aliases": [
+    "Wrath of the Just"
+   ]
   },
   {
    "id": "abrasion-wizard",

@@ -173,6 +173,9 @@ async function main() {
           link: WIKI + encodeURIComponent(page.title.replace(/ /g, '_')).replace(/%2F/g, '/'),
         };
         if (!entry.dice) delete entry.diceKind;
+        // "Run (Lvl 1)", "Sound Bubble - Bard": also answer to the plain name
+        const plain = entry.name.replace(/\s*\((?:lvl|level)[^)]*\).*$/i, '').replace(/\s+[-–]\s+[^-–]+$/, '').replace(/[;,]?\s*\((?:chant|cooperative)\)$/i, '').trim();
+        if (plain && plain !== entry.name) entry.aliases = [plain];
         const key = `${entry.class}|${slug(entry.name)}|${entry.level}`;
         const existing = byKey.get(key);
         if (existing) {
@@ -192,6 +195,18 @@ async function main() {
       }
       await sleep(400);
     }
+  }
+  // Placeholders the group added (status "needs details") take their empty
+  // fields from an imported entry of the same class with that plain name
+  const missing = e => ['castTime', 'range', 'duration', 'save'].filter(k => !String(e[k] || '').trim());
+  for (const e of catalog.spells.filter(x => x.status === 'needs details')) {
+    const key = e.name.toLowerCase();
+    const src = catalog.spells.find(x => x !== e && x.class === e.class && x.status === 'imported'
+      && (x.name.toLowerCase() === key || (x.aliases || []).some(a => a.toLowerCase() === key)));
+    if (src) for (const k of ['school', 'castTime', 'range', 'duration', 'area', 'save', 'dice', 'diceKind', 'source', 'link']) {
+      if ((e[k] === undefined || e[k] === '') && src[k]) { e[k] = src[k]; filled++; }
+    }
+    if (!missing(e).length) e.status = 'imported';
   }
   catalog.about = "The campaign's shared spell catalog: short stat blocks only, never a book's description text (link to it instead). Anyone in the group can add or edit entries. Hand-entered PHB entries are marked 'check' until compared with the book. Entries marked 'imported' come from the AD&D 2nd Edition wiki (adnd2e.fandom.com, CC BY-SA): their infobox facts, with the attack roll and dice guessed from the description and listed under 'check' for a player to confirm.";
   catalog.spells.sort((a, b) => a.class.localeCompare(b.class) || a.level - b.level || a.name.localeCompare(b.name));
