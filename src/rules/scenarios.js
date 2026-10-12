@@ -154,6 +154,18 @@ export function diceAtLevel(dice, level, maxLevel = 0) {
   return /^\d*d\d+([+-]\d+)?$/i.test(d) ? d : null;
 }
 
+// House rule (Bowcaster kit): a spell not sent through an arrow takes 3
+// longer to cast and does 1 less damage per die (at least 1 per die).
+// "1d8+4" → "1d8+3", "5d6" → "5d6-5". A Spell scenario is an ordinary cast.
+export const isBowcaster = ctx => (ctx.classes || []).some(c => /bowcaster/i.test(c.name || ''));
+export function lessPerDie(dice) {
+  const m = String(dice || '').replace(/\s+/g, '').match(/^(\d*)d(\d+)([+-]\d+)?$/i);
+  if (!m) return dice;
+  const flat = num(m[3]) - (num(m[1]) || 1);
+  return `${m[1]}d${m[2]}${flat ? (flat > 0 ? `+${flat}` : flat) : ''}`;
+}
+const slowerCast = t => (/^\s*\d+\s*$/.test(String(t)) ? String(num(t) + 3) : t);
+
 // A Spell attack reads the spell's casting details from the catalog;
 // anything different is kept on the scenario.
 export function scenarioSpell(ctx, sc) {
@@ -167,11 +179,17 @@ export function scenarioSpell(ctx, sc) {
   const pick = k => (own[k] !== undefined && own[k] !== '' ? own[k] : (cat && cat[k]) || '');
   const level = casterLevel(ctx, sc, sp.type || (cat && cat.class) || '');
   const dice = pick('dice');
+  const rolled = dice ? diceAtLevel(dice, level, pick('diceMaxLevel')) : '';
+  const bowcaster = isBowcaster(ctx);
   return {
     sheet: sp, catalog: cat,
     name: sp.name, castTime: pick('castTime'), range: pick('range'), save: pick('save'), dice, diceMaxLevel: pick('diceMaxLevel'),
-    // The dice at this caster's level, or the dice as written when they can't be worked out
-    casterLevel: level, rolled: dice ? diceAtLevel(dice, level, pick('diceMaxLevel')) : '',
+    // As written above; as cast below: the dice at this caster's level (or as
+    // written when they can't be worked out) and the casting time, after any
+    // house-rule penalty
+    casterLevel: level, rolled: bowcaster && rolled ? lessPerDie(rolled) : rolled,
+    castTimeNow: bowcaster ? slowerCast(pick('castTime')) : pick('castTime'),
+    penalty: bowcaster ? 'Cast without an arrow: casting time +3, −1 damage per die' : '',
     attack: pick('attack') || 'none', heal: (cat && cat.diceKind === 'heal') || /cure|heal/i.test(sp.name),
     link: (cat && cat.link) || sp.url || '',
   };

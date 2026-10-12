@@ -101,7 +101,7 @@ export function toDMHelper(save, dmSettings = {}, { catalog = null } = {}) {
       const sp = scenarioSpell(ctx, sc);
       if (!sp) { review.push(`${sc.name || 'Spell scenario'}: no memorized spell chosen; left out`); continue; }
       const label = unique(sc.name || sp.name);
-      const speed = castSpeed(sp.castTime);
+      const speed = castSpeed(sp.castTimeNow);
       if (speed === null) review.push(`${label}: no cast time; initiative speed defaults to 1`);
       actions.push({ name: label, thac0: bd ? bd.thac0 : null, speedMin: 0, speedMax: 10, speedDefault: speed ?? 1 });
       if (sp.dice) {

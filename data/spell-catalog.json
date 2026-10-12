@@ -46591,7 +46591,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Magic_Missile_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Magic_Missile_(Wizard_Spell)",
+   "aliases": [
+    "Magic Missle"
+   ]
   },
   {
    "id": "march-wizard",
@@ -54234,14 +54237,13 @@
    "duration": "Special",
    "area": "1 target",
    "save": "Special",
-   "attack": "none",
+   "attack": "ranged",
    "dice": "2d4",
    "diceKind": "damage",
    "summary": "",
    "source": "Player's Handbook page 186",
    "status": "imported",
    "check": [
-    "attack",
     "dice"
    ],
    "link": "https://adnd2e.fandom.com/wiki/Melf's_Acid_Arrow_(Wizard_Spell)"

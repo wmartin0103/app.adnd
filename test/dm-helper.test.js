@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 
 import { armorClass, savingThrows, stoutSaveBonus, thiefSkills, proficiencyTargets } from '../src/rules/character.js';
 import { toDMHelper, formatDMHelperConfig, castSpeed } from '../src/adapters/dm-helper.js';
-import { diceAtLevel, casterLevel, scenarioContext, scenarioDamage } from '../src/rules/scenarios.js';
+import { diceAtLevel, casterLevel, scenarioContext, scenarioDamage, lessPerDie } from '../src/rules/scenarios.js';
 import { diceCap } from '../scripts/import-wiki-spells.mjs';
 
 const jaque = JSON.parse(readFileSync(new URL('./fixtures/jaque-v2.json', import.meta.url)));
@@ -122,6 +122,24 @@ test('Tig\'s scenarios use PHB weapons, with Code of Gallant as an effect', () =
   assert.deepEqual(r.damage['Tighkar Talenthos|Sling'], { sm: '1d4+1', l: '1d6+1' });            // no Str on a sling
   const gallant = { ...tig, __stances: tig.__stances.map(st => ({ ...st, on: true })) };
   assert.equal(toDMHelper(gallant).character.weapons['Bastard sword, two-handed'].thac0, 14);
+});
+
+// Rifiyr, Wizard 4 with the Bowcaster kit (docs/house-rules/bowcaster.md)
+test('Rifiyr: bows with Mystic Aim, −2 off the bow, and the casting penalty without an arrow', () => {
+  const r = toDMHelper(JSON.parse(readFileSync(new URL('../samples/rifiyr_10-12.json', import.meta.url))), {}, { catalog });
+  const c = r.character;
+  assert.deepEqual(c.weapons['Long bow'], { thac0: 16, speed: 8 });             // 19 − bow +1 − Dex +1 − Mystic Aim +1
+  assert.deepEqual(c.secondary.map(s => s.name), ['Long bow (2nd)', 'Folding bow (2nd)']);   // two shots a round
+  assert.equal(c.weapons['Silver short sword'].thac0, 25);                       // 19 − sword +1 + non-prof 5 + kit 2
+  assert.equal(c.weapons.Dagger.thac0, 26);
+  // Cast the ordinary way: casting time +3, −1 per die
+  assert.deepEqual(c.actions.map(a => [a.name, a.speedDefault]), [['Magic Missile', 4], ['Shocking Grasp', 4]]);
+  assert.deepEqual(r.damage['Rifiyr|Shocking Grasp'], { sm: '1d8+3', l: '1d8+3' });  // 1d8+4 at 4th, −1
+  assert.deepEqual(r.damage['Rifiyr|Magic Missile'], { sm: '1d4', l: '1d4' });
+});
+
+test('−1 per die', () => {
+  assert.deepEqual(['1d8+4', '5d6', '1d4+1', '2d4'].map(lessPerDie), ['1d8+3', '5d6-5', '1d4', '2d4-2']);
 });
 
 test('effects that are on count, as on the sheet, and are listed for the DM', () => {

@@ -1,0 +1,567 @@
+{
+  "__version": 1,
+  "name": "Rifiyr",
+  "player": "Scott",
+  "race-group": "half-elf",
+  "alignment": "Neutral-Good",
+  "str": "15",
+  "dex": "16",
+  "con": "14",
+  "int": "15",
+  "wis": "15",
+  "cha": "12",
+  "ac": "6",
+  "hp-current": "13",
+  "hp-max": "13",
+  "movement-mod": "",
+  "money": "",
+  "notes": "CONVERTED 9/21/26: Fighter3/Wizard3 (Spellarcher) -> single-classed Wizard 4 (Bowcaster kit, PHB no longer requires dual-classing). XP combined (4000+6792=10792) per house-rule -> Wizard lvl4. WIS raised 14->15 and CHA lowered 13->12 to meet Bowcaster's WIS15+/INT15+ requirement. HP re-rolled on Wizard d4 (was 14 on blended F/W die; new value is an ESTIMATE using max-at-1st + avg-thereafter - reroll with DM if preferred). Lost Fighter-side weapon specialization (old 2-slot Long Bow entry) - wizards can never specialize. Only 1 weapon prof slot at lvl4: spent on 'Bow, any type' per kit (covers long bow + folding bow, no separate slots needed). Dropped Short Sword proficiency - not on the wizard weapon list the kit allows; a 2nd slot (for one wizard-list weapon, e.g. Dagger) opens at lvl6. Removed Detect Magic and Identify - both Lesser Divination, banned for Bowcasters. Added free bonus spells Warp Wood + Murdock's Feathery Flyer (kit grant, don't count against known-spell total). Added free bonus NWPs Hunting/Tracking/Observation/Investigation in place of normal starting wizard NWP slots. NWP slot budget confirmed (PHB Table 34/4): lvl4 Wizard using optional INT-bonus rule = 1 (leveling, crossed lvl3) + 4 (INT15 bonus) = 5 slots. Dropped Alchemy (2 slots - overlapped the kit's no-potions/salves hindrance) and Mental Resistance (1 slot - redundant with half-elf charm resistance) to get from 8 down to 5: Spellcraft(1)+Reading/Writing(1)+Alertness(1)+Arcanology(1)+Swimming(1)=5/5. Kept Swimming despite low kit-relevance since this is an island campaign (without the NWP you cannot swim at all per PHB, only float/hold breath). No armor ever, of any kind - confirm w/ DM whether Bracers of Defence (currently baked into AC 6) still count, since this kit's fluff reads stricter than the usual wizard armor rule. Cannot cast from scrolls anymore (Scroll of Charm Person can only be studied/copied to a feather, not read aloud). Spellbook is now a set of trimmed feathers, not bound pages. SPELL SWAPS (same total count, kept): dropped Disarm, Alustriel's Fang, and Scare (none were touch/point/self-origin, so none could ever ride an arrow, and Scare duplicated the kit's own 6th-level Stopping Aim fear effect). Added Grease (1st - point-of-origin, arrow-ready once Spellarrows hit 5th-level tier next level), Invisibility (2nd - Range: Touch, arrow-ready now), and Melf's Acid Arrow (2nd - already fluffed as a magic arrow; ask DM whether it should just ride your own bow attack instead of the normal-cast penalty). Ring of Spell Storing still lists Alustriel's Fang/Scare as stored - confirm with DM if that stays valid or needs re-storing with the new list.",
+  "__scenarios": [
+    {
+      "group": "wizard",
+      "levelMode": "sheet",
+      "customLevel": 1,
+      "active": true,
+      "collapsed": false,
+      "handedness": "main",
+      "offHandPenalty": "",
+      "spellId": null,
+      "spell": {},
+      "hitMod": "1",
+      "dmgMod": "",
+      "rate": "2/1",
+      "id": "sc-1",
+      "name": "Long bow",
+      "weaponId": "wpn-2",
+      "attackType": "missile"
+    },
+    {
+      "group": "wizard",
+      "levelMode": "sheet",
+      "customLevel": 1,
+      "active": false,
+      "collapsed": false,
+      "handedness": "main",
+      "offHandPenalty": "",
+      "spellId": null,
+      "spell": {},
+      "hitMod": "1",
+      "dmgMod": "",
+      "rate": "2/1",
+      "id": "sc-2",
+      "name": "Folding bow",
+      "weaponId": "wpn-4",
+      "attackType": "missile"
+    },
+    {
+      "group": "wizard",
+      "levelMode": "sheet",
+      "customLevel": 1,
+      "active": false,
+      "collapsed": false,
+      "handedness": "main",
+      "offHandPenalty": "",
+      "spellId": "spl-30",
+      "spell": {},
+      "hitMod": "",
+      "dmgMod": "",
+      "rate": "1/1",
+      "id": "sc-3",
+      "name": "Magic Missile",
+      "attackType": "spell"
+    },
+    {
+      "group": "wizard",
+      "levelMode": "sheet",
+      "customLevel": 1,
+      "active": false,
+      "collapsed": false,
+      "handedness": "main",
+      "offHandPenalty": "",
+      "spellId": "spl-32",
+      "spell": {},
+      "hitMod": "",
+      "dmgMod": "",
+      "rate": "1/1",
+      "id": "sc-4",
+      "name": "Shocking Grasp",
+      "attackType": "spell"
+    },
+    {
+      "group": "wizard",
+      "levelMode": "sheet",
+      "customLevel": 1,
+      "active": false,
+      "collapsed": false,
+      "handedness": "main",
+      "offHandPenalty": "",
+      "spellId": null,
+      "spell": {},
+      "hitMod": "-7",
+      "dmgMod": "",
+      "rate": "1/1",
+      "id": "sc-5",
+      "name": "Dagger",
+      "weaponId": "wpn-3",
+      "attackType": "melee"
+    },
+    {
+      "group": "wizard",
+      "levelMode": "sheet",
+      "customLevel": 1,
+      "active": false,
+      "collapsed": false,
+      "handedness": "main",
+      "offHandPenalty": "",
+      "spellId": null,
+      "spell": {},
+      "hitMod": "-7",
+      "dmgMod": "",
+      "rate": "1/1",
+      "id": "sc-6",
+      "name": "Silver short sword",
+      "weaponId": "wpn-1",
+      "attackType": "melee"
+    }
+  ],
+  "__scenarioCounter": 6,
+  "__enemies": [],
+  "__enemyCounter": 1,
+  "__classes": [
+    {
+      "id": "cls-2",
+      "name": "Wizard (Bowcaster)",
+      "group": "wizard",
+      "level": "4",
+      "xp": "10792"
+    }
+  ],
+  "__classCounter": 2,
+  "__saveMods": {
+    "paralysis": 0,
+    "rod": 0,
+    "petrification": 0,
+    "breath": 0,
+    "spell": 0
+  },
+  "__traitState": {
+    "he-infravision": {
+      "active": true,
+      "notes": ""
+    },
+    "he-secret-doors": {
+      "active": true,
+      "notes": ""
+    },
+    "he-charm": {
+      "active": true,
+      "notes": ""
+    },
+    "he-languages": {
+      "active": true,
+      "notes": ""
+    },
+    "he-multiclass": {
+      "active": true,
+      "notes": "No longer in use now that Rifiyr is single-classed, but left on since half-elves still qualify for it in general."
+    }
+  },
+  "__thiefSkillAlloc": {
+    "points": {},
+    "kit": {},
+    "armor": {}
+  },
+  "__thiefSubclass": "thief",
+  "__weapons": [
+    {
+      "id": "wpn-1",
+      "name": "Silver Short Sword",
+      "size": "md",
+      "dmgType": "slashing",
+      "speed": "3",
+      "hitAdj": "+1",
+      "dmgAdj": "",
+      "dmgSM": "1d6",
+      "dmgL": "1d8",
+      "notes": "NOT PROFICIENT under Bowcaster (short sword isn't on the wizard weapon list) - suffers normal non-proficiency penalty PLUS the kit's -2 for any non-bow weapon. Kept as inventory/backup only.",
+      "racialBonus": false
+    },
+    {
+      "id": "wpn-2",
+      "name": "Long Bow (Fine)",
+      "size": "lg",
+      "dmgType": "piercing",
+      "speed": "8",
+      "hitAdj": "+1",
+      "dmgAdj": "",
+      "dmgSM": "1d8",
+      "dmgL": "1d6",
+      "notes": "30/70/140/210. Represents the kit's free starting masterwork bow (+1 to hit, +1 material saves). Main weapon.",
+      "racialBonus": false
+    },
+    {
+      "id": "wpn-3",
+      "name": "Dagger",
+      "size": "sm",
+      "dmgType": "slashing",
+      "speed": "2",
+      "hitAdj": "",
+      "dmgAdj": "",
+      "dmgSM": "1d4",
+      "dmgL": "1d3",
+      "notes": "On the wizard weapon list - best candidate for the kit's 'one other weapon' slot once a 2nd weapon proficiency opens at lvl6. Not proficient yet at lvl4.",
+      "racialBonus": false
+    },
+    {
+      "id": "wpn-4",
+      "name": "Folding bow",
+      "size": "sm",
+      "dmgType": "piercing",
+      "speed": "7",
+      "hitAdj": "-1",
+      "dmgAdj": "-1",
+      "dmgSM": "1d8",
+      "dmgL": "1d6",
+      "notes": "46/92/137. Covered by the same generalized 'Bow' proficiency as the Long Bow - no separate slot needed under this kit.",
+      "racialBonus": false
+    }
+  ],
+  "__weaponCounter": 4,
+  "__spells": [
+    {
+      "id": "spl-3",
+      "name": "Read Magic",
+      "level": 1,
+      "type": "wizard",
+      "isMemorized": false,
+      "sourceId": null,
+      "charges": 1,
+      "url": "https://adnd2e.fandom.com/wiki/Read_Magic_(Wizard_Spell)",
+      "notes": ""
+    },
+    {
+      "id": "spl-6",
+      "name": "Armor",
+      "level": 1,
+      "type": "wizard",
+      "isMemorized": false,
+      "sourceId": null,
+      "charges": 1,
+      "url": "https://adnd2e.fandom.com/wiki/Armor_(Wizard_Spell)",
+      "notes": ""
+    },
+    {
+      "id": "spl-7",
+      "name": "Accuracy",
+      "level": 1,
+      "type": "wizard",
+      "isMemorized": false,
+      "sourceId": null,
+      "charges": 1,
+      "url": "https://adnd2e.fandom.com/wiki/Accuracy_(Wizard_Spell)",
+      "notes": ""
+    },
+    {
+      "id": "spl-8",
+      "name": "Shocking Grasp",
+      "level": 1,
+      "type": "wizard",
+      "isMemorized": false,
+      "sourceId": null,
+      "charges": 1,
+      "url": "https://adnd2e.fandom.com/wiki/Shocking_Grasp_(Wizard_Spell)",
+      "notes": "Touch spell - can be loaded onto an arrow as a Spellarrow (1st-level tier)."
+    },
+    {
+      "id": "spl-11",
+      "name": "Magic Missile",
+      "level": 1,
+      "type": "wizard",
+      "isMemorized": false,
+      "sourceId": null,
+      "charges": 1,
+      "url": "https://adnd2e.fandom.com/wiki/Magic_Missile_(Wizard_Spell)",
+      "notes": ""
+    },
+    {
+      "id": "spl-12",
+      "name": "IGnite Flame",
+      "level": 1,
+      "type": "wizard",
+      "isMemorized": false,
+      "sourceId": null,
+      "charges": 1,
+      "url": "https://adnd2e.fandom.com/wiki/Ignite_Flame_%28Wizard_Spell%29",
+      "notes": ""
+    },
+    {
+      "id": "spl-19",
+      "name": "Sleep",
+      "level": 1,
+      "type": "wizard",
+      "isMemorized": false,
+      "sourceId": null,
+      "charges": 1,
+      "url": "https://adnd2e.fandom.com/wiki/Sleep_(Wizard_Spell)",
+      "notes": ""
+    },
+    {
+      "id": "spl-30",
+      "name": "Magic Missile",
+      "level": 1,
+      "type": "wizard",
+      "isMemorized": true,
+      "sourceId": "spl-11",
+      "charges": 1,
+      "url": "https://adnd2e.fandom.com/wiki/Magic_Missile_(Wizard_Spell)",
+      "notes": ""
+    },
+    {
+      "id": "spl-32",
+      "name": "Shocking Grasp",
+      "level": 1,
+      "type": "wizard",
+      "isMemorized": true,
+      "sourceId": "spl-8",
+      "charges": 1,
+      "url": "https://adnd2e.fandom.com/wiki/Shocking_Grasp_(Wizard_Spell)",
+      "notes": ""
+    },
+    {
+      "id": "spl-33",
+      "name": "Warp Wood",
+      "level": 2,
+      "type": "wizard",
+      "isMemorized": false,
+      "sourceId": null,
+      "charges": 1,
+      "url": "https://adnd2e.fandom.com/wiki/Warp_Wood_(Wizard_Spell)",
+      "notes": "Free Bowcaster bonus spell - known from 1st level, doesn't count against known-spell total. Also lets him reshape a wizard's staff into a bow (Special Hindrances note)."
+    },
+    {
+      "id": "spl-34",
+      "name": "Murdock's Feathery Flyer",
+      "level": 1,
+      "type": "wizard",
+      "isMemorized": false,
+      "sourceId": null,
+      "charges": 1,
+      "url": "https://adnd2e.fandom.com/wiki/Murdock's_Feathery_Flyer_(Wizard_Spell)",
+      "notes": "Free Bowcaster bonus spell - known from 1st level, doesn't count against known-spell total."
+    },
+    {
+      "id": "spl-35",
+      "name": "Grease",
+      "level": 1,
+      "type": "wizard",
+      "isMemorized": false,
+      "sourceId": null,
+      "charges": 1,
+      "url": "https://adnd2e.fandom.com/wiki/Grease_(Wizard_Spell)",
+      "notes": "Swapped in for Disarm. Not touch-delivered, but it's a point-of-origin area spell - becomes arrow-deliverable as soon as Spellarrows hit their 5th-level tier (next Bowcaster level). Great control spell for keeping melee off you while you shoot."
+    },
+    {
+      "id": "spl-36",
+      "name": "Invisibility",
+      "level": 2,
+      "type": "wizard",
+      "isMemorized": false,
+      "sourceId": null,
+      "charges": 1,
+      "url": "https://adnd2e.fandom.com/wiki/Invisibility_(Wizard_Spell)",
+      "notes": "Swapped in for Alustriel's Fang. Range: Touch - arrow-deliverable right now (1st-level Spellarrow tier). Can be fired onto an ally at range to vanish them."
+    },
+    {
+      "id": "spl-37",
+      "name": "Melf's Acid Arrow",
+      "level": 2,
+      "type": "wizard",
+      "isMemorized": false,
+      "sourceId": null,
+      "charges": 1,
+      "url": "https://adnd2e.fandom.com/wiki/Melf's_Acid_Arrow_(Wizard_Spell)",
+      "notes": "Swapped in for Scare. Fluff-wise it's already a magic arrow (fired as if from a fighter's bow, no range/nonprof modifiers), but RAW it's not in the touch/point-origin/self-origin categories the kit lists - flag with your DM whether it should just ride your own bow attack instead of being cast normally (+3 casting time/-1 dmg per die otherwise)."
+    }
+  ],
+  "__spellCounter": 37,
+  "__spellbookPagesUsed": "",
+  "__spellbookPagesTotal": "",
+  "__spellClass": "wizard",
+  "__nwps": [
+    {
+      "id": "nwp-1",
+      "name": "Bowyer/Fletcher",
+      "desc": "Required Secondary Skill for the Bowcaster kit.",
+      "url": "",
+      "ability": "int",
+      "adj": "-1",
+      "slots": ""
+    },
+    {
+      "id": "nwp-2",
+      "name": "Spellcraft",
+      "desc": "",
+      "url": "https://adnd2e.fandom.com/wiki/Spellcraft_(Proficiency)",
+      "ability": "int",
+      "adj": "-2",
+      "slots": "1"
+    },
+    {
+      "id": "nwp-3",
+      "name": "Arcanology",
+      "desc": "",
+      "url": "https://adnd2e.fandom.com/wiki/Arcanology_(Proficiency)",
+      "ability": "int",
+      "adj": "-3",
+      "slots": "1"
+    },
+    {
+      "id": "nwp-4",
+      "name": "Reading / Writing",
+      "desc": "Satisfies the kit's literacy requirement (Bowcasters aren't literate by default).",
+      "url": "https://adnd2e.fandom.com/wiki/Reading/Writing_(Proficiency)",
+      "ability": "int",
+      "adj": "+1",
+      "slots": "1"
+    },
+    {
+      "id": "nwp-6",
+      "name": "Alertness",
+      "desc": "",
+      "url": "https://adnd2e.fandom.com/wiki/Alertness_(Proficiency)",
+      "ability": "wis",
+      "adj": "+1",
+      "slots": "1"
+    },
+    {
+      "id": "nwp-8",
+      "name": "Swimming",
+      "desc": "",
+      "url": "",
+      "ability": "int",
+      "adj": "0",
+      "slots": "1"
+    },
+    {
+      "id": "nwp-11",
+      "name": "Hunting",
+      "desc": "Free Bowcaster bonus proficiency (replaces normal starting wizard NWP slots). PHB Table 37: Warrior group, Wis check.",
+      "url": "",
+      "ability": "wis",
+      "adj": "-1",
+      "slots": ""
+    },
+    {
+      "id": "nwp-12",
+      "name": "Tracking",
+      "desc": "Free Bowcaster bonus proficiency. Kit reduces the usual non-ranger penalty: -3 to Wisdom check instead of the standard -6.",
+      "url": "",
+      "ability": "wis",
+      "adj": "-3",
+      "slots": ""
+    },
+    {
+      "id": "nwp-13",
+      "name": "Observation",
+      "desc": "Free Bowcaster bonus proficiency (replaces normal starting wizard NWP slots).",
+      "url": "",
+      "ability": "int",
+      "adj": "0",
+      "slots": ""
+    },
+    {
+      "id": "nwp-14",
+      "name": "Investigation",
+      "desc": "Free Bowcaster bonus proficiency (replaces normal starting wizard NWP slots).",
+      "url": "",
+      "ability": "int",
+      "adj": "0",
+      "slots": ""
+    }
+  ],
+  "__nwpCounter": 14,
+  "__abilitiesCards": [
+    {
+      "id": "abc-1",
+      "name": "Mystic Aim",
+      "desc": "Always on: Wisdom magical defense adjustment (+1) added to hit with a bow, on top of Dex. Counted in the bow scenarios.",
+      "url": ""
+    },
+    {
+      "id": "abc-2",
+      "name": "Unfriendly Fire",
+      "desc": "Firing into a melee: take any penalty to hit and add the same number to the intended target's weight when rolling who is struck.",
+      "url": ""
+    },
+    {
+      "id": "abc-3",
+      "name": "Direction Arrow (1/day)",
+      "desc": "Concentrate a full round, loose an arrow straight up: it points toward a person, place or object seen or touched before, within 1 mile per level, for 1 turn per level. Direction only.",
+      "url": ""
+    },
+    {
+      "id": "abc-4",
+      "name": "Anticipate Blow (1/round)",
+      "desc": "When an attack targets him: Wisdom check; on a success, AC better by half his caster level (2 at 4th) against that one attack.",
+      "url": ""
+    },
+    {
+      "id": "abc-5",
+      "name": "Spellarrows (touch spells)",
+      "desc": "Cast a touch spell onto an arrow and fire it as his only shot that round. Initiative: bow speed + casting time. The spell lands if the roll beats the target's AC without armor or shield; the arrow wounds if it also beats the true AC. No casting penalty. A missed touch-arrow loses the spell; a natural 1 is a misfire.",
+      "url": ""
+    },
+    {
+      "id": "abc-6",
+      "name": "Casting without an arrow",
+      "desc": "Casting time +3 and −1 damage per die (at least 1 per die). Counted in the spell scenarios.",
+      "url": ""
+    }
+  ],
+  "__abilitiesCardsCounter": 6,
+  "__wpnProfCards": [
+    {
+      "id": "wpc-4",
+      "name": "Bow (any type)",
+      "desc": "Covers short bow, long bow, or any other bow variant - no separate proficiency needed per size/type under this kit.",
+      "url": "",
+      "slots": "1"
+    }
+  ],
+  "__wpnProfCardsCounter": 4,
+  "__equipment": [
+    {
+      "id": "eq-2",
+      "name": "Bracers of Defence",
+      "weight": null,
+      "notes": "CONFIRM WITH DM: Bowcasters may never wear armor of any kind; RAW bracers aren't 'armor' and are normally wizard-legal, but this kit's fluff (\"anything that comes between him and the moment dulls his foresight\") may be intended to be stricter. Currently still factored into AC 6."
+    },
+    {
+      "id": "eq-3",
+      "name": "Ring of Spell Storing",
+      "weight": null,
+      "notes": "Currently holds Alustriel's Fang, Sleep, Scare (1,2,2,2,2). Alustriel's Fang and Scare were just dropped from the spellbook (swapped for Invisibility/Melf's Acid Arrow) - confirm with your DM whether spells already stored in the ring stay valid even after being unlearned, or whether they need to be re-cast into the ring with your new spell list."
+    },
+    {
+      "id": "eq-4",
+      "name": "",
+      "weight": null,
+      "notes": ""
+    },
+    {
+      "id": "eq-5",
+      "name": "Scroll of charm person",
+      "weight": null,
+      "notes": "Bowcasters can't cast directly from a scroll. He can still study it to copy the spell onto a feather (he has Reading/Writing), but can't discharge it as-is."
+    },
+    {
+      "id": "eq-6",
+      "name": "Quiver of Fine Arrows",
+      "weight": null,
+      "notes": "Free starting equipment from the kit - finely-crafted arrows carrying a +1 bonus to material saving throws."
+    }
+  ],
+  "__equipCounter": 6,
+  "__items": [],
+  "__itemsCounter": 1
+}

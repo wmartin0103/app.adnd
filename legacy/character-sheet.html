@@ -3816,6 +3816,18 @@ function diceAtLevel(dice, level, maxLevel = 0) {
   return /^\d*d\d+([+-]\d+)?$/i.test(d) ? d : null;
 }
 
+// House rule (Bowcaster kit): a spell not sent through an arrow takes 3
+// longer to cast and does 1 less damage per die (at least 1 per die).
+// "1d8+4" → "1d8+3", "5d6" → "5d6-5". A Spell scenario is an ordinary cast.
+const isBowcaster = ctx => (ctx.classes || []).some(c => /bowcaster/i.test(c.name || ''));
+function lessPerDie(dice) {
+  const m = String(dice || '').replace(/\s+/g, '').match(/^(\d*)d(\d+)([+-]\d+)?$/i);
+  if (!m) return dice;
+  const flat = num(m[3]) - (num(m[1]) || 1);
+  return `${m[1]}d${m[2]}${flat ? (flat > 0 ? `+${flat}` : flat) : ''}`;
+}
+const slowerCast = t => (/^\s*\d+\s*$/.test(String(t)) ? String(num(t) + 3) : t);
+
 // A Spell attack reads the spell's casting details from the catalog;
 // anything different is kept on the scenario.
 function scenarioSpell(ctx, sc) {
@@ -3829,11 +3841,17 @@ function scenarioSpell(ctx, sc) {
   const pick = k => (own[k] !== undefined && own[k] !== '' ? own[k] : (cat && cat[k]) || '');
   const level = casterLevel(ctx, sc, sp.type || (cat && cat.class) || '');
   const dice = pick('dice');
+  const rolled = dice ? diceAtLevel(dice, level, pick('diceMaxLevel')) : '';
+  const bowcaster = isBowcaster(ctx);
   return {
     sheet: sp, catalog: cat,
     name: sp.name, castTime: pick('castTime'), range: pick('range'), save: pick('save'), dice, diceMaxLevel: pick('diceMaxLevel'),
-    // The dice at this caster's level, or the dice as written when they can't be worked out
-    casterLevel: level, rolled: dice ? diceAtLevel(dice, level, pick('diceMaxLevel')) : '',
+    // As written above; as cast below: the dice at this caster's level (or as
+    // written when they can't be worked out) and the casting time, after any
+    // house-rule penalty
+    casterLevel: level, rolled: bowcaster && rolled ? lessPerDie(rolled) : rolled,
+    castTimeNow: bowcaster ? slowerCast(pick('castTime')) : pick('castTime'),
+    penalty: bowcaster ? 'Cast without an arrow: casting time +3, −1 damage per die' : '',
     attack: pick('attack') || 'none', heal: (cat && cat.diceKind === 'heal') || /cure|heal/i.test(sp.name),
     link: (cat && cat.link) || sp.url || '',
   };
@@ -3922,7 +3940,7 @@ function scenarioTHAC0(ctx, sc) {
   return bd ? bd.thac0 : null;
 }
 
-return { modNum, signed, ATTACK_TYPES, RATE_OPTIONS, racialWeaponBonus, strengthRow, scenarioContext, scenarioRate, rateValue, scenarioType, normalizeEffects, effectOption, activeEffectsFor, effectsACBonus, casterLevel, diceAtLevel, scenarioSpell, scenarioAbility, scenarioWeapon, scenarioDamage, scenarioBreakdown, scenarioTHAC0 };
+return { modNum, signed, ATTACK_TYPES, RATE_OPTIONS, racialWeaponBonus, strengthRow, scenarioContext, scenarioRate, rateValue, scenarioType, normalizeEffects, effectOption, activeEffectsFor, effectsACBonus, casterLevel, diceAtLevel, isBowcaster, lessPerDie, scenarioSpell, scenarioAbility, scenarioWeapon, scenarioDamage, scenarioBreakdown, scenarioTHAC0 };
 })();
 // ── rules/character ──
 __m["rules/character"] = (() => {
@@ -4612,7 +4630,7 @@ function toDMHelper(save, dmSettings = {}, { catalog = null } = {}) {
       const sp = scenarioSpell(ctx, sc);
       if (!sp) { review.push(`${sc.name || 'Spell scenario'}: no memorized spell chosen; left out`); continue; }
       const label = unique(sc.name || sp.name);
-      const speed = castSpeed(sp.castTime);
+      const speed = castSpeed(sp.castTimeNow);
       if (speed === null) review.push(`${label}: no cast time; initiative speed defaults to 1`);
       actions.push({ name: label, thac0: bd ? bd.thac0 : null, speedMin: 0, speedMax: 10, speedDefault: speed ?? 1 });
       if (sp.dice) {
@@ -5827,7 +5845,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         badge.id = `thac0-badge-${scenario.id}`;
         badge.setAttribute('aria-label', `THAC0 ${thac0 !== null ? thac0 : '—'}`);
         const unknownHit = !isSpell && scenario.weaponId && (weapons.find(w => w.id === scenario.weaponId) || {}).hitAdj === '?';
-        badge.textContent = thac0 !== null ? `THAC0 ${thac0}${unknownHit ? ' − ?' : ''}` : spellInfo ? `Cast ${spellInfo.castTime || '?'}` : '—';
+        badge.textContent = thac0 !== null ? `THAC0 ${thac0}${unknownHit ? ' − ?' : ''}` : spellInfo ? `Cast ${spellInfo.castTimeNow || '?'}` : '—';
 
         // Chevron toggle
         const chevron = document.createElement('span');
@@ -6186,7 +6204,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
             <div class="sr-head">
               <div class="sr-cell"><span class="scenario-result-label">THAC0</span><span class="scenario-result-value accent" id="scenario-thac0-val-${scenario.id}">${thac0}</span></div>
               ${dmg ? (isSpell ? `<div class="sr-cell"><span class="scenario-result-label">${dmg.heal ? 'Heals' : 'Damage'} at level ${dmg.casterLevel}</span><span class="sr-val">${esc(dmg.sm)}</span></div>` : `<div class="sr-cell"><span class="scenario-result-label">Damage S/M · L</span><span class="sr-val">${esc(dmg.sm)} · ${esc(dmg.l)}</span></div>`) : ''}
-              ${isSpell ? `<div class="sr-cell"><span class="scenario-result-label">Cast time</span><span class="sr-val">${esc(spellInfo.castTime || '—')}</span></div>` : `<div class="sr-cell"><span class="scenario-result-label">Attacks</span><span class="sr-val">${esc(rate)}</span></div>`}
+              ${isSpell ? `<div class="sr-cell"><span class="scenario-result-label">Cast time</span><span class="sr-val">${esc(spellInfo.castTimeNow || '—')}</span></div>` : `<div class="sr-cell"><span class="scenario-result-label">Attacks</span><span class="sr-val">${esc(rate)}</span></div>`}
             </div>
             <details class="sr-math" ${scenario.mathOpen ? 'open' : ''}>
               <summary>How it adds up</summary>
@@ -6258,7 +6276,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           const r = document.createElement('div');
           r.className = 'scenario-result';
           r.innerHTML = `<div class="sr-head">
-              <div class="sr-cell"><span class="scenario-result-label">Cast time</span><span class="scenario-result-value accent">${esc(spellInfo.castTime || '—')}</span></div>
+              <div class="sr-cell"><span class="scenario-result-label">Cast time</span><span class="scenario-result-value accent">${esc(spellInfo.castTimeNow || '—')}</span></div>
               <div class="sr-cell"><span class="scenario-result-label">Save</span><span class="sr-val">${esc(spellInfo.save || '—')}</span></div>
               ${spellInfo.dice ? `<div class="sr-cell"><span class="scenario-result-label">${spellInfo.heal ? 'Heals' : 'Damage'} at level ${spellInfo.casterLevel}</span><span class="sr-val">${esc(spellInfo.rolled || spellInfo.dice)}</span></div>` : ''}
             </div>${spellLine(spellInfo, esc)}`;
@@ -6515,7 +6533,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
     function spellLine(sp, esc) {
       const bits = [sp.range && `Range ${esc(sp.range)}`, sp.attack === 'none' && sp.save && !/^none$/i.test(sp.save) && `Target saves: ${esc(sp.save)}`].filter(Boolean);
       return `<p class="sr-spell">${bits.join(' · ')}${sp.link ? `${bits.length ? ' · ' : ''}<a href="${esc(sp.link)}" target="_blank" rel="noopener">Full spell ↗</a>` : ''}
-        <span class="sr-spell-warn">${sp.catalog ? '' : 'Not in the spell catalog yet: fill in the details above. '}Casting time adds to initiative; if you're hit before your turn, the spell is lost.</span></p>`;
+        <span class="sr-spell-warn">${sp.catalog ? '' : 'Not in the spell catalog yet: fill in the details above. '}${sp.penalty ? `${esc(sp.penalty)}. ` : ''}Casting time adds to initiative; if you're hit before your turn, the spell is lost.</span></p>`;
     }
 
     // Update the THAC0 display in the combat block to reflect the active scenario

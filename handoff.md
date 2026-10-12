@@ -360,7 +360,18 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
 - [x] Tig: rebuilt on PHB values, since he isn't being played (2026-10-09, `samples/tig_10-09.json`). Kept his written Skilled +1 and Expertise 3/2; Code of Gallant is an Effect.
 - [ ] Atteroak: Horseman's Mace +1 does 1d6+2 vs both sizes (PHB 1d6/1d4, +1 magic); sling stones −2 vs bullets −3; warhammer 1d4+1 vs Large (PHB 1d4).
 - [ ] Hanspeter's weapons: two unnamed "Other (Custom)" rows (animal forms?), and +1 hit on rows his Str 10 doesn't explain.
-- [ ] Rifiyr and Borsun: no saves yet; their DM Helper saves are hand-typed.
+- [x] Rifiyr (2026-10-12): save added (`samples/rifiyr.json`, converted to
+  `samples/rifiyr_10-12.json`); Bowcaster kit in `docs/house-rules/bowcaster.md`.
+  Bows with Mystic Aim (long bow THAC0 16, 2/1), −2 with anything else, and the
+  casting penalty without an arrow are all worked out.
+- [ ] Rifiyr, Spellarrows: a bow shot that carries a spell isn't a scenario
+  yet (a scenario is a weapon or a spell). Design to agree before building.
+- [ ] Rifiyr, to rule on: AC 4 or 6 (the sheet treats 6 as his bracers and
+  subtracts Dex); whether bracers count as armor under the kit; Read Magic is
+  Divination, which the kit bans; long bow damage 1d8 / 1d6 (PHB: flight arrow
+  1d6/1d6, sheaf 1d8/1d8); Melf's Acid Arrow as a Spellarrow (it isn't a touch
+  spell); the Ring of Spell Storing's stored spells.
+- [ ] Borsun: no save yet; his DM Helper entry is hand-typed.
 - [ ] Saves from every other active player (PLAN status list).
 - [ ] Leprechaun Dagger damage stays "?" until the DM reveals the effect; then set the value or make it an Effect.
 
