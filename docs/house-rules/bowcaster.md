@@ -173,6 +173,10 @@ A natural 1 on the attack roll is worse than an ordinary miss. The arrow goes ba
   only if it fits a tier he has reached (touch at 1st, point-of-origin area at
   5th, self-origin area at 9th). Anything else, such as Melf's Acid Arrow, is
   cast the ordinary way, with the casting penalty.
+- **Bracers of defense aren't armor (2026-10-12):** a Bowcaster can wear them
+  (PHB: bracers aren't armor). This is about his own AC; when he delivers a
+  touch Spellarrow, the kit still ignores the *target's* bracers for the
+  delivery roll, as written.
 
 ## How the app models it
 

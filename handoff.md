@@ -367,7 +367,7 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
 - [ ] Rifiyr, Spellarrows: a bow shot that carries a spell isn't a scenario
   yet (a scenario is a weapon or a spell). Design to agree before building.
 - [ ] Rifiyr, to rule on: AC 4 or 6 (the sheet treats 6 as his bracers and
-  subtracts Dex); whether bracers count as armor under the kit; Read Magic is
+  subtracts Dex; bracers are allowed, ruled 2026-10-12); Read Magic is
   Divination, which the kit bans; long bow damage 1d8 / 1d6 (PHB: flight arrow
   1d6/1d6, sheaf 1d8/1d8). Ruled 2026-10-12: only spells that fit a
   Spellarrow tier ride an arrow, so Melf's Acid Arrow is cast the ordinary way
