@@ -167,6 +167,13 @@ A natural 1 on the attack roll is worse than an ordinary miss. The arrow goes ba
 
 ---
 
+## Table rulings
+
+- **Spellarrow eligibility is strict (2026-10-12):** a spell rides an arrow
+  only if it fits a tier he has reached (touch at 1st, point-of-origin area at
+  5th, self-origin area at 9th). Anything else, such as Melf's Acid Arrow, is
+  cast the ordinary way, with the casting penalty.
+
 ## How the app models it
 
 Numbers the tools work out (THAC0, damage, initiative speed) follow the

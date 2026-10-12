@@ -369,8 +369,9 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
 - [ ] Rifiyr, to rule on: AC 4 or 6 (the sheet treats 6 as his bracers and
   subtracts Dex); whether bracers count as armor under the kit; Read Magic is
   Divination, which the kit bans; long bow damage 1d8 / 1d6 (PHB: flight arrow
-  1d6/1d6, sheaf 1d8/1d8); Melf's Acid Arrow as a Spellarrow (it isn't a touch
-  spell); the Ring of Spell Storing's stored spells.
+  1d6/1d6, sheaf 1d8/1d8). Ruled 2026-10-12: only spells that fit a
+  Spellarrow tier ride an arrow, so Melf's Acid Arrow is cast the ordinary way
+  (with the penalty); the Ring of Spell Storing waits until he adds new spells.
 - [ ] Borsun: no save yet; his DM Helper entry is hand-typed.
 - [ ] Saves from every other active player (PLAN status list).
 - [ ] Leprechaun Dagger damage stays "?" until the DM reveals the effect; then set the value or make it an Effect.
