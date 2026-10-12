@@ -2085,6 +2085,9 @@
       text-transform: uppercase;
       color: var(--ink-muted);
     }
+    /* Spellarrow: the pre-fletched switch and its one-line hint */
+    .scenario-check { width: 1.1rem; height: 1.1rem; accent-color: var(--accent); margin: 0.35rem 0; }
+    .scenario-field-hint { font-size: 0.8rem; color: var(--ink-muted); max-width: 12rem; }
 
     .scenario-select {
       font-family: var(--font-body);
@@ -3682,7 +3685,8 @@ const num = v => parseInt(v, 10) || 0;
 
 // Melee: Str to hit and damage · Thrown: Dex to hit, Str damage · Missile: Dex to hit
 // Spell: a memorized spell (an attack roll only for touch or ranged spells)
-const ATTACK_TYPES = { melee: 'Melee', thrown: 'Thrown', missile: 'Missile', spell: 'Spell' };
+// Spellarrow (Bowcaster kit): a bow shot that carries a spell
+const ATTACK_TYPES = { melee: 'Melee', thrown: 'Thrown', missile: 'Missile', spell: 'Spell', spellarrow: 'Spellarrow' };
 const RATE_OPTIONS = ['1/1', '3/2', '2/1', '5/2', '3/1', '7/2', '4/1', '5/1'];
 const GROUP_LABELS = { warrior: 'Warrior', priest: 'Priest', rogue: 'Rogue', wizard: 'Wizard' };
 
@@ -3731,7 +3735,11 @@ function scenarioContext(save, catalog = null) {
 }
 
 // Older saves wrote whole numbers ("3"); the PHB writes 3/1
-const scenarioRate = sc => { const r = String(sc.rate || '1').trim(); return r.includes('/') ? r : `${r}/1`; };
+const scenarioRate = sc => {
+  if (sc.attackType === 'spellarrow') return '1/1';   // a Spellarrow is the round's only shot
+  const r = String(sc.rate || '1').trim();
+  return r.includes('/') ? r : `${r}/1`;
+};
 const rateValue = rate => { const [a, b] = String(rate).split('/').map(Number); return b ? a / b : (a || 1); };
 
 // Older scenarios have no attack type; read it from the name
@@ -3842,10 +3850,11 @@ function scenarioSpell(ctx, sc) {
   const level = casterLevel(ctx, sc, sp.type || (cat && cat.class) || '');
   const dice = pick('dice');
   const rolled = dice ? diceAtLevel(dice, level, pick('diceMaxLevel')) : '';
-  const bowcaster = isBowcaster(ctx);
+  // The penalty is for casting the ordinary way; a Spellarrow doesn't take it
+  const bowcaster = isBowcaster(ctx) && scenarioType(sc) === 'spell';
   return {
     sheet: sp, catalog: cat,
-    name: sp.name, castTime: pick('castTime'), range: pick('range'), save: pick('save'), dice, diceMaxLevel: pick('diceMaxLevel'),
+    name: sp.name, castTime: pick('castTime'), range: pick('range'), area: pick('area'), save: pick('save'), dice, diceMaxLevel: pick('diceMaxLevel'),
     // As written above; as cast below: the dice at this caster's level (or as
     // written when they can't be worked out) and the casting time, after any
     // house-rule penalty
@@ -3871,6 +3880,56 @@ function scenarioAbility(ctx, sc) {
   return { hitLabel: 'DEX Missile', hit: ctx.dexMissile, dmg: type === 'thrown' ? ctx.str.dmg : 0 };
 }
 
+// A spell's casting time as an initiative speed: segments as written; a round
+// or longer goes last (10). Null when it isn't written as either.
+function castSpeed(castTime) {
+  const t = String(castTime || '').toLowerCase();
+  if (/round|\brds?\b|turn|hour|day/.test(t)) return 10;
+  const m = t.match(/\d+/);
+  return m ? Math.min(parseInt(m[0], 10), 10) : null;
+}
+
+// ── Spellarrows (Bowcaster kit, docs/house-rules/bowcaster.md) ──
+// Which tier a spell needs, from its range and area: touch spells (1st
+// level), point-of-origin area spells (5th), self-origin area spells (9th).
+// Spells cast only on the caster himself, or at a single target from range,
+// never ride an arrow. Read from the catalog's wording, so the DM has the
+// final say on borderline spells.
+const SPELLARROW_TIERS = { touch: 1, point: 5, self: 9 };
+// The catalog can't tell "emanates from the caster" (burning hands) from "only
+// on the caster" (chill touch): both read range 0, area "the caster". So range
+// 0 counts as self-origin, and the kit's own never-eligible examples are named.
+const CASTER_ONLY = ['change self', 'chill touch'];
+function spellArrowKind(sp) {
+  const range = String(sp.range || '').toLowerCase().trim();
+  const area = String(sp.area || '').toLowerCase().trim();
+  if (CASTER_ONLY.includes(String(sp.name || '').toLowerCase().trim())) return 'caster-only';
+  if (/^touch/.test(range)) return 'touch';
+  if (/^0\b|^self|^caster/.test(range)) return 'self';
+  // Aimed at targets rather than an area: "1 target", "1 - 5 targets", "creature"
+  if (/^(\d+|one)(\s*(-|–|to|or)\s*\d+)?\s+(creatures?|targets?|persons?|beings?|individuals?|objects?)\b|^creature\b/.test(area)) return 'single-target';
+  return 'point';
+}
+function spellArrowCheck(ctx, sc, sp) {
+  const kind = spellArrowKind(sp);
+  const level = casterLevel(ctx, sc, 'wizard');
+  const needs = SPELLARROW_TIERS[kind];
+  if (!needs) return { kind, ok: false, why: kind === 'caster-only' ? 'cast only on himself' : 'not a touch or area spell' };
+  if (level < needs) return { kind, ok: false, why: `${kind === 'point' ? 'point-of-origin' : 'self-origin'} spells ride an arrow from ${needs}th level` };
+  return { kind, ok: true, why: '' };
+}
+// The spell on a Spellarrow, cast at full strength, and the shot's speed: the
+// bow's, plus the casting time when it's cast live (a pre-fletched arrow
+// already carries its spell)
+function spellArrow(ctx, sc) {
+  if (scenarioType(sc) !== 'spellarrow') return null;
+  const sp = scenarioSpell(ctx, sc);
+  const wpn = scenarioWeapon(ctx, sc);
+  const bow = wpn ? num(wpn.speed) : 0;
+  const cast = sp && !sc.prefletched ? (castSpeed(sp.castTime) ?? 0) : 0;
+  return { spell: sp, check: sp ? spellArrowCheck(ctx, sc, sp) : null, bowSpeed: bow, castSpeed: cast, speed: bow + cast, prefletched: !!sc.prefletched };
+}
+
 const scenarioWeapon = (ctx, sc) =>
   scenarioType(sc) !== 'spell' && sc.weaponId ? ctx.weapons.find(w => w.id === sc.weaponId) || null : null;
 
@@ -3892,7 +3951,11 @@ function scenarioDamage(ctx, sc) {
     const text = flat ? `${m[1]}${flat > 0 ? '+' : ''}${flat}` : m[1];
     return wpn.dmgAdj === '?' ? `${text} + ?` : text;
   };
-  return { sm: dice(wpn.dmgSM), l: dice(wpn.dmgL) };
+  const out = { sm: dice(wpn.dmgSM), l: dice(wpn.dmgL) };
+  // A Spellarrow: the arrow's damage, and the spell's on contact
+  const arrow = spellArrow(ctx, sc);
+  if (arrow && arrow.spell) Object.assign(out, { spell: arrow.spell.rolled || arrow.spell.dice || '', spellHeals: arrow.spell.heal, casterLevel: arrow.spell.casterLevel });
+  return out;
 }
 
 // Where a scenario's numbers come from: the base THAC0, then one line per
@@ -3940,7 +4003,7 @@ function scenarioTHAC0(ctx, sc) {
   return bd ? bd.thac0 : null;
 }
 
-return { modNum, signed, ATTACK_TYPES, RATE_OPTIONS, racialWeaponBonus, strengthRow, scenarioContext, scenarioRate, rateValue, scenarioType, normalizeEffects, effectOption, activeEffectsFor, effectsACBonus, casterLevel, diceAtLevel, isBowcaster, lessPerDie, scenarioSpell, scenarioAbility, scenarioWeapon, scenarioDamage, scenarioBreakdown, scenarioTHAC0 };
+return { modNum, signed, ATTACK_TYPES, RATE_OPTIONS, racialWeaponBonus, strengthRow, scenarioContext, scenarioRate, rateValue, scenarioType, normalizeEffects, effectOption, activeEffectsFor, effectsACBonus, casterLevel, diceAtLevel, isBowcaster, lessPerDie, scenarioSpell, scenarioAbility, castSpeed, SPELLARROW_TIERS, spellArrowKind, spellArrowCheck, spellArrow, scenarioWeapon, scenarioDamage, scenarioBreakdown, scenarioTHAC0 };
 })();
 // ── rules/character ──
 __m["rules/character"] = (() => {
@@ -4530,7 +4593,7 @@ const {migrateV1toV2, guessCategory} = __m["rules/migrate"];
 const {baseTHAC0} = __m["rules/attacks"];
 const {armorClass, savingThrows, thiefSkills, proficiencyTargets} = __m["rules/character"];
 const {scenarioContext, scenarioType, scenarioRate, rateValue, scenarioWeapon, scenarioSpell,
-  scenarioBreakdown, scenarioDamage, effectsACBonus, effectOption, modNum, signed,} = __m["rules/scenarios"];
+  scenarioBreakdown, scenarioDamage, effectsACBonus, effectOption, modNum, signed, castSpeed, spellArrow,} = __m["rules/scenarios"];
 // ── SHEET → DM HELPER ───────────────────────────────────────────
 // Builds a character's entries for the DM Helper's config block
 // (CHARACTERS, SKILLS, THIEF, SAVES, DAMAGE, CRIT_TYPES, WEAPON_MATERIAL) from
@@ -4584,14 +4647,6 @@ function critType(dmgType) {
   if (!types.length) return 'B';
   return types.length > 1 ? types : types[0];
 }
-// A spell's cast time as an initiative speed: segments as written; a round or
-// longer goes last (10)
-function castSpeed(castTime) {
-  const t = String(castTime || '').toLowerCase();
-  if (/round|turn|hour|day/.test(t)) return 10;
-  const m = t.match(/\d+/);
-  return m ? Math.min(parseInt(m[0], 10), 10) : null;
-}
 
 function toDMHelper(save, dmSettings = {}, { catalog = null } = {}) {
   // Saves, skills and thief skills read the migrated sheet; attacks read the
@@ -4643,6 +4698,25 @@ function toDMHelper(save, dmSettings = {}, { catalog = null } = {}) {
     const wpn = scenarioWeapon(ctx, sc);
     if (!wpn || !bd) { review.push(`${sc.name || 'A scenario'}: no weapon chosen; left out`); continue; }
     const label = unique(sc.name || wpn.name);
+
+    // A Spellarrow: the bow's to-hit, speed = bow + casting time (the DM
+    // Helper's "bow + cast time" action), the arrow's damage, and the spell's
+    // on contact. Whether the spell lands (AC without armor or shield) is the
+    // DM's call at the table.
+    const arrow = spellArrow(ctx, sc);
+    if (arrow) {
+      if (!arrow.spell) { review.push(`${label}: no spell on the arrow; left out`); continue; }
+      if (!arrow.check.ok) review.push(`${label}: ${arrow.spell.name} can't ride an arrow (${arrow.check.why})`);
+      actions.push({ name: label, thac0: bd.thac0, baseSpeed: arrow.bowSpeed, speedMin: 0, speedMax: 10, speedDefault: arrow.castSpeed });
+      recordWeapon(label, sc, wpn);
+      const dmg = damage[`${name}|${label}`];
+      if (dmg && arrow.spell.dice) {
+        dmg.spell = arrow.spell.rolled || arrow.spell.dice;
+        dmg.spellNote = `${arrow.spell.name} on contact (beat AC without armor or shield)`;
+      }
+      continue;
+    }
+
     if (sc.handedness === 'off') {
       secondary.push({ name: label, thac0: bd.thac0 });
       recordWeapon(label, sc, wpn);
@@ -4737,10 +4811,10 @@ function formatDMHelperConfig(list) {
   return lines.join('\n') + '\n';
 }
 
-return { castSpeed, toDMHelper, formatDMHelperConfig };
+return { toDMHelper, formatDMHelperConfig };
 })();
 window.SheetSpells = { findSpell: __m["rules/spells"].findSpell };
-window.SheetScenarios = { modNum: __m["rules/scenarios"].modNum, signed: __m["rules/scenarios"].signed, ATTACK_TYPES: __m["rules/scenarios"].ATTACK_TYPES, RATE_OPTIONS: __m["rules/scenarios"].RATE_OPTIONS, scenarioRate: __m["rules/scenarios"].scenarioRate, scenarioType: __m["rules/scenarios"].scenarioType, scenarioSpell: __m["rules/scenarios"].scenarioSpell, scenarioAbility: __m["rules/scenarios"].scenarioAbility, activeEffectsFor: __m["rules/scenarios"].activeEffectsFor, scenarioDamage: __m["rules/scenarios"].scenarioDamage, scenarioBreakdown: __m["rules/scenarios"].scenarioBreakdown, normalizeEffects: __m["rules/scenarios"].normalizeEffects, effectOption: __m["rules/scenarios"].effectOption };
+window.SheetScenarios = { modNum: __m["rules/scenarios"].modNum, signed: __m["rules/scenarios"].signed, ATTACK_TYPES: __m["rules/scenarios"].ATTACK_TYPES, RATE_OPTIONS: __m["rules/scenarios"].RATE_OPTIONS, scenarioRate: __m["rules/scenarios"].scenarioRate, scenarioType: __m["rules/scenarios"].scenarioType, scenarioSpell: __m["rules/scenarios"].scenarioSpell, scenarioAbility: __m["rules/scenarios"].scenarioAbility, activeEffectsFor: __m["rules/scenarios"].activeEffectsFor, scenarioDamage: __m["rules/scenarios"].scenarioDamage, scenarioBreakdown: __m["rules/scenarios"].scenarioBreakdown, normalizeEffects: __m["rules/scenarios"].normalizeEffects, effectOption: __m["rules/scenarios"].effectOption, isBowcaster: __m["rules/scenarios"].isBowcaster, spellArrow: __m["rules/scenarios"].spellArrow, spellArrowCheck: __m["rules/scenarios"].spellArrowCheck };
 window.SheetRules = { PHB_WEAPONS: __m["rules/weapons"].PHB_WEAPONS };
 window.SheetGuess = { guessCategory: __m["rules/migrate"].guessCategory };
 })();
@@ -5800,6 +5874,9 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           + (scenario.collapsed ? ' is-collapsed' : '');
         const isSpell = scenarioType(scenario) === 'spell';
         const spellInfo = isSpell ? scenarioSpell(scenario) : null;
+        // Spellarrow (Bowcaster kit): a bow shot carrying a memorized spell
+        const isArrow = scenarioType(scenario) === 'spellarrow';
+        const arrowInfo = isArrow ? SheetScenarios.spellArrow(scenarioCtx(), scenario) : null;
         card.setAttribute('role', 'listitem');
         card.dataset.scenarioId = scenario.id;
 
@@ -5880,8 +5957,8 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         const headerRight = document.createElement('div');
         headerRight.className = 'scenario-header-right';
 
-        // Hand toggle — only shown when a weapon is linked
-        if (scenario.weaponId && !isSpell) {
+        // Hand toggle — only shown when a weapon is linked (not for a bow's Spellarrow)
+        if (scenario.weaponId && !isSpell && !isArrow) {
           const headerHandToggle = document.createElement('div');
           headerHandToggle.className = 'hand-toggle';
           ['main', 'off'].forEach(hand => {
@@ -6011,7 +6088,9 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           noneOpt.textContent = '— None —';
           wpnSelect.appendChild(noneOpt);
 
-          weapons.forEach(wpn => {
+          // A Spellarrow is fired from a bow (any bow but a crossbow)
+          const bows = weapons.filter(w => /bow/i.test(w.name || '') && !/crossbow/i.test(w.name || ''));
+          (isArrow && bows.length ? bows : weapons).forEach(wpn => {
             const opt = document.createElement('option');
             opt.value = wpn.id;
             opt.textContent = wpn.name || '(unnamed weapon)';
@@ -6034,7 +6113,9 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         }
 
         // Attack type: which ability score applies
-        body.appendChild(smallSelect('Attack', `${scenario.id}-type`, Object.entries(ATTACK_TYPES), scenarioType(scenario), v => { scenario.attackType = v; }, true));
+        // (Spellarrow is offered to Bowcasters only)
+        const attackTypes = Object.entries(ATTACK_TYPES).filter(([k]) => k !== 'spellarrow' || isArrow || SheetScenarios.isBowcaster(scenarioCtx()));
+        body.appendChild(smallSelect('Attack', `${scenario.id}-type`, attackTypes, scenarioType(scenario), v => { scenario.attackType = v; }, true));
 
         // Spell: pick a memorized spell; its details come from the catalog and can be changed here
         if (isSpell) {
@@ -6061,6 +6142,37 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
               body.appendChild(f);
             });
           }
+        }
+
+        // Spellarrow: the memorized spell on the arrow, and whether it's pre-fletched
+        if (isArrow) {
+          const ready = spells.filter(x => x.isMemorized);
+          const ctx = scenarioCtx();
+          const label = x => {
+            const info = SheetScenarios.scenarioSpell(ctx, { ...scenario, spellId: x.id, spell: {} });
+            const check = info && SheetScenarios.spellArrowCheck(ctx, scenario, info);
+            return `${x.name || 'Unnamed'} (L${x.level})${check && !check.ok ? ` — can't ride an arrow: ${check.why}` : ''}`;
+          };
+          body.appendChild(smallSelect('Spell on the arrow', `${scenario.id}-aspell`, [['', ready.length ? '— Choose —' : 'No spells memorized'], ...ready.map(x => [x.id, label(x)])], scenario.spellId || '', v => { scenario.spellId = v || null; scenario.spell = {}; }));
+          const f = document.createElement('div');
+          f.className = 'scenario-field scenario-field-narrow';
+          const l = document.createElement('label');
+          l.className = 'scenario-field-label';
+          l.htmlFor = `${scenario.id}-prefletched`;
+          l.textContent = 'Pre-fletched';
+          const box = document.createElement('input');
+          box.type = 'checkbox';
+          box.id = `${scenario.id}-prefletched`;
+          box.className = 'scenario-check';
+          box.checked = !!scenario.prefletched;
+          box.setAttribute('aria-describedby', `${scenario.id}-prefletched-hint`);
+          box.addEventListener('change', () => { scenario.prefletched = box.checked; renderScenarios(); updateActiveTHAC0(); saveToItems(); });
+          const hint = document.createElement('span');
+          hint.id = `${scenario.id}-prefletched-hint`;
+          hint.className = 'scenario-field-hint';
+          hint.textContent = 'Spell already on the arrow: no casting time';
+          f.append(l, box, hint);
+          body.appendChild(f);
         }
 
         // Hit Mod — standalone grid field (not for a spell without an attack roll)
@@ -6131,7 +6243,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         }
 
         // Attacks per round (the DM Helper shows extra attacks from this)
-        if (!isSpell) body.appendChild(smallSelect('Attacks', `${scenario.id}-rate`, RATE_OPTIONS.map(r => [r, r]), scenarioRate(scenario), v => { scenario.rate = v; }, true));
+        if (!isSpell && !isArrow) body.appendChild(smallSelect('Attacks', `${scenario.id}-rate`, RATE_OPTIONS.map(r => [r, r]), scenarioRate(scenario), v => { scenario.rate = v; }, true));
 
         // Off-hand penalty — standalone grid field, only when off-hand + weapon linked
         if (scenario.weaponId && scenario.handedness === 'off' && !isSpell) {
@@ -6203,8 +6315,8 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           result.innerHTML = `
             <div class="sr-head">
               <div class="sr-cell"><span class="scenario-result-label">THAC0</span><span class="scenario-result-value accent" id="scenario-thac0-val-${scenario.id}">${thac0}</span></div>
-              ${dmg ? (isSpell ? `<div class="sr-cell"><span class="scenario-result-label">${dmg.heal ? 'Heals' : 'Damage'} at level ${dmg.casterLevel}</span><span class="sr-val">${esc(dmg.sm)}</span></div>` : `<div class="sr-cell"><span class="scenario-result-label">Damage S/M · L</span><span class="sr-val">${esc(dmg.sm)} · ${esc(dmg.l)}</span></div>`) : ''}
-              ${isSpell ? `<div class="sr-cell"><span class="scenario-result-label">Cast time</span><span class="sr-val">${esc(spellInfo.castTimeNow || '—')}</span></div>` : `<div class="sr-cell"><span class="scenario-result-label">Attacks</span><span class="sr-val">${esc(rate)}</span></div>`}
+              ${isArrow ? arrowCells(arrowInfo, dmg, esc) : `${dmg ? (isSpell ? `<div class="sr-cell"><span class="scenario-result-label">${dmg.heal ? 'Heals' : 'Damage'} at level ${dmg.casterLevel}</span><span class="sr-val">${esc(dmg.sm)}</span></div>` : `<div class="sr-cell"><span class="scenario-result-label">Damage S/M · L</span><span class="sr-val">${esc(dmg.sm)} · ${esc(dmg.l)}</span></div>`) : ''}
+              ${isSpell ? `<div class="sr-cell"><span class="scenario-result-label">Cast time</span><span class="sr-val">${esc(spellInfo.castTimeNow || '—')}</span></div>` : `<div class="sr-cell"><span class="scenario-result-label">Attacks</span><span class="sr-val">${esc(rate)}</span></div>`}`}
             </div>
             <details class="sr-math" ${scenario.mathOpen ? 'open' : ''}>
               <summary>How it adds up</summary>
@@ -6221,6 +6333,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           body.appendChild(result);
           const matrix = buildACMatrix(thac0);
           if (isSpell) result.insertAdjacentHTML('beforeend', spellLine(spellInfo, esc));
+          if (isArrow) result.insertAdjacentHTML('beforeend', arrowLine(arrowInfo, esc));
 
           // ── AC-to-hit matrix ─────────────────────────────────
           const matrixWrap = document.createElement('div');
@@ -6530,6 +6643,25 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
     // One line under a spell's result: range, save, the catalog link, and the
     // reminder that being hit first loses the spell
+    // A Spellarrow's result: the arrow, the spell on contact, and the shot's speed
+    function arrowCells(a, dmg, esc) {
+      const cell = (label, val) => `<div class="sr-cell"><span class="scenario-result-label">${label}</span><span class="sr-val">${val}</span></div>`;
+      const sp = a && a.spell;
+      return [
+        dmg ? cell('Arrow S/M · L', `${esc(dmg.sm)} · ${esc(dmg.l)}`) : '',
+        sp ? cell(`${dmg && dmg.spellHeals ? 'Spell heals' : 'Spell'} at level ${sp.casterLevel}`, esc(dmg && dmg.spell ? dmg.spell : sp.name)) : cell('Spell', '—'),
+        a ? cell('Speed', a.prefletched || !a.castSpeed ? `${a.speed}` : `${a.bowSpeed} + ${a.castSpeed} = ${a.speed}`) : '',
+        cell('Attacks', '1 (only shot)'),
+      ].join('');
+    }
+    function arrowLine(a, esc) {
+      if (!a || !a.spell) return `<p class="sr-spell"><span class="sr-spell-warn">Choose a memorized spell to put on the arrow.</span></p>`;
+      const sp = a.spell;
+      const warn = a.check && !a.check.ok ? `<b>${esc(sp.name)} can't ride an arrow: ${esc(a.check.why)}.</b> Cast it as a Spell attack instead. ` : '';
+      return `<p class="sr-spell">${esc(sp.name)}${sp.range ? ` · normally ${esc(sp.range)}` : ''}${sp.link ? ` · <a href="${esc(sp.link)}" target="_blank" rel="noopener">Full spell ↗</a>` : ''}
+        <span class="sr-spell-warn">${warn}One roll, read twice: the spell lands if it beats the target's AC without armor or shield; the arrow wounds if it also beats the true AC. Cast through the arrow: no casting penalty.${a.prefletched ? '' : ' Casting time adds to the bow\'s speed.'} A natural 1 misfires.</span></p>`;
+    }
+
     function spellLine(sp, esc) {
       const bits = [sp.range && `Range ${esc(sp.range)}`, sp.attack === 'none' && sp.save && !/^none$/i.test(sp.save) && `Target saves: ${esc(sp.save)}`].filter(Boolean);
       return `<p class="sr-spell">${bits.join(' · ')}${sp.link ? `${bits.length ? ' · ' : ''}<a href="${esc(sp.link)}" target="_blank" rel="noopener">Full spell ↗</a>` : ''}

@@ -10,7 +10,7 @@
 //   • "Magic Missle" spelled as the catalog has it.
 //   • Ability cards for his Mystic Archery talents so far and Spellarrows, to
 //     announce at the table.
-// Not modelled yet: Spellarrows as an attack (a bow shot carrying a spell).
+//   • A Spellarrow: Shocking Grasp on the long bow.
 // Output: samples/rifiyr_10-12.json
 import { readFileSync, writeFileSync } from 'node:fs';
 
@@ -24,12 +24,14 @@ const sc = (o) => ({ group: 'wizard', levelMode: 'sheet', customLevel: 1, active
 s.__scenarios = [
   sc({ id: 'sc-1', name: 'Long bow', active: true, weaponId: 'wpn-2', attackType: 'missile', hitMod: '1', rate: '2/1' }),
   sc({ id: 'sc-2', name: 'Folding bow', weaponId: 'wpn-4', attackType: 'missile', hitMod: '1', rate: '2/1' }),
+  // Spellarrow: Shocking Grasp (touch) on the long bow, at full strength
+  sc({ id: 'sc-7', name: 'Shocking Grasp arrow', weaponId: 'wpn-2', attackType: 'spellarrow', spellId: 'spl-32', hitMod: '1' }),
   sc({ id: 'sc-3', name: 'Magic Missile', attackType: 'spell', spellId: 'spl-30' }),
   sc({ id: 'sc-4', name: 'Shocking Grasp', attackType: 'spell', spellId: 'spl-32' }),
   sc({ id: 'sc-5', name: 'Dagger', weaponId: 'wpn-3', attackType: 'melee', hitMod: '-7' }),
   sc({ id: 'sc-6', name: 'Silver short sword', weaponId: 'wpn-1', attackType: 'melee', hitMod: '-7' }),
 ];
-s.__scenarioCounter = 6;
+s.__scenarioCounter = 7;
 const card = (n, name, desc) => ({ id: `abc-${n}`, name, desc, url: '' });
 s.__abilitiesCards = [
   card(1, 'Mystic Aim', 'Always on: Wisdom magical defense adjustment (+1) added to hit with a bow, on top of Dex. Counted in the bow scenarios.'),

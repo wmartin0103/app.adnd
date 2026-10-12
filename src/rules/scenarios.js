@@ -20,7 +20,8 @@ const num = v => parseInt(v, 10) || 0;
 
 // Melee: Str to hit and damage · Thrown: Dex to hit, Str damage · Missile: Dex to hit
 // Spell: a memorized spell (an attack roll only for touch or ranged spells)
-export const ATTACK_TYPES = { melee: 'Melee', thrown: 'Thrown', missile: 'Missile', spell: 'Spell' };
+// Spellarrow (Bowcaster kit): a bow shot that carries a spell
+export const ATTACK_TYPES = { melee: 'Melee', thrown: 'Thrown', missile: 'Missile', spell: 'Spell', spellarrow: 'Spellarrow' };
 export const RATE_OPTIONS = ['1/1', '3/2', '2/1', '5/2', '3/1', '7/2', '4/1', '5/1'];
 const GROUP_LABELS = { warrior: 'Warrior', priest: 'Priest', rogue: 'Rogue', wizard: 'Wizard' };
 
@@ -69,7 +70,11 @@ export function scenarioContext(save, catalog = null) {
 }
 
 // Older saves wrote whole numbers ("3"); the PHB writes 3/1
-export const scenarioRate = sc => { const r = String(sc.rate || '1').trim(); return r.includes('/') ? r : `${r}/1`; };
+export const scenarioRate = sc => {
+  if (sc.attackType === 'spellarrow') return '1/1';   // a Spellarrow is the round's only shot
+  const r = String(sc.rate || '1').trim();
+  return r.includes('/') ? r : `${r}/1`;
+};
 export const rateValue = rate => { const [a, b] = String(rate).split('/').map(Number); return b ? a / b : (a || 1); };
 
 // Older scenarios have no attack type; read it from the name
@@ -180,10 +185,11 @@ export function scenarioSpell(ctx, sc) {
   const level = casterLevel(ctx, sc, sp.type || (cat && cat.class) || '');
   const dice = pick('dice');
   const rolled = dice ? diceAtLevel(dice, level, pick('diceMaxLevel')) : '';
-  const bowcaster = isBowcaster(ctx);
+  // The penalty is for casting the ordinary way; a Spellarrow doesn't take it
+  const bowcaster = isBowcaster(ctx) && scenarioType(sc) === 'spell';
   return {
     sheet: sp, catalog: cat,
-    name: sp.name, castTime: pick('castTime'), range: pick('range'), save: pick('save'), dice, diceMaxLevel: pick('diceMaxLevel'),
+    name: sp.name, castTime: pick('castTime'), range: pick('range'), area: pick('area'), save: pick('save'), dice, diceMaxLevel: pick('diceMaxLevel'),
     // As written above; as cast below: the dice at this caster's level (or as
     // written when they can't be worked out) and the casting time, after any
     // house-rule penalty
@@ -209,6 +215,56 @@ export function scenarioAbility(ctx, sc) {
   return { hitLabel: 'DEX Missile', hit: ctx.dexMissile, dmg: type === 'thrown' ? ctx.str.dmg : 0 };
 }
 
+// A spell's casting time as an initiative speed: segments as written; a round
+// or longer goes last (10). Null when it isn't written as either.
+export function castSpeed(castTime) {
+  const t = String(castTime || '').toLowerCase();
+  if (/round|\brds?\b|turn|hour|day/.test(t)) return 10;
+  const m = t.match(/\d+/);
+  return m ? Math.min(parseInt(m[0], 10), 10) : null;
+}
+
+// ── Spellarrows (Bowcaster kit, docs/house-rules/bowcaster.md) ──
+// Which tier a spell needs, from its range and area: touch spells (1st
+// level), point-of-origin area spells (5th), self-origin area spells (9th).
+// Spells cast only on the caster himself, or at a single target from range,
+// never ride an arrow. Read from the catalog's wording, so the DM has the
+// final say on borderline spells.
+export const SPELLARROW_TIERS = { touch: 1, point: 5, self: 9 };
+// The catalog can't tell "emanates from the caster" (burning hands) from "only
+// on the caster" (chill touch): both read range 0, area "the caster". So range
+// 0 counts as self-origin, and the kit's own never-eligible examples are named.
+const CASTER_ONLY = ['change self', 'chill touch'];
+export function spellArrowKind(sp) {
+  const range = String(sp.range || '').toLowerCase().trim();
+  const area = String(sp.area || '').toLowerCase().trim();
+  if (CASTER_ONLY.includes(String(sp.name || '').toLowerCase().trim())) return 'caster-only';
+  if (/^touch/.test(range)) return 'touch';
+  if (/^0\b|^self|^caster/.test(range)) return 'self';
+  // Aimed at targets rather than an area: "1 target", "1 - 5 targets", "creature"
+  if (/^(\d+|one)(\s*(-|–|to|or)\s*\d+)?\s+(creatures?|targets?|persons?|beings?|individuals?|objects?)\b|^creature\b/.test(area)) return 'single-target';
+  return 'point';
+}
+export function spellArrowCheck(ctx, sc, sp) {
+  const kind = spellArrowKind(sp);
+  const level = casterLevel(ctx, sc, 'wizard');
+  const needs = SPELLARROW_TIERS[kind];
+  if (!needs) return { kind, ok: false, why: kind === 'caster-only' ? 'cast only on himself' : 'not a touch or area spell' };
+  if (level < needs) return { kind, ok: false, why: `${kind === 'point' ? 'point-of-origin' : 'self-origin'} spells ride an arrow from ${needs}th level` };
+  return { kind, ok: true, why: '' };
+}
+// The spell on a Spellarrow, cast at full strength, and the shot's speed: the
+// bow's, plus the casting time when it's cast live (a pre-fletched arrow
+// already carries its spell)
+export function spellArrow(ctx, sc) {
+  if (scenarioType(sc) !== 'spellarrow') return null;
+  const sp = scenarioSpell(ctx, sc);
+  const wpn = scenarioWeapon(ctx, sc);
+  const bow = wpn ? num(wpn.speed) : 0;
+  const cast = sp && !sc.prefletched ? (castSpeed(sp.castTime) ?? 0) : 0;
+  return { spell: sp, check: sp ? spellArrowCheck(ctx, sc, sp) : null, bowSpeed: bow, castSpeed: cast, speed: bow + cast, prefletched: !!sc.prefletched };
+}
+
 export const scenarioWeapon = (ctx, sc) =>
   scenarioType(sc) !== 'spell' && sc.weaponId ? ctx.weapons.find(w => w.id === sc.weaponId) || null : null;
 
@@ -230,7 +286,11 @@ export function scenarioDamage(ctx, sc) {
     const text = flat ? `${m[1]}${flat > 0 ? '+' : ''}${flat}` : m[1];
     return wpn.dmgAdj === '?' ? `${text} + ?` : text;
   };
-  return { sm: dice(wpn.dmgSM), l: dice(wpn.dmgL) };
+  const out = { sm: dice(wpn.dmgSM), l: dice(wpn.dmgL) };
+  // A Spellarrow: the arrow's damage, and the spell's on contact
+  const arrow = spellArrow(ctx, sc);
+  if (arrow && arrow.spell) Object.assign(out, { spell: arrow.spell.rolled || arrow.spell.dice || '', spellHeals: arrow.spell.heal, casterLevel: arrow.spell.casterLevel });
+  return out;
 }
 
 // Where a scenario's numbers come from: the base THAC0, then one line per

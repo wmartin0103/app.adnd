@@ -1333,7 +1333,8 @@ const num = v => parseInt(v, 10) || 0;
 
 // Melee: Str to hit and damage · Thrown: Dex to hit, Str damage · Missile: Dex to hit
 // Spell: a memorized spell (an attack roll only for touch or ranged spells)
-const ATTACK_TYPES = { melee: 'Melee', thrown: 'Thrown', missile: 'Missile', spell: 'Spell' };
+// Spellarrow (Bowcaster kit): a bow shot that carries a spell
+const ATTACK_TYPES = { melee: 'Melee', thrown: 'Thrown', missile: 'Missile', spell: 'Spell', spellarrow: 'Spellarrow' };
 const RATE_OPTIONS = ['1/1', '3/2', '2/1', '5/2', '3/1', '7/2', '4/1', '5/1'];
 const GROUP_LABELS = { warrior: 'Warrior', priest: 'Priest', rogue: 'Rogue', wizard: 'Wizard' };
 
@@ -1382,7 +1383,11 @@ function scenarioContext(save, catalog = null) {
 }
 
 // Older saves wrote whole numbers ("3"); the PHB writes 3/1
-const scenarioRate = sc => { const r = String(sc.rate || '1').trim(); return r.includes('/') ? r : `${r}/1`; };
+const scenarioRate = sc => {
+  if (sc.attackType === 'spellarrow') return '1/1';   // a Spellarrow is the round's only shot
+  const r = String(sc.rate || '1').trim();
+  return r.includes('/') ? r : `${r}/1`;
+};
 const rateValue = rate => { const [a, b] = String(rate).split('/').map(Number); return b ? a / b : (a || 1); };
 
 // Older scenarios have no attack type; read it from the name
@@ -1493,10 +1498,11 @@ function scenarioSpell(ctx, sc) {
   const level = casterLevel(ctx, sc, sp.type || (cat && cat.class) || '');
   const dice = pick('dice');
   const rolled = dice ? diceAtLevel(dice, level, pick('diceMaxLevel')) : '';
-  const bowcaster = isBowcaster(ctx);
+  // The penalty is for casting the ordinary way; a Spellarrow doesn't take it
+  const bowcaster = isBowcaster(ctx) && scenarioType(sc) === 'spell';
   return {
     sheet: sp, catalog: cat,
-    name: sp.name, castTime: pick('castTime'), range: pick('range'), save: pick('save'), dice, diceMaxLevel: pick('diceMaxLevel'),
+    name: sp.name, castTime: pick('castTime'), range: pick('range'), area: pick('area'), save: pick('save'), dice, diceMaxLevel: pick('diceMaxLevel'),
     // As written above; as cast below: the dice at this caster's level (or as
     // written when they can't be worked out) and the casting time, after any
     // house-rule penalty
@@ -1522,6 +1528,56 @@ function scenarioAbility(ctx, sc) {
   return { hitLabel: 'DEX Missile', hit: ctx.dexMissile, dmg: type === 'thrown' ? ctx.str.dmg : 0 };
 }
 
+// A spell's casting time as an initiative speed: segments as written; a round
+// or longer goes last (10). Null when it isn't written as either.
+function castSpeed(castTime) {
+  const t = String(castTime || '').toLowerCase();
+  if (/round|\brds?\b|turn|hour|day/.test(t)) return 10;
+  const m = t.match(/\d+/);
+  return m ? Math.min(parseInt(m[0], 10), 10) : null;
+}
+
+// ── Spellarrows (Bowcaster kit, docs/house-rules/bowcaster.md) ──
+// Which tier a spell needs, from its range and area: touch spells (1st
+// level), point-of-origin area spells (5th), self-origin area spells (9th).
+// Spells cast only on the caster himself, or at a single target from range,
+// never ride an arrow. Read from the catalog's wording, so the DM has the
+// final say on borderline spells.
+const SPELLARROW_TIERS = { touch: 1, point: 5, self: 9 };
+// The catalog can't tell "emanates from the caster" (burning hands) from "only
+// on the caster" (chill touch): both read range 0, area "the caster". So range
+// 0 counts as self-origin, and the kit's own never-eligible examples are named.
+const CASTER_ONLY = ['change self', 'chill touch'];
+function spellArrowKind(sp) {
+  const range = String(sp.range || '').toLowerCase().trim();
+  const area = String(sp.area || '').toLowerCase().trim();
+  if (CASTER_ONLY.includes(String(sp.name || '').toLowerCase().trim())) return 'caster-only';
+  if (/^touch/.test(range)) return 'touch';
+  if (/^0\b|^self|^caster/.test(range)) return 'self';
+  // Aimed at targets rather than an area: "1 target", "1 - 5 targets", "creature"
+  if (/^(\d+|one)(\s*(-|–|to|or)\s*\d+)?\s+(creatures?|targets?|persons?|beings?|individuals?|objects?)\b|^creature\b/.test(area)) return 'single-target';
+  return 'point';
+}
+function spellArrowCheck(ctx, sc, sp) {
+  const kind = spellArrowKind(sp);
+  const level = casterLevel(ctx, sc, 'wizard');
+  const needs = SPELLARROW_TIERS[kind];
+  if (!needs) return { kind, ok: false, why: kind === 'caster-only' ? 'cast only on himself' : 'not a touch or area spell' };
+  if (level < needs) return { kind, ok: false, why: `${kind === 'point' ? 'point-of-origin' : 'self-origin'} spells ride an arrow from ${needs}th level` };
+  return { kind, ok: true, why: '' };
+}
+// The spell on a Spellarrow, cast at full strength, and the shot's speed: the
+// bow's, plus the casting time when it's cast live (a pre-fletched arrow
+// already carries its spell)
+function spellArrow(ctx, sc) {
+  if (scenarioType(sc) !== 'spellarrow') return null;
+  const sp = scenarioSpell(ctx, sc);
+  const wpn = scenarioWeapon(ctx, sc);
+  const bow = wpn ? num(wpn.speed) : 0;
+  const cast = sp && !sc.prefletched ? (castSpeed(sp.castTime) ?? 0) : 0;
+  return { spell: sp, check: sp ? spellArrowCheck(ctx, sc, sp) : null, bowSpeed: bow, castSpeed: cast, speed: bow + cast, prefletched: !!sc.prefletched };
+}
+
 const scenarioWeapon = (ctx, sc) =>
   scenarioType(sc) !== 'spell' && sc.weaponId ? ctx.weapons.find(w => w.id === sc.weaponId) || null : null;
 
@@ -1543,7 +1599,11 @@ function scenarioDamage(ctx, sc) {
     const text = flat ? `${m[1]}${flat > 0 ? '+' : ''}${flat}` : m[1];
     return wpn.dmgAdj === '?' ? `${text} + ?` : text;
   };
-  return { sm: dice(wpn.dmgSM), l: dice(wpn.dmgL) };
+  const out = { sm: dice(wpn.dmgSM), l: dice(wpn.dmgL) };
+  // A Spellarrow: the arrow's damage, and the spell's on contact
+  const arrow = spellArrow(ctx, sc);
+  if (arrow && arrow.spell) Object.assign(out, { spell: arrow.spell.rolled || arrow.spell.dice || '', spellHeals: arrow.spell.heal, casterLevel: arrow.spell.casterLevel });
+  return out;
 }
 
 // Where a scenario's numbers come from: the base THAC0, then one line per
@@ -1591,7 +1651,7 @@ function scenarioTHAC0(ctx, sc) {
   return bd ? bd.thac0 : null;
 }
 
-return { modNum, signed, ATTACK_TYPES, RATE_OPTIONS, racialWeaponBonus, strengthRow, scenarioContext, scenarioRate, rateValue, scenarioType, normalizeEffects, effectOption, activeEffectsFor, effectsACBonus, casterLevel, diceAtLevel, isBowcaster, lessPerDie, scenarioSpell, scenarioAbility, scenarioWeapon, scenarioDamage, scenarioBreakdown, scenarioTHAC0 };
+return { modNum, signed, ATTACK_TYPES, RATE_OPTIONS, racialWeaponBonus, strengthRow, scenarioContext, scenarioRate, rateValue, scenarioType, normalizeEffects, effectOption, activeEffectsFor, effectsACBonus, casterLevel, diceAtLevel, isBowcaster, lessPerDie, scenarioSpell, scenarioAbility, castSpeed, SPELLARROW_TIERS, spellArrowKind, spellArrowCheck, spellArrow, scenarioWeapon, scenarioDamage, scenarioBreakdown, scenarioTHAC0 };
 })();
 // ── rules/character ──
 __m["rules/character"] = (() => {
@@ -2181,7 +2241,7 @@ const {migrateV1toV2, guessCategory} = __m["rules/migrate"];
 const {baseTHAC0} = __m["rules/attacks"];
 const {armorClass, savingThrows, thiefSkills, proficiencyTargets} = __m["rules/character"];
 const {scenarioContext, scenarioType, scenarioRate, rateValue, scenarioWeapon, scenarioSpell,
-  scenarioBreakdown, scenarioDamage, effectsACBonus, effectOption, modNum, signed,} = __m["rules/scenarios"];
+  scenarioBreakdown, scenarioDamage, effectsACBonus, effectOption, modNum, signed, castSpeed, spellArrow,} = __m["rules/scenarios"];
 // ── SHEET → DM HELPER ───────────────────────────────────────────
 // Builds a character's entries for the DM Helper's config block
 // (CHARACTERS, SKILLS, THIEF, SAVES, DAMAGE, CRIT_TYPES, WEAPON_MATERIAL) from
@@ -2235,14 +2295,6 @@ function critType(dmgType) {
   if (!types.length) return 'B';
   return types.length > 1 ? types : types[0];
 }
-// A spell's cast time as an initiative speed: segments as written; a round or
-// longer goes last (10)
-function castSpeed(castTime) {
-  const t = String(castTime || '').toLowerCase();
-  if (/round|turn|hour|day/.test(t)) return 10;
-  const m = t.match(/\d+/);
-  return m ? Math.min(parseInt(m[0], 10), 10) : null;
-}
 
 function toDMHelper(save, dmSettings = {}, { catalog = null } = {}) {
   // Saves, skills and thief skills read the migrated sheet; attacks read the
@@ -2294,6 +2346,25 @@ function toDMHelper(save, dmSettings = {}, { catalog = null } = {}) {
     const wpn = scenarioWeapon(ctx, sc);
     if (!wpn || !bd) { review.push(`${sc.name || 'A scenario'}: no weapon chosen; left out`); continue; }
     const label = unique(sc.name || wpn.name);
+
+    // A Spellarrow: the bow's to-hit, speed = bow + casting time (the DM
+    // Helper's "bow + cast time" action), the arrow's damage, and the spell's
+    // on contact. Whether the spell lands (AC without armor or shield) is the
+    // DM's call at the table.
+    const arrow = spellArrow(ctx, sc);
+    if (arrow) {
+      if (!arrow.spell) { review.push(`${label}: no spell on the arrow; left out`); continue; }
+      if (!arrow.check.ok) review.push(`${label}: ${arrow.spell.name} can't ride an arrow (${arrow.check.why})`);
+      actions.push({ name: label, thac0: bd.thac0, baseSpeed: arrow.bowSpeed, speedMin: 0, speedMax: 10, speedDefault: arrow.castSpeed });
+      recordWeapon(label, sc, wpn);
+      const dmg = damage[`${name}|${label}`];
+      if (dmg && arrow.spell.dice) {
+        dmg.spell = arrow.spell.rolled || arrow.spell.dice;
+        dmg.spellNote = `${arrow.spell.name} on contact (beat AC without armor or shield)`;
+      }
+      continue;
+    }
+
     if (sc.handedness === 'off') {
       secondary.push({ name: label, thac0: bd.thac0 });
       recordWeapon(label, sc, wpn);
@@ -2388,7 +2459,7 @@ function formatDMHelperConfig(list) {
   return lines.join('\n') + '\n';
 }
 
-return { castSpeed, toDMHelper, formatDMHelperConfig };
+return { toDMHelper, formatDMHelperConfig };
 })();
 window.SheetConverter = { toDMHelper: __m["adapters/dm-helper"].toDMHelper };
 })();
@@ -2946,6 +3017,8 @@ function parseDmg(expr){
 }
 function rollDmg(expr){ const p=parseDmg(expr); let d=0; p.dice.forEach(([n,sz])=>{ for(let i=0;i<Math.abs(n);i++) d+=Math.floor(Math.random()*sz)+1; }); return {dice:d, flat:p.flat, expr}; }
 function dmgSpec(charName, r){ return DAMAGE[charName+'|'+r.action.name] || null; }
+// A Spellarrow's spell, for the damage tooltip (the DM rolls it separately)
+function spellNoteFor(charName, r){ const d=dmgSpec(charName, r); return d && d.spell ? ` · spell ${d.spell}: ${d.spellNote||'on contact'}` : ''; }
 function rollDamageFor(charName, r){
   const d=dmgSpec(charName, r); if(!d){ r.dmg=null; return; }
   if(d.byType){ const out={}; Object.keys(d.byType).forEach(t=> out[t]={sm:rollDmg(d.byType[t].sm), l:rollDmg(d.byType[t].l)}); r.dmg={byType:out, plus:d.plus||0}; }
@@ -3727,7 +3800,7 @@ function update(){
         {
           const dn=r.dmgTd.querySelector('.n');
           const hitNow = r.roll!==null && (r.roll===20 ? true : r.roll===1 ? false : r.roll>=need);
-          if(!hitNow || !r.dmg){ dn.textContent='—'; r.dmgTd.className='dmg num na'; r.dmgTd.title = r.roll===null ? '' : (r.dmg ? 'miss' : 'no damage listed'); }
+          if(!hitNow || !r.dmg){ dn.textContent='—'; r.dmgTd.className='dmg num na'; r.dmgTd.title = r.roll===null ? '' : (r.dmg ? `miss${spellNoteFor(name, r) ? ' — but a Spellarrow\'s spell lands if the roll beats the target\'s AC without armor or shield'+spellNoteFor(name, r) : ''}` : 'no damage listed'); }
           else{
             const pool = r.dmg.byType ? r.dmg.byType[critTypeOf(r)] : r.dmg;
             const tsize=rowSize(r);
@@ -3737,7 +3810,7 @@ function update(){
             const base = roll.dice + roll.flat + virtueDmg - plus;
             const total = mult>1 ? base*mult+plus : base+plus;
             dn.textContent=total; dmgOut=total; r.dmgTd.className='dmg num '+(mult>1?'critdmg':'');
-            r.dmgTd.title=`${roll.expr}${virtueDmg?' +2 virtue':''}: dice ${roll.dice} + ${roll.flat+virtueDmg-plus}${plus?` (+${plus} magic)`:''}${mult>1?` × ${mult} = ${total}`:''} · ${tsize==='l'?'L':'S-M'} target`;
+            r.dmgTd.title=`${roll.expr}${virtueDmg?' +2 virtue':''}: dice ${roll.dice} + ${roll.flat+virtueDmg-plus}${plus?` (+${plus} magic)`:''}${mult>1?` × ${mult} = ${total}`:''} · ${tsize==='l'?'L':'S-M'} target${spellNoteFor(name, r)}`;
           }
         }
         r.out = r.roll===null ? null : {roll:r.roll, need, ac:tacRow, thac0:res, mods:0, hit:(r.roll===20 ? true : r.roll===1 ? false : r.roll>=need), crit:(r.roll===20 && need<=20), fumble:(r.roll===1 && need>1), dmg:dmgOut};
@@ -4344,7 +4417,7 @@ document.getElementById('sheetFiles').addEventListener('change',async e=>{
 
 /* ---------------- Config review: everything driving the tabs, per character ---------------- */
 function esc(x){ return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
-function dmgText(d){ if(!d) return '—'; if(d.byType) return Object.keys(d.byType).map(t=>`${CRIT_SHORT[t]}: ${d.byType[t].sm} / ${d.byType[t].l}`).join(' · '); return `${d.sm} / ${d.l}${d.plus?` (+${d.plus} magic)`:''}`; }
+function dmgText(d){ if(!d) return '—'; if(d.byType) return Object.keys(d.byType).map(t=>`${CRIT_SHORT[t]}: ${d.byType[t].sm} / ${d.byType[t].l}`).join(' · '); return `${d.sm} / ${d.l}${d.plus?` (+${d.plus} magic)`:''}${d.spell?` · spell ${d.spell}: ${d.spellNote||'on contact'}`:''}`; }
 function buildConfigReview(){
   const host=document.getElementById('cfgReview'); host.innerHTML='';
   PCS.slice().sort().forEach(name=>{

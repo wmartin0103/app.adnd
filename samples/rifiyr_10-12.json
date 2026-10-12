@@ -61,6 +61,24 @@
       "collapsed": false,
       "handedness": "main",
       "offHandPenalty": "",
+      "spellId": "spl-32",
+      "spell": {},
+      "hitMod": "1",
+      "dmgMod": "",
+      "rate": "1/1",
+      "id": "sc-7",
+      "name": "Shocking Grasp arrow",
+      "weaponId": "wpn-2",
+      "attackType": "spellarrow"
+    },
+    {
+      "group": "wizard",
+      "levelMode": "sheet",
+      "customLevel": 1,
+      "active": false,
+      "collapsed": false,
+      "handedness": "main",
+      "offHandPenalty": "",
       "spellId": "spl-30",
       "spell": {},
       "hitMod": "",
@@ -124,7 +142,7 @@
       "attackType": "melee"
     }
   ],
-  "__scenarioCounter": 6,
+  "__scenarioCounter": 7,
   "__enemies": [],
   "__enemyCounter": 1,
   "__classes": [

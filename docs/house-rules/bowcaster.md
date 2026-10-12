@@ -193,7 +193,8 @@ built by `scripts/convert-rifiyr.mjs`.
 | Two shots per round with a bow | Bow scenarios at 2/1 |
 | –2 to hit with anything but a bow | Hit Mod on each non-bow scenario, with the wizard non-proficiency –5 when not proficient |
 | Casting without an arrow: casting time +3, –1 damage per die | Worked out automatically for a Bowcaster's Spell scenarios (sheet and DM Helper) |
-| Spellarrows (bow shot carrying a touch spell; speed = bow + casting time; only shot that round; spell lands against AC without armor or shield) | **Not yet modelled.** A scenario is a weapon attack or a spell, not both; see the proposal in the handoff |
+| Spellarrows | A **Spellarrow** attack type (offered to Bowcasters only): a bow from his weapons, a memorized spell on the arrow, and a **Pre-fletched** switch. To hit and the arrow's damage come from the bow, with Mystic Aim; one shot that round; speed = bow + casting time (bow alone when pre-fletched); the spell's damage at full strength. The result says how the one roll is read twice (spell vs AC without armor or shield, arrow vs true AC). The DM Helper lists it as a "bow + cast time" action with both damages; the DM applies the delivery AC |
+| Which spells can ride an arrow | Worked out from the catalog's range and area: touch (1st), point-of-origin area (5th), self-origin area (9th, range 0). Change self and chill touch never. Spells that can't are labelled in the spell list and flagged for the DM; the DM has the final say on borderline spells |
 | Unfriendly Fire, Direction Arrow, Anticipate Blow, and later talents | Ability cards on the sheet, announced at the table |
 | Spellfletching, materials, costs, misfires | Table rulings; not tracked |
 | No armor, no scrolls, no divination, no wands/rods/staves | Table rulings; not enforced by the sheet |

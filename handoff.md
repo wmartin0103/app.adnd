@@ -364,8 +364,10 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
   `samples/rifiyr_10-12.json`); Bowcaster kit in `docs/house-rules/bowcaster.md`.
   Bows with Mystic Aim (long bow THAC0 16, 2/1), −2 with anything else, and the
   casting penalty without an arrow are all worked out.
-- [ ] Rifiyr, Spellarrows: a bow shot that carries a spell isn't a scenario
-  yet (a scenario is a weapon or a spell). Design to agree before building.
+- [x] Rifiyr, Spellarrows (2026-10-12): a Spellarrow attack type on the sheet
+  (bow + memorized spell, pre-fletched switch) and a "bow + cast time" action
+  in the DM Helper. Rifiyr's Shocking Grasp arrow: THAC0 16, arrow 1d8/1d6,
+  spell 1d8+4, speed 8 + 1. Not automated: the delivery AC (the DM applies it).
 - [ ] Rifiyr, to rule on: AC 4 or 6 (the sheet treats 6 as his bracers and
   subtracts Dex; bracers are allowed, ruled 2026-10-12); Read Magic is
   Divination, which the kit bans; long bow damage 1d8 / 1d6 (PHB: flight arrow

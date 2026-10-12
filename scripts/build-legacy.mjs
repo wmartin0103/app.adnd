@@ -18,7 +18,8 @@ export const TARGETS = {
   'legacy/character-sheet.html': {
     SheetSpells: ['rules/spells', ['findSpell']],
     SheetScenarios: ['rules/scenarios', ['modNum', 'signed', 'ATTACK_TYPES', 'RATE_OPTIONS', 'scenarioRate', 'scenarioType',
-      'scenarioSpell', 'scenarioAbility', 'activeEffectsFor', 'scenarioDamage', 'scenarioBreakdown', 'normalizeEffects', 'effectOption']],
+      'scenarioSpell', 'scenarioAbility', 'activeEffectsFor', 'scenarioDamage', 'scenarioBreakdown', 'normalizeEffects', 'effectOption',
+      'isBowcaster', 'spellArrow', 'spellArrowCheck']],
     SheetRules: ['rules/weapons', ['PHB_WEAPONS']],
     SheetGuess: ['rules/migrate', ['guessCategory']],
   },

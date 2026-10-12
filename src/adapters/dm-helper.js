@@ -25,7 +25,7 @@ import { baseTHAC0 } from '../rules/attacks.js';
 import { armorClass, savingThrows, thiefSkills, proficiencyTargets } from '../rules/character.js';
 import {
   scenarioContext, scenarioType, scenarioRate, rateValue, scenarioWeapon, scenarioSpell,
-  scenarioBreakdown, scenarioDamage, effectsACBonus, effectOption, modNum, signed,
+  scenarioBreakdown, scenarioDamage, effectsACBonus, effectOption, modNum, signed, castSpeed, spellArrow,
 } from '../rules/scenarios.js';
 
 const num = v => {
@@ -54,14 +54,6 @@ function critType(dmgType) {
   const types = [/pierc|^p$/.test(t) && 'P', /slash|^s$/.test(t) && 'S', /blunt|bludg|crush|^b$/.test(t) && 'B'].filter(Boolean);
   if (!types.length) return 'B';
   return types.length > 1 ? types : types[0];
-}
-// A spell's cast time as an initiative speed: segments as written; a round or
-// longer goes last (10)
-export function castSpeed(castTime) {
-  const t = String(castTime || '').toLowerCase();
-  if (/round|turn|hour|day/.test(t)) return 10;
-  const m = t.match(/\d+/);
-  return m ? Math.min(parseInt(m[0], 10), 10) : null;
 }
 
 export function toDMHelper(save, dmSettings = {}, { catalog = null } = {}) {
@@ -114,6 +106,25 @@ export function toDMHelper(save, dmSettings = {}, { catalog = null } = {}) {
     const wpn = scenarioWeapon(ctx, sc);
     if (!wpn || !bd) { review.push(`${sc.name || 'A scenario'}: no weapon chosen; left out`); continue; }
     const label = unique(sc.name || wpn.name);
+
+    // A Spellarrow: the bow's to-hit, speed = bow + casting time (the DM
+    // Helper's "bow + cast time" action), the arrow's damage, and the spell's
+    // on contact. Whether the spell lands (AC without armor or shield) is the
+    // DM's call at the table.
+    const arrow = spellArrow(ctx, sc);
+    if (arrow) {
+      if (!arrow.spell) { review.push(`${label}: no spell on the arrow; left out`); continue; }
+      if (!arrow.check.ok) review.push(`${label}: ${arrow.spell.name} can't ride an arrow (${arrow.check.why})`);
+      actions.push({ name: label, thac0: bd.thac0, baseSpeed: arrow.bowSpeed, speedMin: 0, speedMax: 10, speedDefault: arrow.castSpeed });
+      recordWeapon(label, sc, wpn);
+      const dmg = damage[`${name}|${label}`];
+      if (dmg && arrow.spell.dice) {
+        dmg.spell = arrow.spell.rolled || arrow.spell.dice;
+        dmg.spellNote = `${arrow.spell.name} on contact (beat AC without armor or shield)`;
+      }
+      continue;
+    }
+
     if (sc.handedness === 'off') {
       secondary.push({ name: label, thac0: bd.thac0 });
       recordWeapon(label, sc, wpn);

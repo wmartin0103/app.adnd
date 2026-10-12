@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 import { armorClass, savingThrows, stoutSaveBonus, thiefSkills, proficiencyTargets } from '../src/rules/character.js';
-import { toDMHelper, formatDMHelperConfig, castSpeed } from '../src/adapters/dm-helper.js';
-import { diceAtLevel, casterLevel, scenarioContext, scenarioDamage, lessPerDie } from '../src/rules/scenarios.js';
+import { toDMHelper, formatDMHelperConfig } from '../src/adapters/dm-helper.js';
+import { diceAtLevel, casterLevel, scenarioContext, scenarioDamage, lessPerDie, castSpeed, spellArrowKind } from '../src/rules/scenarios.js';
 import { diceCap } from '../scripts/import-wiki-spells.mjs';
 
 const jaque = JSON.parse(readFileSync(new URL('./fixtures/jaque-v2.json', import.meta.url)));
@@ -133,9 +133,34 @@ test('Rifiyr: bows with Mystic Aim, −2 off the bow, and the casting penalty wi
   assert.equal(c.weapons['Silver short sword'].thac0, 25);                       // 19 − sword +1 + non-prof 5 + kit 2
   assert.equal(c.weapons.Dagger.thac0, 26);
   // Cast the ordinary way: casting time +3, −1 per die
-  assert.deepEqual(c.actions.map(a => [a.name, a.speedDefault]), [['Magic Missile', 4], ['Shocking Grasp', 4]]);
+  assert.deepEqual(c.actions.filter(a => !a.baseSpeed).map(a => [a.name, a.speedDefault]), [['Magic Missile', 4], ['Shocking Grasp', 4]]);
   assert.deepEqual(r.damage['Rifiyr|Shocking Grasp'], { sm: '1d8+3', l: '1d8+3' });  // 1d8+4 at 4th, −1
   assert.deepEqual(r.damage['Rifiyr|Magic Missile'], { sm: '1d4', l: '1d4' });
+});
+
+test('Spellarrow: the bow\'s to-hit, bow + casting time, the arrow\'s damage and the spell at full strength', () => {
+  const save = JSON.parse(readFileSync(new URL('../samples/rifiyr_10-12.json', import.meta.url)));
+  const r = toDMHelper(save, {}, { catalog });
+  const shot = r.character.actions.find(a => a.name === 'Shocking Grasp arrow');
+  assert.deepEqual(shot, { name: 'Shocking Grasp arrow', thac0: 16, baseSpeed: 8, speedMin: 0, speedMax: 10, speedDefault: 1 });
+  assert.equal(r.character.secondary.some(s => s.name.startsWith('Shocking Grasp arrow')), false);   // its only shot
+  const d = r.damage['Rifiyr|Shocking Grasp arrow'];
+  assert.deepEqual([d.sm, d.l, d.spell], ['1d8', '1d6', '1d8+4']);                                    // no casting penalty
+  assert.equal(r.critTypes['Shocking Grasp arrow'], 'P');
+  // Pre-fletched: the bow's speed alone
+  const fletched = { ...save, __scenarios: save.__scenarios.map(s => (s.id === 'sc-7' ? { ...s, prefletched: true } : s)) };
+  assert.equal(toDMHelper(fletched, {}, { catalog }).character.actions.find(a => a.name === 'Shocking Grasp arrow').speedDefault, 0);
+  // A spell that can't ride an arrow is flagged for the DM
+  const fireball = { ...save, __spells: [...save.__spells, { id: 'spl-90', name: 'Fireball', level: 3, type: 'wizard', isMemorized: true }],
+    __scenarios: [{ ...save.__scenarios.find(s => s.id === 'sc-7'), spellId: 'spl-90' }] };
+  assert.ok(toDMHelper(fireball, {}, { catalog }).review.some(m => /Fireball can't ride an arrow \(point-of-origin spells ride an arrow from 5th level\)/.test(m)));
+});
+
+test('which Spellarrow tier a spell needs', () => {
+  const kind = name => spellArrowKind(catalog.spells.find(e => e.name === name && e.class === 'wizard'));
+  assert.deepEqual(['Shocking Grasp', 'Invisibility', 'Fireball', 'Grease', 'Burning Hands', 'Cone of Cold', "Melf's Acid Arrow", 'Magic Missile', 'Chill Touch', 'Change Self'].map(kind),
+    ['touch', 'touch', 'point', 'point', 'self', 'self', 'single-target', 'single-target', 'caster-only', 'caster-only']);
+  assert.deepEqual(['1 rd.', '1 round', '3'].map(castSpeed), [10, 10, 3]);
 });
 
 test('−1 per die', () => {
