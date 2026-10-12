@@ -20,6 +20,7 @@ export const TARGETS = {
     SheetScenarios: ['rules/scenarios', ['modNum', 'signed', 'ATTACK_TYPES', 'RATE_OPTIONS', 'scenarioRate', 'scenarioType',
       'scenarioSpell', 'scenarioAbility', 'activeEffectsFor', 'scenarioDamage', 'scenarioBreakdown', 'normalizeEffects', 'effectOption',
       'isBowcaster', 'spellArrow', 'spellArrowCheck', 'isBow', 'ARROWS']],
+    SheetKits: ['rules/kits', ['HOUSE_KITS', 'classKit']],
     SheetRules: ['rules/weapons', ['PHB_WEAPONS']],
     SheetGuess: ['rules/migrate', ['guessCategory']],
   },

@@ -167,6 +167,19 @@ test('which Spellarrow tier a spell needs', () => {
   assert.deepEqual(['1 rd.', '1 round', '3'].map(castSpeed), [10, 10, 3]);
 });
 
+test('a class\'s house-rule kit: chosen in its settings, or read from the name in older saves', async () => {
+  const { classKit } = await import('../src/rules/kits.js');
+  assert.equal(classKit({ name: 'Wizard (Bowcaster)' }), 'bowcaster');            // older save, no setting
+  assert.equal(classKit({ name: 'Blade Bard' }), 'blade');
+  assert.equal(classKit({ name: 'Wizard', kit: 'bowcaster' }), 'bowcaster');      // chosen in settings
+  assert.equal(classKit({ name: 'Wizard (Bowcaster)', kit: '' }), '');            // None chosen: the name doesn't count
+  assert.equal(classKit({ name: 'Ranger', kit: 'beastmaster' }), '');             // not a house-rule kit
+  // The rules follow the setting: no Bowcaster kit, no casting penalty
+  const save = JSON.parse(readFileSync(new URL('../samples/rifiyr_10-12.json', import.meta.url)));
+  const none = { ...save, __classes: save.__classes.map(c => ({ ...c, kit: '' })) };
+  assert.deepEqual(toDMHelper(none, {}, { catalog }).damage['Rifiyr|Shocking Grasp'], { sm: '1d8+4', l: '1d8+4' });
+});
+
 test('−1 per die', () => {
   assert.deepEqual(['1d8+4', '5d6', '1d4+1', '2d4'].map(lessPerDie), ['1d8+3', '5d6-5', '1d4', '2d4-2']);
 });

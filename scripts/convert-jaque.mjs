@@ -11,6 +11,8 @@ import { readFileSync, writeFileSync } from 'node:fs';
 
 const s = JSON.parse(readFileSync('samples/jaque_09-23.json', 'utf8'));
 s.__thiefSkillAlloc.kit = { ...s.__thiefSkillAlloc.kit, ol: 20, frt: 0 };
+// The Blade kit, chosen in the class settings (not read from the name)
+s.__classes[0].kit = 'blade';
 for (const w of s.__weapons) {
   if (/dagger/i.test(w.name)) w.dmgL = String(w.dmgL || '1d4').replace(/^1d4/, '1d3');
 }

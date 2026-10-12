@@ -192,7 +192,8 @@
       "name": "Wizard (Bowcaster)",
       "group": "wizard",
       "level": "4",
-      "xp": "10792"
+      "xp": "10792",
+      "kit": "bowcaster"
     }
   ],
   "__classCounter": 2,

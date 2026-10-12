@@ -1270,6 +1270,32 @@ function sameAbility(a, b) {
 
 return { COMBAT_ROLES, guessCombatRole, sameAbility };
 })();
+// ── rules/kits ──
+__m["rules/kits"] = (() => {
+
+// ── House-rule kits ─────────────────────────────────────────────
+// Kits the campaign wrote its own rules for, which the tools work out. Any
+// other kit (standard or from a handbook) needs nothing here: its abilities
+// are announced at the table. A class chooses one in its settings (`kit`).
+//   docs/house-rules/blade-revised.md, docs/house-rules/bowcaster.md
+
+const HOUSE_KITS = {
+  blade: { name: 'Blade', for: 'Bard', adds: 'Casts spells as a bard two levels lower' },
+  bowcaster: { name: 'Bowcaster', for: 'Wizard', adds: 'Spellarrow attacks; casting without an arrow takes 3 longer and does 1 less damage per die' },
+};
+
+// The class's house-rule kit, or ''. Saves from before the setting existed
+// (no `kit` at all) go by the class name, so "Blade Bard" and "Wizard
+// (Bowcaster)" keep their rules; once a kit is chosen, even None, the name
+// no longer matters.
+function classKit(c) {
+  if (c && typeof c.kit === 'string') return HOUSE_KITS[c.kit] ? c.kit : '';
+  const name = String((c && c.name) || '').toLowerCase();
+  return Object.keys(HOUSE_KITS).find(k => name.includes(k)) || '';
+}
+
+return { HOUSE_KITS, classKit };
+})();
 // ── rules/spells ──
 __m["rules/spells"] = (() => {
 
@@ -1312,6 +1338,7 @@ return { findSpell, SPELL_FIELDS, missingFields };
 __m["rules/scenarios"] = (() => {
 const {STR_TABLE, STR_EXCEPTIONAL, DEX_TABLE, THAC0_TABLE} = __m["rules/tables"];
 const {findSpell} = __m["rules/spells"];
+const {classKit} = __m["rules/kits"];
 // ── COMBAT SCENARIOS ────────────────────────────────────────────
 // A character's ways of attacking, as the sheet's Combat section saves them
 // (`__scenarios`), worked out into THAC0, damage and attacks per round. The
@@ -1320,6 +1347,7 @@ const {findSpell} = __m["rules/spells"];
 // Everything works from a "context": the parts of a character the math needs.
 // `scenarioContext(save)` builds it from a sheet save; the sheet builds its own
 // from what's on screen.
+
 
 
 
@@ -1448,7 +1476,7 @@ const classCasterLevel = c => {
   const level = num(c.level);
   if (/paladin/i.test(name)) return level - 8;
   if (/ranger/i.test(name)) return level - 7;
-  if (/blade/i.test(name)) return level - 2;
+  if (classKit(c) === 'blade') return level - 2;
   return level;
 };
 function casterLevel(ctx, sc, spellType) {
@@ -1475,7 +1503,7 @@ function diceAtLevel(dice, level, maxLevel = 0) {
 // House rule (Bowcaster kit): a spell not sent through an arrow takes 3
 // longer to cast and does 1 less damage per die (at least 1 per die).
 // "1d8+4" → "1d8+3", "5d6" → "5d6-5". A Spell scenario is an ordinary cast.
-const isBowcaster = ctx => (ctx.classes || []).some(c => /bowcaster/i.test(c.name || ''));
+const isBowcaster = ctx => (ctx.classes || []).some(c => classKit(c) === 'bowcaster');
 function lessPerDie(dice) {
   const m = String(dice || '').replace(/\s+/g, '').match(/^(\d*)d(\d+)([+-]\d+)?$/i);
   if (!m) return dice;

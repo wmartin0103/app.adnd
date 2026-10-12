@@ -2286,6 +2286,48 @@
       gap: 0.15rem;
     }
 
+    /* House-rule kit: a gear beside the class label opens the choice */
+    .class-label-row { display: flex; align-items: center; }
+    .class-settings-btn { padding: 0 0.2rem; }
+    .class-kit-tag {
+      align-self: flex-start;
+      font-family: var(--font-display);
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      border: 1px solid currentColor;
+      border-radius: var(--radius);
+      padding: 0.05rem 0.4rem;
+    }
+    .class-kit-panel {
+      margin: 0.35rem 0 0;
+      padding: 0.5rem 0.75rem 0.6rem;
+      border: 1px solid var(--rule);
+      border-radius: var(--radius);
+      background: var(--surface);
+      display: grid;
+      gap: 0.35rem;
+    }
+    .class-kit-panel legend {
+      font-family: var(--font-display);
+      font-size: 0.65rem;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      padding: 0 0.25rem;
+    }
+    .class-kit-intro { font-size: 0.85rem; color: var(--ink-muted); }
+    .class-kit-option {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      column-gap: 0.4rem;
+      align-items: baseline;
+    }
+    .class-kit-option input { accent-color: var(--accent); }
+    .class-kit-option label { font-weight: 600; cursor: pointer; }
+    .class-kit-adds { grid-column: 2; font-size: 0.85rem; color: var(--ink-muted); }
+
     .class-field-label {
       font-family: var(--font-display);
       font-size: 0.65rem;
@@ -3622,6 +3664,32 @@ function sameAbility(a, b) {
 
 return { COMBAT_ROLES, guessCombatRole, sameAbility };
 })();
+// ── rules/kits ──
+__m["rules/kits"] = (() => {
+
+// ── House-rule kits ─────────────────────────────────────────────
+// Kits the campaign wrote its own rules for, which the tools work out. Any
+// other kit (standard or from a handbook) needs nothing here: its abilities
+// are announced at the table. A class chooses one in its settings (`kit`).
+//   docs/house-rules/blade-revised.md, docs/house-rules/bowcaster.md
+
+const HOUSE_KITS = {
+  blade: { name: 'Blade', for: 'Bard', adds: 'Casts spells as a bard two levels lower' },
+  bowcaster: { name: 'Bowcaster', for: 'Wizard', adds: 'Spellarrow attacks; casting without an arrow takes 3 longer and does 1 less damage per die' },
+};
+
+// The class's house-rule kit, or ''. Saves from before the setting existed
+// (no `kit` at all) go by the class name, so "Blade Bard" and "Wizard
+// (Bowcaster)" keep their rules; once a kit is chosen, even None, the name
+// no longer matters.
+function classKit(c) {
+  if (c && typeof c.kit === 'string') return HOUSE_KITS[c.kit] ? c.kit : '';
+  const name = String((c && c.name) || '').toLowerCase();
+  return Object.keys(HOUSE_KITS).find(k => name.includes(k)) || '';
+}
+
+return { HOUSE_KITS, classKit };
+})();
 // ── rules/spells ──
 __m["rules/spells"] = (() => {
 
@@ -3664,6 +3732,7 @@ return { findSpell, SPELL_FIELDS, missingFields };
 __m["rules/scenarios"] = (() => {
 const {STR_TABLE, STR_EXCEPTIONAL, DEX_TABLE, THAC0_TABLE} = __m["rules/tables"];
 const {findSpell} = __m["rules/spells"];
+const {classKit} = __m["rules/kits"];
 // ── COMBAT SCENARIOS ────────────────────────────────────────────
 // A character's ways of attacking, as the sheet's Combat section saves them
 // (`__scenarios`), worked out into THAC0, damage and attacks per round. The
@@ -3672,6 +3741,7 @@ const {findSpell} = __m["rules/spells"];
 // Everything works from a "context": the parts of a character the math needs.
 // `scenarioContext(save)` builds it from a sheet save; the sheet builds its own
 // from what's on screen.
+
 
 
 
@@ -3800,7 +3870,7 @@ const classCasterLevel = c => {
   const level = num(c.level);
   if (/paladin/i.test(name)) return level - 8;
   if (/ranger/i.test(name)) return level - 7;
-  if (/blade/i.test(name)) return level - 2;
+  if (classKit(c) === 'blade') return level - 2;
   return level;
 };
 function casterLevel(ctx, sc, spellType) {
@@ -3827,7 +3897,7 @@ function diceAtLevel(dice, level, maxLevel = 0) {
 // House rule (Bowcaster kit): a spell not sent through an arrow takes 3
 // longer to cast and does 1 less damage per die (at least 1 per die).
 // "1d8+4" → "1d8+3", "5d6" → "5d6-5". A Spell scenario is an ordinary cast.
-const isBowcaster = ctx => (ctx.classes || []).some(c => /bowcaster/i.test(c.name || ''));
+const isBowcaster = ctx => (ctx.classes || []).some(c => classKit(c) === 'bowcaster');
 function lessPerDie(dice) {
   const m = String(dice || '').replace(/\s+/g, '').match(/^(\d*)d(\d+)([+-]\d+)?$/i);
   if (!m) return dice;
@@ -4830,6 +4900,7 @@ return { toDMHelper, formatDMHelperConfig };
 })();
 window.SheetSpells = { findSpell: __m["rules/spells"].findSpell };
 window.SheetScenarios = { modNum: __m["rules/scenarios"].modNum, signed: __m["rules/scenarios"].signed, ATTACK_TYPES: __m["rules/scenarios"].ATTACK_TYPES, RATE_OPTIONS: __m["rules/scenarios"].RATE_OPTIONS, scenarioRate: __m["rules/scenarios"].scenarioRate, scenarioType: __m["rules/scenarios"].scenarioType, scenarioSpell: __m["rules/scenarios"].scenarioSpell, scenarioAbility: __m["rules/scenarios"].scenarioAbility, activeEffectsFor: __m["rules/scenarios"].activeEffectsFor, scenarioDamage: __m["rules/scenarios"].scenarioDamage, scenarioBreakdown: __m["rules/scenarios"].scenarioBreakdown, normalizeEffects: __m["rules/scenarios"].normalizeEffects, effectOption: __m["rules/scenarios"].effectOption, isBowcaster: __m["rules/scenarios"].isBowcaster, spellArrow: __m["rules/scenarios"].spellArrow, spellArrowCheck: __m["rules/scenarios"].spellArrowCheck, isBow: __m["rules/scenarios"].isBow, ARROWS: __m["rules/scenarios"].ARROWS };
+window.SheetKits = { HOUSE_KITS: __m["rules/kits"].HOUSE_KITS, classKit: __m["rules/kits"].classKit };
 window.SheetRules = { PHB_WEAPONS: __m["rules/weapons"].PHB_WEAPONS };
 window.SheetGuess = { guessCategory: __m["rules/migrate"].guessCategory };
 })();
@@ -5595,8 +5666,81 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           cls.name = e.target.value;
           saveToItems();
         });
-        nameField.appendChild(nameLabel);
+
+        // House-rule kit: behind a gear, like the Thieving settings. Only the
+        // kits the campaign wrote rules for; a standard kit needs nothing here.
+        const kit = SheetKits.classKit(cls);
+        const kitPanelId = `${cls.id}-kit-panel`;
+        const labelRow = document.createElement('div');
+        labelRow.className = 'class-label-row';
+        const gear = document.createElement('button');
+        gear.type = 'button';
+        gear.className = 'thief-settings-btn class-settings-btn' + (kit ? ' is-active' : '');
+        gear.setAttribute('aria-label', `${index === 0 ? 'Primary' : 'Secondary'} class settings: house-rule kit`);
+        gear.setAttribute('aria-expanded', 'false');
+        gear.setAttribute('aria-controls', kitPanelId);
+        gear.title = 'House-rule kit';
+        gear.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>';
+        labelRow.append(nameLabel, gear);
+
+        const kitPanel = document.createElement('fieldset');
+        kitPanel.className = 'class-kit-panel';
+        kitPanel.id = kitPanelId;
+        kitPanel.hidden = true;
+        const legend = document.createElement('legend');
+        legend.textContent = 'House-rule kit';
+        kitPanel.appendChild(legend);
+        const intro = document.createElement('p');
+        intro.className = 'class-kit-intro';
+        intro.textContent = 'Kits with campaign rules the sheet works out. Using a standard kit? Leave this on None.';
+        kitPanel.appendChild(intro);
+        [['', { name: 'None', adds: 'No house-rule kit' }], ...Object.entries(SheetKits.HOUSE_KITS)].forEach(([key, k]) => {
+          const id = `${cls.id}-kit-${key || 'none'}`;
+          const row = document.createElement('div');
+          row.className = 'class-kit-option';
+          const radio = document.createElement('input');
+          radio.type = 'radio';
+          radio.name = `${cls.id}-kit`;
+          radio.id = id;
+          radio.value = key;
+          radio.checked = kit === key;
+          radio.setAttribute('aria-describedby', `${id}-adds`);
+          const l = document.createElement('label');
+          l.htmlFor = id;
+          l.textContent = k.for ? `${k.name} (${k.for})` : k.name;
+          const adds = document.createElement('span');
+          adds.id = `${id}-adds`;
+          adds.className = 'class-kit-adds';
+          adds.textContent = k.adds;
+          radio.addEventListener('change', () => {
+            cls.kit = key;
+            renderClasses();
+            renderScenarios();
+            updateActiveTHAC0();
+            saveToItems();
+            document.querySelector(`[aria-controls="${kitPanelId}"]`)?.focus();
+          });
+          row.append(radio, l, adds);
+          kitPanel.appendChild(row);
+        });
+        gear.addEventListener('click', () => {
+          kitPanel.hidden = !kitPanel.hidden;
+          gear.setAttribute('aria-expanded', String(!kitPanel.hidden));
+          if (!kitPanel.hidden) kitPanel.querySelector('input:checked')?.focus();
+        });
+        kitPanel.addEventListener('keydown', e => {
+          if (e.key === 'Escape') { kitPanel.hidden = true; gear.setAttribute('aria-expanded', 'false'); gear.focus(); }
+        });
+
+        nameField.appendChild(labelRow);
         nameField.appendChild(nameInput);
+        if (kit) {
+          const tag = document.createElement('span');
+          tag.className = 'class-kit-tag';
+          tag.textContent = `${SheetKits.HOUSE_KITS[kit].name} kit rules`;
+          nameField.appendChild(tag);
+        }
+        nameField.appendChild(kitPanel);
 
         // ── THAC0 group ──────────────────────────────────────
         const groupField = document.createElement('div');

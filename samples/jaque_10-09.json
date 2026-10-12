@@ -96,7 +96,8 @@
       "name": "Blade Bard",
       "group": "rogue",
       "level": "5",
-      "xp": "13136"
+      "xp": "13136",
+      "kit": "blade"
     }
   ],
   "__classCounter": 2,

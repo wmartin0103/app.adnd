@@ -18,6 +18,8 @@ import { readFileSync, writeFileSync } from 'node:fs';
 
 const s = JSON.parse(readFileSync('samples/rifiyr.json', 'utf8'));
 for (const sp of s.__spells) if (sp.name === 'Magic Missle') sp.name = 'Magic Missile';
+// The Bowcaster kit, chosen in the class settings (not read from the name)
+s.__classes[0].kit = 'bowcaster';
 // "1D8" → "1d8", as every other save writes dice
 for (const w of s.__weapons) { w.dmgSM = w.dmgSM.toLowerCase(); w.dmgL = w.dmgL.toLowerCase(); }
 const dagger = s.__weapons.find(w => w.id === 'wpn-3');

@@ -9,6 +9,7 @@
 
 import { STR_TABLE, STR_EXCEPTIONAL, DEX_TABLE, THAC0_TABLE } from './tables.js';
 import { findSpell } from './spells.js';
+import { classKit } from './kits.js';
 
 // "+2", "-1", "−3", "2" → number; anything else → 0
 export const modNum = v => {
@@ -135,7 +136,7 @@ const classCasterLevel = c => {
   const level = num(c.level);
   if (/paladin/i.test(name)) return level - 8;
   if (/ranger/i.test(name)) return level - 7;
-  if (/blade/i.test(name)) return level - 2;
+  if (classKit(c) === 'blade') return level - 2;
   return level;
 };
 export function casterLevel(ctx, sc, spellType) {
@@ -162,7 +163,7 @@ export function diceAtLevel(dice, level, maxLevel = 0) {
 // House rule (Bowcaster kit): a spell not sent through an arrow takes 3
 // longer to cast and does 1 less damage per die (at least 1 per die).
 // "1d8+4" → "1d8+3", "5d6" → "5d6-5". A Spell scenario is an ordinary cast.
-export const isBowcaster = ctx => (ctx.classes || []).some(c => /bowcaster/i.test(c.name || ''));
+export const isBowcaster = ctx => (ctx.classes || []).some(c => classKit(c) === 'bowcaster');
 export function lessPerDie(dice) {
   const m = String(dice || '').replace(/\s+/g, '').match(/^(\d*)d(\d+)([+-]\d+)?$/i);
   if (!m) return dice;

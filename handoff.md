@@ -397,6 +397,12 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
   DM Helper both show the worked-out dice ("Damage at level 3: 1d8+3"), and
   "1d8 per 2 levels" dice work too. A scenario's Level Source can override it.
   To check in the PHB: whether paladin/ranger casting level stops at 9.
+- House-rule kits (2026-10-12): each class has a settings gear with a
+  "House-rule kit" choice (None, Blade, Bowcaster; `src/rules/kits.js`). It
+  turns on the kit's rules (Blade: casts two levels lower; Bowcaster:
+  Spellarrows and the casting penalty) and shows a tag under the class name.
+  Players with standard kits leave it on None. Older saves without the
+  setting go by the class name.
 - House rule: the PHB's racial limits on multi- and dual-classing don't
   apply; a character listing several classes is multi-classed (PLAN 32).
 - The preview viewer blocks file downloads, so the sheet's save-to-file button

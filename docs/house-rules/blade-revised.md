@@ -117,4 +117,4 @@ If Strength would give a better result in either case, use Strength.
 | Offensive Spin, Weapon Display | Toggles: no attack this round |
 | Trick Throw | A custom thrown attack with −2 |
 | Thief skills | Only the four Blade skills, plus Open Locks with Locksmithing |
-| Delayed spellcasting | Already handled by the current character sheet |
+| Delayed spellcasting | Spells cast as a bard two levels lower (caster level). Turned on by the class settings → House-rule kit → **Blade**; older saves go by a class name containing "Blade" |
