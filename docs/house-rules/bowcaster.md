@@ -187,7 +187,7 @@ built by `scripts/convert-rifiyr.mjs`.
 
 | Rule | In the app |
 |---|---|
-| Who gets the kit's rules | The class's settings (gear beside Primary/Secondary Class) → Custom Kit Rules → **Bowcaster**. A "Bowcaster kit rules" tag shows under the class name. Older saves without the setting go by the class name |
+| Who gets the kit's rules | The class's settings (gear beside Primary/Secondary Class) → Custom Kit Rules → **Bowcaster**. Older saves without the setting go by the class name |
 | Bow attacks use wizard THAC0 | Missile scenarios in the wizard group |
 | Masterwork bow +1 to hit | On the bow's weapon row (it belongs to the bow) |
 | Mystic Aim (Wis magical defense adj. to hit with a bow) | Hit Mod on each bow scenario (Rifiyr: Wis 15, +1) |

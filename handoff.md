@@ -400,7 +400,7 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
 - House-rule kits (2026-10-12): each class has a settings gear with a
   "Custom Kit Rules" select (None, Blade, Bowcaster; `src/rules/kits.js`). It
   turns on the kit's rules (Blade: casts two levels lower; Bowcaster:
-  Spellarrows and the casting penalty) and shows a tag under the class name.
+  Spellarrows and the casting penalty).
   Players with standard kits leave it on None. Older saves without the
   setting go by the class name.
 - House rule: the PHB's racial limits on multi- and dual-classing don't

@@ -2289,17 +2289,6 @@
     /* House-rule kit: a gear beside the class label opens the choice */
     .class-label-row { display: flex; align-items: center; }
     .class-settings-btn { padding: 0 0.2rem; }
-    .class-kit-tag {
-      align-self: flex-start;
-      font-family: var(--font-display);
-      font-size: 0.6rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--accent);
-      border: 1px solid currentColor;
-      border-radius: var(--radius);
-      padding: 0.05rem 0.4rem;
-    }
     .class-kit-panel {
       margin: 0.35rem 0 0;
       padding: 0.45rem 0.6rem 0.55rem;
@@ -5680,7 +5669,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         kitLabel.textContent = 'Custom Kit Rules';
         const kitSelect = document.createElement('select');
         kitSelect.id = `${cls.id}-kit`;
-        kitSelect.className = 'class-group-select';
+        kitSelect.className = 'scenario-select';
         [['', 'None'], ...Object.entries(SheetKits.HOUSE_KITS).map(([key, k]) => [key, k.name])].forEach(([key, name]) => {
           const opt = document.createElement('option');
           opt.value = key;
@@ -5708,12 +5697,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
         nameField.appendChild(labelRow);
         nameField.appendChild(nameInput);
-        if (kit) {
-          const tag = document.createElement('span');
-          tag.className = 'class-kit-tag';
-          tag.textContent = `${SheetKits.HOUSE_KITS[kit].name} kit rules`;
-          nameField.appendChild(tag);
-        }
         nameField.appendChild(kitPanel);
 
         // ── THAC0 group ──────────────────────────────────────
