@@ -233,7 +233,7 @@ test('caster level is the level of the class that casts that kind of spell', () 
   assert.equal(casterLevel(ctx([{ name: 'Paladin', group: 'warrior', level: '10' }]), {}, 'priest'), 2);   // PHB: paladin 10 casts as 2nd
   assert.equal(casterLevel(ctx([{ name: 'Ranger', group: 'warrior', level: '9' }]), {}, 'priest'), 2);     // ranger 9 casts as 2nd
   assert.equal(casterLevel(ctx([{ name: 'Blade Bard', group: 'rogue', level: '5' }]), {}, 'wizard'), 3);   // Delayed Spellcasting
-  assert.equal(casterLevel(hanspeter, { levelMode: 'custom', customLevel: 7 }, 'priest'), 7);              // the scenario's own level wins
+  assert.equal(casterLevel(hanspeter, { levelMode: 'custom', customLevel: 7 }, 'priest'), 5);              // an old custom level no longer counts
 });
 
 test('the sheet shows spell dice worked out at the caster level, like the DM Helper', () => {

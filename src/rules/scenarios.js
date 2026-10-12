@@ -140,7 +140,6 @@ const classCasterLevel = c => {
   return level;
 };
 export function casterLevel(ctx, sc, spellType) {
-  if (sc.levelMode === 'custom') return num(sc.customLevel) || 1;
   const levels = (ctx.classes || []).filter(c => (CASTS[spellType] || (() => false))(c)).map(classCasterLevel).filter(l => l > 0);
   return levels.length ? Math.max(...levels) : (ctx.level || 1);
 }
@@ -314,7 +313,7 @@ export function scenarioDamage(ctx, sc) {
 // the "How it adds up" table and the result always agree. Null when there's no
 // attack roll (a spell the target saves against, or an unknown class group).
 export function scenarioBreakdown(ctx, sc) {
-  const level = sc.levelMode === 'custom' ? (num(sc.customLevel) || 1) : (ctx.level || 1);
+  const level = ctx.level || 1;
   const table = THAC0_TABLE[sc.group];
   if (!table) return null;
   const base = { label: `Base THAC0 · ${GROUP_LABELS[sc.group]}, level ${level}`, thac0: table[Math.min(Math.max(level, 1), 20) - 1] };

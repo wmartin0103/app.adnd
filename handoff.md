@@ -395,7 +395,8 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
   them (PHB: Hanspeter's druid spells at 5, bard spells at 2; paladin −8,
   ranger −7), and a Blade casts two levels lower (Jaque: 3). The sheet and the
   DM Helper both show the worked-out dice ("Damage at level 3: 1d8+3"), and
-  "1d8 per 2 levels" dice work too. A scenario's Level Source can override it.
+  "1d8 per 2 levels" dice work too. (The scenario Level Source dropdown was
+  removed 2026-10-12: levels come from the classes.)
   To check in the PHB: whether paladin/ranger casting level stops at 9.
 - House-rule kits (2026-10-12): each class has a settings gear with a
   "Custom Kit Rules" select (None, Blade, Bowcaster; `src/rules/kits.js`). It
