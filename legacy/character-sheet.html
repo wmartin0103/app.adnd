@@ -6177,7 +6177,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         // Spell: pick a memorized spell; its details come from the catalog and can be changed here
         if (isSpell) {
           const ready = spells.filter(x => x.isMemorized);
-          body.appendChild(smallSelect('Spell (memorized)', `${scenario.id}-spell`, [['', ready.length ? '— Choose —' : 'No spells memorized'], ...ready.map(x => [x.id, `${x.name || 'Unnamed'} (L${x.level})`])], scenario.spellId || '', v => { scenario.spellId = v || null; scenario.spell = {}; }));
+          body.appendChild(smallSelect('Spell', `${scenario.id}-spell`, [['', ready.length ? '— Choose —' : 'No spells memorized'], ...ready.map(x => [x.id, `${x.name || 'Unnamed'} (L${x.level})`])], scenario.spellId || '', v => { scenario.spellId = v || null; scenario.spell = {}; }));
           if (spellInfo) {
             body.appendChild(smallSelect('Attack roll', `${scenario.id}-satt`, [['none', 'None (target saves)'], ['touch', 'Touch'], ['ranged', 'Ranged']], spellInfo.attack, v => { scenario.spell = { ...(scenario.spell || {}), attack: v }; }, true));
             SPELL_DETAILS.forEach(([key, label, ph]) => {
@@ -7422,7 +7422,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
     }
 
     // Redraws the spell cards, then the combat scenarios, so a scenario's
-    // "Spell (memorized)" list always matches what is memorized
+    // "Spell" list always matches what is memorized
     function renderSpells() {
       renderSpellCards();
       renderScenarios();
