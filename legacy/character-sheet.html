@@ -6085,6 +6085,11 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           f.append(l, sel);
           return f;
         };
+        // Attack type first: it decides which fields follow (weapon or spell)
+        // (Spellarrow is offered to Bowcasters only)
+        const attackTypes = Object.entries(ATTACK_TYPES).filter(([k]) => k !== 'spellarrow' || isArrow || SheetScenarios.isBowcaster(scenarioCtx()));
+        body.appendChild(smallSelect('Attack', `${scenario.id}-type`, attackTypes, scenarioType(scenario), v => { scenario.attackType = v; }, true));
+
         // Weapon link — optional, populates from weapons array
         if (weapons.length > 0 && !isSpell) {
           const wpnField = document.createElement('div');
@@ -6126,11 +6131,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           wpnField.appendChild(wpnSelect);
           body.appendChild(wpnField);
         }
-
-        // Attack type: which ability score applies
-        // (Spellarrow is offered to Bowcasters only)
-        const attackTypes = Object.entries(ATTACK_TYPES).filter(([k]) => k !== 'spellarrow' || isArrow || SheetScenarios.isBowcaster(scenarioCtx()));
-        body.appendChild(smallSelect('Attack', `${scenario.id}-type`, attackTypes, scenarioType(scenario), v => { scenario.attackType = v; }, true));
 
         // Spell: pick a memorized spell; its details come from the catalog and can be changed here
         if (isSpell) {
