@@ -398,7 +398,7 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
   "1d8 per 2 levels" dice work too. A scenario's Level Source can override it.
   To check in the PHB: whether paladin/ranger casting level stops at 9.
 - House-rule kits (2026-10-12): each class has a settings gear with a
-  "House-rule kit" choice (None, Blade, Bowcaster; `src/rules/kits.js`). It
+  "Custom Kit Rules" select (None, Blade, Bowcaster; `src/rules/kits.js`). It
   turns on the kit's rules (Blade: casts two levels lower; Bowcaster:
   Spellarrows and the casting penalty) and shows a tag under the class name.
   Players with standard kits leave it on None. Older saves without the

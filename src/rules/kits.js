@@ -1,12 +1,15 @@
 // ── House-rule kits ─────────────────────────────────────────────
 // Kits the campaign wrote its own rules for, which the tools work out. Any
 // other kit (standard or from a handbook) needs nothing here: its abilities
-// are announced at the table. A class chooses one in its settings (`kit`).
+// are announced at the table. A class chooses one in its settings, "Custom Kit Rules" (`kit`).
 //   docs/house-rules/blade-revised.md, docs/house-rules/bowcaster.md
 
+//   blade      casts spells as a bard two levels lower
+//   bowcaster  Spellarrow attacks; casting without an arrow takes 3 longer
+//              and does 1 less damage per die
 export const HOUSE_KITS = {
-  blade: { name: 'Blade', for: 'Bard', adds: 'Casts spells as a bard two levels lower' },
-  bowcaster: { name: 'Bowcaster', for: 'Wizard', adds: 'Spellarrow attacks; casting without an arrow takes 3 longer and does 1 less damage per die' },
+  blade: { name: 'Blade' },
+  bowcaster: { name: 'Bowcaster' },
 };
 
 // The class's house-rule kit, or ''. Saves from before the setting existed

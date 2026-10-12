@@ -2302,31 +2302,15 @@
     }
     .class-kit-panel {
       margin: 0.35rem 0 0;
-      padding: 0.5rem 0.75rem 0.6rem;
+      padding: 0.45rem 0.6rem 0.55rem;
       border: 1px solid var(--rule);
       border-radius: var(--radius);
       background: var(--surface);
-      display: grid;
-      gap: 0.35rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
     }
-    .class-kit-panel legend {
-      font-family: var(--font-display);
-      font-size: 0.65rem;
-      letter-spacing: 0.13em;
-      text-transform: uppercase;
-      color: var(--ink-muted);
-      padding: 0 0.25rem;
-    }
-    .class-kit-intro { font-size: 0.85rem; color: var(--ink-muted); }
-    .class-kit-option {
-      display: grid;
-      grid-template-columns: auto 1fr;
-      column-gap: 0.4rem;
-      align-items: baseline;
-    }
-    .class-kit-option input { accent-color: var(--accent); }
-    .class-kit-option label { font-weight: 600; cursor: pointer; }
-    .class-kit-adds { grid-column: 2; font-size: 0.85rem; color: var(--ink-muted); }
+    .class-kit-panel[hidden] { display: none; }
 
     .class-field-label {
       font-family: var(--font-display);
@@ -3670,12 +3654,15 @@ __m["rules/kits"] = (() => {
 // ── House-rule kits ─────────────────────────────────────────────
 // Kits the campaign wrote its own rules for, which the tools work out. Any
 // other kit (standard or from a handbook) needs nothing here: its abilities
-// are announced at the table. A class chooses one in its settings (`kit`).
+// are announced at the table. A class chooses one in its settings, "Custom Kit Rules" (`kit`).
 //   docs/house-rules/blade-revised.md, docs/house-rules/bowcaster.md
 
+//   blade      casts spells as a bard two levels lower
+//   bowcaster  Spellarrow attacks; casting without an arrow takes 3 longer
+//              and does 1 less damage per die
 const HOUSE_KITS = {
-  blade: { name: 'Blade', for: 'Bard', adds: 'Casts spells as a bard two levels lower' },
-  bowcaster: { name: 'Bowcaster', for: 'Wizard', adds: 'Spellarrow attacks; casting without an arrow takes 3 longer and does 1 less damage per die' },
+  blade: { name: 'Blade' },
+  bowcaster: { name: 'Bowcaster' },
 };
 
 // The class's house-rule kit, or ''. Saves from before the setting existed
@@ -5676,57 +5663,44 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         const gear = document.createElement('button');
         gear.type = 'button';
         gear.className = 'thief-settings-btn class-settings-btn' + (kit ? ' is-active' : '');
-        gear.setAttribute('aria-label', `${index === 0 ? 'Primary' : 'Secondary'} class settings: house-rule kit`);
+        gear.setAttribute('aria-label', `${index === 0 ? 'Primary' : 'Secondary'} class settings`);
         gear.setAttribute('aria-expanded', 'false');
         gear.setAttribute('aria-controls', kitPanelId);
-        gear.title = 'House-rule kit';
+        gear.title = 'Settings';
         gear.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>';
         labelRow.append(nameLabel, gear);
 
-        const kitPanel = document.createElement('fieldset');
+        const kitPanel = document.createElement('div');
         kitPanel.className = 'class-kit-panel';
         kitPanel.id = kitPanelId;
         kitPanel.hidden = true;
-        const legend = document.createElement('legend');
-        legend.textContent = 'House-rule kit';
-        kitPanel.appendChild(legend);
-        const intro = document.createElement('p');
-        intro.className = 'class-kit-intro';
-        intro.textContent = 'Kits with campaign rules the sheet works out. Using a standard kit? Leave this on None.';
-        kitPanel.appendChild(intro);
-        [['', { name: 'None', adds: 'No house-rule kit' }], ...Object.entries(SheetKits.HOUSE_KITS)].forEach(([key, k]) => {
-          const id = `${cls.id}-kit-${key || 'none'}`;
-          const row = document.createElement('div');
-          row.className = 'class-kit-option';
-          const radio = document.createElement('input');
-          radio.type = 'radio';
-          radio.name = `${cls.id}-kit`;
-          radio.id = id;
-          radio.value = key;
-          radio.checked = kit === key;
-          radio.setAttribute('aria-describedby', `${id}-adds`);
-          const l = document.createElement('label');
-          l.htmlFor = id;
-          l.textContent = k.for ? `${k.name} (${k.for})` : k.name;
-          const adds = document.createElement('span');
-          adds.id = `${id}-adds`;
-          adds.className = 'class-kit-adds';
-          adds.textContent = k.adds;
-          radio.addEventListener('change', () => {
-            cls.kit = key;
-            renderClasses();
-            renderScenarios();
-            updateActiveTHAC0();
-            saveToItems();
-            document.querySelector(`[aria-controls="${kitPanelId}"]`)?.focus();
-          });
-          row.append(radio, l, adds);
-          kitPanel.appendChild(row);
+        const kitLabel = document.createElement('label');
+        kitLabel.className = 'class-field-label';
+        kitLabel.htmlFor = `${cls.id}-kit`;
+        kitLabel.textContent = 'Custom Kit Rules';
+        const kitSelect = document.createElement('select');
+        kitSelect.id = `${cls.id}-kit`;
+        kitSelect.className = 'class-group-select';
+        [['', 'None'], ...Object.entries(SheetKits.HOUSE_KITS).map(([key, k]) => [key, k.name])].forEach(([key, name]) => {
+          const opt = document.createElement('option');
+          opt.value = key;
+          opt.textContent = name;
+          opt.selected = kit === key;
+          kitSelect.appendChild(opt);
         });
+        kitSelect.addEventListener('change', () => {
+          cls.kit = kitSelect.value;
+          renderClasses();
+          renderScenarios();
+          updateActiveTHAC0();
+          saveToItems();
+          document.querySelector(`[aria-controls="${kitPanelId}"]`)?.focus();
+        });
+        kitPanel.append(kitLabel, kitSelect);
         gear.addEventListener('click', () => {
           kitPanel.hidden = !kitPanel.hidden;
           gear.setAttribute('aria-expanded', String(!kitPanel.hidden));
-          if (!kitPanel.hidden) kitPanel.querySelector('input:checked')?.focus();
+          if (!kitPanel.hidden) kitSelect.focus();
         });
         kitPanel.addEventListener('keydown', e => {
           if (e.key === 'Escape') { kitPanel.hidden = true; gear.setAttribute('aria-expanded', 'false'); gear.focus(); }
