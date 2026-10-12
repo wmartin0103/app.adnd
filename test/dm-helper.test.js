@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 
 import { armorClass, savingThrows, stoutSaveBonus, thiefSkills, proficiencyTargets } from '../src/rules/character.js';
 import { toDMHelper, formatDMHelperConfig } from '../src/adapters/dm-helper.js';
-import { diceAtLevel, casterLevel, scenarioContext, scenarioDamage, lessPerDie, castSpeed, spellArrowKind } from '../src/rules/scenarios.js';
+import { diceAtLevel, casterLevel, scenarioContext, scenarioDamage, lessPerDie, castSpeed } from '../src/rules/scenarios.js';
 import { diceCap } from '../scripts/import-wiki-spells.mjs';
 
 const jaque = JSON.parse(readFileSync(new URL('./fixtures/jaque-v2.json', import.meta.url)));
@@ -154,16 +154,12 @@ test('Spellarrow: the bow\'s to-hit, bow + casting time, the arrow\'s damage and
   // Pre-fletched: the bow's speed alone
   const fletched = { ...save, __scenarios: save.__scenarios.map(s => (s.id === 'sc-7' ? { ...s, prefletched: true } : s)) };
   assert.equal(toDMHelper(fletched, {}, { catalog }).character.actions.find(a => a.name === 'Shocking Grasp arrow').speedDefault, 0);
-  // A spell that can't ride an arrow is flagged for the DM
+  // Any memorized spell can go on the arrow (honor system): no flag
   const fireball = { ...save, __spells: [...save.__spells, { id: 'spl-90', name: 'Fireball', level: 3, type: 'wizard', isMemorized: true }],
     __scenarios: [{ ...save.__scenarios.find(s => s.id === 'sc-7'), spellId: 'spl-90' }] };
-  assert.ok(toDMHelper(fireball, {}, { catalog }).review.some(m => /Fireball can't ride an arrow \(point-of-origin spells ride an arrow from 5th level\)/.test(m)));
-});
-
-test('which Spellarrow tier a spell needs', () => {
-  const kind = name => spellArrowKind(catalog.spells.find(e => e.name === name && e.class === 'wizard'));
-  assert.deepEqual(['Shocking Grasp', 'Invisibility', 'Fireball', 'Grease', 'Burning Hands', 'Cone of Cold', "Melf's Acid Arrow", 'Magic Missile', 'Chill Touch', 'Change Self'].map(kind),
-    ['touch', 'touch', 'point', 'point', 'self', 'self', 'single-target', 'single-target', 'caster-only', 'caster-only']);
+  const fb = toDMHelper(fireball, {}, { catalog });
+  assert.deepEqual(fb.review, []);
+  assert.equal(fb.damage['Rifiyr|Shocking Grasp arrow'].spell, '4d6');
   assert.deepEqual(['1 rd.', '1 round', '3'].map(castSpeed), [10, 10, 3]);
 });
 

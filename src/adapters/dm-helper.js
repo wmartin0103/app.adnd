@@ -114,7 +114,6 @@ export function toDMHelper(save, dmSettings = {}, { catalog = null } = {}) {
     const arrow = spellArrow(ctx, sc);
     if (arrow) {
       if (!arrow.spell) { review.push(`${label}: no spell on the arrow; left out`); continue; }
-      if (!arrow.check.ok) review.push(`${label}: ${arrow.spell.name} can't ride an arrow (${arrow.check.why})`);
       actions.push({ name: label, thac0: bd.thac0, baseSpeed: arrow.bowSpeed, speedMin: 0, speedMax: 10, speedDefault: arrow.castSpeed });
       recordWeapon(label, sc, wpn);
       const dmg = damage[`${name}|${label}`];

@@ -189,7 +189,7 @@ export function scenarioSpell(ctx, sc) {
   const bowcaster = isBowcaster(ctx) && scenarioType(sc) === 'spell';
   return {
     sheet: sp, catalog: cat,
-    name: sp.name, castTime: pick('castTime'), range: pick('range'), area: pick('area'), save: pick('save'), dice, diceMaxLevel: pick('diceMaxLevel'),
+    name: sp.name, castTime: pick('castTime'), range: pick('range'), save: pick('save'), dice, diceMaxLevel: pick('diceMaxLevel'),
     // As written above; as cast below: the dice at this caster's level (or as
     // written when they can't be worked out) and the casting time, after any
     // house-rule penalty
@@ -225,34 +225,8 @@ export function castSpeed(castTime) {
 }
 
 // ── Spellarrows (Bowcaster kit, docs/house-rules/bowcaster.md) ──
-// Which tier a spell needs, from its range and area: touch spells (1st
-// level), point-of-origin area spells (5th), self-origin area spells (9th).
-// Spells cast only on the caster himself, or at a single target from range,
-// never ride an arrow. Read from the catalog's wording, so the DM has the
-// final say on borderline spells.
-export const SPELLARROW_TIERS = { touch: 1, point: 5, self: 9 };
-// The catalog can't tell "emanates from the caster" (burning hands) from "only
-// on the caster" (chill touch): both read range 0, area "the caster". So range
-// 0 counts as self-origin, and the kit's own never-eligible examples are named.
-const CASTER_ONLY = ['change self', 'chill touch'];
-export function spellArrowKind(sp) {
-  const range = String(sp.range || '').toLowerCase().trim();
-  const area = String(sp.area || '').toLowerCase().trim();
-  if (CASTER_ONLY.includes(String(sp.name || '').toLowerCase().trim())) return 'caster-only';
-  if (/^touch/.test(range)) return 'touch';
-  if (/^0\b|^self|^caster/.test(range)) return 'self';
-  // Aimed at targets rather than an area: "1 target", "1 - 5 targets", "creature"
-  if (/^(\d+|one)(\s*(-|–|to|or)\s*\d+)?\s+(creatures?|targets?|persons?|beings?|individuals?|objects?)\b|^creature\b/.test(area)) return 'single-target';
-  return 'point';
-}
-export function spellArrowCheck(ctx, sc, sp) {
-  const kind = spellArrowKind(sp);
-  const level = casterLevel(ctx, sc, 'wizard');
-  const needs = SPELLARROW_TIERS[kind];
-  if (!needs) return { kind, ok: false, why: kind === 'caster-only' ? 'cast only on himself' : 'not a touch or area spell' };
-  if (level < needs) return { kind, ok: false, why: `${kind === 'point' ? 'point-of-origin' : 'self-origin'} spells ride an arrow from ${needs}th level` };
-  return { kind, ok: true, why: '' };
-}
+// Any memorized spell can go on the arrow: which spells qualify (touch,
+// point-of-origin, self-origin by level) is left to the player and the DM.
 // The spell on a Spellarrow, cast at full strength, and the shot's speed: the
 // bow's, plus the casting time when it's cast live (a pre-fletched arrow
 // already carries its spell)
@@ -262,7 +236,7 @@ export function spellArrow(ctx, sc) {
   const wpn = scenarioWeapon(ctx, sc);
   const bow = wpn ? num(wpn.speed) : 0;
   const cast = sp && !sc.prefletched ? (castSpeed(sp.castTime) ?? 0) : 0;
-  return { spell: sp, check: sp ? spellArrowCheck(ctx, sc, sp) : null, bowSpeed: bow, castSpeed: cast, speed: bow + cast, prefletched: !!sc.prefletched };
+  return { spell: sp, bowSpeed: bow, castSpeed: cast, speed: bow + cast, prefletched: !!sc.prefletched };
 }
 
 // ── Arrows ──
