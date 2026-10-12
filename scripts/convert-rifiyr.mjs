@@ -11,6 +11,8 @@
 //   • Ability cards for his Mystic Archery talents so far and Spellarrows, to
 //     announce at the table.
 //   • A Spellarrow: Shocking Grasp on the long bow.
+//   • Flight and sheaf arrows as separate scenarios for each bow. (His rows'
+//     "1d8 / 1d6" were sheaf / flight, not S-M / L.)
 // Output: samples/rifiyr_10-12.json
 import { readFileSync, writeFileSync } from 'node:fs';
 
@@ -22,16 +24,19 @@ const dagger = s.__weapons.find(w => w.id === 'wpn-3');
 dagger.hitAdj = '';
 const sc = (o) => ({ group: 'wizard', levelMode: 'sheet', customLevel: 1, active: false, collapsed: false, handedness: 'main', offHandPenalty: '', spellId: null, spell: {}, hitMod: '', dmgMod: '', rate: '1/1', ...o });
 s.__scenarios = [
-  sc({ id: 'sc-1', name: 'Long bow', active: true, weaponId: 'wpn-2', attackType: 'missile', hitMod: '1', rate: '2/1' }),
-  sc({ id: 'sc-2', name: 'Folding bow', weaponId: 'wpn-4', attackType: 'missile', hitMod: '1', rate: '2/1' }),
+  // He shoots flight and sheaf arrows: one scenario each (PHB 1d6 / 1d8)
+  sc({ id: 'sc-1', name: 'Long bow, flight', active: true, weaponId: 'wpn-2', attackType: 'missile', ammo: 'flight', hitMod: '1', rate: '2/1' }),
+  sc({ id: 'sc-8', name: 'Long bow, sheaf', weaponId: 'wpn-2', attackType: 'missile', ammo: 'sheaf', hitMod: '1', rate: '2/1' }),
+  sc({ id: 'sc-2', name: 'Folding bow, flight', weaponId: 'wpn-4', attackType: 'missile', ammo: 'flight', hitMod: '1', rate: '2/1' }),
+  sc({ id: 'sc-9', name: 'Folding bow, sheaf', weaponId: 'wpn-4', attackType: 'missile', ammo: 'sheaf', hitMod: '1', rate: '2/1' }),
   // Spellarrow: Shocking Grasp (touch) on the long bow, at full strength
-  sc({ id: 'sc-7', name: 'Shocking Grasp arrow', weaponId: 'wpn-2', attackType: 'spellarrow', spellId: 'spl-32', hitMod: '1' }),
+  sc({ id: 'sc-7', name: 'Shocking Grasp arrow', weaponId: 'wpn-2', attackType: 'spellarrow', spellId: 'spl-32', ammo: 'flight', hitMod: '1' }),
   sc({ id: 'sc-3', name: 'Magic Missile', attackType: 'spell', spellId: 'spl-30' }),
   sc({ id: 'sc-4', name: 'Shocking Grasp', attackType: 'spell', spellId: 'spl-32' }),
   sc({ id: 'sc-5', name: 'Dagger', weaponId: 'wpn-3', attackType: 'melee', hitMod: '-7' }),
   sc({ id: 'sc-6', name: 'Silver short sword', weaponId: 'wpn-1', attackType: 'melee', hitMod: '-7' }),
 ];
-s.__scenarioCounter = 7;
+s.__scenarioCounter = 9;
 const card = (n, name, desc) => ({ id: `abc-${n}`, name, desc, url: '' });
 s.__abilitiesCards = [
   card(1, 'Mystic Aim', 'Always on: Wisdom magical defense adjustment (+1) added to hit with a bow, on top of Dex. Counted in the bow scenarios.'),

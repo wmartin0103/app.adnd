@@ -3930,6 +3930,20 @@ function spellArrow(ctx, sc) {
   return { spell: sp, check: sp ? spellArrowCheck(ctx, sc, sp) : null, bowSpeed: bow, castSpeed: cast, speed: bow + cast, prefletched: !!sc.prefletched };
 }
 
+// ── Arrows ──
+// A bow's damage depends on the arrow (PHB): flight arrows 1d6 / 1d6, sheaf
+// arrows 1d8 / 1d8. A bow scenario can say which it shoots (`ammo`); without
+// one, the weapon row's own dice are used, as before.
+const ARROWS = { flight: { name: 'Flight arrows', sm: '1d6', l: '1d6' }, sheaf: { name: 'Sheaf arrows', sm: '1d8', l: '1d8' } };
+const isBow = wpn => !!wpn && /bow/i.test(wpn.name || '') && !/crossbow/i.test(wpn.name || '');
+// The weapon's base dice for this scenario: the arrow's, or the row's
+function scenarioDice(ctx, sc) {
+  const wpn = scenarioWeapon(ctx, sc);
+  if (!wpn) return null;
+  const arrow = isBow(wpn) && ARROWS[sc.ammo];
+  return arrow ? { sm: arrow.sm, l: arrow.l, ammo: arrow.name } : { sm: wpn.dmgSM, l: wpn.dmgL, ammo: '' };
+}
+
 const scenarioWeapon = (ctx, sc) =>
   scenarioType(sc) !== 'spell' && sc.weaponId ? ctx.weapons.find(w => w.id === sc.weaponId) || null : null;
 
@@ -3951,7 +3965,8 @@ function scenarioDamage(ctx, sc) {
     const text = flat ? `${m[1]}${flat > 0 ? '+' : ''}${flat}` : m[1];
     return wpn.dmgAdj === '?' ? `${text} + ?` : text;
   };
-  const out = { sm: dice(wpn.dmgSM), l: dice(wpn.dmgL) };
+  const base = scenarioDice(ctx, sc);
+  const out = { sm: dice(base.sm), l: dice(base.l) };
   // A Spellarrow: the arrow's damage, and the spell's on contact
   const arrow = spellArrow(ctx, sc);
   if (arrow && arrow.spell) Object.assign(out, { spell: arrow.spell.rolled || arrow.spell.dice || '', spellHeals: arrow.spell.heal, casterLevel: arrow.spell.casterLevel });
@@ -3995,7 +4010,7 @@ function scenarioBreakdown(ctx, sc) {
   add(isSpell ? 'Your bonus (Hit Mod)' : 'Your bonus (Hit Mod, Dmg Mod)', hitMod, isSpell ? 0 : modNum(sc.dmgMod), 'mods');
   activeEffectsFor(ctx, sc).forEach(st => add(st.name || 'Effect', modNum(st.hit), modNum(st.dmg), 'effect'));
   const hit = lines.reduce((t, l) => t + (typeof l.hit === 'number' ? l.hit : 0), 0);
-  return { base, lines, wpn, thac0: base.thac0 - hit, hit, unknownHit: !!(wpn && wpn.hitAdj === '?') };
+  return { base, lines, wpn, dice: scenarioDice(ctx, sc), thac0: base.thac0 - hit, hit, unknownHit: !!(wpn && wpn.hitAdj === '?') };
 }
 
 function scenarioTHAC0(ctx, sc) {
@@ -4003,7 +4018,7 @@ function scenarioTHAC0(ctx, sc) {
   return bd ? bd.thac0 : null;
 }
 
-return { modNum, signed, ATTACK_TYPES, RATE_OPTIONS, racialWeaponBonus, strengthRow, scenarioContext, scenarioRate, rateValue, scenarioType, normalizeEffects, effectOption, activeEffectsFor, effectsACBonus, casterLevel, diceAtLevel, isBowcaster, lessPerDie, scenarioSpell, scenarioAbility, castSpeed, SPELLARROW_TIERS, spellArrowKind, spellArrowCheck, spellArrow, scenarioWeapon, scenarioDamage, scenarioBreakdown, scenarioTHAC0 };
+return { modNum, signed, ATTACK_TYPES, RATE_OPTIONS, racialWeaponBonus, strengthRow, scenarioContext, scenarioRate, rateValue, scenarioType, normalizeEffects, effectOption, activeEffectsFor, effectsACBonus, casterLevel, diceAtLevel, isBowcaster, lessPerDie, scenarioSpell, scenarioAbility, castSpeed, SPELLARROW_TIERS, spellArrowKind, spellArrowCheck, spellArrow, ARROWS, isBow, scenarioDice, scenarioWeapon, scenarioDamage, scenarioBreakdown, scenarioTHAC0 };
 })();
 // ── rules/character ──
 __m["rules/character"] = (() => {
@@ -4814,7 +4829,7 @@ function formatDMHelperConfig(list) {
 return { toDMHelper, formatDMHelperConfig };
 })();
 window.SheetSpells = { findSpell: __m["rules/spells"].findSpell };
-window.SheetScenarios = { modNum: __m["rules/scenarios"].modNum, signed: __m["rules/scenarios"].signed, ATTACK_TYPES: __m["rules/scenarios"].ATTACK_TYPES, RATE_OPTIONS: __m["rules/scenarios"].RATE_OPTIONS, scenarioRate: __m["rules/scenarios"].scenarioRate, scenarioType: __m["rules/scenarios"].scenarioType, scenarioSpell: __m["rules/scenarios"].scenarioSpell, scenarioAbility: __m["rules/scenarios"].scenarioAbility, activeEffectsFor: __m["rules/scenarios"].activeEffectsFor, scenarioDamage: __m["rules/scenarios"].scenarioDamage, scenarioBreakdown: __m["rules/scenarios"].scenarioBreakdown, normalizeEffects: __m["rules/scenarios"].normalizeEffects, effectOption: __m["rules/scenarios"].effectOption, isBowcaster: __m["rules/scenarios"].isBowcaster, spellArrow: __m["rules/scenarios"].spellArrow, spellArrowCheck: __m["rules/scenarios"].spellArrowCheck };
+window.SheetScenarios = { modNum: __m["rules/scenarios"].modNum, signed: __m["rules/scenarios"].signed, ATTACK_TYPES: __m["rules/scenarios"].ATTACK_TYPES, RATE_OPTIONS: __m["rules/scenarios"].RATE_OPTIONS, scenarioRate: __m["rules/scenarios"].scenarioRate, scenarioType: __m["rules/scenarios"].scenarioType, scenarioSpell: __m["rules/scenarios"].scenarioSpell, scenarioAbility: __m["rules/scenarios"].scenarioAbility, activeEffectsFor: __m["rules/scenarios"].activeEffectsFor, scenarioDamage: __m["rules/scenarios"].scenarioDamage, scenarioBreakdown: __m["rules/scenarios"].scenarioBreakdown, normalizeEffects: __m["rules/scenarios"].normalizeEffects, effectOption: __m["rules/scenarios"].effectOption, isBowcaster: __m["rules/scenarios"].isBowcaster, spellArrow: __m["rules/scenarios"].spellArrow, spellArrowCheck: __m["rules/scenarios"].spellArrowCheck, isBow: __m["rules/scenarios"].isBow, ARROWS: __m["rules/scenarios"].ARROWS };
 window.SheetRules = { PHB_WEAPONS: __m["rules/weapons"].PHB_WEAPONS };
 window.SheetGuess = { guessCategory: __m["rules/migrate"].guessCategory };
 })();
@@ -6144,6 +6159,13 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           }
         }
 
+        // Arrows: a bow's damage depends on the arrow (PHB: flight 1d6, sheaf 1d8)
+        const linkedWeapon = weapons.find(w => w.id === scenario.weaponId);
+        if ((scenarioType(scenario) === 'missile' || isArrow) && SheetScenarios.isBow(linkedWeapon)) {
+          const A = SheetScenarios.ARROWS;
+          body.appendChild(smallSelect('Arrows', `${scenario.id}-ammo`, [['', 'As on the weapon row'], ['flight', `Flight (${A.flight.sm})`], ['sheaf', `Sheaf (${A.sheaf.sm})`]], scenario.ammo || '', v => { scenario.ammo = v; }, true));
+        }
+
         // Spellarrow: the memorized spell on the arrow, and whether it's pre-fletched
         if (isArrow) {
           const ready = spells.filter(x => x.isMemorized);
@@ -6323,7 +6345,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
               <table>
                 <thead><tr><th scope="col">Source</th><th scope="col">To hit</th><th scope="col">Damage</th></tr></thead>
                 <tbody>
-                  <tr><td>${esc(bd.base.label)}</td><td class="n">${bd.base.thac0}</td><td class="n">${bd.wpn ? esc(`${bd.wpn.dmgSM || '—'} · ${bd.wpn.dmgL || '—'}`) : isSpell && dmg ? esc(dmg.sm) : ''}</td></tr>
+                  <tr><td>${esc(bd.base.label)}</td><td class="n">${bd.base.thac0}</td><td class="n">${bd.dice ? esc(`${bd.dice.sm || '—'} · ${bd.dice.l || '—'}${bd.dice.ammo ? ` (${bd.dice.ammo.toLowerCase()})` : ''}`) : isSpell && dmg ? esc(dmg.sm) : ''}</td></tr>
                   ${bd.lines.map(l => `<tr class="sr-${l.kind}"><td>${esc(l.label)}</td><td class="n">${sg(l.hit)}</td><td class="n">${sg(l.dmg)}</td></tr>`).join('')}
                 </tbody>
                 <tfoot><tr><th scope="row">Result</th><td class="n">THAC0 ${thac0}</td><td class="n">${dmg ? (isSpell ? esc(dmg.sm) : `${esc(dmg.sm)} · ${esc(dmg.l)}`) : ''}</td></tr></tfoot>

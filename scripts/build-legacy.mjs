@@ -19,7 +19,7 @@ export const TARGETS = {
     SheetSpells: ['rules/spells', ['findSpell']],
     SheetScenarios: ['rules/scenarios', ['modNum', 'signed', 'ATTACK_TYPES', 'RATE_OPTIONS', 'scenarioRate', 'scenarioType',
       'scenarioSpell', 'scenarioAbility', 'activeEffectsFor', 'scenarioDamage', 'scenarioBreakdown', 'normalizeEffects', 'effectOption',
-      'isBowcaster', 'spellArrow', 'spellArrowCheck']],
+      'isBowcaster', 'spellArrow', 'spellArrowCheck', 'isBow', 'ARROWS']],
     SheetRules: ['rules/weapons', ['PHB_WEAPONS']],
     SheetGuess: ['rules/migrate', ['guessCategory']],
   },

@@ -31,9 +31,29 @@
       "dmgMod": "",
       "rate": "2/1",
       "id": "sc-1",
-      "name": "Long bow",
+      "name": "Long bow, flight",
       "weaponId": "wpn-2",
-      "attackType": "missile"
+      "attackType": "missile",
+      "ammo": "flight"
+    },
+    {
+      "group": "wizard",
+      "levelMode": "sheet",
+      "customLevel": 1,
+      "active": false,
+      "collapsed": false,
+      "handedness": "main",
+      "offHandPenalty": "",
+      "spellId": null,
+      "spell": {},
+      "hitMod": "1",
+      "dmgMod": "",
+      "rate": "2/1",
+      "id": "sc-8",
+      "name": "Long bow, sheaf",
+      "weaponId": "wpn-2",
+      "attackType": "missile",
+      "ammo": "sheaf"
     },
     {
       "group": "wizard",
@@ -49,9 +69,29 @@
       "dmgMod": "",
       "rate": "2/1",
       "id": "sc-2",
-      "name": "Folding bow",
+      "name": "Folding bow, flight",
       "weaponId": "wpn-4",
-      "attackType": "missile"
+      "attackType": "missile",
+      "ammo": "flight"
+    },
+    {
+      "group": "wizard",
+      "levelMode": "sheet",
+      "customLevel": 1,
+      "active": false,
+      "collapsed": false,
+      "handedness": "main",
+      "offHandPenalty": "",
+      "spellId": null,
+      "spell": {},
+      "hitMod": "1",
+      "dmgMod": "",
+      "rate": "2/1",
+      "id": "sc-9",
+      "name": "Folding bow, sheaf",
+      "weaponId": "wpn-4",
+      "attackType": "missile",
+      "ammo": "sheaf"
     },
     {
       "group": "wizard",
@@ -69,7 +109,8 @@
       "id": "sc-7",
       "name": "Shocking Grasp arrow",
       "weaponId": "wpn-2",
-      "attackType": "spellarrow"
+      "attackType": "spellarrow",
+      "ammo": "flight"
     },
     {
       "group": "wizard",
@@ -142,7 +183,7 @@
       "attackType": "melee"
     }
   ],
-  "__scenarioCounter": 7,
+  "__scenarioCounter": 9,
   "__enemies": [],
   "__enemyCounter": 1,
   "__classes": [

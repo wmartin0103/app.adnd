@@ -191,6 +191,7 @@ built by `scripts/convert-rifiyr.mjs`.
 | Masterwork bow +1 to hit | On the bow's weapon row (it belongs to the bow) |
 | Mystic Aim (Wis magical defense adj. to hit with a bow) | Hit Mod on each bow scenario (Rifiyr: Wis 15, +1) |
 | Two shots per round with a bow | Bow scenarios at 2/1 |
+| Flight and sheaf arrows | Any bow scenario (Spellarrows included) has an **Arrows** choice: flight 1d6 / 1d6, sheaf 1d8 / 1d8 (PHB), plus the bow's own damage adjustment. Rifiyr has a flight and a sheaf scenario for each bow |
 | –2 to hit with anything but a bow | Hit Mod on each non-bow scenario, with the wizard non-proficiency –5 when not proficient |
 | Casting without an arrow: casting time +3, –1 damage per die | Worked out automatically for a Bowcaster's Spell scenarios (sheet and DM Helper) |
 | Spellarrows | A **Spellarrow** attack type (offered to Bowcasters only): a bow from his weapons, a memorized spell on the arrow, and a **Pre-fletched** switch. To hit and the arrow's damage come from the bow, with Mystic Aim; one shot that round; speed = bow + casting time (bow alone when pre-fletched); the spell's damage at full strength. The result says how the one roll is read twice (spell vs AC without armor or shield, arrow vs true AC). The DM Helper lists it as a "bow + cast time" action with both damages; the DM applies the delivery AC |

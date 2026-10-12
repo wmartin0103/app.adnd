@@ -128,8 +128,12 @@ test('Tig\'s scenarios use PHB weapons, with Code of Gallant as an effect', () =
 test('Rifiyr: bows with Mystic Aim, −2 off the bow, and the casting penalty without an arrow', () => {
   const r = toDMHelper(JSON.parse(readFileSync(new URL('../samples/rifiyr_10-12.json', import.meta.url))), {}, { catalog });
   const c = r.character;
-  assert.deepEqual(c.weapons['Long bow'], { thac0: 16, speed: 8 });             // 19 − bow +1 − Dex +1 − Mystic Aim +1
-  assert.deepEqual(c.secondary.map(s => s.name), ['Long bow (2nd)', 'Folding bow (2nd)']);   // two shots a round
+  assert.deepEqual(c.weapons['Long bow, flight'], { thac0: 16, speed: 8 });             // 19 − bow +1 − Dex +1 − Mystic Aim +1
+  assert.deepEqual(c.secondary.map(s => s.name), ['Long bow, flight (2nd)', 'Long bow, sheaf (2nd)', 'Folding bow, flight (2nd)', 'Folding bow, sheaf (2nd)']);   // two shots a round
+  // Flight arrows 1d6, sheaf arrows 1d8 (PHB); the folding bow's −1 damage still counts
+  assert.deepEqual(r.damage['Rifiyr|Long bow, flight'], { sm: '1d6', l: '1d6' });
+  assert.deepEqual(r.damage['Rifiyr|Long bow, sheaf'], { sm: '1d8', l: '1d8' });
+  assert.deepEqual(r.damage['Rifiyr|Folding bow, sheaf'], { sm: '1d8-1', l: '1d8-1' });
   assert.equal(c.weapons['Silver short sword'].thac0, 25);                       // 19 − sword +1 + non-prof 5 + kit 2
   assert.equal(c.weapons.Dagger.thac0, 26);
   // Cast the ordinary way: casting time +3, −1 per die
@@ -145,7 +149,7 @@ test('Spellarrow: the bow\'s to-hit, bow + casting time, the arrow\'s damage and
   assert.deepEqual(shot, { name: 'Shocking Grasp arrow', thac0: 16, baseSpeed: 8, speedMin: 0, speedMax: 10, speedDefault: 1 });
   assert.equal(r.character.secondary.some(s => s.name.startsWith('Shocking Grasp arrow')), false);   // its only shot
   const d = r.damage['Rifiyr|Shocking Grasp arrow'];
-  assert.deepEqual([d.sm, d.l, d.spell], ['1d8', '1d6', '1d8+4']);                                    // no casting penalty
+  assert.deepEqual([d.sm, d.l, d.spell], ['1d6', '1d6', '1d8+4']);                                    // flight arrow                                    // no casting penalty
   assert.equal(r.critTypes['Shocking Grasp arrow'], 'P');
   // Pre-fletched: the bow's speed alone
   const fletched = { ...save, __scenarios: save.__scenarios.map(s => (s.id === 'sc-7' ? { ...s, prefletched: true } : s)) };

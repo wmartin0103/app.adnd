@@ -370,8 +370,9 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
   spell 1d8+4, speed 8 + 1. Not automated: the delivery AC (the DM applies it).
 - [ ] Rifiyr, to rule on: AC 4 or 6 (the sheet treats 6 as his bracers and
   subtracts Dex; bracers are allowed, ruled 2026-10-12); Read Magic is
-  Divination, which the kit bans; long bow damage 1d8 / 1d6 (PHB: flight arrow
-  1d6/1d6, sheaf 1d8/1d8). Ruled 2026-10-12: only spells that fit a
+  Divination, which the kit bans. Done 2026-10-12: he uses flight and sheaf
+  arrows, so bow scenarios now have an Arrows choice (PHB flight 1d6, sheaf
+  1d8) and he has one scenario per bow and arrow. Ruled 2026-10-12: only spells that fit a
   Spellarrow tier ride an arrow, so Melf's Acid Arrow is cast the ordinary way
   (with the penalty); the Ring of Spell Storing waits until he adds new spells.
 - [ ] Borsun: no save yet; his DM Helper entry is hand-typed.

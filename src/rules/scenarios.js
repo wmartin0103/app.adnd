@@ -265,6 +265,20 @@ export function spellArrow(ctx, sc) {
   return { spell: sp, check: sp ? spellArrowCheck(ctx, sc, sp) : null, bowSpeed: bow, castSpeed: cast, speed: bow + cast, prefletched: !!sc.prefletched };
 }
 
+// ── Arrows ──
+// A bow's damage depends on the arrow (PHB): flight arrows 1d6 / 1d6, sheaf
+// arrows 1d8 / 1d8. A bow scenario can say which it shoots (`ammo`); without
+// one, the weapon row's own dice are used, as before.
+export const ARROWS = { flight: { name: 'Flight arrows', sm: '1d6', l: '1d6' }, sheaf: { name: 'Sheaf arrows', sm: '1d8', l: '1d8' } };
+export const isBow = wpn => !!wpn && /bow/i.test(wpn.name || '') && !/crossbow/i.test(wpn.name || '');
+// The weapon's base dice for this scenario: the arrow's, or the row's
+export function scenarioDice(ctx, sc) {
+  const wpn = scenarioWeapon(ctx, sc);
+  if (!wpn) return null;
+  const arrow = isBow(wpn) && ARROWS[sc.ammo];
+  return arrow ? { sm: arrow.sm, l: arrow.l, ammo: arrow.name } : { sm: wpn.dmgSM, l: wpn.dmgL, ammo: '' };
+}
+
 export const scenarioWeapon = (ctx, sc) =>
   scenarioType(sc) !== 'spell' && sc.weaponId ? ctx.weapons.find(w => w.id === sc.weaponId) || null : null;
 
@@ -286,7 +300,8 @@ export function scenarioDamage(ctx, sc) {
     const text = flat ? `${m[1]}${flat > 0 ? '+' : ''}${flat}` : m[1];
     return wpn.dmgAdj === '?' ? `${text} + ?` : text;
   };
-  const out = { sm: dice(wpn.dmgSM), l: dice(wpn.dmgL) };
+  const base = scenarioDice(ctx, sc);
+  const out = { sm: dice(base.sm), l: dice(base.l) };
   // A Spellarrow: the arrow's damage, and the spell's on contact
   const arrow = spellArrow(ctx, sc);
   if (arrow && arrow.spell) Object.assign(out, { spell: arrow.spell.rolled || arrow.spell.dice || '', spellHeals: arrow.spell.heal, casterLevel: arrow.spell.casterLevel });
@@ -330,7 +345,7 @@ export function scenarioBreakdown(ctx, sc) {
   add(isSpell ? 'Your bonus (Hit Mod)' : 'Your bonus (Hit Mod, Dmg Mod)', hitMod, isSpell ? 0 : modNum(sc.dmgMod), 'mods');
   activeEffectsFor(ctx, sc).forEach(st => add(st.name || 'Effect', modNum(st.hit), modNum(st.dmg), 'effect'));
   const hit = lines.reduce((t, l) => t + (typeof l.hit === 'number' ? l.hit : 0), 0);
-  return { base, lines, wpn, thac0: base.thac0 - hit, hit, unknownHit: !!(wpn && wpn.hitAdj === '?') };
+  return { base, lines, wpn, dice: scenarioDice(ctx, sc), thac0: base.thac0 - hit, hit, unknownHit: !!(wpn && wpn.hitAdj === '?') };
 }
 
 export function scenarioTHAC0(ctx, sc) {
