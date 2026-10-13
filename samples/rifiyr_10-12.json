@@ -34,7 +34,7 @@
       "name": "Long bow, flight",
       "weaponId": "wpn-2",
       "attackType": "missile",
-      "ammo": "flight"
+      "ammo": "amm-1"
     },
     {
       "group": "wizard",
@@ -53,7 +53,7 @@
       "name": "Long bow, sheaf",
       "weaponId": "wpn-2",
       "attackType": "missile",
-      "ammo": "sheaf"
+      "ammo": "amm-2"
     },
     {
       "group": "wizard",
@@ -72,7 +72,7 @@
       "name": "Folding bow, flight",
       "weaponId": "wpn-4",
       "attackType": "missile",
-      "ammo": "flight"
+      "ammo": "amm-1"
     },
     {
       "group": "wizard",
@@ -91,7 +91,7 @@
       "name": "Folding bow, sheaf",
       "weaponId": "wpn-4",
       "attackType": "missile",
-      "ammo": "sheaf"
+      "ammo": "amm-2"
     },
     {
       "group": "wizard",
@@ -110,7 +110,7 @@
       "name": "Shocking Grasp arrow",
       "weaponId": "wpn-2",
       "attackType": "spellarrow",
-      "ammo": "flight"
+      "ammo": "amm-1"
     },
     {
       "group": "wizard",
@@ -244,7 +244,8 @@
       "dmgSM": "1d6",
       "dmgL": "1d8",
       "notes": "NOT PROFICIENT under Bowcaster (short sword isn't on the wizard weapon list) - suffers normal non-proficiency penalty PLUS the kit's -2 for any non-bow weapon. Kept as inventory/backup only.",
-      "racialBonus": false
+      "racialBonus": false,
+      "usesAmmo": false
     },
     {
       "id": "wpn-2",
@@ -257,7 +258,8 @@
       "dmgSM": "1d8",
       "dmgL": "1d6",
       "notes": "30/70/140/210. Represents the kit's free starting masterwork bow (+1 to hit, +1 material saves). Main weapon.",
-      "racialBonus": false
+      "racialBonus": false,
+      "usesAmmo": true
     },
     {
       "id": "wpn-3",
@@ -270,7 +272,8 @@
       "dmgSM": "1d4",
       "dmgL": "1d3",
       "notes": "On the wizard weapon list - best candidate for the kit's 'one other weapon' slot once a 2nd weapon proficiency opens at lvl6. Not proficient yet at lvl4.",
-      "racialBonus": false
+      "racialBonus": false,
+      "usesAmmo": false
     },
     {
       "id": "wpn-4",
@@ -283,7 +286,8 @@
       "dmgSM": "1d8",
       "dmgL": "1d6",
       "notes": "46/92/137. Covered by the same generalized 'Bow' proficiency as the Long Bow - no separate slot needed under this kit.",
-      "racialBonus": false
+      "racialBonus": false,
+      "usesAmmo": true
     }
   ],
   "__weaponCounter": 4,
@@ -623,5 +627,26 @@
   ],
   "__equipCounter": 6,
   "__items": [],
-  "__itemsCounter": 1
+  "__itemsCounter": 1,
+  "__ammo": [
+    {
+      "id": "amm-1",
+      "name": "Flight arrows",
+      "hitAdj": "",
+      "dmgAdj": "",
+      "dmgSM": "1d6",
+      "dmgL": "1d6",
+      "notes": ""
+    },
+    {
+      "id": "amm-2",
+      "name": "Sheaf arrows",
+      "hitAdj": "",
+      "dmgAdj": "",
+      "dmgSM": "1d8",
+      "dmgL": "1d8",
+      "notes": ""
+    }
+  ],
+  "__ammoCounter": 2
 }

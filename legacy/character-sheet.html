@@ -749,6 +749,24 @@
     .wpn-row:last-child    { border-bottom: none; }
     .wpn-row-header        { border-bottom: 2px solid var(--rule); }
 
+    /* Weapon settings gear (Uses Ammo?) and the Ammunition list */
+    .wpn-name-cell { display: flex; align-items: center; gap: 0.15rem; }
+    .wpn-from-ammo { font-size: 0.8rem; color: var(--ink-muted); font-style: italic; }
+    .wpn-settings {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.4rem 0.5rem; margin: 0.15rem 0 0.35rem;
+      border: 1px solid var(--rule); border-radius: var(--radius); background: var(--surface);
+    }
+    .wpn-settings[hidden] { display: none; }
+    .wpn-settings .scenario-select { width: auto; min-width: 5rem; }
+    .ammo-block { margin-top: 1.25rem; }
+    .ammo-block[hidden] { display: none; }
+    .ammo-heading {
+      font-family: var(--font-display); font-size: 0.7rem; font-weight: 600;
+      letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-muted);
+      margin-bottom: 0.4rem;
+    }
+
     .wpn-cell {
       padding: 0.25rem 0.1rem;
       min-width: 0;
@@ -2714,6 +2732,14 @@
         <button class="add-class-btn" id="add-weapon-btn" type="button">
           <span aria-hidden="true">＋</span> Add Weapon
         </button>
+        <!-- Ammunition: only when a weapon uses it (its settings gear) -->
+        <div class="ammo-block" id="ammo-block" hidden>
+          <h3 class="ammo-heading" id="ammo-heading">Ammunition</h3>
+          <div id="ammo-list" aria-labelledby="ammo-heading"></div>
+          <button class="add-class-btn" id="add-ammo-btn" type="button">
+            <span aria-hidden="true">＋</span> Add Ammunition
+          </button>
+        </div>
       </div>
     </section>
 
@@ -3771,6 +3797,7 @@ function scenarioContext(save, catalog = null) {
     dexMissile: (DEX_TABLE[num(save.dex)] || { missile: 0 }).missile,
     racialHit: name => racialWeaponBonus(raceGroup, save.__traitState, name),
     weapons: save.__weapons || [],
+    ammo: save.__ammo || [],
     spells: save.__spells || [],
     effects: normalizeEffects(save.__stances),
     catalog,
@@ -3946,18 +3973,28 @@ function spellArrow(ctx, sc) {
   return { spell: sp, bowSpeed: bow, castSpeed: cast, speed: bow + cast };
 }
 
-// ── Arrows ──
-// A bow's damage depends on the arrow (PHB): flight arrows 1d6 / 1d6, sheaf
-// arrows 1d8 / 1d8. A bow scenario can say which it shoots (`ammo`); without
-// one, the weapon row's own dice are used, as before.
-const ARROWS = { flight: { name: 'Flight arrows', sm: '1d6', l: '1d6' }, sheaf: { name: 'Sheaf arrows', sm: '1d8', l: '1d8' } };
+// ── Ammunition ──
+// A weapon that uses ammo (a bow) gets its damage dice from the ammunition,
+// and adds both adjustments: Long Bow (Fine) +1 hit with an arrow of flame +1
+// is +2 to hit. Each weapon says whether it uses ammo (`usesAmmo`, its
+// settings gear); saves from before the setting count a bow (not a crossbow)
+// as yes. The sheet's Ammunition list is `__ammo`; a scenario picks one
+// (`ammo`, its id). Without one, the weapon row's own dice are used.
 const isBow = wpn => !!wpn && /bow/i.test(wpn.name || '') && !/crossbow/i.test(wpn.name || '');
-// The weapon's base dice for this scenario: the arrow's, or the row's
+const usesAmmo = wpn => !!wpn && (typeof wpn.usesAmmo === 'boolean' ? wpn.usesAmmo : isBow(wpn));
+// Scenarios from before the Ammunition list named the arrow itself (PHB dice)
+const OLD_ARROWS = { flight: { name: 'Flight arrows', dmgSM: '1d6', dmgL: '1d6' }, sheaf: { name: 'Sheaf arrows', dmgSM: '1d8', dmgL: '1d8' } };
+function scenarioAmmo(ctx, sc) {
+  const wpn = scenarioWeapon(ctx, sc);
+  if (!usesAmmo(wpn) || !sc.ammo) return null;
+  return (ctx.ammo || []).find(a => a.id === sc.ammo) || OLD_ARROWS[sc.ammo] || null;
+}
+// The weapon's base dice for this scenario: the ammunition's, or the row's
 function scenarioDice(ctx, sc) {
   const wpn = scenarioWeapon(ctx, sc);
   if (!wpn) return null;
-  const arrow = isBow(wpn) && ARROWS[sc.ammo];
-  return arrow ? { sm: arrow.sm, l: arrow.l, ammo: arrow.name } : { sm: wpn.dmgSM, l: wpn.dmgL, ammo: '' };
+  const ammo = scenarioAmmo(ctx, sc);
+  return ammo ? { sm: ammo.dmgSM, l: ammo.dmgL, ammo: ammo.name || 'Ammo' } : { sm: wpn.dmgSM, l: wpn.dmgL, ammo: '' };
 }
 
 const scenarioWeapon = (ctx, sc) =>
@@ -3972,7 +4009,7 @@ function scenarioDamage(ctx, sc) {
   }
   const wpn = scenarioWeapon(ctx, sc);
   if (!wpn) return null;
-  const extra = modNum(wpn.dmgAdj) + scenarioAbility(ctx, sc).dmg + modNum(sc.dmgMod)
+  const extra = modNum(wpn.dmgAdj) + modNum((scenarioAmmo(ctx, sc) || {}).dmgAdj) + scenarioAbility(ctx, sc).dmg + modNum(sc.dmgMod)
     + activeEffectsFor(ctx, sc).reduce((t, st) => t + modNum(st.dmg), 0);
   const dice = raw => {
     const m = String(raw || '').trim().match(/^(\d*d\d+)\s*(?:([+-])\s*(\d+))?$/i);
@@ -4011,6 +4048,8 @@ function scenarioBreakdown(ctx, sc) {
     const m = String(wpn.hitAdj || '').match(/^[+-]?\d+$/);
     add(wpn.name || 'Weapon', m ? parseInt(m[0], 10) : 0, modNum(wpn.dmgAdj), 'weapon');
     if (wpn.hitAdj === '?' || wpn.dmgAdj === '?') lines.push({ label: `${wpn.name || 'Weapon'}: not revealed yet`, hit: wpn.hitAdj === '?' ? '?' : 0, dmg: wpn.dmgAdj === '?' ? '?' : 0, kind: 'unknown' });
+    const ammo = scenarioAmmo(ctx, sc);
+    if (ammo) { const am = String(ammo.hitAdj || '').match(/^[+-]?\d+$/); add(ammo.name || 'Ammo', am ? parseInt(am[0], 10) : 0, modNum(ammo.dmgAdj), 'ammo'); }
   }
   const abil = scenarioAbility(ctx, sc);
   const abilName = abil.hitLabel === 'STR Adj.' ? 'Strength' : scenarioType(sc) === 'thrown' ? 'Dexterity (missile), Strength damage' : 'Dexterity (missile)';
@@ -4034,7 +4073,7 @@ function scenarioTHAC0(ctx, sc) {
   return bd ? bd.thac0 : null;
 }
 
-return { modNum, signed, ATTACK_TYPES, RATE_OPTIONS, racialWeaponBonus, strengthRow, scenarioContext, scenarioRate, rateValue, scenarioType, normalizeEffects, effectOption, activeEffectsFor, effectsACBonus, casterLevel, diceAtLevel, isBowcaster, lessPerDie, scenarioSpell, scenarioAbility, castSpeed, spellArrow, ARROWS, isBow, scenarioDice, scenarioWeapon, scenarioDamage, scenarioBreakdown, scenarioTHAC0 };
+return { modNum, signed, ATTACK_TYPES, RATE_OPTIONS, racialWeaponBonus, strengthRow, scenarioContext, scenarioRate, rateValue, scenarioType, normalizeEffects, effectOption, activeEffectsFor, effectsACBonus, casterLevel, diceAtLevel, isBowcaster, lessPerDie, scenarioSpell, scenarioAbility, castSpeed, spellArrow, isBow, usesAmmo, scenarioAmmo, scenarioDice, scenarioWeapon, scenarioDamage, scenarioBreakdown, scenarioTHAC0 };
 })();
 // ── rules/character ──
 __m["rules/character"] = (() => {
@@ -4844,7 +4883,7 @@ function formatDMHelperConfig(list) {
 return { toDMHelper, formatDMHelperConfig };
 })();
 window.SheetSpells = { findSpell: __m["rules/spells"].findSpell };
-window.SheetScenarios = { modNum: __m["rules/scenarios"].modNum, signed: __m["rules/scenarios"].signed, ATTACK_TYPES: __m["rules/scenarios"].ATTACK_TYPES, RATE_OPTIONS: __m["rules/scenarios"].RATE_OPTIONS, scenarioRate: __m["rules/scenarios"].scenarioRate, scenarioType: __m["rules/scenarios"].scenarioType, scenarioSpell: __m["rules/scenarios"].scenarioSpell, scenarioAbility: __m["rules/scenarios"].scenarioAbility, activeEffectsFor: __m["rules/scenarios"].activeEffectsFor, scenarioDamage: __m["rules/scenarios"].scenarioDamage, scenarioBreakdown: __m["rules/scenarios"].scenarioBreakdown, normalizeEffects: __m["rules/scenarios"].normalizeEffects, effectOption: __m["rules/scenarios"].effectOption, isBowcaster: __m["rules/scenarios"].isBowcaster, spellArrow: __m["rules/scenarios"].spellArrow, isBow: __m["rules/scenarios"].isBow, ARROWS: __m["rules/scenarios"].ARROWS };
+window.SheetScenarios = { modNum: __m["rules/scenarios"].modNum, signed: __m["rules/scenarios"].signed, ATTACK_TYPES: __m["rules/scenarios"].ATTACK_TYPES, RATE_OPTIONS: __m["rules/scenarios"].RATE_OPTIONS, scenarioRate: __m["rules/scenarios"].scenarioRate, scenarioType: __m["rules/scenarios"].scenarioType, scenarioSpell: __m["rules/scenarios"].scenarioSpell, scenarioAbility: __m["rules/scenarios"].scenarioAbility, activeEffectsFor: __m["rules/scenarios"].activeEffectsFor, scenarioDamage: __m["rules/scenarios"].scenarioDamage, scenarioBreakdown: __m["rules/scenarios"].scenarioBreakdown, normalizeEffects: __m["rules/scenarios"].normalizeEffects, effectOption: __m["rules/scenarios"].effectOption, isBowcaster: __m["rules/scenarios"].isBowcaster, spellArrow: __m["rules/scenarios"].spellArrow, usesAmmo: __m["rules/scenarios"].usesAmmo };
 window.SheetKits = { HOUSE_KITS: __m["rules/kits"].HOUSE_KITS, classKit: __m["rules/kits"].classKit };
 window.SheetRules = { PHB_WEAPONS: __m["rules/weapons"].PHB_WEAPONS };
 window.SheetGuess = { guessCategory: __m["rules/migrate"].guessCategory };
@@ -5658,7 +5697,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         gear.addEventListener('click', () => {
           kitPanel.hidden = !kitPanel.hidden;
           gear.setAttribute('aria-expanded', String(!kitPanel.hidden));
-          if (!kitPanel.hidden) kitSelect.focus();
+          if (!kitPanel.hidden) kitSelect.focus({ preventScroll: true });
         });
         kitPanel.addEventListener('keydown', e => {
           if (e.key === 'Escape') { kitPanel.hidden = true; gear.setAttribute('aria-expanded', 'false'); gear.focus(); }
@@ -5895,7 +5934,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         str: getStrRow() || { hit: 0, dmg: 0 },
         dexMissile: dex.missile,
         racialHit: name => getRacialWeaponBonus(name, { forAttack: true }),
-        weapons, spells, effects: stances,
+        weapons, ammo, spells, effects: stances,
         catalog: window.SheetSpellCatalog || null,
       };
     }
@@ -6147,8 +6186,8 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           noneOpt.textContent = '— None —';
           wpnSelect.appendChild(noneOpt);
 
-          // A Spellarrow is fired from a bow (any bow but a crossbow)
-          const bows = weapons.filter(w => /bow/i.test(w.name || '') && !/crossbow/i.test(w.name || ''));
+          // A Spellarrow is fired from a weapon that uses ammo (a bow)
+          const bows = weapons.filter(w => SheetScenarios.usesAmmo(w));
           (isArrow && bows.length ? bows : weapons).forEach(wpn => {
             const opt = document.createElement('option');
             opt.value = wpn.id;
@@ -6198,11 +6237,13 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           }
         }
 
-        // Arrows: a bow's damage depends on the arrow (PHB: flight 1d6, sheaf 1d8)
+        // Ammo: for a weapon that uses it, pick from the Ammunition list (its dice and bonuses add to the weapon's)
         const linkedWeapon = weapons.find(w => w.id === scenario.weaponId);
-        if ((scenarioType(scenario) === 'missile' || isArrow) && SheetScenarios.isBow(linkedWeapon)) {
-          const A = SheetScenarios.ARROWS;
-          body.appendChild(smallSelect('Arrows', `${scenario.id}-ammo`, [['', 'As on the weapon row'], ['flight', `Flight (${A.flight.sm})`], ['sheaf', `Sheaf (${A.sheaf.sm})`]], scenario.ammo || '', v => { scenario.ammo = v; }, true));
+        if (!isSpell && SheetScenarios.usesAmmo(linkedWeapon)) {
+          const OLD = { flight: 'Flight arrows', sheaf: 'Sheaf arrows' };
+          const pairs = ammo.map(a => [a.id, a.name || 'Unnamed ammunition']);
+          if (scenario.ammo && !ammo.some(a => a.id === scenario.ammo) && OLD[scenario.ammo]) pairs.push([scenario.ammo, OLD[scenario.ammo]]);
+          body.appendChild(smallSelect('Ammo', `${scenario.id}-ammo`, [['', pairs.length ? '— Choose —' : 'No ammunition yet (add it under Weapons)'], ...pairs], scenario.ammo || '', v => { scenario.ammo = v; }));
         }
 
         // Spellarrow: any memorized spell (which ones qualify is up to the table)
@@ -6870,6 +6911,10 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
     // ── WEAPONS ──────────────────────────────────────────────────────────────
     let weapons = [];
     let weaponCounter = 0;
+    // Ammunition (arrows and the like) for weapons that use it; a bow attack picks one
+    let ammo = [];
+    let ammoCounter = 0;
+    const makeAmmo = (overrides = {}) => ({ id: `amm-${++ammoCounter}`, name: '', hitAdj: '', dmgAdj: '', dmgSM: '', dmgL: '', notes: '', ...overrides });
 
     function makeWeapon(overrides = {}) {
       return {
@@ -6966,6 +7011,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         empty.className = 'weapons-empty';
         empty.textContent = 'No weapons added yet.';
         list.appendChild(empty);
+        renderAmmo();
         return;
       }
 
@@ -7093,8 +7139,19 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         }
 
         // ── 1. Name ────────────────────────────────────────────
-        const nameCell = mkCell();
+        const nameCell = mkCell('wpn-name-cell');
         nameCell.appendChild(mkText('name', 'Weapon name', 'wpn-inp-name'));
+        // Settings gear: Uses Ammo? (a bow's damage then comes from its ammunition)
+        const settingsId = `${wpn.id}-settings`;
+        const gear = document.createElement('button');
+        gear.type = 'button';
+        gear.className = 'thief-settings-btn class-settings-btn' + (SheetScenarios.usesAmmo(wpn) ? ' is-active' : '');
+        gear.setAttribute('aria-label', `${wpn.name || 'Weapon'} settings`);
+        gear.setAttribute('aria-expanded', 'false');
+        gear.setAttribute('aria-controls', settingsId);
+        gear.title = 'Settings';
+        gear.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>';
+        nameCell.appendChild(gear);
         row.appendChild(nameCell);
 
         // ── 2. Size ────────────────────────────────────────────
@@ -7125,7 +7182,12 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
         // ── 6. Damage S/M · L (split) ─────────────────────────
         const dmgCell = mkCell('wpn-center');
-        dmgCell.appendChild(pickPair(
+        if (SheetScenarios.usesAmmo(wpn)) {
+          const from = document.createElement('span');
+          from.className = 'wpn-from-ammo';
+          from.textContent = 'From the ammo';
+          dmgCell.appendChild(from);
+        } else dmgCell.appendChild(pickPair(
           mkPick('dmgSM', DICE_OPTIONS, `${wpn.name || 'Weapon'} damage vs small and medium`),
           mkPick('dmgL', DICE_OPTIONS, `${wpn.name || 'Weapon'} damage vs large`)));
         row.appendChild(dmgCell);
@@ -7151,7 +7213,102 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         row.appendChild(delCell);
 
         list.appendChild(row);
+
+        const settings = document.createElement('div');
+        settings.className = 'wpn-settings';
+        settings.id = settingsId;
+        settings.hidden = true;
+        const sl = document.createElement('label');
+        sl.className = 'class-field-label';
+        sl.htmlFor = `${wpn.id}-uses-ammo`;
+        sl.textContent = 'Uses Ammo?';
+        const ss = document.createElement('select');
+        ss.id = `${wpn.id}-uses-ammo`;
+        ss.className = 'scenario-select';
+        [['yes', 'Yes'], ['no', 'No']].forEach(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; o.selected = (SheetScenarios.usesAmmo(wpn) ? 'yes' : 'no') === v; ss.appendChild(o); });
+        ss.addEventListener('change', () => {
+          wpn.usesAmmo = ss.value === 'yes';
+          renderWeapons(); renderScenarios(); updateActiveTHAC0(); saveToItems();
+          document.querySelector(`[aria-controls="${settingsId}"]`)?.focus();
+        });
+        settings.append(sl, ss);
+        settings.addEventListener('keydown', e => { if (e.key === 'Escape') { settings.hidden = true; gear.setAttribute('aria-expanded', 'false'); gear.focus(); } });
+        gear.addEventListener('click', () => { settings.hidden = !settings.hidden; gear.setAttribute('aria-expanded', String(!settings.hidden)); if (!settings.hidden) ss.focus({ preventScroll: true }); });
+        list.appendChild(settings);
       });
+      renderAmmo();
+    }
+
+    // Ammunition list (under Weapons): name, adjustments, damage, notes
+    function renderAmmo() {
+      const block = document.getElementById('ammo-block');
+      const list = document.getElementById('ammo-list');
+      if (!block || !list) return;
+      block.hidden = !weapons.some(w => SheetScenarios.usesAmmo(w));
+      list.innerHTML = '';
+      const COL = 'minmax(8rem, 1.6fr) 5.6rem 7.4rem minmax(6rem, 1.4fr) 1.4rem';
+      if (!ammo.length) {
+        const empty = document.createElement('p');
+        empty.className = 'weapons-empty';
+        empty.textContent = 'No ammunition added yet.';
+        list.appendChild(empty);
+        return;
+      }
+      const header = document.createElement('div');
+      header.className = 'wpn-row wpn-row-header';
+      header.style.gridTemplateColumns = COL;
+      [['Ammunition', ''], ['Hit · Dmg', 'wpn-hcenter'], ['Dmg S/M · L', 'wpn-hcenter'], ['Notes', ''], ['', '']].forEach(([label, cls]) => {
+        const c = document.createElement('div');
+        c.className = 'wpn-cell wpn-hcell' + (cls ? ' ' + cls : '');
+        c.textContent = label;
+        header.appendChild(c);
+      });
+      list.appendChild(header);
+      const changed = () => { saveToItems(); renderScenarios(); updateActiveTHAC0(); };
+      ammo.forEach(a => {
+        const row = document.createElement('div');
+        row.className = 'wpn-row';
+        row.style.gridTemplateColumns = COL;
+        const cell = cls => { const d = document.createElement('div'); d.className = 'wpn-cell' + (cls ? ' ' + cls : ''); return d; };
+        const text = (field, placeholder, cls) => {
+          const inp = document.createElement('input');
+          inp.type = 'text'; inp.className = 'wpn-inp' + (cls ? ' ' + cls : ''); inp.value = a[field] || ''; inp.placeholder = placeholder;
+          inp.setAttribute('aria-label', `${a.name || 'Ammunition'} ${placeholder.toLowerCase()}`);
+          inp.addEventListener('input', () => { a[field] = inp.value; });
+          inp.addEventListener('change', () => { a[field] = inp.value; changed(); });
+          return inp;
+        };
+        const pick = (field, values, label, show = v => v || '—') => {
+          const sel = document.createElement('select');
+          sel.className = 'wpn-inp wpn-select wpn-pick';
+          sel.setAttribute('aria-label', label);
+          const cur = String(a[field] ?? '');
+          (values.includes(cur) ? values : [...values, cur]).forEach(v => { const o = document.createElement('option'); o.value = v; o.textContent = show(v); o.selected = v === cur; sel.appendChild(o); });
+          sel.addEventListener('change', () => { a[field] = sel.value; changed(); });
+          return sel;
+        };
+        const pair = (x, y) => { const w = document.createElement('div'); w.className = 'wpn-split wpn-split-pick'; const d = document.createElement('span'); d.className = 'wpn-split-div'; d.setAttribute('aria-hidden', 'true'); w.append(x, d, y); return w; };
+        const n = a.name || 'Ammunition';
+        const c1 = cell(); c1.appendChild(text('name', 'Name', 'wpn-inp-name')); row.appendChild(c1);
+        const c2 = cell('wpn-center'); c2.appendChild(pair(pick('hitAdj', ADJ_OPTIONS, `${n} hit adjustment`, fmtAdj), pick('dmgAdj', ADJ_OPTIONS, `${n} damage adjustment`, fmtAdj))); row.appendChild(c2);
+        const c3 = cell('wpn-center'); c3.appendChild(pair(pick('dmgSM', DICE_OPTIONS, `${n} damage vs small and medium`), pick('dmgL', DICE_OPTIONS, `${n} damage vs large`))); row.appendChild(c3);
+        const c4 = cell(); c4.appendChild(text('notes', 'Notes')); row.appendChild(c4);
+        const c5 = cell('wpn-center');
+        const del = document.createElement('button');
+        del.type = 'button'; del.className = 'wpn-del-btn'; del.innerHTML = '&times;';
+        del.setAttribute('aria-label', `Remove ${n}`);
+        del.addEventListener('click', () => { ammo = ammo.filter(x => x.id !== a.id); renderAmmo(); changed(); });
+        c5.appendChild(del); row.appendChild(c5);
+        list.appendChild(row);
+      });
+    }
+    function addNewAmmo() {
+      ammo.push(makeAmmo());
+      renderAmmo();
+      const rows = document.querySelectorAll('#ammo-list .wpn-row:not(.wpn-row-header)');
+      rows[rows.length - 1]?.querySelector('.wpn-inp-name')?.focus();
+      saveToItems();
+      renderScenarios();
     }
 
     function addNewWeapon() {
@@ -8592,6 +8749,8 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       data['__thiefSubclass']         = thiefSubclass;
       data['__weapons']               = weapons;
       data['__weaponCounter']         = weaponCounter;
+      data['__ammo']                  = ammo;
+      data['__ammoCounter']           = ammoCounter;
       data['__spells']                = spells;
       data['__spellCounter']          = spellCounter;
       data['__spellbookPagesUsed']    = spellbookPagesUsed;
@@ -8651,6 +8810,8 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         weapons = data['__weapons'];
         weaponCounter = data['__weaponCounter'] || weapons.length;
       }
+      ammo = Array.isArray(data['__ammo']) ? data['__ammo'] : [];
+      ammoCounter = data['__ammoCounter'] || ammo.length;
       if (Array.isArray(data['__spells'])) {
         spells = data['__spells'];
         spellCounter = data['__spellCounter'] || spells.length;
@@ -9624,6 +9785,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
     initRacialTraitsPanel();
     initThievingPanel();
     document.getElementById('add-weapon-btn').addEventListener('click', addNewWeapon);
+    document.getElementById('add-ammo-btn').addEventListener('click', addNewAmmo);
     document.getElementById('add-spell-btn').addEventListener('click', addNewSpell);
     document.getElementById('add-nwp-btn').addEventListener('click', addNewNWP);
     document.getElementById('add-ability-card-btn').addEventListener('click', addNewAbilityCard);

@@ -173,6 +173,27 @@ test('a class\'s house-rule kit: chosen in its settings, or read from the name i
   assert.deepEqual(toDMHelper(none, {}, { catalog }).damage['Rifiyr|Shocking Grasp'], { sm: '1d8+4', l: '1d8+4' });
 });
 
+test('ammunition: the weapon\'s and the ammo\'s bonuses add up; the ammo sets the dice', async () => {
+  const { usesAmmo } = await import('../src/rules/scenarios.js');
+  const save = JSON.parse(readFileSync(new URL('../samples/rifiyr_10-12.json', import.meta.url)));
+  // An arrow of flame +1 (+1 hit, +1 fire damage) from the Long Bow (Fine) (+1 hit)
+  save.__ammo = [...save.__ammo, { id: 'amm-3', name: 'Arrow of flame +1', hitAdj: '+1', dmgAdj: '+1', dmgSM: '1d6', dmgL: '1d6', notes: 'Fire' }];
+  save.__scenarios = [...save.__scenarios, { ...save.__scenarios.find(s => s.id === 'sc-1'), id: 'sc-20', name: 'Long bow, flame', ammo: 'amm-3', active: false }];
+  const r = toDMHelper(save, {}, { catalog });
+  assert.equal(r.character.weapons['Long bow, flame'].thac0, 15);                    // 16 with flight arrows, −1 more
+  assert.deepEqual(r.damage['Rifiyr|Long bow, flame'], { sm: '1d6+1', l: '1d6+1' });
+  assert.deepEqual(r.damage['Rifiyr|Folding bow, sheaf'], { sm: '1d8-1', l: '1d8-1' });   // the folding bow's −1 still counts
+  // Uses Ammo? is the weapon's own setting; older saves count a bow (not a crossbow) as yes
+  assert.deepEqual([usesAmmo({ name: 'Long bow' }), usesAmmo({ name: 'Heavy crossbow' }), usesAmmo({ name: 'Recurve', usesAmmo: true }), usesAmmo({ name: 'Long bow', usesAmmo: false })],
+    [true, false, true, false]);
+  // A weapon set to No ignores the ammo and uses its own dice
+  const off = { ...save, __weapons: save.__weapons.map(w => (w.id === 'wpn-2' ? { ...w, usesAmmo: false } : w)) };
+  assert.deepEqual(toDMHelper(off, {}, { catalog }).damage['Rifiyr|Long bow, flame'], { sm: '1d8', l: '1d6' });
+  // Scenarios from before the Ammunition list ("flight"/"sheaf") still get PHB dice
+  const old = { ...save, __ammo: [], __scenarios: [{ ...save.__scenarios.find(s => s.id === 'sc-1'), ammo: 'sheaf' }] };
+  assert.deepEqual(toDMHelper(old, {}, { catalog }).damage['Rifiyr|Long bow, flight'], { sm: '1d8', l: '1d8' });
+});
+
 test('−1 per die', () => {
   assert.deepEqual(['1d8+4', '5d6', '1d4+1', '2d4'].map(lessPerDie), ['1d8+3', '5d6-5', '1d4', '2d4-2']);
 });

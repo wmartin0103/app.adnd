@@ -64,6 +64,7 @@ export function scenarioContext(save, catalog = null) {
     dexMissile: (DEX_TABLE[num(save.dex)] || { missile: 0 }).missile,
     racialHit: name => racialWeaponBonus(raceGroup, save.__traitState, name),
     weapons: save.__weapons || [],
+    ammo: save.__ammo || [],
     spells: save.__spells || [],
     effects: normalizeEffects(save.__stances),
     catalog,
@@ -239,18 +240,28 @@ export function spellArrow(ctx, sc) {
   return { spell: sp, bowSpeed: bow, castSpeed: cast, speed: bow + cast };
 }
 
-// ── Arrows ──
-// A bow's damage depends on the arrow (PHB): flight arrows 1d6 / 1d6, sheaf
-// arrows 1d8 / 1d8. A bow scenario can say which it shoots (`ammo`); without
-// one, the weapon row's own dice are used, as before.
-export const ARROWS = { flight: { name: 'Flight arrows', sm: '1d6', l: '1d6' }, sheaf: { name: 'Sheaf arrows', sm: '1d8', l: '1d8' } };
+// ── Ammunition ──
+// A weapon that uses ammo (a bow) gets its damage dice from the ammunition,
+// and adds both adjustments: Long Bow (Fine) +1 hit with an arrow of flame +1
+// is +2 to hit. Each weapon says whether it uses ammo (`usesAmmo`, its
+// settings gear); saves from before the setting count a bow (not a crossbow)
+// as yes. The sheet's Ammunition list is `__ammo`; a scenario picks one
+// (`ammo`, its id). Without one, the weapon row's own dice are used.
 export const isBow = wpn => !!wpn && /bow/i.test(wpn.name || '') && !/crossbow/i.test(wpn.name || '');
-// The weapon's base dice for this scenario: the arrow's, or the row's
+export const usesAmmo = wpn => !!wpn && (typeof wpn.usesAmmo === 'boolean' ? wpn.usesAmmo : isBow(wpn));
+// Scenarios from before the Ammunition list named the arrow itself (PHB dice)
+const OLD_ARROWS = { flight: { name: 'Flight arrows', dmgSM: '1d6', dmgL: '1d6' }, sheaf: { name: 'Sheaf arrows', dmgSM: '1d8', dmgL: '1d8' } };
+export function scenarioAmmo(ctx, sc) {
+  const wpn = scenarioWeapon(ctx, sc);
+  if (!usesAmmo(wpn) || !sc.ammo) return null;
+  return (ctx.ammo || []).find(a => a.id === sc.ammo) || OLD_ARROWS[sc.ammo] || null;
+}
+// The weapon's base dice for this scenario: the ammunition's, or the row's
 export function scenarioDice(ctx, sc) {
   const wpn = scenarioWeapon(ctx, sc);
   if (!wpn) return null;
-  const arrow = isBow(wpn) && ARROWS[sc.ammo];
-  return arrow ? { sm: arrow.sm, l: arrow.l, ammo: arrow.name } : { sm: wpn.dmgSM, l: wpn.dmgL, ammo: '' };
+  const ammo = scenarioAmmo(ctx, sc);
+  return ammo ? { sm: ammo.dmgSM, l: ammo.dmgL, ammo: ammo.name || 'Ammo' } : { sm: wpn.dmgSM, l: wpn.dmgL, ammo: '' };
 }
 
 export const scenarioWeapon = (ctx, sc) =>
@@ -265,7 +276,7 @@ export function scenarioDamage(ctx, sc) {
   }
   const wpn = scenarioWeapon(ctx, sc);
   if (!wpn) return null;
-  const extra = modNum(wpn.dmgAdj) + scenarioAbility(ctx, sc).dmg + modNum(sc.dmgMod)
+  const extra = modNum(wpn.dmgAdj) + modNum((scenarioAmmo(ctx, sc) || {}).dmgAdj) + scenarioAbility(ctx, sc).dmg + modNum(sc.dmgMod)
     + activeEffectsFor(ctx, sc).reduce((t, st) => t + modNum(st.dmg), 0);
   const dice = raw => {
     const m = String(raw || '').trim().match(/^(\d*d\d+)\s*(?:([+-])\s*(\d+))?$/i);
@@ -304,6 +315,8 @@ export function scenarioBreakdown(ctx, sc) {
     const m = String(wpn.hitAdj || '').match(/^[+-]?\d+$/);
     add(wpn.name || 'Weapon', m ? parseInt(m[0], 10) : 0, modNum(wpn.dmgAdj), 'weapon');
     if (wpn.hitAdj === '?' || wpn.dmgAdj === '?') lines.push({ label: `${wpn.name || 'Weapon'}: not revealed yet`, hit: wpn.hitAdj === '?' ? '?' : 0, dmg: wpn.dmgAdj === '?' ? '?' : 0, kind: 'unknown' });
+    const ammo = scenarioAmmo(ctx, sc);
+    if (ammo) { const am = String(ammo.hitAdj || '').match(/^[+-]?\d+$/); add(ammo.name || 'Ammo', am ? parseInt(am[0], 10) : 0, modNum(ammo.dmgAdj), 'ammo'); }
   }
   const abil = scenarioAbility(ctx, sc);
   const abilName = abil.hitLabel === 'STR Adj.' ? 'Strength' : scenarioType(sc) === 'thrown' ? 'Dexterity (missile), Strength damage' : 'Dexterity (missile)';
