@@ -151,9 +151,6 @@ test('Spellarrow: the bow\'s to-hit, bow + casting time, the arrow\'s damage and
   const d = r.damage['Rifiyr|Shocking Grasp arrow'];
   assert.deepEqual([d.sm, d.l, d.spell], ['1d6', '1d6', '1d8+4']);                                    // flight arrow                                    // no casting penalty
   assert.equal(r.critTypes['Shocking Grasp arrow'], 'P');
-  // Pre-fletched: the bow's speed alone
-  const fletched = { ...save, __scenarios: save.__scenarios.map(s => (s.id === 'sc-7' ? { ...s, prefletched: true } : s)) };
-  assert.equal(toDMHelper(fletched, {}, { catalog }).character.actions.find(a => a.name === 'Shocking Grasp arrow').speedDefault, 0);
   // Any memorized spell can go on the arrow (honor system): no flag
   const fireball = { ...save, __spells: [...save.__spells, { id: 'spl-90', name: 'Fireball', level: 3, type: 'wizard', isMemorized: true }],
     __scenarios: [{ ...save.__scenarios.find(s => s.id === 'sc-7'), spellId: 'spl-90' }] };

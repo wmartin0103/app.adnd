@@ -2085,9 +2085,6 @@
       text-transform: uppercase;
       color: var(--ink-muted);
     }
-    /* Spellarrow: the pre-fletched switch and its one-line hint */
-    .scenario-check { width: 1.1rem; height: 1.1rem; accent-color: var(--accent); margin: 0.35rem 0; }
-    .scenario-field-hint { font-size: 0.8rem; color: var(--ink-muted); max-width: 12rem; }
 
     .scenario-select {
       font-family: var(--font-body);
@@ -3938,15 +3935,15 @@ function castSpeed(castTime) {
 // Any memorized spell can go on the arrow: which spells qualify (touch,
 // point-of-origin, self-origin by level) is left to the player and the DM.
 // The spell on a Spellarrow, cast at full strength, and the shot's speed: the
-// bow's, plus the casting time when it's cast live (a pre-fletched arrow
-// already carries its spell)
+// bow's plus the casting time. (A pre-fletched Spellfletching arrow is fired as
+// an ordinary bow attack; the table handles its spell.)
 function spellArrow(ctx, sc) {
   if (scenarioType(sc) !== 'spellarrow') return null;
   const sp = scenarioSpell(ctx, sc);
   const wpn = scenarioWeapon(ctx, sc);
   const bow = wpn ? num(wpn.speed) : 0;
-  const cast = sp && !sc.prefletched ? (castSpeed(sp.castTime) ?? 0) : 0;
-  return { spell: sp, bowSpeed: bow, castSpeed: cast, speed: bow + cast, prefletched: !!sc.prefletched };
+  const cast = sp ? (castSpeed(sp.castTime) ?? 0) : 0;
+  return { spell: sp, bowSpeed: bow, castSpeed: cast, speed: bow + cast };
 }
 
 // ── Arrows ──
@@ -6208,29 +6205,10 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           body.appendChild(smallSelect('Arrows', `${scenario.id}-ammo`, [['', 'As on the weapon row'], ['flight', `Flight (${A.flight.sm})`], ['sheaf', `Sheaf (${A.sheaf.sm})`]], scenario.ammo || '', v => { scenario.ammo = v; }, true));
         }
 
-        // Spellarrow: any memorized spell (which ones qualify is up to the table), and whether it's pre-fletched
+        // Spellarrow: any memorized spell (which ones qualify is up to the table)
         if (isArrow) {
           const ready = spells.filter(x => x.isMemorized);
           body.appendChild(smallSelect('Spell', `${scenario.id}-aspell`, [['', ready.length ? '— Choose —' : 'No spells memorized'], ...ready.map(x => [x.id, `${x.name || 'Unnamed'} (L${x.level})`])], scenario.spellId || '', v => { scenario.spellId = v || null; scenario.spell = {}; }));
-          const f = document.createElement('div');
-          f.className = 'scenario-field scenario-field-narrow';
-          const l = document.createElement('label');
-          l.className = 'scenario-field-label';
-          l.htmlFor = `${scenario.id}-prefletched`;
-          l.textContent = 'Pre-fletched';
-          const box = document.createElement('input');
-          box.type = 'checkbox';
-          box.id = `${scenario.id}-prefletched`;
-          box.className = 'scenario-check';
-          box.checked = !!scenario.prefletched;
-          box.setAttribute('aria-describedby', `${scenario.id}-prefletched-hint`);
-          box.addEventListener('change', () => { scenario.prefletched = box.checked; renderScenarios(); updateActiveTHAC0(); saveToItems(); });
-          const hint = document.createElement('span');
-          hint.id = `${scenario.id}-prefletched-hint`;
-          hint.className = 'scenario-field-hint';
-          hint.textContent = 'Spell already on the arrow: no casting time';
-          f.append(l, box, hint);
-          body.appendChild(f);
         }
 
         // Hit Mod — standalone grid field (not for a spell without an attack roll)
@@ -6680,7 +6658,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       return [
         dmg ? cell('Arrow S/M · L', `${esc(dmg.sm)} · ${esc(dmg.l)}`) : '',
         sp ? cell(`${dmg && dmg.spellHeals ? 'Spell heals' : 'Spell'} at level ${sp.casterLevel}`, esc(dmg && dmg.spell ? dmg.spell : sp.name)) : cell('Spell', '—'),
-        a ? cell('Speed', a.prefletched || !a.castSpeed ? `${a.speed}` : `${a.bowSpeed} + ${a.castSpeed} = ${a.speed}`) : '',
+        a ? cell('Speed', !a.castSpeed ? `${a.speed}` : `${a.bowSpeed} + ${a.castSpeed} = ${a.speed}`) : '',
         cell('Attacks', '1 (only shot)'),
       ].join('');
     }
@@ -6688,7 +6666,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       if (!a || !a.spell) return `<p class="sr-spell"><span class="sr-spell-warn">Choose a memorized spell to put on the arrow.</span></p>`;
       const sp = a.spell;
       return `<p class="sr-spell">${esc(sp.name)}${sp.range ? ` · normally ${esc(sp.range)}` : ''}${sp.link ? ` · <a href="${esc(sp.link)}" target="_blank" rel="noopener">Full spell ↗</a>` : ''}
-        <span class="sr-spell-warn">One roll, read twice: the spell lands if it beats the target's AC without armor or shield; the arrow wounds if it also beats the true AC. Cast through the arrow: no casting penalty.${a.prefletched ? '' : ' Casting time adds to the bow\'s speed.'} A natural 1 misfires.</span></p>`;
+        <span class="sr-spell-warn">One roll, read twice: the spell lands if it beats the target's AC without armor or shield; the arrow wounds if it also beats the true AC. Cast through the arrow: no casting penalty. Casting time adds to the bow's speed. A natural 1 misfires.</span></p>`;
     }
 
     function spellLine(sp, esc) {

@@ -365,7 +365,7 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
   Bows with Mystic Aim (long bow THAC0 16, 2/1), −2 with anything else, and the
   casting penalty without an arrow are all worked out.
 - [x] Rifiyr, Spellarrows (2026-10-12): a Spellarrow attack type on the sheet
-  (bow + memorized spell, pre-fletched switch) and a "bow + cast time" action
+  (bow + memorized spell) and a "bow + cast time" action
   in the DM Helper. Rifiyr's Shocking Grasp arrow: THAC0 16, arrow 1d8/1d6,
   spell 1d8+4, speed 8 + 1. Not automated: the delivery AC (the DM applies it).
 - [ ] Rifiyr, to rule on: AC 4 or 6 (the sheet treats 6 as his bracers and

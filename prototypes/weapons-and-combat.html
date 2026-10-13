@@ -1278,15 +1278,15 @@ function castSpeed(castTime) {
 // Any memorized spell can go on the arrow: which spells qualify (touch,
 // point-of-origin, self-origin by level) is left to the player and the DM.
 // The spell on a Spellarrow, cast at full strength, and the shot's speed: the
-// bow's, plus the casting time when it's cast live (a pre-fletched arrow
-// already carries its spell)
+// bow's plus the casting time. (A pre-fletched Spellfletching arrow is fired as
+// an ordinary bow attack; the table handles its spell.)
 function spellArrow(ctx, sc) {
   if (scenarioType(sc) !== 'spellarrow') return null;
   const sp = scenarioSpell(ctx, sc);
   const wpn = scenarioWeapon(ctx, sc);
   const bow = wpn ? num(wpn.speed) : 0;
-  const cast = sp && !sc.prefletched ? (castSpeed(sp.castTime) ?? 0) : 0;
-  return { spell: sp, bowSpeed: bow, castSpeed: cast, speed: bow + cast, prefletched: !!sc.prefletched };
+  const cast = sp ? (castSpeed(sp.castTime) ?? 0) : 0;
+  return { spell: sp, bowSpeed: bow, castSpeed: cast, speed: bow + cast };
 }
 
 // ── Arrows ──
