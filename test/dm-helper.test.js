@@ -191,7 +191,9 @@ test('ammunition: the weapon\'s and the ammo\'s bonuses add up; the ammo sets th
   // Only ammo of the weapon's type fits: a quarrel isn't offered to a bow, and can't be fired from one
   const quarrel = { id: 'amm-9', name: 'Heavy quarrel', type: 'quarrels', hitAdj: '', dmgAdj: '', dmgSM: '1d4+1', dmgL: '1d6+1', notes: '' };
   const withQuarrel = { ...save, __ammo: [...save.__ammo, quarrel] };
-  assert.deepEqual(ammoFor({ ammo: withQuarrel.__ammo }, save.__weapons.find(w => w.id === 'wpn-2')).map(a => a.name), ['Flight arrows', 'Sheaf arrows', 'Arrow of flame +1']);
+  // A bow is offered the PHB's arrows, always, then the sheet's own arrows
+  assert.deepEqual(ammoFor({ ammo: withQuarrel.__ammo }, save.__weapons.find(w => w.id === 'wpn-2')).map(a => a.name), ['Flight arrow', 'Sheaf arrow', 'Arrow of flame +1']);
+  assert.deepEqual(ammoFor({ ammo: [] }, { name: 'Heavy crossbow', ammoType: 'quarrels' }).map(a => a.name), ['Hand quarrel', 'Light quarrel', 'Heavy quarrel']);
   assert.deepEqual(toDMHelper({ ...withQuarrel, __scenarios: [{ ...save.__scenarios.find(s => s.id === 'sc-1'), ammo: 'amm-9' }] }, {}, { catalog }).damage['Rifiyr|Long bow, flight'], { sm: '1d8', l: '1d6' });
   // A weapon set to No ignores the ammo and uses its own dice
   const off = { ...save, __weapons: save.__weapons.map(w => (w.id === 'wpn-2' ? { ...w, ammoType: '' } : w)) };

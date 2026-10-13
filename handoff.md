@@ -373,9 +373,12 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
   Divination, which the kit bans. Done 2026-10-12: he uses flight and sheaf
   arrows. Weapons now have a settings gear with "Uses Ammo?" (No, Arrows,
   Quarrels, Sling ammo, Blowgun ammo); an Ammunition list under Weapons
-  (shown when a weapon uses ammo) holds ammo with a type, dice and
-  adjustments; an attack picks its Ammo from the items of the weapon's type,
-  and the weapon's and the ammo's bonuses add up. He has one attack per bow and arrow. Ruled 2026-10-12: only spells that fit a
+  (now "Special Ammunition", shown when a weapon uses ammo) holds only magic
+  or unusual ammo, each with a type, dice and adjustments. An attack's Ammo
+  always offers the PHB ammunition of the weapon's type (flight and sheaf
+  arrows; hand, light and heavy quarrels; sling bullet and stone; barbed dart
+  and needle), then the special ammo of that type; the weapon's and the
+  ammo's bonuses add up. He has one attack per bow and arrow. Ruled 2026-10-12: only spells that fit a
   Spellarrow tier ride an arrow, so Melf's Acid Arrow is cast the ordinary way
   (with the penalty); the Ring of Spell Storing waits until he adds new spells.
 - [ ] Borsun: no save yet; his DM Helper entry is hand-typed.

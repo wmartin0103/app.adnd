@@ -24,23 +24,21 @@ s.__classes[0].kit = 'bowcaster';
 for (const w of s.__weapons) { w.dmgSM = w.dmgSM.toLowerCase(); w.dmgL = w.dmgL.toLowerCase(); }
 const dagger = s.__weapons.find(w => w.id === 'wpn-3');
 dagger.hitAdj = '';
-// His bows take arrows; the arrows are on the Ammunition list (PHB dice). The
-// quiver of fine arrows (+1 to material saves) changes no numbers.
+// His bows take arrows; flight and sheaf arrows are the PHB's, always on
+// offer. His own Ammunition list is for magic arrows (none yet). The quiver of
+// fine arrows (+1 to material saves) changes no numbers.
 for (const w of s.__weapons) w.ammoType = ['wpn-2', 'wpn-4'].includes(w.id) ? 'arrows' : '';
-s.__ammo = [
-  { id: 'amm-1', name: 'Flight arrows', type: 'arrows', hitAdj: '', dmgAdj: '', dmgSM: '1d6', dmgL: '1d6', notes: '' },
-  { id: 'amm-2', name: 'Sheaf arrows', type: 'arrows', hitAdj: '', dmgAdj: '', dmgSM: '1d8', dmgL: '1d8', notes: '' },
-];
-s.__ammoCounter = 2;
+s.__ammo = [];
+s.__ammoCounter = 0;
 const sc = (o) => ({ group: 'wizard', levelMode: 'sheet', customLevel: 1, active: false, collapsed: false, handedness: 'main', offHandPenalty: '', spellId: null, spell: {}, hitMod: '', dmgMod: '', rate: '1/1', ...o });
 s.__scenarios = [
-  // He shoots flight and sheaf arrows: one scenario each, picking from his Ammunition
-  sc({ id: 'sc-1', name: 'Long bow, flight', active: true, weaponId: 'wpn-2', attackType: 'missile', ammo: 'amm-1', hitMod: '1', rate: '2/1' }),
-  sc({ id: 'sc-8', name: 'Long bow, sheaf', weaponId: 'wpn-2', attackType: 'missile', ammo: 'amm-2', hitMod: '1', rate: '2/1' }),
-  sc({ id: 'sc-2', name: 'Folding bow, flight', weaponId: 'wpn-4', attackType: 'missile', ammo: 'amm-1', hitMod: '1', rate: '2/1' }),
-  sc({ id: 'sc-9', name: 'Folding bow, sheaf', weaponId: 'wpn-4', attackType: 'missile', ammo: 'amm-2', hitMod: '1', rate: '2/1' }),
+  // He shoots flight and sheaf arrows: one scenario each
+  sc({ id: 'sc-1', name: 'Long bow, flight', active: true, weaponId: 'wpn-2', attackType: 'missile', ammo: 'phb-flight', hitMod: '1', rate: '2/1' }),
+  sc({ id: 'sc-8', name: 'Long bow, sheaf', weaponId: 'wpn-2', attackType: 'missile', ammo: 'phb-sheaf', hitMod: '1', rate: '2/1' }),
+  sc({ id: 'sc-2', name: 'Folding bow, flight', weaponId: 'wpn-4', attackType: 'missile', ammo: 'phb-flight', hitMod: '1', rate: '2/1' }),
+  sc({ id: 'sc-9', name: 'Folding bow, sheaf', weaponId: 'wpn-4', attackType: 'missile', ammo: 'phb-sheaf', hitMod: '1', rate: '2/1' }),
   // Spellarrow: Shocking Grasp (touch) on the long bow, at full strength
-  sc({ id: 'sc-7', name: 'Shocking Grasp arrow', weaponId: 'wpn-2', attackType: 'spellarrow', spellId: 'spl-32', ammo: 'amm-1', hitMod: '1' }),
+  sc({ id: 'sc-7', name: 'Shocking Grasp arrow', weaponId: 'wpn-2', attackType: 'spellarrow', spellId: 'spl-32', ammo: 'phb-flight', hitMod: '1' }),
   sc({ id: 'sc-3', name: 'Magic Missile', attackType: 'spell', spellId: 'spl-30' }),
   sc({ id: 'sc-4', name: 'Shocking Grasp', attackType: 'spell', spellId: 'spl-32' }),
   sc({ id: 'sc-5', name: 'Dagger', weaponId: 'wpn-3', attackType: 'melee', hitMod: '-7' }),

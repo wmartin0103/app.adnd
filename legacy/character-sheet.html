@@ -2734,10 +2734,10 @@
         </button>
         <!-- Ammunition: only when a weapon uses it (its settings gear) -->
         <div class="ammo-block" id="ammo-block" hidden>
-          <h3 class="ammo-heading" id="ammo-heading">Ammunition</h3>
+          <h3 class="ammo-heading" id="ammo-heading">Special Ammunition</h3>
           <div id="ammo-list" aria-labelledby="ammo-heading"></div>
           <button class="add-class-btn" id="add-ammo-btn" type="button">
-            <span aria-hidden="true">＋</span> Add Ammunition
+            <span aria-hidden="true">＋</span> Add Special Ammunition
           </button>
         </div>
       </div>
@@ -3976,11 +3976,24 @@ function spellArrow(ctx, sc) {
 // ── Ammunition ──
 // A weapon that uses ammo gets its damage dice from the ammunition, and adds
 // both adjustments: Long Bow (Fine) +1 hit with an arrow of flame +1 is +2 to
-// hit. Each weapon says which ammo it takes (`ammoType`, its settings gear);
-// each item on the sheet's Ammunition list (`__ammo`) has a type too, and a
-// scenario picks one of the matching type (`ammo`, its id). Without one, the
-// weapon row's own dice are used. The PHB's ammunition, by weapon:
+// hit. Each weapon says which ammo it takes (`ammoType`, its settings gear).
+// A scenario picks its ammo (`ammo`, an id) from the PHB's ammunition of that
+// type, always there, plus the sheet's own Ammunition list (`__ammo`: magic
+// or special ammo, each with a type). Without one, the weapon row's dice are used.
 const AMMO_TYPES = { arrows: 'Arrows', quarrels: 'Quarrels', sling: 'Sling ammo', blowgun: 'Blowgun ammo' };
+// PHB weapons table: the ammunition and its damage S-M / L
+const phb = (id, type, name, dmgSM, dmgL) => ({ id: `phb-${id}`, type, name, hitAdj: '', dmgAdj: '', dmgSM, dmgL, phb: true });
+const PHB_AMMO = [
+  phb('flight', 'arrows', 'Flight arrow', '1d6', '1d6'),
+  phb('sheaf', 'arrows', 'Sheaf arrow', '1d8', '1d8'),
+  phb('hand-quarrel', 'quarrels', 'Hand quarrel', '1d3', '1d2'),
+  phb('light-quarrel', 'quarrels', 'Light quarrel', '1d4', '1d4'),
+  phb('heavy-quarrel', 'quarrels', 'Heavy quarrel', '1d4+1', '1d6+1'),
+  phb('sling-bullet', 'sling', 'Sling bullet', '1d4+1', '1d6+1'),
+  phb('sling-stone', 'sling', 'Sling stone', '1d4', '1d4'),
+  phb('barbed-dart', 'blowgun', 'Barbed dart', '1d3', '1d2'),
+  phb('needle', 'blowgun', 'Needle', '1', '1'),
+];
 const isBow = wpn => !!wpn && /bow/i.test(wpn.name || '') && !/crossbow/i.test(wpn.name || '');
 // Saves from before the type: a weapon set to use ammo takes what its name
 // says, and one never set counts as a bow (not a crossbow) or not at all
@@ -3997,17 +4010,18 @@ function weaponAmmoType(wpn) {
 }
 const usesAmmo = wpn => !!weaponAmmoType(wpn);
 const ammoType = a => (a && AMMO_TYPES[a.type] ? a.type : typeFromName(a && a.name));
-// The Ammunition list's items that fit this weapon
+// The ammo that fits this weapon: the PHB's of its type, then the sheet's own
 const ammoFor = (ctx, wpn) => {
   const type = weaponAmmoType(wpn);
-  return type ? (ctx.ammo || []).filter(a => ammoType(a) === type) : [];
+  return type ? [...PHB_AMMO.filter(a => a.type === type), ...(ctx.ammo || []).filter(a => ammoType(a) === type)] : [];
 };
-// Scenarios from before the Ammunition list named the arrow itself (PHB dice)
-const OLD_ARROWS = { flight: { name: 'Flight arrows', dmgSM: '1d6', dmgL: '1d6' }, sheaf: { name: 'Sheaf arrows', dmgSM: '1d8', dmgL: '1d8' } };
+// Scenarios from before named the arrow itself ("flight", "sheaf")
+const OLD_IDS = { flight: 'phb-flight', sheaf: 'phb-sheaf' };
 function scenarioAmmo(ctx, sc) {
   const wpn = scenarioWeapon(ctx, sc);
   if (!usesAmmo(wpn) || !sc.ammo) return null;
-  return ammoFor(ctx, wpn).find(a => a.id === sc.ammo) || (weaponAmmoType(wpn) === 'arrows' && OLD_ARROWS[sc.ammo]) || null;
+  const id = OLD_IDS[sc.ammo] || sc.ammo;
+  return ammoFor(ctx, wpn).find(a => a.id === id) || null;
 }
 // The weapon's base dice for this scenario: the ammunition's, or the row's
 function scenarioDice(ctx, sc) {
@@ -4093,7 +4107,7 @@ function scenarioTHAC0(ctx, sc) {
   return bd ? bd.thac0 : null;
 }
 
-return { modNum, signed, ATTACK_TYPES, RATE_OPTIONS, racialWeaponBonus, strengthRow, scenarioContext, scenarioRate, rateValue, scenarioType, normalizeEffects, effectOption, activeEffectsFor, effectsACBonus, casterLevel, diceAtLevel, isBowcaster, lessPerDie, scenarioSpell, scenarioAbility, castSpeed, spellArrow, AMMO_TYPES, isBow, weaponAmmoType, usesAmmo, ammoType, ammoFor, scenarioAmmo, scenarioDice, scenarioWeapon, scenarioDamage, scenarioBreakdown, scenarioTHAC0 };
+return { modNum, signed, ATTACK_TYPES, RATE_OPTIONS, racialWeaponBonus, strengthRow, scenarioContext, scenarioRate, rateValue, scenarioType, normalizeEffects, effectOption, activeEffectsFor, effectsACBonus, casterLevel, diceAtLevel, isBowcaster, lessPerDie, scenarioSpell, scenarioAbility, castSpeed, spellArrow, AMMO_TYPES, PHB_AMMO, isBow, weaponAmmoType, usesAmmo, ammoType, ammoFor, scenarioAmmo, scenarioDice, scenarioWeapon, scenarioDamage, scenarioBreakdown, scenarioTHAC0 };
 })();
 // ── rules/character ──
 __m["rules/character"] = (() => {
@@ -4903,7 +4917,7 @@ function formatDMHelperConfig(list) {
 return { toDMHelper, formatDMHelperConfig };
 })();
 window.SheetSpells = { findSpell: __m["rules/spells"].findSpell };
-window.SheetScenarios = { modNum: __m["rules/scenarios"].modNum, signed: __m["rules/scenarios"].signed, ATTACK_TYPES: __m["rules/scenarios"].ATTACK_TYPES, RATE_OPTIONS: __m["rules/scenarios"].RATE_OPTIONS, scenarioRate: __m["rules/scenarios"].scenarioRate, scenarioType: __m["rules/scenarios"].scenarioType, scenarioSpell: __m["rules/scenarios"].scenarioSpell, scenarioAbility: __m["rules/scenarios"].scenarioAbility, activeEffectsFor: __m["rules/scenarios"].activeEffectsFor, scenarioDamage: __m["rules/scenarios"].scenarioDamage, scenarioBreakdown: __m["rules/scenarios"].scenarioBreakdown, normalizeEffects: __m["rules/scenarios"].normalizeEffects, effectOption: __m["rules/scenarios"].effectOption, isBowcaster: __m["rules/scenarios"].isBowcaster, spellArrow: __m["rules/scenarios"].spellArrow, usesAmmo: __m["rules/scenarios"].usesAmmo, weaponAmmoType: __m["rules/scenarios"].weaponAmmoType, ammoType: __m["rules/scenarios"].ammoType, ammoFor: __m["rules/scenarios"].ammoFor, AMMO_TYPES: __m["rules/scenarios"].AMMO_TYPES };
+window.SheetScenarios = { modNum: __m["rules/scenarios"].modNum, signed: __m["rules/scenarios"].signed, ATTACK_TYPES: __m["rules/scenarios"].ATTACK_TYPES, RATE_OPTIONS: __m["rules/scenarios"].RATE_OPTIONS, scenarioRate: __m["rules/scenarios"].scenarioRate, scenarioType: __m["rules/scenarios"].scenarioType, scenarioSpell: __m["rules/scenarios"].scenarioSpell, scenarioAbility: __m["rules/scenarios"].scenarioAbility, activeEffectsFor: __m["rules/scenarios"].activeEffectsFor, scenarioDamage: __m["rules/scenarios"].scenarioDamage, scenarioBreakdown: __m["rules/scenarios"].scenarioBreakdown, normalizeEffects: __m["rules/scenarios"].normalizeEffects, effectOption: __m["rules/scenarios"].effectOption, isBowcaster: __m["rules/scenarios"].isBowcaster, spellArrow: __m["rules/scenarios"].spellArrow, usesAmmo: __m["rules/scenarios"].usesAmmo, weaponAmmoType: __m["rules/scenarios"].weaponAmmoType, ammoType: __m["rules/scenarios"].ammoType, ammoFor: __m["rules/scenarios"].ammoFor, scenarioAmmo: __m["rules/scenarios"].scenarioAmmo, AMMO_TYPES: __m["rules/scenarios"].AMMO_TYPES };
 window.SheetKits = { HOUSE_KITS: __m["rules/kits"].HOUSE_KITS, classKit: __m["rules/kits"].classKit };
 window.SheetRules = { PHB_WEAPONS: __m["rules/weapons"].PHB_WEAPONS };
 window.SheetGuess = { guessCategory: __m["rules/migrate"].guessCategory };
@@ -6257,16 +6271,13 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           }
         }
 
-        // Ammo: the Ammunition list's items of the weapon's type (their dice and bonuses add to the weapon's)
+        // Ammo: the PHB's ammunition of the weapon's type, then the sheet's own (their dice and bonuses add to the weapon's)
         const linkedWeapon = weapons.find(w => w.id === scenario.weaponId);
         if (!isSpell && SheetScenarios.usesAmmo(linkedWeapon)) {
-          const type = SheetScenarios.weaponAmmoType(linkedWeapon);
-          const fits = SheetScenarios.ammoFor(scenarioCtx(), linkedWeapon);
-          const OLD = { flight: 'Flight arrows', sheaf: 'Sheaf arrows' };
-          const pairs = fits.map(a => [a.id, a.name || 'Unnamed ammunition']);
-          if (type === 'arrows' && scenario.ammo && !fits.some(a => a.id === scenario.ammo) && OLD[scenario.ammo]) pairs.push([scenario.ammo, OLD[scenario.ammo]]);
-          const none = `No ${SheetScenarios.AMMO_TYPES[type].toLowerCase()} yet (add them under Weapons)`;
-          body.appendChild(smallSelect('Ammo', `${scenario.id}-ammo`, [['', pairs.length ? '— Choose —' : none], ...pairs], scenario.ammo || '', v => { scenario.ammo = v; }));
+          const ctx = scenarioCtx();
+          const fits = SheetScenarios.ammoFor(ctx, linkedWeapon);
+          const chosen = SheetScenarios.scenarioAmmo(ctx, scenario);
+          body.appendChild(smallSelect('Ammo', `${scenario.id}-ammo`, [['', '— Choose —'], ...fits.map(a => [a.id, a.name || 'Unnamed ammunition'])], chosen ? chosen.id : '', v => { scenario.ammo = v; }));
         }
 
         // Spellarrow: any memorized spell (which ones qualify is up to the table)
@@ -7263,7 +7274,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       renderAmmo();
     }
 
-    // Ammunition list (under Weapons): name, adjustments, damage, notes
+    // Special Ammunition (under Weapons): magic or unusual ammo; the PHB's is built in
     function renderAmmo() {
       const block = document.getElementById('ammo-block');
       const list = document.getElementById('ammo-list');
@@ -7274,14 +7285,14 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       if (!ammo.length) {
         const empty = document.createElement('p');
         empty.className = 'weapons-empty';
-        empty.textContent = 'No ammunition added yet.';
+        empty.textContent = 'None added. Standard ammunition is already in the Ammo list of each attack.';
         list.appendChild(empty);
         return;
       }
       const header = document.createElement('div');
       header.className = 'wpn-row wpn-row-header';
       header.style.gridTemplateColumns = COL;
-      [['Ammunition', ''], ['Type', ''], ['Hit · Dmg', 'wpn-hcenter'], ['Dmg S/M · L', 'wpn-hcenter'], ['Notes', ''], ['', '']].forEach(([label, cls]) => {
+      [['Special Ammunition', ''], ['Type', ''], ['Hit · Dmg', 'wpn-hcenter'], ['Dmg S/M · L', 'wpn-hcenter'], ['Notes', ''], ['', '']].forEach(([label, cls]) => {
         const c = document.createElement('div');
         c.className = 'wpn-cell wpn-hcell' + (cls ? ' ' + cls : '');
         c.textContent = label;

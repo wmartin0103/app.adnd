@@ -34,7 +34,7 @@
       "name": "Long bow, flight",
       "weaponId": "wpn-2",
       "attackType": "missile",
-      "ammo": "amm-1"
+      "ammo": "phb-flight"
     },
     {
       "group": "wizard",
@@ -53,7 +53,7 @@
       "name": "Long bow, sheaf",
       "weaponId": "wpn-2",
       "attackType": "missile",
-      "ammo": "amm-2"
+      "ammo": "phb-sheaf"
     },
     {
       "group": "wizard",
@@ -72,7 +72,7 @@
       "name": "Folding bow, flight",
       "weaponId": "wpn-4",
       "attackType": "missile",
-      "ammo": "amm-1"
+      "ammo": "phb-flight"
     },
     {
       "group": "wizard",
@@ -91,7 +91,7 @@
       "name": "Folding bow, sheaf",
       "weaponId": "wpn-4",
       "attackType": "missile",
-      "ammo": "amm-2"
+      "ammo": "phb-sheaf"
     },
     {
       "group": "wizard",
@@ -110,7 +110,7 @@
       "name": "Shocking Grasp arrow",
       "weaponId": "wpn-2",
       "attackType": "spellarrow",
-      "ammo": "amm-1"
+      "ammo": "phb-flight"
     },
     {
       "group": "wizard",
@@ -628,27 +628,6 @@
   "__equipCounter": 6,
   "__items": [],
   "__itemsCounter": 1,
-  "__ammo": [
-    {
-      "id": "amm-1",
-      "name": "Flight arrows",
-      "type": "arrows",
-      "hitAdj": "",
-      "dmgAdj": "",
-      "dmgSM": "1d6",
-      "dmgL": "1d6",
-      "notes": ""
-    },
-    {
-      "id": "amm-2",
-      "name": "Sheaf arrows",
-      "type": "arrows",
-      "hitAdj": "",
-      "dmgAdj": "",
-      "dmgSM": "1d8",
-      "dmgL": "1d8",
-      "notes": ""
-    }
-  ],
-  "__ammoCounter": 2
+  "__ammo": [],
+  "__ammoCounter": 0
 }
