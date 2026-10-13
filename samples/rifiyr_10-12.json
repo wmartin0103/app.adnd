@@ -245,7 +245,7 @@
       "dmgL": "1d8",
       "notes": "NOT PROFICIENT under Bowcaster (short sword isn't on the wizard weapon list) - suffers normal non-proficiency penalty PLUS the kit's -2 for any non-bow weapon. Kept as inventory/backup only.",
       "racialBonus": false,
-      "usesAmmo": false
+      "ammoType": ""
     },
     {
       "id": "wpn-2",
@@ -259,7 +259,7 @@
       "dmgL": "1d6",
       "notes": "30/70/140/210. Represents the kit's free starting masterwork bow (+1 to hit, +1 material saves). Main weapon.",
       "racialBonus": false,
-      "usesAmmo": true
+      "ammoType": "arrows"
     },
     {
       "id": "wpn-3",
@@ -273,7 +273,7 @@
       "dmgL": "1d3",
       "notes": "On the wizard weapon list - best candidate for the kit's 'one other weapon' slot once a 2nd weapon proficiency opens at lvl6. Not proficient yet at lvl4.",
       "racialBonus": false,
-      "usesAmmo": false
+      "ammoType": ""
     },
     {
       "id": "wpn-4",
@@ -287,7 +287,7 @@
       "dmgL": "1d6",
       "notes": "46/92/137. Covered by the same generalized 'Bow' proficiency as the Long Bow - no separate slot needed under this kit.",
       "racialBonus": false,
-      "usesAmmo": true
+      "ammoType": "arrows"
     }
   ],
   "__weaponCounter": 4,
@@ -632,6 +632,7 @@
     {
       "id": "amm-1",
       "name": "Flight arrows",
+      "type": "arrows",
       "hitAdj": "",
       "dmgAdj": "",
       "dmgSM": "1d6",
@@ -641,6 +642,7 @@
     {
       "id": "amm-2",
       "name": "Sheaf arrows",
+      "type": "arrows",
       "hitAdj": "",
       "dmgAdj": "",
       "dmgSM": "1d8",

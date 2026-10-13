@@ -371,10 +371,11 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
 - [ ] Rifiyr, to rule on: AC 4 or 6 (the sheet treats 6 as his bracers and
   subtracts Dex; bracers are allowed, ruled 2026-10-12); Read Magic is
   Divination, which the kit bans. Done 2026-10-12: he uses flight and sheaf
-  arrows. Weapons now have a settings gear with "Uses Ammo?"; an Ammunition
-  list under Weapons (shown when a weapon uses ammo) holds arrows with their
-  dice and adjustments; a bow attack picks its Ammo, and the bow's and the
-  ammo's bonuses add up. He has one attack per bow and arrow. Ruled 2026-10-12: only spells that fit a
+  arrows. Weapons now have a settings gear with "Uses Ammo?" (No, Arrows,
+  Quarrels, Sling ammo, Blowgun ammo); an Ammunition list under Weapons
+  (shown when a weapon uses ammo) holds ammo with a type, dice and
+  adjustments; an attack picks its Ammo from the items of the weapon's type,
+  and the weapon's and the ammo's bonuses add up. He has one attack per bow and arrow. Ruled 2026-10-12: only spells that fit a
   Spellarrow tier ride an arrow, so Melf's Acid Arrow is cast the ordinary way
   (with the penalty); the Ring of Spell Storing waits until he adds new spells.
 - [ ] Borsun: no save yet; his DM Helper entry is hand-typed.

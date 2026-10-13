@@ -174,7 +174,7 @@ test('a class\'s house-rule kit: chosen in its settings, or read from the name i
 });
 
 test('ammunition: the weapon\'s and the ammo\'s bonuses add up; the ammo sets the dice', async () => {
-  const { usesAmmo } = await import('../src/rules/scenarios.js');
+  const { usesAmmo, weaponAmmoType, ammoFor } = await import('../src/rules/scenarios.js');
   const save = JSON.parse(readFileSync(new URL('../samples/rifiyr_10-12.json', import.meta.url)));
   // An arrow of flame +1 (+1 hit, +1 fire damage) from the Long Bow (Fine) (+1 hit)
   save.__ammo = [...save.__ammo, { id: 'amm-3', name: 'Arrow of flame +1', hitAdj: '+1', dmgAdj: '+1', dmgSM: '1d6', dmgL: '1d6', notes: 'Fire' }];
@@ -183,11 +183,18 @@ test('ammunition: the weapon\'s and the ammo\'s bonuses add up; the ammo sets th
   assert.equal(r.character.weapons['Long bow, flame'].thac0, 15);                    // 16 with flight arrows, −1 more
   assert.deepEqual(r.damage['Rifiyr|Long bow, flame'], { sm: '1d6+1', l: '1d6+1' });
   assert.deepEqual(r.damage['Rifiyr|Folding bow, sheaf'], { sm: '1d8-1', l: '1d8-1' });   // the folding bow's −1 still counts
-  // Uses Ammo? is the weapon's own setting; older saves count a bow (not a crossbow) as yes
-  assert.deepEqual([usesAmmo({ name: 'Long bow' }), usesAmmo({ name: 'Heavy crossbow' }), usesAmmo({ name: 'Recurve', usesAmmo: true }), usesAmmo({ name: 'Long bow', usesAmmo: false })],
-    [true, false, true, false]);
+  // Uses Ammo? is the weapon's own setting (which ammo, or No); older saves count a bow (not a crossbow) as arrows
+  assert.deepEqual([weaponAmmoType({ name: 'Long bow' }), weaponAmmoType({ name: 'Heavy crossbow' }), weaponAmmoType({ name: 'Recurve', ammoType: 'arrows' }),
+    weaponAmmoType({ name: 'Long bow', ammoType: '' }), weaponAmmoType({ name: 'Light crossbow', usesAmmo: true })],
+    ['arrows', '', 'arrows', '', 'quarrels']);
+  assert.equal(usesAmmo({ name: 'Sling', ammoType: 'sling' }), true);
+  // Only ammo of the weapon's type fits: a quarrel isn't offered to a bow, and can't be fired from one
+  const quarrel = { id: 'amm-9', name: 'Heavy quarrel', type: 'quarrels', hitAdj: '', dmgAdj: '', dmgSM: '1d4+1', dmgL: '1d6+1', notes: '' };
+  const withQuarrel = { ...save, __ammo: [...save.__ammo, quarrel] };
+  assert.deepEqual(ammoFor({ ammo: withQuarrel.__ammo }, save.__weapons.find(w => w.id === 'wpn-2')).map(a => a.name), ['Flight arrows', 'Sheaf arrows', 'Arrow of flame +1']);
+  assert.deepEqual(toDMHelper({ ...withQuarrel, __scenarios: [{ ...save.__scenarios.find(s => s.id === 'sc-1'), ammo: 'amm-9' }] }, {}, { catalog }).damage['Rifiyr|Long bow, flight'], { sm: '1d8', l: '1d6' });
   // A weapon set to No ignores the ammo and uses its own dice
-  const off = { ...save, __weapons: save.__weapons.map(w => (w.id === 'wpn-2' ? { ...w, usesAmmo: false } : w)) };
+  const off = { ...save, __weapons: save.__weapons.map(w => (w.id === 'wpn-2' ? { ...w, ammoType: '' } : w)) };
   assert.deepEqual(toDMHelper(off, {}, { catalog }).damage['Rifiyr|Long bow, flame'], { sm: '1d8', l: '1d6' });
   // Scenarios from before the Ammunition list ("flight"/"sheaf") still get PHB dice
   const old = { ...save, __ammo: [], __scenarios: [{ ...save.__scenarios.find(s => s.id === 'sc-1'), ammo: 'sheaf' }] };

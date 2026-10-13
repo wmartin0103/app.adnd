@@ -241,20 +241,40 @@ export function spellArrow(ctx, sc) {
 }
 
 // ── Ammunition ──
-// A weapon that uses ammo (a bow) gets its damage dice from the ammunition,
-// and adds both adjustments: Long Bow (Fine) +1 hit with an arrow of flame +1
-// is +2 to hit. Each weapon says whether it uses ammo (`usesAmmo`, its
-// settings gear); saves from before the setting count a bow (not a crossbow)
-// as yes. The sheet's Ammunition list is `__ammo`; a scenario picks one
-// (`ammo`, its id). Without one, the weapon row's own dice are used.
+// A weapon that uses ammo gets its damage dice from the ammunition, and adds
+// both adjustments: Long Bow (Fine) +1 hit with an arrow of flame +1 is +2 to
+// hit. Each weapon says which ammo it takes (`ammoType`, its settings gear);
+// each item on the sheet's Ammunition list (`__ammo`) has a type too, and a
+// scenario picks one of the matching type (`ammo`, its id). Without one, the
+// weapon row's own dice are used. The PHB's ammunition, by weapon:
+export const AMMO_TYPES = { arrows: 'Arrows', quarrels: 'Quarrels', sling: 'Sling ammo', blowgun: 'Blowgun ammo' };
 export const isBow = wpn => !!wpn && /bow/i.test(wpn.name || '') && !/crossbow/i.test(wpn.name || '');
-export const usesAmmo = wpn => !!wpn && (typeof wpn.usesAmmo === 'boolean' ? wpn.usesAmmo : isBow(wpn));
+// Saves from before the type: a weapon set to use ammo takes what its name
+// says, and one never set counts as a bow (not a crossbow) or not at all
+const typeFromName = name => {
+  const n = String(name || '').toLowerCase();
+  return /crossbow|quarrel|bolt/.test(n) ? 'quarrels' : /sling|bullet|stone/.test(n) ? 'sling' : /blowgun|dart|needle/.test(n) ? 'blowgun' : 'arrows';
+};
+export function weaponAmmoType(wpn) {
+  if (!wpn) return '';
+  if (typeof wpn.ammoType === 'string') return AMMO_TYPES[wpn.ammoType] ? wpn.ammoType : '';
+  if (wpn.usesAmmo === true) return typeFromName(wpn.name);
+  if (wpn.usesAmmo === false) return '';
+  return isBow(wpn) ? 'arrows' : '';
+}
+export const usesAmmo = wpn => !!weaponAmmoType(wpn);
+export const ammoType = a => (a && AMMO_TYPES[a.type] ? a.type : typeFromName(a && a.name));
+// The Ammunition list's items that fit this weapon
+export const ammoFor = (ctx, wpn) => {
+  const type = weaponAmmoType(wpn);
+  return type ? (ctx.ammo || []).filter(a => ammoType(a) === type) : [];
+};
 // Scenarios from before the Ammunition list named the arrow itself (PHB dice)
 const OLD_ARROWS = { flight: { name: 'Flight arrows', dmgSM: '1d6', dmgL: '1d6' }, sheaf: { name: 'Sheaf arrows', dmgSM: '1d8', dmgL: '1d8' } };
 export function scenarioAmmo(ctx, sc) {
   const wpn = scenarioWeapon(ctx, sc);
   if (!usesAmmo(wpn) || !sc.ammo) return null;
-  return (ctx.ammo || []).find(a => a.id === sc.ammo) || OLD_ARROWS[sc.ammo] || null;
+  return ammoFor(ctx, wpn).find(a => a.id === sc.ammo) || (weaponAmmoType(wpn) === 'arrows' && OLD_ARROWS[sc.ammo]) || null;
 }
 // The weapon's base dice for this scenario: the ammunition's, or the row's
 export function scenarioDice(ctx, sc) {

@@ -24,13 +24,12 @@ s.__classes[0].kit = 'bowcaster';
 for (const w of s.__weapons) { w.dmgSM = w.dmgSM.toLowerCase(); w.dmgL = w.dmgL.toLowerCase(); }
 const dagger = s.__weapons.find(w => w.id === 'wpn-3');
 dagger.hitAdj = '';
-// His bows use ammo; the arrows are on the Ammunition list (PHB dice). The
+// His bows take arrows; the arrows are on the Ammunition list (PHB dice). The
 // quiver of fine arrows (+1 to material saves) changes no numbers.
-for (const id of ['wpn-2', 'wpn-4']) s.__weapons.find(w => w.id === id).usesAmmo = true;
-for (const w of s.__weapons.filter(w => !w.usesAmmo)) w.usesAmmo = false;
+for (const w of s.__weapons) w.ammoType = ['wpn-2', 'wpn-4'].includes(w.id) ? 'arrows' : '';
 s.__ammo = [
-  { id: 'amm-1', name: 'Flight arrows', hitAdj: '', dmgAdj: '', dmgSM: '1d6', dmgL: '1d6', notes: '' },
-  { id: 'amm-2', name: 'Sheaf arrows', hitAdj: '', dmgAdj: '', dmgSM: '1d8', dmgL: '1d8', notes: '' },
+  { id: 'amm-1', name: 'Flight arrows', type: 'arrows', hitAdj: '', dmgAdj: '', dmgSM: '1d6', dmgL: '1d6', notes: '' },
+  { id: 'amm-2', name: 'Sheaf arrows', type: 'arrows', hitAdj: '', dmgAdj: '', dmgSM: '1d8', dmgL: '1d8', notes: '' },
 ];
 s.__ammoCounter = 2;
 const sc = (o) => ({ group: 'wizard', levelMode: 'sheet', customLevel: 1, active: false, collapsed: false, handedness: 'main', offHandPenalty: '', spellId: null, spell: {}, hitMod: '', dmgMod: '', rate: '1/1', ...o });
