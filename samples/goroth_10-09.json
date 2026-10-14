@@ -1,6 +1,6 @@
 {
   "__version": 1,
-  "name": "Nandun Goroth",
+  "name": "Goroth",
   "player": "",
   "race-group": "half-orc",
   "alignment": "Chaotic-Good",
@@ -318,9 +318,18 @@
       "ability": "con",
       "adj": "",
       "slots": ""
+    },
+    {
+      "id": "nwp-5",
+      "name": "Danger Sense",
+      "desc": "Source: Free",
+      "url": "",
+      "ability": "wis",
+      "adj": "+1",
+      "slots": "Free"
     }
   ],
-  "__nwpCounter": 5,
+  "__nwpCounter": 6,
   "__abilitiesCards": [
     {
       "id": "abc-1",

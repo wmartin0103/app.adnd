@@ -1,4 +1,9 @@
-// Nandun's current save: the converted Excel save with corrections agreed since.
+// Goroth's current save: the converted Excel save (samples/nandun.json) with
+// corrections agreed since.
+//   • 10-13: his name is Goroth (the Excel sheet had "Nandun Goroth"), so the
+//     DM Helper's import replaces its hand-typed Goroth
+//   • 10-13: Danger Sense (PHB, Wis +1), which the DM Helper's surprise check
+//     uses; it was on his hand-typed DM Helper entry but not on the sheet
 //   • 10-09: Str 18/00 (Brute kit "Ripped"), entered as exceptional Strength
 //   • 10-09: weapon rows hold the weapon only. The Excel rows had Str 18/00
 //     (+3 hit, +6 dmg) and proficiency built in; Strength now comes from the
@@ -7,10 +12,13 @@
 // Club proficient (Clubbing tight group), Maul expertise, Harpoon proficient,
 // Dagger and Spear not proficient (warrior −2). Unarmed is Wild Brawl, 1d6.
 // The Maul's other +2 to hit has no stated source; kept as Hit Mod.
-// Output: samples/nandun_10-09.json
+// Output: samples/goroth_10-09.json
 import { readFileSync, writeFileSync } from 'node:fs';
 
 const s = JSON.parse(readFileSync('samples/nandun.json', 'utf8'));
+s.name = 'Goroth';
+s.__nwps = [...s.__nwps, { id: `nwp-${s.__nwpCounter}`, name: 'Danger Sense', desc: 'Source: Free', url: '', ability: 'wis', adj: '+1', slots: 'Free' }];
+s.__nwpCounter += 1;
 s['str-pct'] = '00';
 // "1d6+6" → "1d6": the +6 is Strength
 const noStr = d => String(d).replace(/\+6$/, '');
@@ -34,5 +42,5 @@ s.__scenarios = [
   sc({ id: 'sc-7', name: 'Wrestling', weaponId: byName('Wrestling*').id, attackType: 'melee' }),
 ];
 s.__scenarioCounter = 7;
-writeFileSync('samples/nandun_10-09.json', JSON.stringify(s, null, 2) + '\n');
-console.log('Wrote samples/nandun_10-09.json');
+writeFileSync('samples/goroth_10-09.json', JSON.stringify(s, null, 2) + '\n');
+console.log('Wrote samples/goroth_10-09.json');

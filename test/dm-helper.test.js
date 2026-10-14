@@ -100,15 +100,25 @@ test('Jaque\'s scenarios become the DM Helper\'s attacks, with the sheet\'s numb
   assert.equal(r.thief['Open Locks'], 55);
 });
 
-// Nandun's current save: Str 18/00, weapon rows without Strength. The melee
+// Goroth's current save: Str 18/00, weapon rows without Strength. The melee
 // numbers match the Excel sheet he was converted from.
-test('Nandun\'s melee scenarios match his Excel sheet', () => {
-  const r = toDMHelper(JSON.parse(readFileSync(new URL('../samples/nandun_10-09.json', import.meta.url))));
+test('Goroth imports under the name the DM Helper uses, with PHB skill names and Danger Sense', () => {
+  const r = toDMHelper(JSON.parse(readFileSync(new URL('../samples/goroth_10-09.json', import.meta.url))));
+  assert.equal(r.name, 'Goroth');
+  assert.deepEqual(Object.keys(r.skills), ['Dirty Tricks', 'Intimidation', 'Running', 'Danger Sense']);   // "Wild Fighting" has no check
+  assert.deepEqual(r.skills['Danger Sense'], { t: 13, src: 'Free' });                                   // Wis 12 +1
+  // Book codes from the Excel sheet come off; names without one stay as they are
+  const s = toDMHelper(JSON.parse(readFileSync(new URL('../samples/hanspeter_10-09.json', import.meta.url)))).skills;
+  assert.ok(s['Animal Lore'] && s['Persuasion'] && s['Tumbling'] && s['Homeopathy'] === undefined && s['Survival']);
+});
+
+test('Goroth\'s melee scenarios match his Excel sheet', () => {
+  const r = toDMHelper(JSON.parse(readFileSync(new URL('../samples/goroth_10-09.json', import.meta.url))));
   const thac0 = Object.fromEntries(Object.entries(r.character.weapons).map(([k, v]) => [k, v.thac0]));
   assert.deepEqual([thac0.Maul, thac0.Club, thac0.Dagger, thac0.Punch, thac0.Wrestling], [13, 15, 17, 15, 15]);
   assert.deepEqual(r.character.secondary, [{ name: 'Maul (2nd, alt. rounds)', thac0: 13 }]);
-  assert.deepEqual(r.damage['Nandun Goroth|Maul'], { sm: '2d4+6', l: '1d10+6' });
-  assert.deepEqual(r.damage['Nandun Goroth|Dagger'], { sm: '1d4+6', l: '1d3+6' });
+  assert.deepEqual(r.damage['Goroth|Maul'], { sm: '2d4+6', l: '1d10+6' });
+  assert.deepEqual(r.damage['Goroth|Dagger'], { sm: '1d4+6', l: '1d3+6' });
 });
 
 // Tig's current save, rebuilt on PHB values: THAC0 18 (Bard 5)

@@ -352,7 +352,7 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
 
 **Data questions to settle**
 
-- [x] Nandun's Strength: 18/00 (2026-10-09, `samples/nandun_10-09.json`).
+- [x] Goroth's (Nandun's) Strength: 18/00 (2026-10-09, now `samples/goroth_10-09.json`).
 - [ ] Nandun's thrown attacks (Spear, Harpoon) are 3 worse than his Excel sheet: it added Str to hit, the app uses Dex (decision 26). Keep the app's rule?
 - [ ] Nandun's Maul has +2 to hit with no stated source; kept as Hit Mod.
 - [x] Hanspeter's spells are Priest (druid), spell class Priest (2026-10-09, `samples/hanspeter_10-09.json`).
@@ -393,14 +393,17 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
 
 **DM Helper import: found 2026-10-13** (see PLAN 1a for what the tool is for)
 
-- [ ] Character names: Import files a character under the name on its sheet.
-  Nandun's sheet says "Nandun Goroth", the DM Helper knows him as "Goroth", so
-  importing him adds a second character instead of replacing the hand-typed
-  one, and the DM's own settings for Goroth don't carry over.
-- [ ] Danger Sense: the surprise check looks for a skill named exactly
-  "Danger Sense". Nandun's sheet doesn't list it (the hand-typed entry does),
-  and the converted Excel skills carry book codes ("Intimidation G
-  (DSDPH93)"), so group checks by skill name would miss them.
+- [x] Character names (2026-10-13): his name is Goroth. His converted save is
+  now `samples/goroth_10-09.json` (`scripts/convert-goroth.mjs`) and imports
+  over the hand-typed Goroth, keeping the DM's settings.
+- [x] Danger Sense (2026-10-13): added to Goroth's sheet (Wis +1: 13).
+- [x] Skill names (2026-10-13): the import drops the Excel sheet's group code
+  and book reference ("Intimidation G (DSDPH93)" → "Intimidation"), and skips
+  proficiencies with no ability check ("Wild Fighting").
+- [ ] Goroth's other skills: his hand-typed DM entry also has Animal Lore,
+  Hiding, Survival and Tracking (Barbarian Home Terrain) and different targets
+  for Running (12 vs 18 from Con) and Dirty Tricks (10 vs 12 from Wis). The
+  sheet is the source of truth, so these need adding or confirming there.
 
 **Known gaps, deliberately deferred**
 
