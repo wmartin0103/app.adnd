@@ -429,13 +429,13 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
   | Atteroak | Endurance | 16 | Con +0 = 16 | 14 |
   | Atteroak | Religion | 18 | Wis +0 = 18 | 17 |
   | Atteroak | Bargain | 18 | not found on the wiki | 15 |
-  | Tig | Enamour | 17 | not found on the wiki | 15 |
 
-  Skills the DM rolls that don't reach the import: Tig's Dancing, Jousting,
-  Languages Ancient, Poetry, Riding Horse Spec. and Storytelling are on his
-  sheet with no ability set; his Musical Instrument and Singing, and
-  Hanspeter's Herbalism, aren't on the sheets; Hanspeter's Homeopathy and
-  Naturopathy have no ability set.
+  Skills the DM rolls that don't reach the import: Hanspeter's Herbalism
+  isn't on his sheet, and his Homeopathy and Naturopathy have no ability set.
+- [x] Tig's proficiencies (2026-10-13), on book values: all 18 now import.
+  Abilities set for Dancing, Languages Ancient, Poetry, Riding (renamed
+  "Riding, Land-based"), Jousting and Storytelling; Enamour Cha −2 (Complete
+  Ninja's, as "Enamor"); Musical Instrument and Singing added.
 - [x] Proficiency names (2026-10-13): the Excel sheet's group codes and book
   references are removed from the converted sheets too
   (`scripts/tidy-names.mjs`), so names read the same on the sheet and in the

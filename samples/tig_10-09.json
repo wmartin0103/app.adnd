@@ -405,7 +405,7 @@
       "desc": "Source: Hum",
       "url": "",
       "ability": "cha",
-      "adj": "",
+      "adj": "-2",
       "slots": ""
     },
     {
@@ -458,8 +458,8 @@
       "name": "Dancing",
       "desc": "Source: Gal",
       "url": "",
-      "ability": "",
-      "adj": "",
+      "ability": "dex",
+      "adj": "0",
       "slots": ""
     },
     {
@@ -467,8 +467,8 @@
       "name": "Languages, Ancient",
       "desc": "Source: Gal",
       "url": "",
-      "ability": "",
-      "adj": "",
+      "ability": "int",
+      "adj": "0",
       "slots": ""
     },
     {
@@ -476,17 +476,17 @@
       "name": "Poetry",
       "desc": "Source: Gal",
       "url": "",
-      "ability": "",
-      "adj": "",
+      "ability": "int",
+      "adj": "-2",
       "slots": ""
     },
     {
       "id": "nwp-14",
-      "name": "Riding Horse Spec.",
+      "name": "Riding, Land-based",
       "desc": "Source: Gal +\nInt",
       "url": "",
-      "ability": "",
-      "adj": "",
+      "ability": "wis",
+      "adj": "+3",
       "slots": ""
     },
     {
@@ -494,8 +494,8 @@
       "name": "Jousting",
       "desc": "Source: Lvl-3",
       "url": "",
-      "ability": "",
-      "adj": "",
+      "ability": "dex",
+      "adj": "+2",
       "slots": ""
     },
     {
@@ -503,12 +503,30 @@
       "name": "Storytelling",
       "desc": "Source: Int",
       "url": "",
-      "ability": "",
-      "adj": "",
+      "ability": "cha",
+      "adj": "0",
       "slots": ""
+    },
+    {
+      "id": "nwp-18",
+      "name": "Musical Instrument",
+      "desc": "Source: Bard",
+      "url": "",
+      "ability": "dex",
+      "adj": "-1",
+      "slots": "Bard"
+    },
+    {
+      "id": "nwp-19",
+      "name": "Singing",
+      "desc": "Source: Bard",
+      "url": "",
+      "ability": "cha",
+      "adj": "0",
+      "slots": "Bard"
     }
   ],
-  "__nwpCounter": 17,
+  "__nwpCounter": 19,
   "__abilitiesCards": [
     {
       "id": "abc-1",

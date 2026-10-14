@@ -113,6 +113,12 @@ test('Goroth imports under the name the DM Helper uses, with PHB skill names and
   assert.ok(s['Animal Lore'] && s['Persuasion'] && s['Tumbling'] && s['Homeopathy'] === undefined && s['Survival']);
 });
 
+test('Tig\'s proficiencies all import, on book values', () => {
+  const s = toDMHelper(JSON.parse(readFileSync(new URL('../samples/tig_10-09.json', import.meta.url)))).skills;
+  assert.equal(Object.keys(s).length, 18);
+  assert.deepEqual(['Dancing', 'Poetry', 'Riding, Land-based', 'Jousting', 'Enamour', 'Musical Instrument', 'Singing'].map(k => s[k].t), [13, 15, 16, 15, 15, 12, 17]);
+});
+
 test('Goroth\'s melee scenarios match his Excel sheet', () => {
   const r = toDMHelper(JSON.parse(readFileSync(new URL('../samples/goroth_10-09.json', import.meta.url))));
   const thac0 = Object.fromEntries(Object.entries(r.character.weapons).map(([k, v]) => [k, v.thac0]));

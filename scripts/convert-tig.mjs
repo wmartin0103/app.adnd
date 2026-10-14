@@ -47,13 +47,24 @@ s.__stances = [
   ] },
 ];
 s.__stanceCounter = 1;
-// Proficiency adjustments the Excel conversion dropped, from the books
-// (checked on the 2e wiki, 10-13): Persuasion Cha −2, Style Analysis Int −1,
-// Tactics Int −1; Local History is a Cha check (PHB)
-const BOOK = { Persuasion: ['cha', '-2'], 'Style Analysis': ['int', '-1'], Tactics: ['int', '-1'], 'Local History': ['cha', '0'] };
+// Proficiency abilities and adjustments from the books (checked on the 2e
+// wiki, 10-13; the Excel conversion had none, and six had no ability at all):
+// PHB unless noted. Poetry: Complete Bard's; Jousting: Complete Paladin's;
+// Storytelling: Dragon #245; Enamour, Style Analysis: Complete Ninja's;
+// Persuasion: Player's Option; Tactics: Dark Sun.
+const BOOK = {
+  Persuasion: ['cha', '-2'], 'Style Analysis': ['int', '-1'], Tactics: ['int', '-1'], 'Local History': ['cha', '0'],
+  Enamour: ['cha', '-2'], Dancing: ['dex', '0'], 'Languages, Ancient': ['int', '0'], Poetry: ['int', '-2'],
+  Riding: ['wis', '+3'], Jousting: ['dex', '+2'], Storytelling: ['cha', '0'],
+};
 for (const p of s.__nwps) {
+  if (p.name === 'Riding Horse Spec.') p.name = 'Riding, Land-based';   // the PHB proficiency
   const k = Object.keys(BOOK).find(n => p.name.startsWith(n));
   if (k) [p.ability, p.adj] = BOOK[k];
+}
+// Bard proficiencies the DM Helper had hand-typed but the sheet didn't
+for (const [name, ability, adj] of [['Musical Instrument', 'dex', '-1'], ['Singing', 'cha', '0']]) {
+  s.__nwps.push({ id: `nwp-${++s.__nwpCounter}`, name, desc: 'Source: Bard', url: '', ability, adj, slots: 'Bard' });
 }
 writeFileSync('samples/tig_10-09.json', JSON.stringify(s, null, 2) + '\n');
 console.log('Wrote samples/tig_10-09.json');
