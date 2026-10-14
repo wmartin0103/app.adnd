@@ -431,10 +431,15 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
   | Atteroak | Bargain | 18 | not found on the wiki | 15 |
   | Tig | Enamour | 17 | not found on the wiki | 15 |
 
-  The DM's hand-typed skills include
-  some the sheets don't have (Tig: Dancing, Jousting, Languages Ancient,
-  Musical Instrument, Poetry, Riding, Singing, Storytelling; Hanspeter:
-  Herbalism; Homeopathy and Naturopathy have no ability check on his sheet).
+  Skills the DM rolls that don't reach the import: Tig's Dancing, Jousting,
+  Languages Ancient, Poetry, Riding Horse Spec. and Storytelling are on his
+  sheet with no ability set; his Musical Instrument and Singing, and
+  Hanspeter's Herbalism, aren't on the sheets; Hanspeter's Homeopathy and
+  Naturopathy have no ability set.
+- [x] Proficiency names (2026-10-13): the Excel sheet's group codes and book
+  references are removed from the converted sheets too
+  (`scripts/tidy-names.mjs`), so names read the same on the sheet and in the
+  DM Helper.
 
 **Known gaps, deliberately deferred**
 

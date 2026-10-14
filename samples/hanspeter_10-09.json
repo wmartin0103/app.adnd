@@ -227,7 +227,7 @@
   "__nwps": [
     {
       "id": "nwp-1",
-      "name": "Animal Lore W (77,CPn72)",
+      "name": "Animal Lore",
       "desc": "Source: Kit",
       "url": "",
       "ability": "wis",
@@ -236,7 +236,7 @@
     },
     {
       "id": "nwp-2",
-      "name": "Musical Instrument G (POSP101)",
+      "name": "Musical Instrument",
       "desc": "Source: Kit",
       "url": "",
       "ability": "wis",
@@ -245,7 +245,7 @@
     },
     {
       "id": "nwp-3",
-      "name": "Singing G (84)",
+      "name": "Singing",
       "desc": "Source: Kit",
       "url": "",
       "ability": "cha",
@@ -254,7 +254,7 @@
     },
     {
       "id": "nwp-4",
-      "name": "Survival R (85,CT19)",
+      "name": "Survival",
       "desc": "Source: Kit",
       "url": "",
       "ability": "int",
@@ -263,7 +263,7 @@
     },
     {
       "id": "nwp-5",
-      "name": "Persuasion G (CR84)",
+      "name": "Persuasion",
       "desc": "Source: Bonus",
       "url": "",
       "ability": "cha",
@@ -272,7 +272,7 @@
     },
     {
       "id": "nwp-6",
-      "name": "Tumbling GB (87,CBb72)",
+      "name": "Tumbling",
       "desc": "Source: Brd",
       "url": "",
       "ability": "dex",
@@ -281,7 +281,7 @@
     },
     {
       "id": "nwp-7",
-      "name": "Camouflage R (CR82)",
+      "name": "Camouflage",
       "desc": "Source: Brd",
       "url": "",
       "ability": "wis",
@@ -290,7 +290,7 @@
     },
     {
       "id": "nwp-8",
-      "name": "Hunting R (82,CT18)",
+      "name": "Hunting",
       "desc": "Source: Brd",
       "url": "",
       "ability": "wis",
@@ -299,7 +299,7 @@
     },
     {
       "id": "nwp-9",
-      "name": "Natural Fighting WH (CBH96)",
+      "name": "Natural Fighting",
       "desc": "Source: Dru",
       "url": "",
       "ability": "9.0",
@@ -308,7 +308,7 @@
     },
     {
       "id": "nwp-10",
-      "name": "Foraging G (XSh20)",
+      "name": "Foraging",
       "desc": "Source: Dru",
       "url": "",
       "ability": "int",
@@ -373,7 +373,7 @@
     },
     {
       "id": "wpc-3",
-      "name": "Clubbing Tight Group 2 (CF59)",
+      "name": "Clubbing Tight Group 2",
       "desc": "Special weapon proficiency slot",
       "url": "",
       "slots": ""

@@ -163,7 +163,7 @@
   "__nwps": [
     {
       "id": "nwp-1",
-      "name": "Animal Handling G (77,CR80,CPn72)",
+      "name": "Animal Handling",
       "desc": "Source: Int",
       "url": "",
       "ability": "wis",
@@ -172,7 +172,7 @@
     },
     {
       "id": "nwp-2",
-      "name": "Armorer W (79,CF4,CPn72)",
+      "name": "Armorer",
       "desc": "Source: Int + Cleric",
       "url": "",
       "ability": "wis",
@@ -181,7 +181,7 @@
     },
     {
       "id": "nwp-3",
-      "name": "Artistic Ability G (79)",
+      "name": "Artistic Ability",
       "desc": "Source: Cleric",
       "url": "",
       "ability": "cha",
@@ -190,7 +190,7 @@
     },
     {
       "id": "nwp-4",
-      "name": "Cooking G (80)",
+      "name": "Cooking",
       "desc": "Source: Gift",
       "url": "",
       "ability": "wis",
@@ -199,7 +199,7 @@
     },
     {
       "id": "nwp-5",
-      "name": "Endurance W (80)",
+      "name": "Endurance",
       "desc": "Source: Kit",
       "url": "",
       "ability": "con",
@@ -208,7 +208,7 @@
     },
     {
       "id": "nwp-6",
-      "name": "Healing P (81,CPn72)",
+      "name": "Healing",
       "desc": "Source: Cleric",
       "url": "",
       "ability": "wis",
@@ -217,7 +217,7 @@
     },
     {
       "id": "nwp-7",
-      "name": "Religion P (83)",
+      "name": "Religion",
       "desc": "Source: Kit",
       "url": "",
       "ability": "wis",
@@ -235,7 +235,7 @@
     },
     {
       "id": "nwp-9",
-      "name": "Bargain G (DSAH46)",
+      "name": "Bargain",
       "desc": "Source: Lvl3",
       "url": "",
       "ability": "wis",
@@ -276,14 +276,14 @@
     },
     {
       "id": "wpc-3",
-      "name": "Single Weapon Style Spec. 1-2 (CF62)",
+      "name": "Single Weapon Style Spec. 1-2",
       "desc": "Special weapon proficiency slot",
       "url": "",
       "slots": ""
     },
     {
       "id": "wpc-4",
-      "name": "Single Weapon Style Spec. 1-2 (CF62)",
+      "name": "Single Weapon Style Spec. 1-2",
       "desc": "Special weapon proficiency slot",
       "url": "",
       "slots": ""

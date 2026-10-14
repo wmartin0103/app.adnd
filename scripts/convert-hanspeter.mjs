@@ -5,8 +5,11 @@
 // Weapons are unchanged for now: two rows are unnamed (likely animal forms).
 // Output: samples/hanspeter_10-09.json
 import { readFileSync, writeFileSync } from 'node:fs';
+import { tidyProficiencyNames } from './tidy-names.mjs';
 
 const s = JSON.parse(readFileSync('samples/hanspeter.json', 'utf8'));
+// 10-13: proficiency names without the Excel sheet's group codes and book references
+tidyProficiencyNames(s);
 s.__spellClass = 'priest';
 for (const sp of s.__spells) {
   sp.type = 'priest';

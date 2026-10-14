@@ -365,7 +365,7 @@
   "__nwps": [
     {
       "id": "nwp-1",
-      "name": "Folklore G (WPR123)",
+      "name": "Folklore",
       "desc": "Source: Int",
       "url": "",
       "ability": "cha",
@@ -374,7 +374,7 @@
     },
     {
       "id": "nwp-2",
-      "name": "Local History P (82)",
+      "name": "Local History",
       "desc": "Source: Int",
       "url": "",
       "ability": "cha",
@@ -383,7 +383,7 @@
     },
     {
       "id": "nwp-3",
-      "name": "Observation G (MRS87)",
+      "name": "Observation",
       "desc": "Source: Int",
       "url": "",
       "ability": "int",
@@ -392,7 +392,7 @@
     },
     {
       "id": "nwp-4",
-      "name": "Persuasion G (CR84)",
+      "name": "Persuasion",
       "desc": "Source: Int",
       "url": "",
       "ability": "cha",
@@ -401,7 +401,7 @@
     },
     {
       "id": "nwp-5",
-      "name": "Enamour R (CNj34)",
+      "name": "Enamour",
       "desc": "Source: Hum",
       "url": "",
       "ability": "cha",
@@ -410,7 +410,7 @@
     },
     {
       "id": "nwp-6",
-      "name": "Style Analysis W (CNj38)",
+      "name": "Style Analysis",
       "desc": "Source: Fighter",
       "url": "",
       "ability": "int",
@@ -419,7 +419,7 @@
     },
     {
       "id": "nwp-7",
-      "name": "Swimming G (86)",
+      "name": "Swimming",
       "desc": "Source: Fighter",
       "url": "",
       "ability": "str",
@@ -428,7 +428,7 @@
     },
     {
       "id": "nwp-8",
-      "name": "Tactics W (HRAH42,DSAH49)",
+      "name": "Tactics",
       "desc": "Source: Fighter",
       "url": "",
       "ability": "int",
@@ -437,7 +437,7 @@
     },
     {
       "id": "nwp-9",
-      "name": "Etiquette G (80)",
+      "name": "Etiquette",
       "desc": "Source: Cav + Gal",
       "url": "",
       "ability": "cha",
@@ -446,7 +446,7 @@
     },
     {
       "id": "nwp-10",
-      "name": "Appraising GD (79)",
+      "name": "Appraising",
       "desc": "Source: Bard",
       "url": "",
       "ability": "int",
@@ -455,7 +455,7 @@
     },
     {
       "id": "nwp-11",
-      "name": "Dancing G (80)",
+      "name": "Dancing",
       "desc": "Source: Gal",
       "url": "",
       "ability": "",
@@ -464,7 +464,7 @@
     },
     {
       "id": "nwp-12",
-      "name": "Languages, Ancient PH (82)",
+      "name": "Languages, Ancient",
       "desc": "Source: Gal",
       "url": "",
       "ability": "",
@@ -473,7 +473,7 @@
     },
     {
       "id": "nwp-13",
-      "name": "Poetry G (CB66,CPn76)",
+      "name": "Poetry",
       "desc": "Source: Gal",
       "url": "",
       "ability": "",
@@ -482,7 +482,7 @@
     },
     {
       "id": "nwp-14",
-      "name": "Riding Horse Spec. W (AQAA76)",
+      "name": "Riding Horse Spec.",
       "desc": "Source: Gal +\nInt",
       "url": "",
       "ability": "",
@@ -491,7 +491,7 @@
     },
     {
       "id": "nwp-15",
-      "name": "Jousting W (CPn74)",
+      "name": "Jousting",
       "desc": "Source: Lvl-3",
       "url": "",
       "ability": "",
@@ -500,7 +500,7 @@
     },
     {
       "id": "nwp-16",
-      "name": "Storytelling G (MCGA13)",
+      "name": "Storytelling",
       "desc": "Source: Int",
       "url": "",
       "ability": "",
@@ -547,21 +547,21 @@
     },
     {
       "id": "wpc-3",
-      "name": "Two-Hander Style Spec. 1 (CF62)",
+      "name": "Two-Hander Style Spec. 1",
       "desc": "Special weapon proficiency slot",
       "url": "",
       "slots": ""
     },
     {
       "id": "wpc-4",
-      "name": "Local Fighting Style W 1 (POCT78)",
+      "name": "Local Fighting Style 1",
       "desc": "Special weapon proficiency slot",
       "url": "",
       "slots": ""
     },
     {
       "id": "wpc-5",
-      "name": "Single Weapon Style Spec. 1-2 (CF62)",
+      "name": "Single Weapon Style Spec. 1-2",
       "desc": "Special weapon proficiency slot",
       "url": "",
       "slots": ""

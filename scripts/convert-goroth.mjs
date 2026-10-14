@@ -15,8 +15,11 @@
 // The Maul's other +2 to hit has no stated source; kept as Hit Mod.
 // Output: samples/goroth_10-09.json
 import { readFileSync, writeFileSync } from 'node:fs';
+import { tidyProficiencyNames } from './tidy-names.mjs';
 
 const s = JSON.parse(readFileSync('samples/nandun.json', 'utf8'));
+// 10-13: proficiency names without the Excel sheet's group codes and book references
+tidyProficiencyNames(s);
 s.name = 'Goroth';
 // Adjustments the Excel conversion dropped: Running is Con −6 (PHB), Dirty
 // Tricks Wis −2 (Complete Gladiator's Handbook); checked on the 2e wiki

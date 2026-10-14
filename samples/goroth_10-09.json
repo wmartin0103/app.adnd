@@ -285,7 +285,7 @@
   "__nwps": [
     {
       "id": "nwp-1",
-      "name": "Wild Fighting G (CBb79)",
+      "name": "Wild Fighting",
       "desc": "Source: Barb",
       "url": "",
       "ability": "na",
@@ -294,7 +294,7 @@
     },
     {
       "id": "nwp-2",
-      "name": "Dirty Tricks W (DSCG29)",
+      "name": "Dirty Tricks",
       "desc": "Source: Int",
       "url": "",
       "ability": "wis",
@@ -303,7 +303,7 @@
     },
     {
       "id": "nwp-3",
-      "name": "Intimidation G (DSDPH93)",
+      "name": "Intimidation",
       "desc": "Source: Ranger",
       "url": "",
       "ability": "str",
@@ -312,7 +312,7 @@
     },
     {
       "id": "nwp-4",
-      "name": "Running WH (84)",
+      "name": "Running",
       "desc": "Source: Ranger",
       "url": "",
       "ability": "con",
@@ -404,21 +404,21 @@
     },
     {
       "id": "wpc-3",
-      "name": "Clubbing Tight Group 2 (CF59)",
+      "name": "Clubbing Tight Group 2",
       "desc": "Special weapon proficiency slot",
       "url": "",
       "slots": ""
     },
     {
       "id": "wpc-4",
-      "name": "Local Fighting Style W 1 (POCT78)",
+      "name": "Local Fighting Style 1",
       "desc": "Special weapon proficiency slot",
       "url": "",
       "slots": ""
     },
     {
       "id": "wpc-5",
-      "name": "Two-Handed Wpn Style W 1 (POCT77)",
+      "name": "Two-Handed Wpn Style 1",
       "desc": "Special weapon proficiency slot",
       "url": "",
       "slots": ""

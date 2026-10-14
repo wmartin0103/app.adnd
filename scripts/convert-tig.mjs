@@ -10,8 +10,11 @@
 // "Not proficient" note was inverted). Code of Gallant (+2, choose) is an Effect.
 // Output: samples/tig_10-09.json
 import { readFileSync, writeFileSync } from 'node:fs';
+import { tidyProficiencyNames } from './tidy-names.mjs';
 
 const s = JSON.parse(readFileSync('samples/tig.json', 'utf8'));
+// 10-13: proficiency names without the Excel sheet's group codes and book references
+tidyProficiencyNames(s);
 const phb = {
   'wpn-1': { name: 'Bastard Sword +1, two-handed', hitAdj: '+1', dmgAdj: '+1', dmgSM: '2d4', dmgL: '2d8', speed: '8' },
   'wpn-2': { name: 'Bastard Sword +1, one-handed', hitAdj: '+1', dmgAdj: '+1', dmgSM: '1d8', dmgL: '1d12', speed: '6' },

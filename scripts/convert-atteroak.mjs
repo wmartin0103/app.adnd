@@ -7,8 +7,11 @@
 // Weapons are unchanged for now: three questions are open (handoff).
 // Output: samples/atteroak_10-13.json
 import { readFileSync, writeFileSync } from 'node:fs';
+import { tidyProficiencyNames } from './tidy-names.mjs';
 
 const s = JSON.parse(readFileSync('samples/atteroak.json', 'utf8'));
+// 10-13: proficiency names without the Excel sheet's group codes and book references
+tidyProficiencyNames(s);
 for (const p of s.__nwps) {
   if (p.name.startsWith('Healing')) p.adj = '-2';
   // PHB title is Weaponsmithing (the Excel sheet had "Weaponsmith W (87,CF10)")
