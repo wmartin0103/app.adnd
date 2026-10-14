@@ -12,5 +12,12 @@ for (const sp of s.__spells) {
   sp.type = 'priest';
   if (sp.name === 'Light') sp.notes = 'To confirm: cast as a druid (Priest) or as a bard (Wizard)? Assumed druid.';
 }
+// 10-13: proficiency adjustments the Excel conversion dropped, where the book
+// (2e wiki) and the DM's hand-typed number agree: Persuasion Cha −2 (13),
+// Foraging Int −2 (11). The others are with the owner to review (handoff).
+for (const p of s.__nwps) {
+  if (p.name.startsWith('Persuasion')) p.adj = '-2';
+  if (p.name.startsWith('Foraging')) p.adj = '-2';
+}
 writeFileSync('samples/hanspeter_10-09.json', JSON.stringify(s, null, 2) + '\n');
 console.log('Wrote samples/hanspeter_10-09.json');

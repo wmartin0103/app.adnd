@@ -407,9 +407,35 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
   (2026-10-13): all eight now match the DM's numbers. Running is Con −6 (PHB)
   and Dirty Tricks Wis −2 (Complete Gladiator's Handbook); the Excel
   conversion had dropped those adjustments.
-- [ ] The other Excel-converted saves have no adjustment on any proficiency
-  (Hanspeter 9, Tig 10, Atteroak 9), so any with a book modifier are too high.
-  Check them against the wiki the same way.
+- [x] Proficiencies checked against the books (2e wiki), 2026-10-13. Tig: book
+  values (Persuasion −2, Style Analysis −1, Tactics −1, Local History on Cha).
+  Hanspeter: Persuasion −2 (13), Foraging −2 (11). Atteroak
+  (`samples/atteroak_10-13.json`): Healing −2 (16), Weaponsmith −3 on Wis
+  under his "Experienced" craft rule (15). Those last four are where the book
+  and the DM's hand-typed number agree.
+- [ ] Owner to review: proficiencies where the save, the book and the DM's
+  hand-typed number disagree. Until then the save's number is what imports.
+
+  | Character | Proficiency | Save | Book | DM |
+  | --- | --- | --- | --- | --- |
+  | Hanspeter | Animal Lore | Wis 18 | Int +0 = 13 | 18 (Kit) |
+  | Hanspeter | Musical Instrument | Wis 18 | Dex −1 = 10 | 16 (Kit) |
+  | Hanspeter | Hunting | 18 | Wis −1 = 17 | 16 |
+  | Hanspeter | Camouflage | 18 | Wis +0 = 18 | 17 |
+  | Atteroak | Armorer | 18 | Wis (Experienced) −2 = 16 | 15 |
+  | Atteroak | Animal Handling | 18 | Wis −1 = 17 | 16 |
+  | Atteroak | Cooking | 18 | Wis (Experienced) +0 = 18 | 17 (Gift) |
+  | Atteroak | Artistic Ability | Cha 11 | Wis +0 = 18 | 11 |
+  | Atteroak | Endurance | 16 | Con +0 = 16 | 14 |
+  | Atteroak | Religion | 18 | Wis +0 = 18 | 17 |
+  | Atteroak | Bargain | 18 | not found on the wiki | 15 |
+  | Tig | Enamour | 17 | not found on the wiki | 15 |
+
+  Also: Atteroak's sheet says "Weaponsmith", the DM Helper "Weaponsmithing"
+  (a group check by name would miss him). The DM's hand-typed skills include
+  some the sheets don't have (Tig: Dancing, Jousting, Languages Ancient,
+  Musical Instrument, Poetry, Riding, Singing, Storytelling; Hanspeter:
+  Herbalism; Homeopathy and Naturopathy have no ability check on his sheet).
 
 **Known gaps, deliberately deferred**
 

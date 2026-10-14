@@ -267,7 +267,7 @@
       "desc": "Source: Bonus",
       "url": "",
       "ability": "cha",
-      "adj": "",
+      "adj": "-2",
       "slots": ""
     },
     {
@@ -312,7 +312,7 @@
       "desc": "Source: Dru",
       "url": "",
       "ability": "int",
-      "adj": "",
+      "adj": "-2",
       "slots": ""
     },
     {
