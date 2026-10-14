@@ -391,6 +391,17 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
 - [x] The sheet is the source of truth; the DM asks for, or makes, changes in the sheet.
 - [x] Players see each other's full sheets, view-only. The owner, DM or an admin grants a player edit access to run a character for a session, then revokes it. A party view comes later.
 
+**DM Helper import: found 2026-10-13** (see PLAN 1a for what the tool is for)
+
+- [ ] Character names: Import files a character under the name on its sheet.
+  Nandun's sheet says "Nandun Goroth", the DM Helper knows him as "Goroth", so
+  importing him adds a second character instead of replacing the hand-typed
+  one, and the DM's own settings for Goroth don't carry over.
+- [ ] Danger Sense: the surprise check looks for a skill named exactly
+  "Danger Sense". Nandun's sheet doesn't list it (the hand-typed entry does),
+  and the converted Excel skills carry book codes ("Intimidation G
+  (DSDPH93)"), so group checks by skill name would miss them.
+
 **Known gaps, deliberately deferred**
 
 - Spell damage caps: done 2026-10-09 for the DM Helper. 26 per-level spells

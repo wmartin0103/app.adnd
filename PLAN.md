@@ -25,6 +25,36 @@ throw it away. A character "save" turns into one row in a `characters` table,
 with your existing JSON stored in a single column. That's why this migration
 can happen in small steps instead of a rewrite.
 
+### 1a. What the DM Helper is for (from the owner, 2026-10-13)
+
+**Primary goal:** help the DM roll encounters, track initiative, and check
+skills and saves, and give the players a framework to enter their own actions.
+
+It started as a stand-alone tool for the DM. Having the players enter their
+own actions turned out faster than the DM typing them in, so it became a shared
+table tool.
+
+**How a round works:**
+1. Each player rolls initiative; it shows up on the DM's initiative page.
+2. The player selects their actions. For an attack they pick a target, and can
+   roll to hit and damage right there if they want.
+3. The selected actions add to the initiative roll (weapon speed, casting
+   time), and the DM's page orders everything correctly.
+4. When the round is over the DM starts a new round, and players pick new
+   actions.
+
+Conditions are just modifiers on actions.
+
+**Built in:** Good Hits and Bad Misses for criticals and fumbles; Quickness
+(Jaque) and Danger Sense (Goroth); group proficiency checks and group saves.
+
+**Not wanted:** a Monster Manual inside the tool so encounters come with
+stats. It was considered; the DM said it's unnecessary.
+
+**What this means for the sheet → DM Helper link:** the sheet's numbers that
+matter most are the ones that feed a round: each attack's THAC0, damage and
+speed, casting times, and the skills and saves the DM rolls in groups.
+
 ---
 
 ## 2. Recommended stack
@@ -516,7 +546,8 @@ and its level, range, duration, and casting time fill in). The DM Helper uses it
 for spell casting times in initiative and for monster stats when adding foes.
 
 **Books (decided):** the **Player's Handbook** and the **Monstrous Manual**
-(the 2e monster book). Rules the group uses from elsewhere (e.g. Quickness,
+(the 2e monster book). *(2026-10-13: the DM doesn't want monster stats in the
+DM Helper, so the Monstrous Manual part is off unless that changes; see 1a.)* Rules the group uses from elsewhere (e.g. Quickness,
 Bladesong, kits) go in the campaign layer as house rules. The DMG tables the DM
 Helper already uses (reactions, crits, item saves) stay as they are.
 
