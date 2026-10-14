@@ -377,8 +377,8 @@
       "name": "Local History P (82)",
       "desc": "Source: Int",
       "url": "",
-      "ability": "int",
-      "adj": "",
+      "ability": "cha",
+      "adj": "0",
       "slots": ""
     },
     {
@@ -396,7 +396,7 @@
       "desc": "Source: Int",
       "url": "",
       "ability": "cha",
-      "adj": "",
+      "adj": "-2",
       "slots": ""
     },
     {
@@ -414,7 +414,7 @@
       "desc": "Source: Fighter",
       "url": "",
       "ability": "int",
-      "adj": "",
+      "adj": "-1",
       "slots": ""
     },
     {
@@ -432,7 +432,7 @@
       "desc": "Source: Fighter",
       "url": "",
       "ability": "int",
-      "adj": "",
+      "adj": "-1",
       "slots": ""
     },
     {

@@ -44,5 +44,13 @@ s.__stances = [
   ] },
 ];
 s.__stanceCounter = 1;
+// Proficiency adjustments the Excel conversion dropped, from the books
+// (checked on the 2e wiki, 10-13): Persuasion Cha −2, Style Analysis Int −1,
+// Tactics Int −1; Local History is a Cha check (PHB)
+const BOOK = { Persuasion: ['cha', '-2'], 'Style Analysis': ['int', '-1'], Tactics: ['int', '-1'], 'Local History': ['cha', '0'] };
+for (const p of s.__nwps) {
+  const k = Object.keys(BOOK).find(n => p.name.startsWith(n));
+  if (k) [p.ability, p.adj] = BOOK[k];
+}
 writeFileSync('samples/tig_10-09.json', JSON.stringify(s, null, 2) + '\n');
 console.log('Wrote samples/tig_10-09.json');
