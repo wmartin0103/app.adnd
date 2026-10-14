@@ -298,7 +298,7 @@
       "desc": "Source: Int",
       "url": "",
       "ability": "wis",
-      "adj": "",
+      "adj": "-2",
       "slots": ""
     },
     {
@@ -316,7 +316,7 @@
       "desc": "Source: Ranger",
       "url": "",
       "ability": "con",
-      "adj": "",
+      "adj": "-6",
       "slots": ""
     },
     {

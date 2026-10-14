@@ -403,8 +403,13 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
 - [x] Goroth's Home Terrain skills (2026-10-13): Animal Lore 10, Hiding 9,
   Survival 10, Tracking 12 added to his sheet as Free, matching the DM's
   numbers (Animal Lore Int +0 and Hiding Int −1 chosen to match).
-- [ ] Goroth's Running (DM 12, sheet 18 from Con) and Dirty Tricks (DM 10 from
-  Int, sheet 12 from Wis): which is right?
+- [x] Goroth's proficiencies checked against the books on the 2e wiki
+  (2026-10-13): all eight now match the DM's numbers. Running is Con −6 (PHB)
+  and Dirty Tricks Wis −2 (Complete Gladiator's Handbook); the Excel
+  conversion had dropped those adjustments.
+- [ ] The other Excel-converted saves have no adjustment on any proficiency
+  (Hanspeter 9, Tig 10, Atteroak 9), so any with a book modifier are too high.
+  Check them against the wiki the same way.
 
 **Known gaps, deliberately deferred**
 

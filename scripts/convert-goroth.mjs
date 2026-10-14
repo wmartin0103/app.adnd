@@ -18,9 +18,17 @@ import { readFileSync, writeFileSync } from 'node:fs';
 
 const s = JSON.parse(readFileSync('samples/nandun.json', 'utf8'));
 s.name = 'Goroth';
+// Adjustments the Excel conversion dropped: Running is Con −6 (PHB), Dirty
+// Tricks Wis −2 (Complete Gladiator's Handbook); checked on the 2e wiki
+for (const p of s.__nwps) {
+  if (/^Running\b/.test(p.name)) { p.ability = 'con'; p.adj = '-6'; }
+  if (/^Dirty Tricks\b/.test(p.name)) { p.ability = 'wis'; p.adj = '-2'; }
+}
 // Free proficiencies from his hand-typed DM Helper entry: Danger Sense, and
 // Barbarian Home Terrain (Forest): Animal Lore, Hiding, Survival, Tracking.
-// Ability and adjustment chosen to give the DM's targets.
+// Abilities and adjustments as the books have them (checked on the 2e wiki):
+// Animal Lore Int +0, Survival Int +0, Tracking Wis +0 (PHB); Hiding Int −1,
+// Danger Sense Wis +1 (Complete Barbarian's Handbook).
 const free = (name, ability, adj, desc) => ({ id: `nwp-${s.__nwpCounter++}`, name, desc, url: '', ability, adj, slots: 'Free' });
 s.__nwps = [...s.__nwps,
   free('Danger Sense', 'wis', '+1', 'Source: Free'),
