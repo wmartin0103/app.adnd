@@ -410,8 +410,8 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
 - [x] Proficiencies checked against the books (2e wiki), 2026-10-13. Tig: book
   values (Persuasion −2, Style Analysis −1, Tactics −1, Local History on Cha).
   Hanspeter: Persuasion −2 (13), Foraging −2 (11). Atteroak
-  (`samples/atteroak_10-13.json`): Healing −2 (16), Weaponsmith −3 on Wis
-  under his "Experienced" craft rule (15). Those last four are where the book
+  (`samples/atteroak_10-13.json`): Healing −2 (16), Weaponsmithing (renamed
+  to the PHB title) −3 on Wis under his "Experienced" craft rule (15). Those last four are where the book
   and the DM's hand-typed number agree.
 - [ ] Owner to review: proficiencies where the save, the book and the DM's
   hand-typed number disagree. Until then the save's number is what imports.
@@ -431,8 +431,7 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
   | Atteroak | Bargain | 18 | not found on the wiki | 15 |
   | Tig | Enamour | 17 | not found on the wiki | 15 |
 
-  Also: Atteroak's sheet says "Weaponsmith", the DM Helper "Weaponsmithing"
-  (a group check by name would miss him). The DM's hand-typed skills include
+  The DM's hand-typed skills include
   some the sheets don't have (Tig: Dancing, Jousting, Languages Ancient,
   Musical Instrument, Poetry, Riding, Singing, Storytelling; Hanspeter:
   Herbalism; Homeopathy and Naturopathy have no ability check on his sheet).
