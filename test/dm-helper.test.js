@@ -105,8 +105,9 @@ test('Jaque\'s scenarios become the DM Helper\'s attacks, with the sheet\'s numb
 test('Goroth imports under the name the DM Helper uses, with PHB skill names and Danger Sense', () => {
   const r = toDMHelper(JSON.parse(readFileSync(new URL('../samples/goroth_10-09.json', import.meta.url))));
   assert.equal(r.name, 'Goroth');
-  assert.deepEqual(Object.keys(r.skills), ['Dirty Tricks', 'Intimidation', 'Running', 'Danger Sense']);   // "Wild Fighting" has no check
-  assert.deepEqual(r.skills['Danger Sense'], { t: 13, src: 'Free' });                                   // Wis 12 +1
+  assert.deepEqual(Object.keys(r.skills), ['Dirty Tricks', 'Intimidation', 'Running', 'Danger Sense', 'Animal Lore', 'Hiding', 'Survival', 'Tracking']);   // "Wild Fighting" has no check
+  // The free ones match his hand-typed DM Helper entry
+  assert.deepEqual(['Danger Sense', 'Animal Lore', 'Hiding', 'Survival', 'Tracking'].map(k => r.skills[k].t), [13, 10, 9, 10, 12]);
   // Book codes from the Excel sheet come off; names without one stay as they are
   const s = toDMHelper(JSON.parse(readFileSync(new URL('../samples/hanspeter_10-09.json', import.meta.url)))).skills;
   assert.ok(s['Animal Lore'] && s['Persuasion'] && s['Tumbling'] && s['Homeopathy'] === undefined && s['Survival']);

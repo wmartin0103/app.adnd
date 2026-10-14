@@ -400,10 +400,11 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
 - [x] Skill names (2026-10-13): the import drops the Excel sheet's group code
   and book reference ("Intimidation G (DSDPH93)" → "Intimidation"), and skips
   proficiencies with no ability check ("Wild Fighting").
-- [ ] Goroth's other skills: his hand-typed DM entry also has Animal Lore,
-  Hiding, Survival and Tracking (Barbarian Home Terrain) and different targets
-  for Running (12 vs 18 from Con) and Dirty Tricks (10 vs 12 from Wis). The
-  sheet is the source of truth, so these need adding or confirming there.
+- [x] Goroth's Home Terrain skills (2026-10-13): Animal Lore 10, Hiding 9,
+  Survival 10, Tracking 12 added to his sheet as Free, matching the DM's
+  numbers (Animal Lore Int +0 and Hiding Int −1 chosen to match).
+- [ ] Goroth's Running (DM 12, sheet 18 from Con) and Dirty Tricks (DM 10 from
+  Int, sheet 12 from Wis): which is right?
 
 **Known gaps, deliberately deferred**
 

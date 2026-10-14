@@ -327,9 +327,45 @@
       "ability": "wis",
       "adj": "+1",
       "slots": "Free"
+    },
+    {
+      "id": "nwp-6",
+      "name": "Animal Lore",
+      "desc": "Source: Barbarian Home Terrain (Forest)",
+      "url": "",
+      "ability": "int",
+      "adj": "0",
+      "slots": "Free"
+    },
+    {
+      "id": "nwp-7",
+      "name": "Hiding",
+      "desc": "Source: Barbarian Home Terrain (Forest)",
+      "url": "",
+      "ability": "int",
+      "adj": "-1",
+      "slots": "Free"
+    },
+    {
+      "id": "nwp-8",
+      "name": "Survival",
+      "desc": "Source: Barbarian Home Terrain (Forest)",
+      "url": "",
+      "ability": "int",
+      "adj": "0",
+      "slots": "Free"
+    },
+    {
+      "id": "nwp-9",
+      "name": "Tracking",
+      "desc": "Source: Barbarian Home Terrain (Forest)",
+      "url": "",
+      "ability": "wis",
+      "adj": "0",
+      "slots": "Free"
     }
   ],
-  "__nwpCounter": 6,
+  "__nwpCounter": 10,
   "__abilitiesCards": [
     {
       "id": "abc-1",

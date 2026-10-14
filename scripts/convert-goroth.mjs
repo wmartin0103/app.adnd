@@ -2,8 +2,9 @@
 // corrections agreed since.
 //   • 10-13: his name is Goroth (the Excel sheet had "Nandun Goroth"), so the
 //     DM Helper's import replaces its hand-typed Goroth
-//   • 10-13: Danger Sense (PHB, Wis +1), which the DM Helper's surprise check
-//     uses; it was on his hand-typed DM Helper entry but not on the sheet
+//   • 10-13: Danger Sense (Wis +1, for the DM Helper's surprise check) and the
+//     Home Terrain skills Animal Lore, Hiding, Survival and Tracking: the DM
+//     Helper had them hand-typed, the sheet didn't
 //   • 10-09: Str 18/00 (Brute kit "Ripped"), entered as exceptional Strength
 //   • 10-09: weapon rows hold the weapon only. The Excel rows had Str 18/00
 //     (+3 hit, +6 dmg) and proficiency built in; Strength now comes from the
@@ -17,8 +18,17 @@ import { readFileSync, writeFileSync } from 'node:fs';
 
 const s = JSON.parse(readFileSync('samples/nandun.json', 'utf8'));
 s.name = 'Goroth';
-s.__nwps = [...s.__nwps, { id: `nwp-${s.__nwpCounter}`, name: 'Danger Sense', desc: 'Source: Free', url: '', ability: 'wis', adj: '+1', slots: 'Free' }];
-s.__nwpCounter += 1;
+// Free proficiencies from his hand-typed DM Helper entry: Danger Sense, and
+// Barbarian Home Terrain (Forest): Animal Lore, Hiding, Survival, Tracking.
+// Ability and adjustment chosen to give the DM's targets.
+const free = (name, ability, adj, desc) => ({ id: `nwp-${s.__nwpCounter++}`, name, desc, url: '', ability, adj, slots: 'Free' });
+s.__nwps = [...s.__nwps,
+  free('Danger Sense', 'wis', '+1', 'Source: Free'),
+  free('Animal Lore', 'int', '0', 'Source: Barbarian Home Terrain (Forest)'),
+  free('Hiding', 'int', '-1', 'Source: Barbarian Home Terrain (Forest)'),
+  free('Survival', 'int', '0', 'Source: Barbarian Home Terrain (Forest)'),
+  free('Tracking', 'wis', '0', 'Source: Barbarian Home Terrain (Forest)'),
+];
 s['str-pct'] = '00';
 // "1d6+6" → "1d6": the +6 is Strength
 const noStr = d => String(d).replace(/\+6$/, '');
