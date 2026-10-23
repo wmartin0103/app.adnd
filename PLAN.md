@@ -50,7 +50,7 @@ The player rolls initiative there, and the roll goes to the DM right away
 ("rolled 6, waiting for actions"). **Add to round** on an attack card adds
 one attack, as often as needed (a 2/1 bow is added twice). Each added attack
 has its own line (target, conditions, roll), an **Extra Attack** checkbox for
-the DM's extra-attack placement, and ✕ to take it out.
+the DM's extra-attack placement, and **Remove**.
 **Send to DM** sends the attacks, and only then does the DM see when the
 character acts, since speed and conditions change it. Changes after sending
 show **Send changes**; rolling an attack after sending goes straight through.

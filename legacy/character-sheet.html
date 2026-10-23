@@ -775,6 +775,7 @@
     .round-item { border: 1px solid var(--accent); border-radius: var(--radius); background: var(--surface); }
     .round-item-head { display: flex; align-items: baseline; gap: 0.6rem; padding: 0.5rem 0.7rem; flex-wrap: wrap; }
     .round-item-head .round-item-extra { margin-left: auto; font-size: 0.85rem; }
+    .round-remove-btn { align-self: center; }
     .play-name { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; letter-spacing: 0.04em; }
     .play-meta { font-size: 0.85rem; color: var(--ink-muted); }
     .round-send { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.9rem; margin-top: 0.75rem; }
@@ -7260,7 +7261,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           dmg ? (isSp ? dmg.sm : `${dmg.sm} · ${dmg.l}`) + (dmg.spell ? ` + spell ${dmg.spell}` : '') : '',
           isSp ? '' : `${scenarioRate(sc)}`, `speed ${SheetRound.attackSpeed(ctx, sc)}`].filter(Boolean).join(' · ');
         head.innerHTML = `<span class="play-name">${escR(sc.name || 'Unnamed attack')}</span><span class="play-meta">${escR(meta)}</span>`;
-        const rm = document.createElement('button'); rm.type = 'button'; rm.className = 'scenario-delete-btn'; rm.innerHTML = '&#x2715;';
+        const rm = document.createElement('button'); rm.type = 'button'; rm.className = 'round-add-btn round-remove-btn'; rm.textContent = 'Remove';
         rm.setAttribute('aria-label', `Take ${sc.name || 'this attack'} out of this round`);
         rm.addEventListener('click', () => saveRound(SheetRound.unqueueAttack(rec, q.qid)));
         const ex = check(`round-${q.qid}-extra`, 'Extra Attack', q.extra, v => { q.extra = v; saveRound(rec); });
