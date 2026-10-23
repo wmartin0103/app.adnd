@@ -9,13 +9,13 @@
 //     quick: { roll: 12 },                // Quickness d20 (characters who have it)
 //     you: { moveFirst, moveMult: '1', setVsCharge },
 //     queue: [{ qid: 'q1', scenarioId: 'sc-1', extra: false }, ...],   // the attacks added this round, in order
-//     lines: { 'q1-a1': {...}, 'q1-a2': {...}, 'q1-extra': {...} },
+//     lines: { q1: {...}, q2: {...} },     // one attack line for each
 //   }
 //
-// Adding an attack (a Combat scenario) queues one round's worth of it, from
-// its rate: 2/1 gives two lines; 3/2 one, plus an extra line when the player
-// ticks it ("extra"). The first queued attack sets when the character acts;
-// every line after the very first is an extra attack for the DM's timing.
+// Each Add to round adds one attack (a Combat scenario), as often as the
+// player likes: a 2/1 bow is added twice. The first one sets when the
+// character acts. "extra": the player marks it as an extra attack, which the
+// DM's page places by its extra-attack setting.
 //
 // Each attack line: { same, target: { id, label, size }, flanking, ground,
 // charging, other, roll }. A target is a foe as players know it: the DM's
@@ -24,7 +24,7 @@
 // The DM decides where extra attacks go in the order; the record only says
 // which attacks there are.
 
-import { scenarioType, scenarioRate, rateValue, scenarioSpell, scenarioWeapon, spellArrow, castSpeed, scenarioBreakdown, scenarioDamage, modNum } from './scenarios.js';
+import { scenarioType, scenarioSpell, scenarioWeapon, spellArrow, castSpeed, scenarioBreakdown, scenarioDamage, modNum } from './scenarios.js';
 
 // Situational modifiers (the DM Helper's table rules)
 export const ROUND_MODS = {
@@ -41,16 +41,19 @@ export const newRound = (character, round = 1) => ({
 });
 // The queue (a record from before the queue had one attack, `scenarioId`)
 export const roundQueue = rec => (Array.isArray(rec.queue) ? rec.queue : rec.scenarioId ? [{ qid: 'q1', scenarioId: rec.scenarioId, extra: !!rec.extra }] : []);
-// Add an attack to the round (once each)
+// Add to round: one more attack
 export function queueAttack(rec, scenarioId) {
   const queue = roundQueue(rec);
-  if (queue.some(q => q.scenarioId === scenarioId)) return rec;
   const n = queue.reduce((m, q) => Math.max(m, parseInt(String(q.qid).slice(1), 10) || 0), 0) + 1;
   return { ...rec, queue: [...queue, { qid: `q${n}`, scenarioId, extra: false }] };
 }
 export function unqueueAttack(rec, qid) {
   const lines = { ...(rec.lines || {}) };
-  Object.keys(lines).forEach(k => { if (k.startsWith(`${qid}-`)) delete lines[k]; });
+  // The next attack, if it was "same as above", keeps this one's target and conditions
+  const queue = roundQueue(rec), i = queue.findIndex(q => q.qid === qid), next = queue[i + 1];
+  const gone = lines[qid];
+  if (gone && next && (!lines[next.qid] || lines[next.qid].same !== false)) lines[next.qid] = { ...gone, same: i > 0 && !!gone.same, roll: (lines[next.qid] || {}).roll || null };
+  delete lines[qid];
   return { ...rec, queue: roundQueue(rec).filter(q => q.qid !== qid), lines };
 }
 
@@ -65,20 +68,13 @@ export function attackSpeed(ctx, sc) {
   return w ? parseInt(w.speed, 10) || 0 : 0;
 }
 
-// A queued attack with a half attack in its rate (3/2, 5/2) can add an extra line
-export const hasHalfAttack = sc => !!sc && scenarioType(sc) !== 'spell' && rateValue(scenarioRate(sc)) % 1 > 0;
-
-// This round's attack lines, queued attack by queued attack, with "same as
-// above" worked out (it can follow the line above across attacks). Lines
-// beyond the very first go when you move first.
+// This round's attack lines, one for each attack added, with "same as
+// above" worked out. Only the first is left when you move first.
 export function roundLines(ctx, rec, scenarios) {
   const keys = [];
   roundQueue(rec).forEach(q => {
     const sc = (scenarios || []).find(s => s.id === q.scenarioId);
-    if (!sc) return;
-    const rate = scenarioType(sc) === 'spell' ? 1 : rateValue(scenarioRate(sc));
-    for (let i = 0; i < Math.max(1, Math.floor(rate)); i++) keys.push({ key: `${q.qid}-a${i + 1}`, qid: q.qid, label: ORD[i], sc });
-    if (hasHalfAttack(sc) && q.extra) keys.push({ key: `${q.qid}-extra`, qid: q.qid, label: 'Extra', sc });
+    if (sc) keys.push({ key: q.qid, qid: q.qid, label: ORD[keys.length] || `#${keys.length + 1}`, sc, extra: !!q.extra });
   });
   const allowed = rec.you && rec.you.moveFirst ? keys.slice(0, 1) : keys;
   let prev = null;
@@ -86,12 +82,12 @@ export function roundLines(ctx, rec, scenarios) {
     const own = { ...blankLine(), ...(rec.lines || {})[k.key] };
     if (i === 0) own.same = false;
     const set = own.same && prev ? { ...prev.set } : { target: own.target, flanking: !!own.flanking, ground: own.ground || '', charging: !!own.charging, other: modNum(own.other) };
-    const line = { key: k.key, qid: k.qid, label: k.label, sc: k.sc, same: !!own.same && i > 0, set, roll: own.roll || null };
+    const line = { key: k.key, qid: k.qid, label: k.label, sc: k.sc, extra: k.extra, same: !!own.same && i > 0, set, roll: own.roll || null };
     prev = line;
     return line;
   });
 }
-const ORD = ['1st', '2nd', '3rd', '4th', '5th', '6th'];
+const ORD = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'];
 
 // To-hit modifier for one line's conditions
 export function lineToHit(set) {

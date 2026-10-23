@@ -1730,7 +1730,7 @@ return { modNum, signed, ATTACK_TYPES, RATE_OPTIONS, racialWeaponBonus, strength
 })();
 // ── rules/round ──
 __m["rules/round"] = (() => {
-const {scenarioType, scenarioRate, rateValue, scenarioSpell, scenarioWeapon, spellArrow, castSpeed, scenarioBreakdown, scenarioDamage, modNum} = __m["rules/scenarios"];
+const {scenarioType, scenarioSpell, scenarioWeapon, spellArrow, castSpeed, scenarioBreakdown, scenarioDamage, modNum} = __m["rules/scenarios"];
 // ── ONE ROUND OF COMBAT ─────────────────────────────────────────
 // A character's round as the sheet's Combat section declares it and the DM's
 // initiative page shows it. Both work from the same record (the "round
@@ -1742,13 +1742,13 @@ const {scenarioType, scenarioRate, rateValue, scenarioSpell, scenarioWeapon, spe
 //     quick: { roll: 12 },                // Quickness d20 (characters who have it)
 //     you: { moveFirst, moveMult: '1', setVsCharge },
 //     queue: [{ qid: 'q1', scenarioId: 'sc-1', extra: false }, ...],   // the attacks added this round, in order
-//     lines: { 'q1-a1': {...}, 'q1-a2': {...}, 'q1-extra': {...} },
+//     lines: { q1: {...}, q2: {...} },     // one attack line for each
 //   }
 //
-// Adding an attack (a Combat scenario) queues one round's worth of it, from
-// its rate: 2/1 gives two lines; 3/2 one, plus an extra line when the player
-// ticks it ("extra"). The first queued attack sets when the character acts;
-// every line after the very first is an extra attack for the DM's timing.
+// Each Add to round adds one attack (a Combat scenario), as often as the
+// player likes: a 2/1 bow is added twice. The first one sets when the
+// character acts. "extra": the player marks it as an extra attack, which the
+// DM's page places by its extra-attack setting.
 //
 // Each attack line: { same, target: { id, label, size }, flanking, ground,
 // charging, other, roll }. A target is a foe as players know it: the DM's
@@ -1773,16 +1773,19 @@ const newRound = (character, round = 1) => ({
 });
 // The queue (a record from before the queue had one attack, `scenarioId`)
 const roundQueue = rec => (Array.isArray(rec.queue) ? rec.queue : rec.scenarioId ? [{ qid: 'q1', scenarioId: rec.scenarioId, extra: !!rec.extra }] : []);
-// Add an attack to the round (once each)
+// Add to round: one more attack
 function queueAttack(rec, scenarioId) {
   const queue = roundQueue(rec);
-  if (queue.some(q => q.scenarioId === scenarioId)) return rec;
   const n = queue.reduce((m, q) => Math.max(m, parseInt(String(q.qid).slice(1), 10) || 0), 0) + 1;
   return { ...rec, queue: [...queue, { qid: `q${n}`, scenarioId, extra: false }] };
 }
 function unqueueAttack(rec, qid) {
   const lines = { ...(rec.lines || {}) };
-  Object.keys(lines).forEach(k => { if (k.startsWith(`${qid}-`)) delete lines[k]; });
+  // The next attack, if it was "same as above", keeps this one's target and conditions
+  const queue = roundQueue(rec), i = queue.findIndex(q => q.qid === qid), next = queue[i + 1];
+  const gone = lines[qid];
+  if (gone && next && (!lines[next.qid] || lines[next.qid].same !== false)) lines[next.qid] = { ...gone, same: i > 0 && !!gone.same, roll: (lines[next.qid] || {}).roll || null };
+  delete lines[qid];
   return { ...rec, queue: roundQueue(rec).filter(q => q.qid !== qid), lines };
 }
 
@@ -1797,20 +1800,13 @@ function attackSpeed(ctx, sc) {
   return w ? parseInt(w.speed, 10) || 0 : 0;
 }
 
-// A queued attack with a half attack in its rate (3/2, 5/2) can add an extra line
-const hasHalfAttack = sc => !!sc && scenarioType(sc) !== 'spell' && rateValue(scenarioRate(sc)) % 1 > 0;
-
-// This round's attack lines, queued attack by queued attack, with "same as
-// above" worked out (it can follow the line above across attacks). Lines
-// beyond the very first go when you move first.
+// This round's attack lines, one for each attack added, with "same as
+// above" worked out. Only the first is left when you move first.
 function roundLines(ctx, rec, scenarios) {
   const keys = [];
   roundQueue(rec).forEach(q => {
     const sc = (scenarios || []).find(s => s.id === q.scenarioId);
-    if (!sc) return;
-    const rate = scenarioType(sc) === 'spell' ? 1 : rateValue(scenarioRate(sc));
-    for (let i = 0; i < Math.max(1, Math.floor(rate)); i++) keys.push({ key: `${q.qid}-a${i + 1}`, qid: q.qid, label: ORD[i], sc });
-    if (hasHalfAttack(sc) && q.extra) keys.push({ key: `${q.qid}-extra`, qid: q.qid, label: 'Extra', sc });
+    if (sc) keys.push({ key: q.qid, qid: q.qid, label: ORD[keys.length] || `#${keys.length + 1}`, sc, extra: !!q.extra });
   });
   const allowed = rec.you && rec.you.moveFirst ? keys.slice(0, 1) : keys;
   let prev = null;
@@ -1818,12 +1814,12 @@ function roundLines(ctx, rec, scenarios) {
     const own = { ...blankLine(), ...(rec.lines || {})[k.key] };
     if (i === 0) own.same = false;
     const set = own.same && prev ? { ...prev.set } : { target: own.target, flanking: !!own.flanking, ground: own.ground || '', charging: !!own.charging, other: modNum(own.other) };
-    const line = { key: k.key, qid: k.qid, label: k.label, sc: k.sc, same: !!own.same && i > 0, set, roll: own.roll || null };
+    const line = { key: k.key, qid: k.qid, label: k.label, sc: k.sc, extra: k.extra, same: !!own.same && i > 0, set, roll: own.roll || null };
     prev = line;
     return line;
   });
 }
-const ORD = ['1st', '2nd', '3rd', '4th', '5th', '6th'];
+const ORD = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'];
 
 // To-hit modifier for one line's conditions
 function lineToHit(set) {
@@ -1922,7 +1918,7 @@ function lineSay(line) {
   return `${line.label}: vs ${t}, d20 ${r.d20}${nat}, hits AC ${acText(r.hitsAC)} or worse, ${r.dmg ?? '—'} damage${r.spell != null ? ` + spell ${r.spell}` : ''}`;
 }
 
-return { ROUND_MODS, MOVE_MULTS, newRound, roundQueue, queueAttack, unqueueAttack, attackSpeed, hasHalfAttack, roundLines, lineToHit, roundACPenalty, actOn, quicknessWorks, rollDice, lineTHAC0, rollLine, judgeRoll, lineSay };
+return { ROUND_MODS, MOVE_MULTS, newRound, roundQueue, queueAttack, unqueueAttack, attackSpeed, roundLines, lineToHit, roundACPenalty, actOn, quicknessWorks, rollDice, lineTHAC0, rollLine, judgeRoll, lineSay };
 })();
 // ── rules/character ──
 __m["rules/character"] = (() => {
@@ -2799,7 +2795,7 @@ function createRoundSync() {
 return { createRoundSync };
 })();
 window.SheetConverter = { toDMHelper: __m["adapters/dm-helper"].toDMHelper };
-window.SheetRound = { ROUND_MODS: __m["rules/round"].ROUND_MODS, MOVE_MULTS: __m["rules/round"].MOVE_MULTS, newRound: __m["rules/round"].newRound, roundQueue: __m["rules/round"].roundQueue, queueAttack: __m["rules/round"].queueAttack, unqueueAttack: __m["rules/round"].unqueueAttack, hasHalfAttack: __m["rules/round"].hasHalfAttack, roundLines: __m["rules/round"].roundLines, lineToHit: __m["rules/round"].lineToHit, roundACPenalty: __m["rules/round"].roundACPenalty, lineTHAC0: __m["rules/round"].lineTHAC0, judgeRoll: __m["rules/round"].judgeRoll, actOn: __m["rules/round"].actOn, quicknessWorks: __m["rules/round"].quicknessWorks, attackSpeed: __m["rules/round"].attackSpeed, rollLine: __m["rules/round"].rollLine, lineSay: __m["rules/round"].lineSay };
+window.SheetRound = { ROUND_MODS: __m["rules/round"].ROUND_MODS, MOVE_MULTS: __m["rules/round"].MOVE_MULTS, newRound: __m["rules/round"].newRound, roundQueue: __m["rules/round"].roundQueue, queueAttack: __m["rules/round"].queueAttack, unqueueAttack: __m["rules/round"].unqueueAttack, roundLines: __m["rules/round"].roundLines, lineToHit: __m["rules/round"].lineToHit, roundACPenalty: __m["rules/round"].roundACPenalty, lineTHAC0: __m["rules/round"].lineTHAC0, judgeRoll: __m["rules/round"].judgeRoll, actOn: __m["rules/round"].actOn, quicknessWorks: __m["rules/round"].quicknessWorks, attackSpeed: __m["rules/round"].attackSpeed, rollLine: __m["rules/round"].rollLine, lineSay: __m["rules/round"].lineSay };
 window.RoundSync = { createRoundSync: __m["round-sync"].createRoundSync };
 })();
 if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.SheetSpellCatalog = window.parent.SheetSpellCatalog; } catch (e) { /* not allowed */ } }

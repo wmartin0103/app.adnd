@@ -17,31 +17,32 @@ const shaman = { id: 'B2', label: 'B2', size: 'sm' };
 const withAttacks = (rec, ...ids) => ids.reduce(queueAttack, rec);
 const fixed = (...vals) => { let i = 0; return () => vals[Math.min(i++, vals.length - 1)]; };
 
-test('attack lines come from the rate; later lines follow the one above until set apart', () => {
-  const rec = { ...withAttacks(newRound('Rifiyr'), 'sc-1'), lines: { 'q1-a1': { target: orc, flanking: true } } };   // Long bow, flight: 2/1
+test('one line for each attack added; later lines follow the one above until set apart', () => {
+  const rec = { ...withAttacks(newRound('Rifiyr'), 'sc-1', 'sc-1'), lines: { q1: { target: orc, flanking: true } } };   // Long bow, flight, twice (2/1)
   let lines = roundLines(ctxR, rec, rifiyr.__scenarios);
   assert.deepEqual(lines.map(l => [l.label, l.same, l.set.target.label, l.set.flanking]), [['1st', false, 'B1', true], ['2nd', true, 'B1', true]]);
   assert.deepEqual(lines.map(l => lineTHAC0(ctxR, l)), [14, 14]);   // THAC0 16, flanking +2
   // The 2nd shot at the shaman, not flanking
-  rec.lines['q1-a2'] = { same: false, target: shaman, flanking: false };
+  rec.lines.q2 = { same: false, target: shaman, flanking: false };
   lines = roundLines(ctxR, rec, rifiyr.__scenarios);
   assert.deepEqual(lines.map(l => [l.set.target.label, lineTHAC0(ctxR, l)]), [['B1', 14], ['B2', 16]]);
   // Moving first: no extra attacks
   assert.equal(roundLines(ctxR, { ...rec, you: { ...rec.you, moveFirst: true } }, rifiyr.__scenarios).length, 1);
 });
 
-test('the round is the attacks the player adds: half attacks and the off-hand too', () => {
+test('the round is the attacks the player adds, each marked extra or not', () => {
   const ctxJ = scenarioContext(jaque, catalog);
-  let rec = withAttacks(newRound('Jaque'), 'sc-1');   // Dagger, melee: 3/2
-  assert.deepEqual(roundLines(ctxJ, rec, jaque.__scenarios).map(l => l.label), ['1st']);
   const off = jaque.__scenarios.find(x => x.name === 'Off-hand dagger').id;
-  rec = queueAttack({ ...rec, queue: [{ ...rec.queue[0], extra: true }] }, off);
-  assert.deepEqual(roundLines(ctxJ, rec, jaque.__scenarios).map(l => [l.key, l.label, l.sc.name]),
-    [['q1-a1', '1st', 'Dagger, melee'], ['q1-extra', 'Extra', 'Dagger, melee'], ['q2-a1', '1st', 'Off-hand dagger']]);
-  // Each attack once; taking one out takes its lines' settings with it
-  assert.equal(queueAttack(rec, off).queue.length, 2);
-  const out = unqueueAttack({ ...rec, lines: { 'q2-a1': { target: orc } } }, 'q2');
-  assert.deepEqual([out.queue.map(q => q.qid), out.lines], [['q1'], {}]);
+  let rec = withAttacks(newRound('Jaque'), 'sc-1', 'sc-1', off);   // Dagger, melee (3/2): the half attack this round, and the off-hand
+  rec = { ...rec, queue: rec.queue.map((q, i) => ({ ...q, extra: i > 0 })) };
+  assert.deepEqual(roundLines(ctxJ, rec, jaque.__scenarios).map(l => [l.key, l.label, l.sc.name, l.extra]),
+    [['q1', '1st', 'Dagger, melee', false], ['q2', '2nd', 'Dagger, melee', true], ['q3', '3rd', 'Off-hand dagger', true]]);
+  // Taking one out: the next one, if "same as above", keeps its target; the next one added gets a new id
+  const out = unqueueAttack({ ...rec, lines: { q2: { same: false, target: orc } } }, 'q2');
+  assert.deepEqual([out.queue.map(q => q.qid), roundLines(ctxJ, out, jaque.__scenarios).map(l => l.set.target)], [['q1', 'q3'], [null, orc]]);
+  const first = unqueueAttack({ ...rec, lines: { q1: { target: orc } } }, 'q1');
+  assert.deepEqual(roundLines(ctxJ, first, jaque.__scenarios).map(l => l.set.target), [orc, orc]);
+  assert.equal(queueAttack(out, 'sc-1').queue[2].qid, 'q4');
   // A record from before the queue: its one attack
   assert.deepEqual(roundQueue({ scenarioId: 'sc-1' }).map(q => q.scenarioId), ['sc-1']);
 });
@@ -53,10 +54,10 @@ test('conditions: to-hit per line, AC for charging', () => {
 });
 
 test('when the character acts: roll + speed + this round\'s adjustments', () => {
-  const rec = { ...withAttacks(newRound('Rifiyr'), 'sc-1'), init: { roll: 5 }, lines: { 'q1-a1': { target: orc } } };
+  const rec = { ...withAttacks(newRound('Rifiyr'), 'sc-1'), init: { roll: 5 }, lines: { q1: { target: orc } } };
   assert.equal(actOn(ctxR, rec, rifiyr.__scenarios), 13);                                   // 5 + long bow 8
   assert.equal(actOn(ctxR, { ...rec, you: { moveFirst: true } }, rifiyr.__scenarios), 16);   // Move 1st +3
-  assert.equal(actOn(ctxR, { ...rec, lines: { 'q1-a1': { target: orc, ground: 'high' } } }, rifiyr.__scenarios), 12);
+  assert.equal(actOn(ctxR, { ...rec, lines: { q1: { target: orc, ground: 'high' } } }, rifiyr.__scenarios), 12);
   assert.equal(actOn(ctxR, { ...rec, queue: [{ qid: 'q1', scenarioId: 'sc-7' }] }, rifiyr.__scenarios), 14);         // Spellarrow: bow 8 + Shocking Grasp 1
   assert.equal(actOn(ctxR, { ...rec, init: { roll: null } }, rifiyr.__scenarios), null);
   // The roll alone doesn't say when: the first attack's speed does
@@ -69,7 +70,7 @@ test('when the character acts: roll + speed + this round\'s adjustments', () => 
 });
 
 test('rolling a line on the sheet, and the DM judging it against the AC', () => {
-  const rec = { ...withAttacks(newRound('Rifiyr'), 'sc-8'), lines: { 'q1-a1': { target: orc } } };   // Long bow, sheaf: 1d8, THAC0 16
+  const rec = { ...withAttacks(newRound('Rifiyr'), 'sc-8'), lines: { q1: { target: orc } } };   // Long bow, sheaf: 1d8, THAC0 16
   const [line] = roundLines(ctxR, rec, rifiyr.__scenarios);
   const r = rollLine(ctxR, line, fixed(0.5, 0.99));                 // d20 11, 1d8 → 8
   assert.deepEqual([r.d20, r.thac0, r.hitsAC, r.pct, r.dmg], [11, 16, 5, null, 8]);
