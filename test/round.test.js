@@ -140,6 +140,12 @@ test('round sync: the DM\'s round and a sheet\'s record reach the other page', a
     sheet.sendRecord({ ...newRound('Rifiyr'), init: { roll: 2 } });
     dm.sendDM({ round: 1, reset: true });
     assert.deepEqual([sheet.state().round, sheet.state().records], [1, {}]);
+    // Initiative stays for the encounter; Reset initiative (or Reset) starts a new one
+    const enc = sheet.state().encounter;
+    dm.sendDM({ round: 2 });
+    assert.equal(sheet.state().encounter, enc);
+    dm.sendDM({ resetInit: true });
+    assert.deepEqual([sheet.state().encounter, sheet.state().round], [enc + 1, 2]);
     dm.close(); sheet.close();
   } finally { delete globalThis.localStorage; }
 });

@@ -461,7 +461,7 @@
     <div class="char" id="surpriseBar" style="display:none"><div id="surpriseWrap"></div></div>
     <div class="toolbar between">
       <span class="lockwrap"><button class="reroll" id="rollInit" title="roll initiative for the Baddies in this round; players roll their own">⚄ Roll initiative for Baddies</button><label class="lock" title="locked: players can no longer roll their own initiative"><input type="checkbox" id="lockInit"> Lock</label></span>
-      <span class="lockwrap roundctl" title="players' sheets play this round and show here"><b id="roundNo">Round 1</b> <button class="reroll" id="nextRoundSync" title="start the next round: every player's sheet clears its round">Next round ▸</button> <label class="gclabel">Extra attacks <select id="extraTiming" class="sursel"><option value="end">End of the order</option><option value="turn">At their turn</option></select></label></span>
+      <span class="lockwrap roundctl" title="players' sheets play this round and show here"><b id="roundNo">Round 1</b> <button class="reroll" id="nextRoundSync" title="start the next round: every player's sheet clears its round (initiative rolls stay for the encounter)">Next round ▸</button> <button class="reroll" id="resetInitSync" title="a new encounter: every player rolls initiative again">Reset initiative</button> <label class="gclabel">Extra attacks <select id="extraTiming" class="sursel"><option value="end">End of the order</option><option value="turn">At their turn</option></select></label></span>
       <span class="lockwrap"><button class="reroll" id="newRoundLight" title="clear the players' attack rolls and roll the Baddies' attacks again; picked actions and conditions stay">↻ New round</button></span>
     </div>
     <div class="tracker" id="tracker"></div>
@@ -2801,8 +2801,10 @@ __m["round-sync"] = (() => {
 // ── ROUND SYNC ──────────────────────────────────────────────────
 // Keeps one combat round shared between the players' sheets and the DM's
 // initiative page. The state:
-//   { round, foes: [{ id, name, ac, size }], timing: 'end' | 'turn',
+//   { round, encounter, foes: [{ id, label, size }], timing: 'end' | 'turn',
 //     records: { [character]: round record (rules/round.js) }, at }
+// encounter: goes up when the DM resets initiative (each sheet keeps its
+// initiative roll from round to round within one encounter).
 // The DM sends the round, foes and timing (and clears the records on a new
 // round); each sheet sends its own record.
 //
@@ -2814,7 +2816,7 @@ __m["round-sync"] = (() => {
 
 const CHANNEL = 'adnd-round';
 const STORE = 'adnd-round-state';
-const empty = () => ({ round: 1, foes: [], timing: 'end', records: {}, at: 0 });
+const empty = () => ({ round: 1, encounter: 1, foes: [], timing: 'end', records: {}, at: 0 });
 
 function createRoundSync() {
   const listeners = [];
@@ -2838,8 +2840,10 @@ function createRoundSync() {
     // The DM: round number, foes, timing. A new round number clears the records.
     // (A sheet on its own starts its next round with dm: false; `dmAt` says
     // when the DM's page last spoke, which is how a sheet knows it's live.)
-    // reset: start over (round 1 unless given), every record cleared
-    sendDM: ({ round, foes, timing, dm = true, reset = false }) => change(s => {
+    // reset: start over (round 1 unless given), every record cleared, a new
+    // encounter. resetInit: a new encounter (everyone rolls initiative again).
+    sendDM: ({ round, foes, timing, dm = true, reset = false, resetInit = false }) => change(s => {
+      if (reset || resetInit) s.encounter = (s.encounter || 1) + 1;
       if (reset) { s.round = round ?? 1; s.records = {}; }
       else if (round != null && round !== s.round) { s.round = round; s.records = {}; }
       if (foes) s.foes = foes;
@@ -2908,7 +2912,8 @@ const cloudSession = async (client = cloudClient()) => {
 // everyone else hears about them through realtime.
 function createCloudRoundSync({ client, campaignId, userId }) {
   const listeners = [];
-  let base = { round: 1, foes: [], timing: 'end', dmAt: 0, at: 0 };
+  let base = { round: 1, encounter: 1, foes: [], timing: 'end', dmAt: 0, at: 0 };
+  let hasEncounter = false;   // the database has round_state.encounter (supabase/schema.sql)
   const rows = {};          // character name → { round, record }
   const ids = {};           // character name → character id
   const local = new Set();  // records written here before the first load
@@ -2921,7 +2926,10 @@ function createCloudRoundSync({ client, campaignId, userId }) {
   // Every round change reads the records again (a reset deletes them)
   const reload = () => client.from('round_records').select('*').eq('campaign_id', campaignId)
     .then(({ data }) => { Object.keys(rows).forEach(k => delete rows[k]); (data || []).forEach(fromRecord); tell(); }, () => {});
-  const fromState = r => { base = { round: r.round, foes: r.foes || [], timing: r.timing || 'end', dmAt: Date.parse(r.updated_at) || Date.now(), at: Date.now() }; };
+  const fromState = r => {
+    if ('encounter' in r) hasEncounter = true;
+    base = { round: r.round, encounter: r.encounter || 1, foes: r.foes || [], timing: r.timing || 'end', dmAt: Date.parse(r.updated_at) || Date.now(), at: Date.now() };
+  };
   const fromRecord = r => {
     const name = r.record && r.record.character;
     if (!name) return;
@@ -2958,7 +2966,8 @@ function createCloudRoundSync({ client, campaignId, userId }) {
     if (error) throw error;
     return (ids[name] = made.id);
   }
-  function applyDM({ round, foes, timing, dm = true, reset = false }) {
+  function applyDM({ round, foes, timing, dm = true, reset = false, resetInit = false }) {
+    if (reset || resetInit) base.encounter = (base.encounter || 1) + 1;
     if (reset) { base.round = round ?? 1; Object.keys(rows).forEach(k => delete rows[k]); }
     else if (round != null) base.round = round;
     if (foes) base.foes = foes;
@@ -2967,6 +2976,7 @@ function createCloudRoundSync({ client, campaignId, userId }) {
   }
   const writeDM = () => client.from('round_state').upsert({
     campaign_id: campaignId, round: base.round, foes: base.foes, timing: base.timing, updated_at: new Date().toISOString(),
+    ...(hasEncounter ? { encounter: base.encounter } : {}),
   }).then(() => {}, () => {});
 
   let loaded = false;
@@ -4579,6 +4589,11 @@ if(window.Cloud) Cloud.mountCloud(document.getElementById('cloudBar'), s => conn
 document.getElementById('nextRoundSync').addEventListener('click', ()=>{
   if(!ROUND) return;
   syncState = ROUND.sendDM({round: (syncState ? syncState.round : 1) + 1});
+  showRound(); update();
+});
+document.getElementById('resetInitSync').addEventListener('click', ()=>{
+  if(!ROUND) return;
+  syncState = ROUND.sendDM({resetInit:true});
   showRound(); update();
 });
 document.getElementById('extraTiming').addEventListener('change', e=>{

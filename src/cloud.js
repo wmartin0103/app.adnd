@@ -49,7 +49,8 @@ export const cloudSession = async (client = cloudClient()) => {
 // everyone else hears about them through realtime.
 export function createCloudRoundSync({ client, campaignId, userId }) {
   const listeners = [];
-  let base = { round: 1, foes: [], timing: 'end', dmAt: 0, at: 0 };
+  let base = { round: 1, encounter: 1, foes: [], timing: 'end', dmAt: 0, at: 0 };
+  let hasEncounter = false;   // the database has round_state.encounter (supabase/schema.sql)
   const rows = {};          // character name → { round, record }
   const ids = {};           // character name → character id
   const local = new Set();  // records written here before the first load
@@ -62,7 +63,10 @@ export function createCloudRoundSync({ client, campaignId, userId }) {
   // Every round change reads the records again (a reset deletes them)
   const reload = () => client.from('round_records').select('*').eq('campaign_id', campaignId)
     .then(({ data }) => { Object.keys(rows).forEach(k => delete rows[k]); (data || []).forEach(fromRecord); tell(); }, () => {});
-  const fromState = r => { base = { round: r.round, foes: r.foes || [], timing: r.timing || 'end', dmAt: Date.parse(r.updated_at) || Date.now(), at: Date.now() }; };
+  const fromState = r => {
+    if ('encounter' in r) hasEncounter = true;
+    base = { round: r.round, encounter: r.encounter || 1, foes: r.foes || [], timing: r.timing || 'end', dmAt: Date.parse(r.updated_at) || Date.now(), at: Date.now() };
+  };
   const fromRecord = r => {
     const name = r.record && r.record.character;
     if (!name) return;
@@ -99,7 +103,8 @@ export function createCloudRoundSync({ client, campaignId, userId }) {
     if (error) throw error;
     return (ids[name] = made.id);
   }
-  function applyDM({ round, foes, timing, dm = true, reset = false }) {
+  function applyDM({ round, foes, timing, dm = true, reset = false, resetInit = false }) {
+    if (reset || resetInit) base.encounter = (base.encounter || 1) + 1;
     if (reset) { base.round = round ?? 1; Object.keys(rows).forEach(k => delete rows[k]); }
     else if (round != null) base.round = round;
     if (foes) base.foes = foes;
@@ -108,6 +113,7 @@ export function createCloudRoundSync({ client, campaignId, userId }) {
   }
   const writeDM = () => client.from('round_state').upsert({
     campaign_id: campaignId, round: base.round, foes: base.foes, timing: base.timing, updated_at: new Date().toISOString(),
+    ...(hasEncounter ? { encounter: base.encounter } : {}),
   }).then(() => {}, () => {});
 
   let loaded = false;

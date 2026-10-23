@@ -5265,8 +5265,10 @@ __m["round-sync"] = (() => {
 // ── ROUND SYNC ──────────────────────────────────────────────────
 // Keeps one combat round shared between the players' sheets and the DM's
 // initiative page. The state:
-//   { round, foes: [{ id, name, ac, size }], timing: 'end' | 'turn',
+//   { round, encounter, foes: [{ id, label, size }], timing: 'end' | 'turn',
 //     records: { [character]: round record (rules/round.js) }, at }
+// encounter: goes up when the DM resets initiative (each sheet keeps its
+// initiative roll from round to round within one encounter).
 // The DM sends the round, foes and timing (and clears the records on a new
 // round); each sheet sends its own record.
 //
@@ -5278,7 +5280,7 @@ __m["round-sync"] = (() => {
 
 const CHANNEL = 'adnd-round';
 const STORE = 'adnd-round-state';
-const empty = () => ({ round: 1, foes: [], timing: 'end', records: {}, at: 0 });
+const empty = () => ({ round: 1, encounter: 1, foes: [], timing: 'end', records: {}, at: 0 });
 
 function createRoundSync() {
   const listeners = [];
@@ -5302,8 +5304,10 @@ function createRoundSync() {
     // The DM: round number, foes, timing. A new round number clears the records.
     // (A sheet on its own starts its next round with dm: false; `dmAt` says
     // when the DM's page last spoke, which is how a sheet knows it's live.)
-    // reset: start over (round 1 unless given), every record cleared
-    sendDM: ({ round, foes, timing, dm = true, reset = false }) => change(s => {
+    // reset: start over (round 1 unless given), every record cleared, a new
+    // encounter. resetInit: a new encounter (everyone rolls initiative again).
+    sendDM: ({ round, foes, timing, dm = true, reset = false, resetInit = false }) => change(s => {
+      if (reset || resetInit) s.encounter = (s.encounter || 1) + 1;
       if (reset) { s.round = round ?? 1; s.records = {}; }
       else if (round != null && round !== s.round) { s.round = round; s.records = {}; }
       if (foes) s.foes = foes;
@@ -5372,7 +5376,8 @@ const cloudSession = async (client = cloudClient()) => {
 // everyone else hears about them through realtime.
 function createCloudRoundSync({ client, campaignId, userId }) {
   const listeners = [];
-  let base = { round: 1, foes: [], timing: 'end', dmAt: 0, at: 0 };
+  let base = { round: 1, encounter: 1, foes: [], timing: 'end', dmAt: 0, at: 0 };
+  let hasEncounter = false;   // the database has round_state.encounter (supabase/schema.sql)
   const rows = {};          // character name → { round, record }
   const ids = {};           // character name → character id
   const local = new Set();  // records written here before the first load
@@ -5385,7 +5390,10 @@ function createCloudRoundSync({ client, campaignId, userId }) {
   // Every round change reads the records again (a reset deletes them)
   const reload = () => client.from('round_records').select('*').eq('campaign_id', campaignId)
     .then(({ data }) => { Object.keys(rows).forEach(k => delete rows[k]); (data || []).forEach(fromRecord); tell(); }, () => {});
-  const fromState = r => { base = { round: r.round, foes: r.foes || [], timing: r.timing || 'end', dmAt: Date.parse(r.updated_at) || Date.now(), at: Date.now() }; };
+  const fromState = r => {
+    if ('encounter' in r) hasEncounter = true;
+    base = { round: r.round, encounter: r.encounter || 1, foes: r.foes || [], timing: r.timing || 'end', dmAt: Date.parse(r.updated_at) || Date.now(), at: Date.now() };
+  };
   const fromRecord = r => {
     const name = r.record && r.record.character;
     if (!name) return;
@@ -5422,7 +5430,8 @@ function createCloudRoundSync({ client, campaignId, userId }) {
     if (error) throw error;
     return (ids[name] = made.id);
   }
-  function applyDM({ round, foes, timing, dm = true, reset = false }) {
+  function applyDM({ round, foes, timing, dm = true, reset = false, resetInit = false }) {
+    if (reset || resetInit) base.encounter = (base.encounter || 1) + 1;
     if (reset) { base.round = round ?? 1; Object.keys(rows).forEach(k => delete rows[k]); }
     else if (round != null) base.round = round;
     if (foes) base.foes = foes;
@@ -5431,6 +5440,7 @@ function createCloudRoundSync({ client, campaignId, userId }) {
   }
   const writeDM = () => client.from('round_state').upsert({
     campaign_id: campaignId, round: base.round, foes: base.foes, timing: base.timing, updated_at: new Date().toISOString(),
+    ...(hasEncounter ? { encounter: base.encounter } : {}),
   }).then(() => {}, () => {});
 
   let loaded = false;
@@ -7377,7 +7387,20 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       const st = roundState();
       const rec = st.records[charName()];
       if (rec) { const r = JSON.parse(JSON.stringify(rec)); r.queue = SheetRound.roundQueue(r); return r; }
-      return SheetRound.newRound(charName(), st.round);
+      // A new round keeps this encounter's initiative roll
+      const r = SheetRound.newRound(charName(), st.round);
+      const kept = keptInit();
+      if (kept && kept.encounter === (st.encounter || 1)) r.init.roll = kept.roll;
+      return r;
+    }
+    // The initiative roll, kept for the encounter (until the DM resets initiative)
+    const initKey = () => `adnd-init:${cloudSess && cloudSess.campaignId ? cloudSess.campaignId : 'local'}:${charName()}`;
+    function keptInit() { try { return JSON.parse(localStorage.getItem(initKey()) || 'null'); } catch (e) { return null; } }
+    function keepInit(roll) {
+      try {
+        if (roll == null) localStorage.removeItem(initKey());
+        else localStorage.setItem(initKey(), JSON.stringify({ encounter: roundState().encounter || 1, roll }));
+      } catch (e) { /* storage blocked: rolled each round instead */ }
     }
     // Saves the round. Until it's sent, the DM sees only the initiative roll;
     // after, what was last sent (send: send it now)
@@ -7385,6 +7408,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
     // the end); the round's other unsent changes wait for Send changes
     function saveRound(rec, send, onlyLine) {
       const s = roundSync();
+      if (rec.init.roll != null) keepInit(rec.init.roll);
       // A rolled attack that goes to the DM keeps the numbers it went with:
       // later changes to effects no longer move it
       const freeze = keys => SheetRound.roundLines(scenarioCtx(), rec, scenarios).forEach(l => {
@@ -7449,6 +7473,16 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       try { seen = parseInt(localStorage.getItem(seenKey()), 10); } catch (e) { /* storage blocked */ }
       if (st.dmAt && Number.isFinite(seen) && st.round > seen) countDownEffects(st.round - seen);
       rememberRound();
+      const kept = keptInit();
+      if (kept && kept.encounter !== (st.encounter || 1)) {
+        // The DM reset initiative: roll again (this round's roll goes too)
+        keepInit(null);
+        const mine = st.records[charName()];
+        if (mine && mine.init && mine.init.roll != null) { saveRound({ ...myRound(), init: { ...mine.init, roll: null }, sent: false }); return; }
+      } else if (kept && !st.records[charName()]) {
+        // A new round: the DM sees this encounter's roll straight away
+        saveRound(myRound()); return;
+      }
       renderScenarios();
     }
 

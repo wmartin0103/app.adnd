@@ -246,6 +246,7 @@ create table public.round_state (
   round       integer not null default 1,
   foes        jsonb not null default '[]',   -- [{ id, label, size }]: never AC or the DM's names
   timing      text not null default 'end' check (timing in ('end', 'turn')),
+  encounter   integer not null default 1,     -- up by one when the DM resets initiative
   updated_at  timestamptz not null default now()
 );
 

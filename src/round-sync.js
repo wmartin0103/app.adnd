@@ -1,8 +1,10 @@
 // ── ROUND SYNC ──────────────────────────────────────────────────
 // Keeps one combat round shared between the players' sheets and the DM's
 // initiative page. The state:
-//   { round, foes: [{ id, name, ac, size }], timing: 'end' | 'turn',
+//   { round, encounter, foes: [{ id, label, size }], timing: 'end' | 'turn',
 //     records: { [character]: round record (rules/round.js) }, at }
+// encounter: goes up when the DM resets initiative (each sheet keeps its
+// initiative roll from round to round within one encounter).
 // The DM sends the round, foes and timing (and clears the records on a new
 // round); each sheet sends its own record.
 //
@@ -14,7 +16,7 @@
 
 const CHANNEL = 'adnd-round';
 const STORE = 'adnd-round-state';
-const empty = () => ({ round: 1, foes: [], timing: 'end', records: {}, at: 0 });
+const empty = () => ({ round: 1, encounter: 1, foes: [], timing: 'end', records: {}, at: 0 });
 
 export function createRoundSync() {
   const listeners = [];
@@ -38,8 +40,10 @@ export function createRoundSync() {
     // The DM: round number, foes, timing. A new round number clears the records.
     // (A sheet on its own starts its next round with dm: false; `dmAt` says
     // when the DM's page last spoke, which is how a sheet knows it's live.)
-    // reset: start over (round 1 unless given), every record cleared
-    sendDM: ({ round, foes, timing, dm = true, reset = false }) => change(s => {
+    // reset: start over (round 1 unless given), every record cleared, a new
+    // encounter. resetInit: a new encounter (everyone rolls initiative again).
+    sendDM: ({ round, foes, timing, dm = true, reset = false, resetInit = false }) => change(s => {
+      if (reset || resetInit) s.encounter = (s.encounter || 1) + 1;
       if (reset) { s.round = round ?? 1; s.records = {}; }
       else if (round != null && round !== s.round) { s.round = round; s.records = {}; }
       if (foes) s.foes = foes;
