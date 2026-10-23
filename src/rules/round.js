@@ -5,14 +5,17 @@
 //
 //   {
 //     character: 'Rifiyr', round: 3,
-//     scenarioId: 'sc-1',                 // this round's attack (a Combat scenario)
 //     init: { roll: 7 },                  // the d10, rolled once a round
 //     quick: { roll: 12 },                // Quickness d20 (characters who have it)
 //     you: { moveFirst, moveMult: '1', setVsCharge },
-//     extra: false,                       // the half attack of a 3/2 or 5/2 rate, this round
-//     offhand: false,                     // also the off-hand attack
-//     lines: { a1: {...}, a2: {...}, extra: {...}, off: {...} },
+//     queue: [{ qid: 'q1', scenarioId: 'sc-1', extra: false }, ...],   // the attacks added this round, in order
+//     lines: { 'q1-a1': {...}, 'q1-a2': {...}, 'q1-extra': {...} },
 //   }
+//
+// Adding an attack (a Combat scenario) queues one round's worth of it, from
+// its rate: 2/1 gives two lines; 3/2 one, plus an extra line when the player
+// ticks it ("extra"). The first queued attack sets when the character acts;
+// every line after the very first is an extra attack for the DM's timing.
 //
 // Each attack line: { same, target: { id, label, size }, flanking, ground,
 // charging, other, roll }. A target is a foe as players know it: the DM's
@@ -33,9 +36,23 @@ export const MOVE_MULTS = ['1', '1.5', '2', '3', '4'];
 const blankLine = () => ({ same: true, target: null, flanking: false, ground: '', charging: false, other: 0, roll: null });
 
 export const newRound = (character, round = 1) => ({
-  character, round, scenarioId: null, init: { roll: null }, quick: { roll: null },
-  you: { moveFirst: false, moveMult: '1', setVsCharge: false }, extra: false, offhand: false, lines: {},
+  character, round, init: { roll: null }, quick: { roll: null },
+  you: { moveFirst: false, moveMult: '1', setVsCharge: false }, queue: [], lines: {},
 });
+// The queue (a record from before the queue had one attack, `scenarioId`)
+export const roundQueue = rec => (Array.isArray(rec.queue) ? rec.queue : rec.scenarioId ? [{ qid: 'q1', scenarioId: rec.scenarioId, extra: !!rec.extra }] : []);
+// Add an attack to the round (once each)
+export function queueAttack(rec, scenarioId) {
+  const queue = roundQueue(rec);
+  if (queue.some(q => q.scenarioId === scenarioId)) return rec;
+  const n = queue.reduce((m, q) => Math.max(m, parseInt(String(q.qid).slice(1), 10) || 0), 0) + 1;
+  return { ...rec, queue: [...queue, { qid: `q${n}`, scenarioId, extra: false }] };
+}
+export function unqueueAttack(rec, qid) {
+  const lines = { ...(rec.lines || {}) };
+  Object.keys(lines).forEach(k => { if (k.startsWith(`${qid}-`)) delete lines[k]; });
+  return { ...rec, queue: roundQueue(rec).filter(q => q.qid !== qid), lines };
+}
 
 // The attack's speed in the order: the weapon's, a spell's casting time, or a
 // Spellarrow's bow + casting time
@@ -48,39 +65,33 @@ export function attackSpeed(ctx, sc) {
   return w ? parseInt(w.speed, 10) || 0 : 0;
 }
 
-// The off-hand scenario that goes with a main-hand attack, if the character has one
-export const offhandScenario = (scenarios, sc) =>
-  sc && sc.handedness !== 'off' && scenarioType(sc) !== 'spell' ? (scenarios || []).find(s => s.handedness === 'off' && s.weaponId) || null : null;
+// A queued attack with a half attack in its rate (3/2, 5/2) can add an extra line
+export const hasHalfAttack = sc => !!sc && scenarioType(sc) !== 'spell' && rateValue(scenarioRate(sc)) % 1 > 0;
 
-// This round's attack lines, with "same as above" worked out. `scenarios` is
-// the character's list; lines beyond the first go when you move first.
+// This round's attack lines, queued attack by queued attack, with "same as
+// above" worked out (it can follow the line above across attacks). Lines
+// beyond the very first go when you move first.
 export function roundLines(ctx, rec, scenarios) {
-  const sc = (scenarios || []).find(s => s.id === rec.scenarioId);
-  if (!sc) return [];
-  const type = scenarioType(sc);
-  const rate = type === 'spell' ? 1 : rateValue(scenarioRate(sc));
-  const full = Math.max(1, Math.floor(rate));
-  const keys = Array.from({ length: full }, (_, i) => ({ key: `a${i + 1}`, label: ORD[i], sc }));
-  const half = rate - Math.floor(rate) > 0;
-  if (half && rec.extra) keys.push({ key: 'extra', label: 'Extra', sc });
-  const off = offhandScenario(scenarios, sc);
-  if (off && rec.offhand) keys.push({ key: 'off', label: 'Off-hand', sc: off });
+  const keys = [];
+  roundQueue(rec).forEach(q => {
+    const sc = (scenarios || []).find(s => s.id === q.scenarioId);
+    if (!sc) return;
+    const rate = scenarioType(sc) === 'spell' ? 1 : rateValue(scenarioRate(sc));
+    for (let i = 0; i < Math.max(1, Math.floor(rate)); i++) keys.push({ key: `${q.qid}-a${i + 1}`, qid: q.qid, label: ORD[i], sc });
+    if (hasHalfAttack(sc) && q.extra) keys.push({ key: `${q.qid}-extra`, qid: q.qid, label: 'Extra', sc });
+  });
   const allowed = rec.you && rec.you.moveFirst ? keys.slice(0, 1) : keys;
   let prev = null;
   return allowed.map((k, i) => {
     const own = { ...blankLine(), ...(rec.lines || {})[k.key] };
     if (i === 0) own.same = false;
     const set = own.same && prev ? { ...prev.set } : { target: own.target, flanking: !!own.flanking, ground: own.ground || '', charging: !!own.charging, other: modNum(own.other) };
-    const line = { key: k.key, label: k.label, sc: k.sc, same: !!own.same && i > 0, set, roll: own.roll || null };
+    const line = { key: k.key, qid: k.qid, label: k.label, sc: k.sc, same: !!own.same && i > 0, set, roll: own.roll || null };
     prev = line;
     return line;
   });
 }
 const ORD = ['1st', '2nd', '3rd', '4th', '5th', '6th'];
-export const lineHalfAvailable = (scenarios, rec) => {
-  const sc = (scenarios || []).find(s => s.id === rec.scenarioId);
-  return !!sc && scenarioType(sc) !== 'spell' && rateValue(scenarioRate(sc)) % 1 > 0;
-};
 
 // To-hit modifier for one line's conditions
 export function lineToHit(set) {
@@ -99,7 +110,8 @@ export const roundACPenalty = (lines) => (lines.some(l => l.set.charging) ? ROUN
 // the first attack's target, Quickness −2 on a success). Lowest goes first.
 export function actOn(ctx, rec, scenarios, who = {}) {
   if (!rec.init || rec.init.roll == null) return null;
-  const sc = (scenarios || []).find(s => s.id === rec.scenarioId);
+  const sc = roundQueue(rec).map(q => (scenarios || []).find(s => s.id === q.scenarioId)).find(Boolean);
+  if (!sc) return null;   // no action yet: the roll alone doesn't say when
   const lines = roundLines(ctx, rec, scenarios);
   let n = rec.init.roll + attackSpeed(ctx, sc) + (who.initBonus || 0);
   if (rec.you.moveFirst) n += ROUND_MODS.moveFirstInit;

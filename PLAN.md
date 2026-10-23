@@ -45,6 +45,14 @@ table tool.
 
 Conditions are just modifiers on actions.
 
+**On the sheet (built 2026-10-23):** the Combat section's **This round** panel.
+The player rolls initiative there, and the roll goes to the DM right away
+("rolled 6, waiting for actions"). **Add to round** on an attack card queues
+it; each queued attack gets its attack lines (target, conditions, roll).
+**Send to DM** sends the attacks, and only then does the DM see when the
+character acts, since speed and conditions change it. Changes after sending
+show **Send changes**; rolling an attack after sending goes straight through.
+
 **Built in:** Good Hits and Bad Misses for criticals and fumbles; Quickness
 (Jaque) and Danger Sense (Goroth); group proficiency checks and group saves.
 

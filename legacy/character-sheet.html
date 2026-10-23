@@ -753,8 +753,6 @@
     .round { border: 1px solid var(--rule); border-radius: var(--radius); background: var(--surface); padding: 0.6rem 0.8rem 0.7rem; margin: 0.75rem 0 1rem; }
     .round-head { display: flex; align-items: baseline; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
     .round-status { font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 0.08em; color: var(--ink-muted); }
-    .round-mode-btn { margin-left: auto; background: none; border: 1px solid var(--rule); border-radius: var(--radius); font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.25rem 0.6rem; cursor: pointer; color: var(--ink-muted); }
-    .round-mode-btn:hover, .round-mode-btn:focus-visible { border-color: var(--accent); color: var(--accent); }
     .round-row { display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem; align-items: flex-end; }
     .round-init { display: flex; flex-direction: column; gap: 0.2rem; }
     .round-init > .round-btn, .round-init > .round-typed { margin-right: 0.3rem; }
@@ -773,12 +771,16 @@
     .round-btn:disabled { background: var(--rule); border-color: var(--rule); color: var(--ink-muted); cursor: not-allowed; }
     .round-note { font-size: 0.85rem; color: var(--ink-muted); }
     .round-say { margin-top: 0.6rem; font-size: 0.9rem; color: var(--ink-muted); }
-    .play-attack { border: 1px solid var(--rule); border-radius: var(--radius); background: var(--surface); margin-bottom: 0.5rem; }
-    .play-attack.is-chosen { border-color: var(--accent); }
-    .play-head { display: flex; align-items: baseline; gap: 0.6rem; padding: 0.5rem 0.7rem; cursor: pointer; flex-wrap: wrap; }
-    .play-head input { accent-color: var(--accent); }
+    .round-queue { margin-top: 0.75rem; display: grid; gap: 0.5rem; }
+    .round-item { border: 1px solid var(--accent); border-radius: var(--radius); background: var(--surface); }
+    .round-item-head { display: flex; align-items: baseline; gap: 0.6rem; padding: 0.5rem 0.7rem; flex-wrap: wrap; }
+    .round-item-head .scenario-delete-btn { margin-left: auto; }
     .play-name { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; letter-spacing: 0.04em; }
     .play-meta { font-size: 0.85rem; color: var(--ink-muted); }
+    .round-send { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.9rem; margin-top: 0.75rem; }
+    .round-add-btn { background: none; border: 1px solid var(--rule); border-radius: var(--radius); font-family: var(--font-display); font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.2rem 0.5rem; cursor: pointer; color: var(--ink-muted); white-space: nowrap; }
+    .round-add-btn:hover, .round-add-btn:focus-visible { border-color: var(--accent); color: var(--accent); }
+    .round-add-btn.is-added { background: var(--accent); border-color: var(--accent); color: var(--surface); }
     .play-lines { border-top: 1px solid var(--rule); padding: 0.5rem 0.7rem 0.6rem; display: grid; gap: 0.5rem; }
     .play-opts { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; }
     .play-line { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.4rem 0.9rem; padding-top: 0.45rem; border-top: 1px dashed var(--rule); }
@@ -2738,7 +2740,6 @@
         <div class="round-head">
           <h3 class="stances-title" id="round-title">This round</h3>
           <span class="round-status" id="round-status" aria-live="polite"></span>
-          <button type="button" class="round-mode-btn" id="round-mode-btn"></button>
         </div>
         <div id="round-body"></div>
       </div>
@@ -4171,14 +4172,17 @@ const {scenarioType, scenarioRate, rateValue, scenarioSpell, scenarioWeapon, spe
 //
 //   {
 //     character: 'Rifiyr', round: 3,
-//     scenarioId: 'sc-1',                 // this round's attack (a Combat scenario)
 //     init: { roll: 7 },                  // the d10, rolled once a round
 //     quick: { roll: 12 },                // Quickness d20 (characters who have it)
 //     you: { moveFirst, moveMult: '1', setVsCharge },
-//     extra: false,                       // the half attack of a 3/2 or 5/2 rate, this round
-//     offhand: false,                     // also the off-hand attack
-//     lines: { a1: {...}, a2: {...}, extra: {...}, off: {...} },
+//     queue: [{ qid: 'q1', scenarioId: 'sc-1', extra: false }, ...],   // the attacks added this round, in order
+//     lines: { 'q1-a1': {...}, 'q1-a2': {...}, 'q1-extra': {...} },
 //   }
+//
+// Adding an attack (a Combat scenario) queues one round's worth of it, from
+// its rate: 2/1 gives two lines; 3/2 one, plus an extra line when the player
+// ticks it ("extra"). The first queued attack sets when the character acts;
+// every line after the very first is an extra attack for the DM's timing.
 //
 // Each attack line: { same, target: { id, label, size }, flanking, ground,
 // charging, other, roll }. A target is a foe as players know it: the DM's
@@ -4198,9 +4202,23 @@ const MOVE_MULTS = ['1', '1.5', '2', '3', '4'];
 const blankLine = () => ({ same: true, target: null, flanking: false, ground: '', charging: false, other: 0, roll: null });
 
 const newRound = (character, round = 1) => ({
-  character, round, scenarioId: null, init: { roll: null }, quick: { roll: null },
-  you: { moveFirst: false, moveMult: '1', setVsCharge: false }, extra: false, offhand: false, lines: {},
+  character, round, init: { roll: null }, quick: { roll: null },
+  you: { moveFirst: false, moveMult: '1', setVsCharge: false }, queue: [], lines: {},
 });
+// The queue (a record from before the queue had one attack, `scenarioId`)
+const roundQueue = rec => (Array.isArray(rec.queue) ? rec.queue : rec.scenarioId ? [{ qid: 'q1', scenarioId: rec.scenarioId, extra: !!rec.extra }] : []);
+// Add an attack to the round (once each)
+function queueAttack(rec, scenarioId) {
+  const queue = roundQueue(rec);
+  if (queue.some(q => q.scenarioId === scenarioId)) return rec;
+  const n = queue.reduce((m, q) => Math.max(m, parseInt(String(q.qid).slice(1), 10) || 0), 0) + 1;
+  return { ...rec, queue: [...queue, { qid: `q${n}`, scenarioId, extra: false }] };
+}
+function unqueueAttack(rec, qid) {
+  const lines = { ...(rec.lines || {}) };
+  Object.keys(lines).forEach(k => { if (k.startsWith(`${qid}-`)) delete lines[k]; });
+  return { ...rec, queue: roundQueue(rec).filter(q => q.qid !== qid), lines };
+}
 
 // The attack's speed in the order: the weapon's, a spell's casting time, or a
 // Spellarrow's bow + casting time
@@ -4213,39 +4231,33 @@ function attackSpeed(ctx, sc) {
   return w ? parseInt(w.speed, 10) || 0 : 0;
 }
 
-// The off-hand scenario that goes with a main-hand attack, if the character has one
-const offhandScenario = (scenarios, sc) =>
-  sc && sc.handedness !== 'off' && scenarioType(sc) !== 'spell' ? (scenarios || []).find(s => s.handedness === 'off' && s.weaponId) || null : null;
+// A queued attack with a half attack in its rate (3/2, 5/2) can add an extra line
+const hasHalfAttack = sc => !!sc && scenarioType(sc) !== 'spell' && rateValue(scenarioRate(sc)) % 1 > 0;
 
-// This round's attack lines, with "same as above" worked out. `scenarios` is
-// the character's list; lines beyond the first go when you move first.
+// This round's attack lines, queued attack by queued attack, with "same as
+// above" worked out (it can follow the line above across attacks). Lines
+// beyond the very first go when you move first.
 function roundLines(ctx, rec, scenarios) {
-  const sc = (scenarios || []).find(s => s.id === rec.scenarioId);
-  if (!sc) return [];
-  const type = scenarioType(sc);
-  const rate = type === 'spell' ? 1 : rateValue(scenarioRate(sc));
-  const full = Math.max(1, Math.floor(rate));
-  const keys = Array.from({ length: full }, (_, i) => ({ key: `a${i + 1}`, label: ORD[i], sc }));
-  const half = rate - Math.floor(rate) > 0;
-  if (half && rec.extra) keys.push({ key: 'extra', label: 'Extra', sc });
-  const off = offhandScenario(scenarios, sc);
-  if (off && rec.offhand) keys.push({ key: 'off', label: 'Off-hand', sc: off });
+  const keys = [];
+  roundQueue(rec).forEach(q => {
+    const sc = (scenarios || []).find(s => s.id === q.scenarioId);
+    if (!sc) return;
+    const rate = scenarioType(sc) === 'spell' ? 1 : rateValue(scenarioRate(sc));
+    for (let i = 0; i < Math.max(1, Math.floor(rate)); i++) keys.push({ key: `${q.qid}-a${i + 1}`, qid: q.qid, label: ORD[i], sc });
+    if (hasHalfAttack(sc) && q.extra) keys.push({ key: `${q.qid}-extra`, qid: q.qid, label: 'Extra', sc });
+  });
   const allowed = rec.you && rec.you.moveFirst ? keys.slice(0, 1) : keys;
   let prev = null;
   return allowed.map((k, i) => {
     const own = { ...blankLine(), ...(rec.lines || {})[k.key] };
     if (i === 0) own.same = false;
     const set = own.same && prev ? { ...prev.set } : { target: own.target, flanking: !!own.flanking, ground: own.ground || '', charging: !!own.charging, other: modNum(own.other) };
-    const line = { key: k.key, label: k.label, sc: k.sc, same: !!own.same && i > 0, set, roll: own.roll || null };
+    const line = { key: k.key, qid: k.qid, label: k.label, sc: k.sc, same: !!own.same && i > 0, set, roll: own.roll || null };
     prev = line;
     return line;
   });
 }
 const ORD = ['1st', '2nd', '3rd', '4th', '5th', '6th'];
-const lineHalfAvailable = (scenarios, rec) => {
-  const sc = (scenarios || []).find(s => s.id === rec.scenarioId);
-  return !!sc && scenarioType(sc) !== 'spell' && rateValue(scenarioRate(sc)) % 1 > 0;
-};
 
 // To-hit modifier for one line's conditions
 function lineToHit(set) {
@@ -4264,7 +4276,8 @@ const roundACPenalty = (lines) => (lines.some(l => l.set.charging) ? ROUND_MODS.
 // the first attack's target, Quickness −2 on a success). Lowest goes first.
 function actOn(ctx, rec, scenarios, who = {}) {
   if (!rec.init || rec.init.roll == null) return null;
-  const sc = (scenarios || []).find(s => s.id === rec.scenarioId);
+  const sc = roundQueue(rec).map(q => (scenarios || []).find(s => s.id === q.scenarioId)).find(Boolean);
+  if (!sc) return null;   // no action yet: the roll alone doesn't say when
   const lines = roundLines(ctx, rec, scenarios);
   let n = rec.init.roll + attackSpeed(ctx, sc) + (who.initBonus || 0);
   if (rec.you.moveFirst) n += ROUND_MODS.moveFirstInit;
@@ -4343,7 +4356,7 @@ function lineSay(line) {
   return `${line.label}: vs ${t}, d20 ${r.d20}${nat}, hits AC ${acText(r.hitsAC)} or worse, ${r.dmg ?? '—'} damage${r.spell != null ? ` + spell ${r.spell}` : ''}`;
 }
 
-return { ROUND_MODS, MOVE_MULTS, newRound, attackSpeed, offhandScenario, roundLines, lineHalfAvailable, lineToHit, roundACPenalty, actOn, quicknessWorks, rollDice, lineTHAC0, rollLine, judgeRoll, lineSay };
+return { ROUND_MODS, MOVE_MULTS, newRound, roundQueue, queueAttack, unqueueAttack, attackSpeed, hasHalfAttack, roundLines, lineToHit, roundACPenalty, actOn, quicknessWorks, rollDice, lineTHAC0, rollLine, judgeRoll, lineSay };
 })();
 // ── rules/character ──
 __m["rules/character"] = (() => {
@@ -5222,7 +5235,7 @@ return { createRoundSync };
 window.SheetSpells = { findSpell: __m["rules/spells"].findSpell };
 window.SheetScenarios = { modNum: __m["rules/scenarios"].modNum, signed: __m["rules/scenarios"].signed, ATTACK_TYPES: __m["rules/scenarios"].ATTACK_TYPES, RATE_OPTIONS: __m["rules/scenarios"].RATE_OPTIONS, scenarioRate: __m["rules/scenarios"].scenarioRate, scenarioType: __m["rules/scenarios"].scenarioType, scenarioSpell: __m["rules/scenarios"].scenarioSpell, scenarioAbility: __m["rules/scenarios"].scenarioAbility, activeEffectsFor: __m["rules/scenarios"].activeEffectsFor, scenarioDamage: __m["rules/scenarios"].scenarioDamage, scenarioBreakdown: __m["rules/scenarios"].scenarioBreakdown, normalizeEffects: __m["rules/scenarios"].normalizeEffects, effectOption: __m["rules/scenarios"].effectOption, isBowcaster: __m["rules/scenarios"].isBowcaster, spellArrow: __m["rules/scenarios"].spellArrow, usesAmmo: __m["rules/scenarios"].usesAmmo, weaponAmmoType: __m["rules/scenarios"].weaponAmmoType, ammoType: __m["rules/scenarios"].ammoType, ammoFor: __m["rules/scenarios"].ammoFor, scenarioAmmo: __m["rules/scenarios"].scenarioAmmo, AMMO_TYPES: __m["rules/scenarios"].AMMO_TYPES };
 window.SheetKits = { HOUSE_KITS: __m["rules/kits"].HOUSE_KITS, classKit: __m["rules/kits"].classKit };
-window.SheetRound = { ROUND_MODS: __m["rules/round"].ROUND_MODS, MOVE_MULTS: __m["rules/round"].MOVE_MULTS, newRound: __m["rules/round"].newRound, roundLines: __m["rules/round"].roundLines, lineHalfAvailable: __m["rules/round"].lineHalfAvailable, offhandScenario: __m["rules/round"].offhandScenario, lineToHit: __m["rules/round"].lineToHit, roundACPenalty: __m["rules/round"].roundACPenalty, lineTHAC0: __m["rules/round"].lineTHAC0, judgeRoll: __m["rules/round"].judgeRoll, actOn: __m["rules/round"].actOn, quicknessWorks: __m["rules/round"].quicknessWorks, attackSpeed: __m["rules/round"].attackSpeed, rollLine: __m["rules/round"].rollLine, lineSay: __m["rules/round"].lineSay };
+window.SheetRound = { ROUND_MODS: __m["rules/round"].ROUND_MODS, MOVE_MULTS: __m["rules/round"].MOVE_MULTS, newRound: __m["rules/round"].newRound, roundQueue: __m["rules/round"].roundQueue, queueAttack: __m["rules/round"].queueAttack, unqueueAttack: __m["rules/round"].unqueueAttack, hasHalfAttack: __m["rules/round"].hasHalfAttack, roundLines: __m["rules/round"].roundLines, lineToHit: __m["rules/round"].lineToHit, roundACPenalty: __m["rules/round"].roundACPenalty, lineTHAC0: __m["rules/round"].lineTHAC0, judgeRoll: __m["rules/round"].judgeRoll, actOn: __m["rules/round"].actOn, quicknessWorks: __m["rules/round"].quicknessWorks, attackSpeed: __m["rules/round"].attackSpeed, rollLine: __m["rules/round"].rollLine, lineSay: __m["rules/round"].lineSay };
 window.RoundSync = { createRoundSync: __m["round-sync"].createRoundSync };
 window.SheetRules = { PHB_WEAPONS: __m["rules/weapons"].PHB_WEAPONS };
 window.SheetGuess = { guessCategory: __m["rules/migrate"].guessCategory };
@@ -6323,9 +6336,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       const list = document.getElementById('scenarios-list');
       list.innerHTML = '';
       renderRound();
-      // In play, the attacks are this round's choice; their setup folds away
-      document.getElementById('add-scenario-btn').hidden = combatMode === 'play';
-      if (combatMode === 'play') { renderPlay(list); return; }
 
       scenarios.forEach((scenario, index) => {
         const thac0 = calcScenarioTHAC0(scenario);
@@ -6442,6 +6452,23 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         }
 
         headerRight.appendChild(badge);
+        // Add to round: queue this attack in This round (again to take it out)
+        if (window.SheetRound) {
+          const queued = SheetRound.roundQueue(myRound()).find(q => q.scenarioId === scenario.id);
+          const addBtn = document.createElement('button');
+          addBtn.type = 'button';
+          addBtn.className = 'round-add-btn' + (queued ? ' is-added' : '');
+          addBtn.textContent = queued ? 'In this round ✓' : 'Add to round';
+          addBtn.setAttribute('aria-pressed', queued ? 'true' : 'false');
+          addBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const rec = myRound();
+            const q = SheetRound.roundQueue(rec).find(x => x.scenarioId === scenario.id);
+            saveRound(q ? SheetRound.unqueueAttack(rec, q.qid) : SheetRound.queueAttack(rec, scenario.id));
+            document.querySelector(`[data-scenario-id="${scenario.id}"] .round-add-btn`)?.focus();
+          });
+          headerRight.appendChild(addBtn);
+        }
         header.appendChild(headerRight);
         header.appendChild(deleteBtn);
 
@@ -7043,11 +7070,13 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
     // ── This round (synced with the DM's initiative page) ───────────────
     // A round record (rules/round.js) for this character: initiative, the
-    // "you" conditions, this round's attack and its attack lines, each with a
-    // target, conditions and a roll. It lives in the round sync (round-sync.js),
-    // not in the sheet's save: the DM's New round clears it. With no DM
-    // connected, the sheet works the same on its own and gives a line to read out.
-    var combatMode = 'play';
+    // "you" conditions, the attacks added this round (Add to round on a card)
+    // and their attack lines, each with a target, conditions and a roll. It
+    // lives in the round sync (round-sync.js), not in the sheet's save: the
+    // DM's New round clears it. The initiative roll reaches the DM as soon as
+    // it's rolled; the attacks, and so when the character acts, once the player
+    // chooses Send to DM. With no DM connected, the sheet works the same on its
+    // own and gives a line to read out.
     var roundSyncObj = null;
     function roundSync() {
       if (!roundSyncObj && window.RoundSync) {
@@ -7062,34 +7091,39 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
     function myRound() {
       const st = roundState();
       const rec = st.records[charName()];
-      if (rec) return JSON.parse(JSON.stringify(rec));
-      // A new round starts with the sheet's active attack
-      return { ...SheetRound.newRound(charName(), st.round), scenarioId: (scenarios.find(s => s.active) || {}).id || null };
+      if (rec) { const r = JSON.parse(JSON.stringify(rec)); r.queue = SheetRound.roundQueue(r); return r; }
+      return SheetRound.newRound(charName(), st.round);
     }
-    function saveRound(rec) {
+    // Saves the round. Until it's sent, the DM sees only the initiative roll;
+    // after, what was last sent (send: send it now)
+    function saveRound(rec, send) {
       const s = roundSync();
-      if (s) s.sendRecord({ ...rec, view: roundView(rec) });
+      if (send) { rec.sent = true; rec.view = roundView(rec); }
+      const view = rec.sent ? rec.view : { pending: true, initRoll: rec.init.roll, actOn: null, attack: '', you: [], lines: [] };
+      if (s) s.sendRecord({ ...rec, view });
       renderScenarios();
     }
+    const roundChanged = rec => !rec.sent || JSON.stringify(roundView(rec)) !== JSON.stringify(rec.view);
     // What the DM's page shows, worked out here with the sheet's own numbers:
     // when the character acts, and each attack line's target, conditions,
     // number needed and result
     function roundView(rec) {
       const ctx = scenarioCtx(), who = roundWho();
-      const sc = scenarios.find(s => s.id === rec.scenarioId);
+      const queued = SheetRound.roundQueue(rec).map(q => scenarios.find(s => s.id === q.scenarioId)).filter(Boolean);
+      const sc = queued[0];
       const lines = SheetRound.roundLines(ctx, rec, scenarios);
       const tags = set => [set.flanking && 'flanking', set.ground === 'high' && 'higher ground', set.ground === 'low' && 'lower ground',
         set.charging && 'charging', set.other && `other ${set.other > 0 ? '+' : ''}${set.other}`].filter(Boolean);
       return {
         actOn: SheetRound.actOn(ctx, rec, scenarios, who),
         initRoll: rec.init.roll, speed: sc ? SheetRound.attackSpeed(ctx, sc) : null,
-        attack: sc ? sc.name || 'Attack' : '',
+        attack: queued.map(x => x.name || 'Attack').join(' + '),
         quick: who.quickness && rec.quick.roll != null ? { roll: rec.quick.roll, ok: SheetRound.quicknessWorks(rec, who) } : null,
         you: [rec.you.moveFirst && 'moving first', rec.you.moveMult !== '1' && `movement ${rec.you.moveMult}×`, rec.you.setVsCharge && 'set vs charge'].filter(Boolean),
         acPenalty: SheetRound.roundACPenalty(lines),
         lines: lines.map((l, i) => {
           return {
-            key: l.key, label: l.label, extra: i > 0, scenario: l.sc.name || '',
+            key: l.key, label: queued.length > 1 ? `${l.sc.name || 'Attack'} ${l.label}` : l.label, extra: i > 0, scenario: l.sc.name || '',
             target: l.set.target ? { id: l.set.target.id, label: l.set.target.label, size: l.set.target.size } : null,
             tags: tags(l.set), thac0: SheetRound.lineTHAC0(ctx, l), roll: l.roll || null,
           };
@@ -7111,11 +7145,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       rememberRound();
       renderScenarios();
     }
-    document.getElementById('round-mode-btn')?.addEventListener('click', () => {
-      combatMode = combatMode === 'play' ? 'setup' : 'play';
-      renderScenarios();
-      document.getElementById('round-mode-btn').focus();
-    });
 
     const escR = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     const check = (id, label, checked, onChange) => {
@@ -7140,15 +7169,9 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       const st = roundState(), rec = myRound(), live = dmLive(), who = roundWho(), ctx = scenarioCtx();
       const status = document.getElementById('round-status');
       status.textContent = `Round ${st.round}`;
-      document.getElementById('round-mode-btn').textContent = combatMode === 'play' ? 'Edit attacks' : 'Done editing';
       const next = document.getElementById('next-round-btn');
       if (next) next.hidden = live;
       body.innerHTML = '';
-      if (combatMode !== 'play') {
-        const p = document.createElement('p'); p.className = 'stances-hint';
-        p.textContent = 'Editing your attacks. Choose Done editing to play the round.';
-        body.appendChild(p); return;
-      }
       const row = document.createElement('div'); row.className = 'round-row';
       // Initiative: d10 once a round (rolled here or typed in from real dice)
       const init = document.createElement('div'); init.className = 'round-init';
@@ -7193,66 +7216,80 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       const ao = SheetRound.actOn(ctx, rec, scenarios, who);
       const act = document.createElement('div'); act.className = 'round-init round-acton';
       act.innerHTML = `<span class="scenario-field-label">Act on</span><b class="round-value">${ao ?? '—'}</b>`;
-      act.title = 'Initiative roll + the attack\'s speed + this round\'s adjustments. Lowest acts first.';
+      act.title = 'Initiative roll + the first attack\'s speed + this round\'s adjustments. Lowest acts first.';
       row.appendChild(act);
       body.appendChild(row);
+      // This round's attacks, then sending them
+      body.appendChild(renderQueue(rec, ctx, st.foes || []));
+      const queued = SheetRound.roundQueue(rec).map(q => scenarios.find(s => s.id === q.scenarioId)).filter(Boolean);
+      const send = document.createElement('div'); send.className = 'round-send';
+      const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'round-btn'; btn.id = 'round-send-btn';
+      const changed = roundChanged(rec);
+      btn.textContent = rec.sent && changed ? 'Send changes' : rec.sent ? 'Sent ✓' : 'Send to DM';
+      btn.disabled = !queued.length || rec.init.roll == null || !changed;
+      btn.addEventListener('click', () => { saveRound(rec, true); document.getElementById('round-send-btn')?.focus(); });
+      send.appendChild(btn);
+      const why = !queued.length ? 'Add an attack to the round.' : rec.init.roll == null ? 'Roll initiative first.' : '';
+      if (why) { const n = document.createElement('span'); n.className = 'round-note'; n.textContent = why; send.appendChild(n); }
+      body.appendChild(send);
       // What to say at the table
-      const sc = scenarios.find(s => s.id === rec.scenarioId);
       const lines = SheetRound.roundLines(ctx, rec, scenarios);
-      const say = document.createElement('p'); say.className = 'round-say';
-      say.textContent = sc
-        ? `${charName()}: ${sc.name || 'attack'}, acting on ${ao ?? '(roll initiative)'}. ${lines.map(SheetRound.lineSay).join('. ')}.`
-        : `${charName()}: choose this round's attack below.`;
-      body.appendChild(say);
+      if (queued.length) {
+        const say = document.createElement('p'); say.className = 'round-say';
+        say.textContent = `${charName()}: ${queued.map(x => x.name || 'attack').join(' + ')}, acting on ${ao ?? '(roll initiative)'}. ${lines.map(l => (queued.length > 1 ? `${l.sc.name || 'Attack'} ` : '') + SheetRound.lineSay(l)).join('. ')}.`;
+        body.appendChild(say);
+      }
     }
 
-    // Play: the attacks as this round's choice; the chosen one opens its attack lines
-    function renderPlay(list) {
-      const rec = myRound(), ctx = scenarioCtx(), foes = roundState().foes || [];
-      if (!scenarios.length) {
+    // The attacks added this round, each with its attack lines
+    function renderQueue(rec, ctx, foes) {
+      const wrap = document.createElement('div'); wrap.className = 'round-queue';
+      const queue = rec.queue.filter(q => scenarios.some(s => s.id === q.scenarioId));
+      if (!queue.length) {
         const p = document.createElement('p'); p.className = 'stances-hint';
-        p.textContent = 'No attacks yet. Choose Edit attacks to add one.';
-        list.appendChild(p); return;
+        p.textContent = 'Choose Add to round on an attack below.';
+        wrap.appendChild(p); return wrap;
       }
-      scenarios.forEach(sc => {
-        const card = document.createElement('div');
-        card.className = 'play-attack' + (rec.scenarioId === sc.id ? ' is-chosen' : '');
-        card.setAttribute('role', 'listitem');
-        const head = document.createElement('label'); head.className = 'play-head';
-        const radio = document.createElement('input'); radio.type = 'radio'; radio.name = 'round-attack'; radio.checked = rec.scenarioId === sc.id;
-        radio.addEventListener('change', () => {
-          rec.scenarioId = sc.id; rec.lines = {}; rec.extra = false; rec.offhand = false;
-          scenarios.forEach(s => { s.active = s.id === sc.id; });
-          updateActiveTHAC0(); saveToItems(); saveRound(rec);
-        });
-        const thac0 = calcScenarioTHAC0(sc);
-        const dmg = calcScenarioDamage(sc);
-        const isSp = scenarioType(sc) === 'spell';
+      if (rec.you.moveFirst && SheetRound.roundLines(ctx, { ...rec, you: { ...rec.you, moveFirst: false } }, scenarios).length > 1) {
+        const n = document.createElement('p'); n.className = 'round-note'; n.textContent = 'Moving first: one attack this round.'; wrap.appendChild(n);
+      }
+      const lines = SheetRound.roundLines(ctx, rec, scenarios);
+      queue.forEach(q => {
+        const sc = scenarios.find(s => s.id === q.scenarioId);
+        const item = document.createElement('div'); item.className = 'round-item';
+        const head = document.createElement('div'); head.className = 'round-item-head';
+        const thac0 = calcScenarioTHAC0(sc), dmg = calcScenarioDamage(sc), isSp = scenarioType(sc) === 'spell';
         const meta = [thac0 != null ? `THAC0 ${thac0}` : 'No attack roll',
           dmg ? (isSp ? dmg.sm : `${dmg.sm} · ${dmg.l}`) + (dmg.spell ? ` + spell ${dmg.spell}` : '') : '',
           isSp ? '' : `${scenarioRate(sc)}`, `speed ${SheetRound.attackSpeed(ctx, sc)}`].filter(Boolean).join(' · ');
         head.innerHTML = `<span class="play-name">${escR(sc.name || 'Unnamed attack')}</span><span class="play-meta">${escR(meta)}</span>`;
-        head.prepend(radio);
-        card.appendChild(head);
-        if (rec.scenarioId === sc.id) card.appendChild(renderLines(rec, ctx, foes));
-        list.appendChild(card);
+        const rm = document.createElement('button'); rm.type = 'button'; rm.className = 'scenario-delete-btn'; rm.innerHTML = '&#x2715;';
+        rm.setAttribute('aria-label', `Take ${sc.name || 'this attack'} out of this round`);
+        rm.addEventListener('click', () => saveRound(SheetRound.unqueueAttack(rec, q.qid)));
+        head.appendChild(rm);
+        item.appendChild(head);
+        item.appendChild(renderLines(rec, ctx, foes, q, lines));
+        wrap.appendChild(item);
       });
+      return wrap;
     }
 
-    function renderLines(rec, ctx, foes) {
+    function renderLines(rec, ctx, foes, q, all) {
       const wrap = document.createElement('div'); wrap.className = 'play-lines';
-      const opts = document.createElement('div'); opts.className = 'play-opts';
-      if (SheetRound.lineHalfAvailable(scenarios, rec)) opts.appendChild(check('round-extra', 'Extra attack this round', rec.extra, v => { rec.extra = v; saveRound(rec); }));
-      const sc = scenarios.find(s => s.id === rec.scenarioId);
-      if (SheetRound.offhandScenario(scenarios, sc)) opts.appendChild(check('round-off', 'Off-hand attack', rec.offhand, v => { rec.offhand = v; saveRound(rec); }));
-      if (rec.you.moveFirst) { const n = document.createElement('span'); n.className = 'round-note'; n.textContent = 'Moving first: no extra attacks this round.'; opts.appendChild(n); }
-      if (opts.childNodes.length) wrap.appendChild(opts);
-      const lines = SheetRound.roundLines(ctx, rec, scenarios);
+      const sc = scenarios.find(s => s.id === q.scenarioId);
+      if (SheetRound.hasHalfAttack(sc)) {
+        const opts = document.createElement('div'); opts.className = 'play-opts';
+        opts.appendChild(check(`round-${q.qid}-extra`, 'Extra attack this round', q.extra, v => { q.extra = v; saveRound(rec); }));
+        wrap.appendChild(opts);
+      }
+      const lines = all.filter(l => l.qid === q.qid);
+      if (!lines.length) { const n = document.createElement('p'); n.className = 'round-note'; n.textContent = 'Moving first: no attack with this one.'; wrap.appendChild(n); }
       const own = key => (rec.lines[key] = rec.lines[key] || {});
       const setOwn = (line, patch) => { rec.lines[line.key] = { ...line.set, ...own(line.key), same: false, ...patch, roll: own(line.key).roll || null }; saveRound(rec); };
-      lines.forEach((line, i) => {
+      lines.forEach(line => {
+        const i = all.indexOf(line);
         const row = document.createElement('div'); row.className = 'play-line';
-        const lab = document.createElement('span'); lab.className = 'play-label'; lab.textContent = line.label + (line.sc.id !== rec.scenarioId ? ` (${line.sc.name})` : '');
+        const lab = document.createElement('span'); lab.className = 'play-label'; lab.textContent = line.label;
         row.appendChild(lab);
         const id = `round-${line.key}`;
         if (i > 0) row.appendChild(check(`${id}-same`, 'Same as above', line.same, v => {
@@ -7286,7 +7323,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         row.appendChild(n);
         if (!line.roll) {
           const b = document.createElement('button'); b.type = 'button'; b.className = 'round-btn'; b.textContent = 'Roll';
-          b.addEventListener('click', () => { own(line.key).roll = SheetRound.rollLine(ctx, line); saveRound(rec); });
+          b.addEventListener('click', () => { own(line.key).roll = SheetRound.rollLine(ctx, line); saveRound(rec, rec.sent); });
           row.appendChild(b);
         } else {
           const r = document.createElement('span');

@@ -1738,14 +1738,17 @@ const {scenarioType, scenarioRate, rateValue, scenarioSpell, scenarioWeapon, spe
 //
 //   {
 //     character: 'Rifiyr', round: 3,
-//     scenarioId: 'sc-1',                 // this round's attack (a Combat scenario)
 //     init: { roll: 7 },                  // the d10, rolled once a round
 //     quick: { roll: 12 },                // Quickness d20 (characters who have it)
 //     you: { moveFirst, moveMult: '1', setVsCharge },
-//     extra: false,                       // the half attack of a 3/2 or 5/2 rate, this round
-//     offhand: false,                     // also the off-hand attack
-//     lines: { a1: {...}, a2: {...}, extra: {...}, off: {...} },
+//     queue: [{ qid: 'q1', scenarioId: 'sc-1', extra: false }, ...],   // the attacks added this round, in order
+//     lines: { 'q1-a1': {...}, 'q1-a2': {...}, 'q1-extra': {...} },
 //   }
+//
+// Adding an attack (a Combat scenario) queues one round's worth of it, from
+// its rate: 2/1 gives two lines; 3/2 one, plus an extra line when the player
+// ticks it ("extra"). The first queued attack sets when the character acts;
+// every line after the very first is an extra attack for the DM's timing.
 //
 // Each attack line: { same, target: { id, label, size }, flanking, ground,
 // charging, other, roll }. A target is a foe as players know it: the DM's
@@ -1765,9 +1768,23 @@ const MOVE_MULTS = ['1', '1.5', '2', '3', '4'];
 const blankLine = () => ({ same: true, target: null, flanking: false, ground: '', charging: false, other: 0, roll: null });
 
 const newRound = (character, round = 1) => ({
-  character, round, scenarioId: null, init: { roll: null }, quick: { roll: null },
-  you: { moveFirst: false, moveMult: '1', setVsCharge: false }, extra: false, offhand: false, lines: {},
+  character, round, init: { roll: null }, quick: { roll: null },
+  you: { moveFirst: false, moveMult: '1', setVsCharge: false }, queue: [], lines: {},
 });
+// The queue (a record from before the queue had one attack, `scenarioId`)
+const roundQueue = rec => (Array.isArray(rec.queue) ? rec.queue : rec.scenarioId ? [{ qid: 'q1', scenarioId: rec.scenarioId, extra: !!rec.extra }] : []);
+// Add an attack to the round (once each)
+function queueAttack(rec, scenarioId) {
+  const queue = roundQueue(rec);
+  if (queue.some(q => q.scenarioId === scenarioId)) return rec;
+  const n = queue.reduce((m, q) => Math.max(m, parseInt(String(q.qid).slice(1), 10) || 0), 0) + 1;
+  return { ...rec, queue: [...queue, { qid: `q${n}`, scenarioId, extra: false }] };
+}
+function unqueueAttack(rec, qid) {
+  const lines = { ...(rec.lines || {}) };
+  Object.keys(lines).forEach(k => { if (k.startsWith(`${qid}-`)) delete lines[k]; });
+  return { ...rec, queue: roundQueue(rec).filter(q => q.qid !== qid), lines };
+}
 
 // The attack's speed in the order: the weapon's, a spell's casting time, or a
 // Spellarrow's bow + casting time
@@ -1780,39 +1797,33 @@ function attackSpeed(ctx, sc) {
   return w ? parseInt(w.speed, 10) || 0 : 0;
 }
 
-// The off-hand scenario that goes with a main-hand attack, if the character has one
-const offhandScenario = (scenarios, sc) =>
-  sc && sc.handedness !== 'off' && scenarioType(sc) !== 'spell' ? (scenarios || []).find(s => s.handedness === 'off' && s.weaponId) || null : null;
+// A queued attack with a half attack in its rate (3/2, 5/2) can add an extra line
+const hasHalfAttack = sc => !!sc && scenarioType(sc) !== 'spell' && rateValue(scenarioRate(sc)) % 1 > 0;
 
-// This round's attack lines, with "same as above" worked out. `scenarios` is
-// the character's list; lines beyond the first go when you move first.
+// This round's attack lines, queued attack by queued attack, with "same as
+// above" worked out (it can follow the line above across attacks). Lines
+// beyond the very first go when you move first.
 function roundLines(ctx, rec, scenarios) {
-  const sc = (scenarios || []).find(s => s.id === rec.scenarioId);
-  if (!sc) return [];
-  const type = scenarioType(sc);
-  const rate = type === 'spell' ? 1 : rateValue(scenarioRate(sc));
-  const full = Math.max(1, Math.floor(rate));
-  const keys = Array.from({ length: full }, (_, i) => ({ key: `a${i + 1}`, label: ORD[i], sc }));
-  const half = rate - Math.floor(rate) > 0;
-  if (half && rec.extra) keys.push({ key: 'extra', label: 'Extra', sc });
-  const off = offhandScenario(scenarios, sc);
-  if (off && rec.offhand) keys.push({ key: 'off', label: 'Off-hand', sc: off });
+  const keys = [];
+  roundQueue(rec).forEach(q => {
+    const sc = (scenarios || []).find(s => s.id === q.scenarioId);
+    if (!sc) return;
+    const rate = scenarioType(sc) === 'spell' ? 1 : rateValue(scenarioRate(sc));
+    for (let i = 0; i < Math.max(1, Math.floor(rate)); i++) keys.push({ key: `${q.qid}-a${i + 1}`, qid: q.qid, label: ORD[i], sc });
+    if (hasHalfAttack(sc) && q.extra) keys.push({ key: `${q.qid}-extra`, qid: q.qid, label: 'Extra', sc });
+  });
   const allowed = rec.you && rec.you.moveFirst ? keys.slice(0, 1) : keys;
   let prev = null;
   return allowed.map((k, i) => {
     const own = { ...blankLine(), ...(rec.lines || {})[k.key] };
     if (i === 0) own.same = false;
     const set = own.same && prev ? { ...prev.set } : { target: own.target, flanking: !!own.flanking, ground: own.ground || '', charging: !!own.charging, other: modNum(own.other) };
-    const line = { key: k.key, label: k.label, sc: k.sc, same: !!own.same && i > 0, set, roll: own.roll || null };
+    const line = { key: k.key, qid: k.qid, label: k.label, sc: k.sc, same: !!own.same && i > 0, set, roll: own.roll || null };
     prev = line;
     return line;
   });
 }
 const ORD = ['1st', '2nd', '3rd', '4th', '5th', '6th'];
-const lineHalfAvailable = (scenarios, rec) => {
-  const sc = (scenarios || []).find(s => s.id === rec.scenarioId);
-  return !!sc && scenarioType(sc) !== 'spell' && rateValue(scenarioRate(sc)) % 1 > 0;
-};
 
 // To-hit modifier for one line's conditions
 function lineToHit(set) {
@@ -1831,7 +1842,8 @@ const roundACPenalty = (lines) => (lines.some(l => l.set.charging) ? ROUND_MODS.
 // the first attack's target, Quickness −2 on a success). Lowest goes first.
 function actOn(ctx, rec, scenarios, who = {}) {
   if (!rec.init || rec.init.roll == null) return null;
-  const sc = (scenarios || []).find(s => s.id === rec.scenarioId);
+  const sc = roundQueue(rec).map(q => (scenarios || []).find(s => s.id === q.scenarioId)).find(Boolean);
+  if (!sc) return null;   // no action yet: the roll alone doesn't say when
   const lines = roundLines(ctx, rec, scenarios);
   let n = rec.init.roll + attackSpeed(ctx, sc) + (who.initBonus || 0);
   if (rec.you.moveFirst) n += ROUND_MODS.moveFirstInit;
@@ -1910,7 +1922,7 @@ function lineSay(line) {
   return `${line.label}: vs ${t}, d20 ${r.d20}${nat}, hits AC ${acText(r.hitsAC)} or worse, ${r.dmg ?? '—'} damage${r.spell != null ? ` + spell ${r.spell}` : ''}`;
 }
 
-return { ROUND_MODS, MOVE_MULTS, newRound, attackSpeed, offhandScenario, roundLines, lineHalfAvailable, lineToHit, roundACPenalty, actOn, quicknessWorks, rollDice, lineTHAC0, rollLine, judgeRoll, lineSay };
+return { ROUND_MODS, MOVE_MULTS, newRound, roundQueue, queueAttack, unqueueAttack, attackSpeed, hasHalfAttack, roundLines, lineToHit, roundACPenalty, actOn, quicknessWorks, rollDice, lineTHAC0, rollLine, judgeRoll, lineSay };
 })();
 // ── rules/character ──
 __m["rules/character"] = (() => {
@@ -2787,7 +2799,7 @@ function createRoundSync() {
 return { createRoundSync };
 })();
 window.SheetConverter = { toDMHelper: __m["adapters/dm-helper"].toDMHelper };
-window.SheetRound = { ROUND_MODS: __m["rules/round"].ROUND_MODS, MOVE_MULTS: __m["rules/round"].MOVE_MULTS, newRound: __m["rules/round"].newRound, roundLines: __m["rules/round"].roundLines, lineHalfAvailable: __m["rules/round"].lineHalfAvailable, offhandScenario: __m["rules/round"].offhandScenario, lineToHit: __m["rules/round"].lineToHit, roundACPenalty: __m["rules/round"].roundACPenalty, lineTHAC0: __m["rules/round"].lineTHAC0, judgeRoll: __m["rules/round"].judgeRoll, actOn: __m["rules/round"].actOn, quicknessWorks: __m["rules/round"].quicknessWorks, attackSpeed: __m["rules/round"].attackSpeed, rollLine: __m["rules/round"].rollLine, lineSay: __m["rules/round"].lineSay };
+window.SheetRound = { ROUND_MODS: __m["rules/round"].ROUND_MODS, MOVE_MULTS: __m["rules/round"].MOVE_MULTS, newRound: __m["rules/round"].newRound, roundQueue: __m["rules/round"].roundQueue, queueAttack: __m["rules/round"].queueAttack, unqueueAttack: __m["rules/round"].unqueueAttack, hasHalfAttack: __m["rules/round"].hasHalfAttack, roundLines: __m["rules/round"].roundLines, lineToHit: __m["rules/round"].lineToHit, roundACPenalty: __m["rules/round"].roundACPenalty, lineTHAC0: __m["rules/round"].lineTHAC0, judgeRoll: __m["rules/round"].judgeRoll, actOn: __m["rules/round"].actOn, quicknessWorks: __m["rules/round"].quicknessWorks, attackSpeed: __m["rules/round"].attackSpeed, rollLine: __m["rules/round"].rollLine, lineSay: __m["rules/round"].lineSay };
 window.RoundSync = { createRoundSync: __m["round-sync"].createRoundSync };
 })();
 if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.SheetSpellCatalog = window.parent.SheetSpellCatalog; } catch (e) { /* not allowed */ } }
@@ -3985,7 +3997,7 @@ function update(){
       renderSynced(b, name, synced, bdAC);
       const ao = synced.actOn;
       b.actson.textContent = ao==null ? '—' : String(ao);
-      b.actson.title = ao==null ? 'not rolled yet' : `acts on ${ao} · ${synced.attack} (from the sheet)`;
+      b.actson.title = ao==null ? syncedDoing(synced) : `acts on ${ao} · ${synced.attack} (from the sheet)`;
       order.push({name, sortInit: ao==null ? Infinity : ao});
       return;
     }
@@ -4248,12 +4260,14 @@ function lineHTML(line, bdAC, prefix){
   const tags = line.tags && line.tags.length ? ` · ${line.tags.join(', ')}` : '';
   return `<div class="spline"><span class="splabel">${esc(prefix||line.label)}</span><span>vs ${esc(j.who)}${esc(tags)}${line.thac0!=null?` · THAC0 ${line.thac0}`:''}</span><span class="${j.cls}">${j.text}</span></div>`;
 }
+// Until the player sends their attacks, the sheet sends only the initiative roll
+const syncedDoing = v => v.pending ? (v.initRoll==null ? 'not rolled yet' : `rolled ${v.initRoll}, waiting for actions`) : (v.attack||'no attack chosen');
 function renderSynced(b, name, v, bdAC){
   if(!b.syncPanel){ b.syncPanel=document.createElement('div'); b.syncPanel.className='syncpanel'; b.el.appendChild(b.syncPanel); }
   const timing = (syncState && syncState.timing) || 'end';
   const lines = (v.lines||[]).filter(l => timing==='turn' || !l.extra);
   const extras = [v.you && v.you.length ? v.you.join(', ') : '', v.quick ? `Quickness ${v.quick.roll}${v.quick.ok?' (−2)':''}` : '', v.acPenalty ? `AC ${v.acPenalty} worse (charging)` : ''].filter(Boolean).join(' · ');
-  b.syncPanel.innerHTML = `<div class="sphead">From ${esc(name)}'s sheet · ${esc(v.attack||'no attack chosen')}${extras?` · ${esc(extras)}`:''}</div>` + lines.map(l=>lineHTML(l, bdAC)).join('')
+  b.syncPanel.innerHTML = `<div class="sphead">From ${esc(name)}'s sheet · ${esc(syncedDoing(v))}${extras?` · ${esc(extras)}`:''}</div>` + lines.map(l=>lineHTML(l, bdAC)).join('')
     + (timing==='end' && (v.lines||[]).some(l=>l.extra) ? `<div class="sphead">Extra attacks: at the end of the order</div>` : '');
 }
 let extraBlock=null;
@@ -5099,7 +5113,7 @@ function renderLight(){
       lr.actSpan.textContent = sv.actOn==null ? '—' : String(sv.actOn); lr.actSpan.title='from the sheet';
       const timing=(syncState&&syncState.timing)||'end', ac=baddyACs();
       const acts=(sv.lines||[]).filter(l=>timing==='turn'||!l.extra).map(l=>{ const j=judgeLine(l, ac); return {t:`${l.label} vs ${j.who}${l.tags&&l.tags.length?' · '+l.tags.join(', '):''}: ${j.text.replace(/<[^>]+>/g,' ')}`, cls:j.cls}; });
-      paintLightDetail(lr, {conds: sv.you||[], acts: [{t: `From the sheet: ${sv.attack||'no attack chosen'}`}, ...acts]});
+      paintLightDetail(lr, {conds: sv.you||[], acts: [{t: `From the sheet: ${syncedDoing(sv)}`}, ...acts]});
       entries.push({name, act: sv.actOn==null ? 1e9 : sv.actOn, trs:[lr.tr, lr.detailTr]});
       return;
     }

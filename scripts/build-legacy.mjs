@@ -16,7 +16,7 @@ const END = '/* ── end sheet converter ── */';
 export const TARGETS = {
   'legacy/dm-helper.html': {
     SheetConverter: ['adapters/dm-helper', ['toDMHelper']],
-    SheetRound: ['rules/round', ['ROUND_MODS', 'MOVE_MULTS', 'newRound', 'roundLines', 'lineHalfAvailable', 'offhandScenario', 'lineToHit', 'roundACPenalty', 'lineTHAC0', 'judgeRoll', 'actOn', 'quicknessWorks', 'attackSpeed', 'rollLine', 'lineSay']],
+    SheetRound: ['rules/round', ['ROUND_MODS', 'MOVE_MULTS', 'newRound', 'roundQueue', 'queueAttack', 'unqueueAttack', 'hasHalfAttack', 'roundLines', 'lineToHit', 'roundACPenalty', 'lineTHAC0', 'judgeRoll', 'actOn', 'quicknessWorks', 'attackSpeed', 'rollLine', 'lineSay']],
     RoundSync: ['round-sync', ['createRoundSync']],
   },
   'legacy/character-sheet.html': {
@@ -25,7 +25,7 @@ export const TARGETS = {
       'scenarioSpell', 'scenarioAbility', 'activeEffectsFor', 'scenarioDamage', 'scenarioBreakdown', 'normalizeEffects', 'effectOption',
       'isBowcaster', 'spellArrow', 'usesAmmo', 'weaponAmmoType', 'ammoType', 'ammoFor', 'scenarioAmmo', 'AMMO_TYPES']],
     SheetKits: ['rules/kits', ['HOUSE_KITS', 'classKit']],
-    SheetRound: ['rules/round', ['ROUND_MODS', 'MOVE_MULTS', 'newRound', 'roundLines', 'lineHalfAvailable', 'offhandScenario', 'lineToHit', 'roundACPenalty', 'lineTHAC0', 'judgeRoll', 'actOn', 'quicknessWorks', 'attackSpeed', 'rollLine', 'lineSay']],
+    SheetRound: ['rules/round', ['ROUND_MODS', 'MOVE_MULTS', 'newRound', 'roundQueue', 'queueAttack', 'unqueueAttack', 'hasHalfAttack', 'roundLines', 'lineToHit', 'roundACPenalty', 'lineTHAC0', 'judgeRoll', 'actOn', 'quicknessWorks', 'attackSpeed', 'rollLine', 'lineSay']],
     RoundSync: ['round-sync', ['createRoundSync']],
     SheetRules: ['rules/weapons', ['PHB_WEAPONS']],
     SheetGuess: ['rules/migrate', ['guessCategory']],
