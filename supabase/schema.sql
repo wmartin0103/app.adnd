@@ -1,7 +1,6 @@
 -- ════════════════════════════════════════════════════════════════════════
 -- AD&D campaign app: database draft for Phase 3 (Supabase / Postgres)
--- DRAFT, not yet run anywhere. Paste into the Supabase SQL editor once the
--- project exists, after review.
+-- Run once in the Supabase SQL editor (whole file), then setup-first-admin.sql.
 -- ════════════════════════════════════════════════════════════════════════
 --
 -- In plain words (PLAN.md section 3 and decisions 3 and 6):
@@ -40,6 +39,17 @@ create table public.profiles (
   is_admin     boolean not null default false,
   created_at   timestamptz not null default now()
 );
+
+-- Every new account gets a profile (named from its email until renamed)
+create function public.on_new_user() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  insert into profiles (id, display_name)
+    values (new.id, coalesce(new.raw_user_meta_data ->> 'display_name', split_part(new.email, '@', 1)));
+  return new;
+end $$;
+create trigger on_new_user after insert on auth.users
+  for each row execute function public.on_new_user();
 
 -- ── Campaigns and who's in them ─────────────────────────────────────────
 
@@ -185,11 +195,12 @@ create policy "campaign sees versions" on public.character_versions for select t
 
 -- ── Guards that policies can't express ──────────────────────────────────
 
--- Only admins change who is an admin
+-- Only admins change who is an admin (the SQL editor, with no signed-in
+-- user, can: that's how the first admin is made)
 create function public.guard_profile() returns trigger
 language plpgsql security definer set search_path = public as $$
 begin
-  if new.is_admin is distinct from old.is_admin and not is_admin() then
+  if new.is_admin is distinct from old.is_admin and auth.uid() is not null and not is_admin() then
     raise exception 'Only an admin can change admin rights';
   end if;
   return new;
@@ -222,10 +233,50 @@ end $$;
 create trigger on_character_save before update on public.characters
   for each row execute function public.on_character_save();
 
+-- ── The live round (This round on the sheet ↔ the DM's initiative page) ──
+-- What round-sync.js keeps in the browser today, per campaign: the DM's side
+-- (round number, the foes by ID and size, where extra attacks go) and each
+-- character's round record. A record from an earlier round is simply ignored.
+
+create table public.round_state (
+  campaign_id uuid primary key references public.campaigns (id) on delete cascade,
+  round       integer not null default 1,
+  foes        jsonb not null default '[]',   -- [{ id, label, size }]: never AC or the DM's names
+  timing      text not null default 'end' check (timing in ('end', 'turn')),
+  updated_at  timestamptz not null default now()
+);
+
+create table public.round_records (
+  character_id uuid primary key references public.characters (id) on delete cascade,
+  campaign_id  uuid not null references public.campaigns (id) on delete cascade,
+  round        integer not null,
+  record       jsonb not null,               -- the round record, with the view the DM sees
+  updated_at   timestamptz not null default now()
+);
+create index round_records_campaign_idx on public.round_records (campaign_id);
+
+alter table public.round_state   enable row level security;
+alter table public.round_records enable row level security;
+
+-- The campaign sees the round; the DM (or an admin) runs it
+create policy "campaign sees the round" on public.round_state for select to authenticated
+  using (is_member(campaign_id) or is_admin());
+create policy "DM runs the round" on public.round_state for all to authenticated
+  using (is_dm(campaign_id) or is_admin()) with check (is_dm(campaign_id) or is_admin());
+
+-- The campaign sees everyone's round; whoever can edit a character plays it
+create policy "campaign sees rounds" on public.round_records for select to authenticated
+  using (is_member(campaign_id) or is_admin());
+create policy "play your character's round" on public.round_records for all to authenticated
+  using (can_edit_character(character_id))
+  with check (can_edit_character(character_id)
+    and exists (select 1 from characters c where c.id = character_id and c.campaign_id = round_records.campaign_id));
+
 -- ── Live updates ────────────────────────────────────────────────────────
--- Open sheets and the DM Helper hear about saves as they happen (HP sync).
--- Realtime respects the select policies above.
-alter publication supabase_realtime add table public.characters, public.character_editors;
+-- Open sheets and the DM Helper hear about saves as they happen (HP sync, the
+-- live round). Realtime respects the select policies above.
+alter publication supabase_realtime add table public.characters, public.character_editors,
+  public.round_state, public.round_records;
 
 -- ── Saving from the app (for later) ─────────────────────────────────────
 -- Save only if nobody saved since this copy was opened:
