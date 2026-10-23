@@ -17,15 +17,16 @@ const shaman = { id: 'B2', label: 'B2', size: 'sm' };
 const withAttacks = (rec, ...ids) => ids.reduce(queueAttack, rec);
 const fixed = (...vals) => { let i = 0; return () => vals[Math.min(i++, vals.length - 1)]; };
 
-test('one line for each attack added; later lines follow the one above until set apart', () => {
+test('one line for each attack added, each set on its own', () => {
   const rec = { ...withAttacks(newRound('Rifiyr'), 'sc-1', 'sc-1'), lines: { q1: { target: orc, flanking: true } } };   // Long bow, flight, twice (2/1)
   let lines = roundLines(ctxR, rec, rifiyr.__scenarios);
-  assert.deepEqual(lines.map(l => [l.label, l.same, l.set.target.label, l.set.flanking]), [['1st', false, 'B1', true], ['2nd', true, 'B1', true]]);
-  assert.deepEqual(lines.map(l => lineTHAC0(ctxR, l)), [14, 14]);   // THAC0 16, flanking +2
-  // The 2nd shot at the shaman, not flanking
-  rec.lines.q2 = { same: false, target: shaman, flanking: false };
+  // The 2nd shot doesn't copy the 1st: no target, no conditions until chosen
+  assert.deepEqual(lines.map(l => [l.label, l.set.target && l.set.target.label, l.set.flanking]), [['1st', 'B1', true], ['2nd', null, false]]);
+  assert.deepEqual(lines.map(l => lineTHAC0(ctxR, l)), [14, 16]);   // THAC0 16, flanking +2
+  // The 2nd shot at the shaman, from behind: rear attack +2
+  rec.lines.q2 = { target: shaman, rear: true };
   lines = roundLines(ctxR, rec, rifiyr.__scenarios);
-  assert.deepEqual(lines.map(l => [l.set.target.label, lineTHAC0(ctxR, l)]), [['B1', 14], ['B2', 16]]);
+  assert.deepEqual(lines.map(l => [l.set.target.label, lineTHAC0(ctxR, l)]), [['B1', 14], ['B2', 14]]);
   // Moving first: no extra attacks
   assert.equal(roundLines(ctxR, { ...rec, you: { ...rec.you, moveFirst: true } }, rifiyr.__scenarios).length, 1);
 });
@@ -37,11 +38,9 @@ test('the round is the attacks the player adds, each marked extra or not', () =>
   rec = { ...rec, queue: rec.queue.map((q, i) => ({ ...q, extra: i > 0 })) };
   assert.deepEqual(roundLines(ctxJ, rec, jaque.__scenarios).map(l => [l.key, l.label, l.sc.name, l.extra]),
     [['q1', '1st', 'Dagger, melee', false], ['q2', '2nd', 'Dagger, melee', true], ['q3', '3rd', 'Off-hand dagger', true]]);
-  // Taking one out: the next one, if "same as above", keeps its target; the next one added gets a new id
-  const out = unqueueAttack({ ...rec, lines: { q2: { same: false, target: orc } } }, 'q2');
-  assert.deepEqual([out.queue.map(q => q.qid), roundLines(ctxJ, out, jaque.__scenarios).map(l => l.set.target)], [['q1', 'q3'], [null, orc]]);
-  const first = unqueueAttack({ ...rec, lines: { q1: { target: orc } } }, 'q1');
-  assert.deepEqual(roundLines(ctxJ, first, jaque.__scenarios).map(l => l.set.target), [orc, orc]);
+  // Taking one out takes its settings with it; the others keep theirs; the next one added gets a new id
+  const out = unqueueAttack({ ...rec, lines: { q2: { target: orc }, q3: { target: shaman } } }, 'q2');
+  assert.deepEqual([out.queue.map(q => q.qid), roundLines(ctxJ, out, jaque.__scenarios).map(l => l.set.target)], [['q1', 'q3'], [null, shaman]]);
   assert.equal(queueAttack(out, 'sc-1').queue[2].qid, 'q4');
   // A record from before the queue: its one attack
   assert.deepEqual(roundQueue({ scenarioId: 'sc-1' }).map(q => q.scenarioId), ['sc-1']);
@@ -49,6 +48,7 @@ test('the round is the attacks the player adds, each marked extra or not', () =>
 
 test('conditions: to-hit per line, AC for charging', () => {
   assert.equal(lineToHit({ flanking: true, ground: 'high', charging: true, other: '-1' }), 2 + 1 + 2 - 1);
+  assert.equal(lineToHit({ rear: true }), 2);
   assert.equal(lineToHit({ ground: 'low' }), -1);
   assert.equal(roundACPenalty([{ set: { charging: false } }, { set: { charging: true } }]), 1);
 });

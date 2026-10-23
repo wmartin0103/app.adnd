@@ -16,10 +16,10 @@
 // character acts. "extra": the player marks it as an extra attack, which the
 // DM's page places by its extra-attack setting.
 //
-// Each attack line: { same, target: { id, label, size }, flanking, ground,
+// Each attack line: { target: { id, label, size }, flanking, rear, ground,
 // charging, other, roll }. A target is a foe as players know it: the DM's
-// fixed ID for it and its size, never its AC or the DM's name for it. "same" (the default on every line after the
-// first) follows the line above, target and conditions included.
+// fixed ID for it and its size, never its AC or the DM's name for it. Every
+// line is set on its own: target and conditions are deliberate choices.
 // The DM decides where extra attacks go in the order; the record only says
 // which attacks there are.
 
@@ -27,11 +27,11 @@ import { scenarioType, scenarioSpell, scenarioWeapon, spellArrow, castSpeed, sce
 
 // Situational modifiers (the DM Helper's table rules)
 export const ROUND_MODS = {
-  flankingToHit: 2, chargingToHit: 2, chargingAC: 1,
+  flankingToHit: 2, rearToHit: 2, chargingToHit: 2, chargingAC: 1,
   groundToHit: 1, groundInit: 1, moveFirstInit: 3, setVsChargeInit: 2,
 };
 export const MOVE_MULTS = ['1', '1.5', '2', '3', '4'];
-const blankLine = () => ({ same: true, target: null, flanking: false, ground: '', charging: false, other: 0, roll: null });
+const blankLine = () => ({ target: null, flanking: false, rear: false, ground: '', charging: false, other: 0, roll: null });
 
 export const newRound = (character, round = 1) => ({
   character, round, init: { roll: null, adj: 0 },
@@ -47,10 +47,6 @@ export function queueAttack(rec, scenarioId) {
 }
 export function unqueueAttack(rec, qid) {
   const lines = { ...(rec.lines || {}) };
-  // The next attack, if it was "same as above", keeps this one's target and conditions
-  const queue = roundQueue(rec), i = queue.findIndex(q => q.qid === qid), next = queue[i + 1];
-  const gone = lines[qid];
-  if (gone && next && (!lines[next.qid] || lines[next.qid].same !== false)) lines[next.qid] = { ...gone, same: i > 0 && !!gone.same, roll: (lines[next.qid] || {}).roll || null };
   delete lines[qid];
   return { ...rec, queue: roundQueue(rec).filter(q => q.qid !== qid), lines };
 }
@@ -66,8 +62,8 @@ export function attackSpeed(ctx, sc) {
   return w ? parseInt(w.speed, 10) || 0 : 0;
 }
 
-// This round's attack lines, one for each attack added, with "same as
-// above" worked out. Only the first is left when you move first.
+// This round's attack lines, one for each attack added, each with its own
+// target and conditions. Only the first is left when you move first.
 export function roundLines(ctx, rec, scenarios) {
   const keys = [];
   roundQueue(rec).forEach(q => {
@@ -75,14 +71,10 @@ export function roundLines(ctx, rec, scenarios) {
     if (sc) keys.push({ key: q.qid, qid: q.qid, label: ORD[keys.length] || `#${keys.length + 1}`, sc, extra: !!q.extra });
   });
   const allowed = rec.you && rec.you.moveFirst ? keys.slice(0, 1) : keys;
-  let prev = null;
-  return allowed.map((k, i) => {
+  return allowed.map(k => {
     const own = { ...blankLine(), ...(rec.lines || {})[k.key] };
-    if (i === 0) own.same = false;
-    const set = own.same && prev ? { ...prev.set } : { target: own.target, flanking: !!own.flanking, ground: own.ground || '', charging: !!own.charging, other: modNum(own.other) };
-    const line = { key: k.key, qid: k.qid, label: k.label, sc: k.sc, extra: k.extra, same: !!own.same && i > 0, set, roll: own.roll ? scoreRoll(ctx, { sc: k.sc, set }, own.roll) : null };
-    prev = line;
-    return line;
+    const set = { target: own.target, flanking: !!own.flanking, rear: !!own.rear, ground: own.ground || '', charging: !!own.charging, other: modNum(own.other) };
+    return { key: k.key, qid: k.qid, label: k.label, sc: k.sc, extra: k.extra, set, roll: own.roll ? scoreRoll(ctx, { sc: k.sc, set }, own.roll) : null };
   });
 }
 const ORD = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'];
@@ -91,6 +83,7 @@ const ORD = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10t
 export function lineToHit(set) {
   let n = 0;
   if (set.flanking) n += ROUND_MODS.flankingToHit;
+  if (set.rear) n += ROUND_MODS.rearToHit;
   if (set.ground === 'high') n += ROUND_MODS.groundToHit;
   else if (set.ground === 'low') n -= ROUND_MODS.groundToHit;
   if (set.charging) n += ROUND_MODS.chargingToHit;

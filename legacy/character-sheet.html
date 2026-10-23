@@ -768,9 +768,9 @@
     .round-status { font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 0.08em; color: var(--ink-muted); }
     .round-row { display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; align-items: flex-end; }
     /* One control system: every control 2.1rem tall under a small label;
-       on/off choices are toggle chips, not checkboxes */
+       situational on/off choices live in a select with checkboxes */
     .round { --ctl-h: 2.1rem; }
-    .round .round-pick .scenario-select, .round .round-btn, .round .round-chip, .round input.round-typed { height: var(--ctl-h); box-sizing: border-box; }
+    .round .round-pick .scenario-select, .round .round-btn, .round input.round-typed { height: var(--ctl-h); box-sizing: border-box; }
     .round .round-btn { display: inline-flex; align-items: center; padding-top: 0; padding-bottom: 0; }
     .round-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
     /* A select with checkboxes in its list */
@@ -786,14 +786,6 @@
     .round-multi-opt:hover, .round-multi-opt:focus-within { background: var(--parchment); }
     .round-multi-opt input { accent-color: var(--accent); margin-top: 0.2rem; }
     .round-multi-opt small { display: block; font-size: 0.8rem; color: var(--ink-muted); }
-    .round-chip { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0 0.75rem; border: 1px solid var(--rule); border-radius: var(--radius);
-      background: var(--surface); color: var(--ink-muted); font: 0.95rem var(--font-body); cursor: pointer; white-space: nowrap; }
-    .round-chip::before { content: ''; width: 0.55rem; height: 0.55rem; border-radius: 50%; border: 1.5px solid currentColor; opacity: 0.6; }
-    .round-chip:hover, .round-chip:focus-visible { border-color: var(--accent); color: var(--ink); }
-    .round-chip[aria-pressed="true"] { border-color: var(--accent); background: rgba(139,46,18,0.07); color: var(--accent); }
-    .round-chip[aria-pressed="true"]::before { background: currentColor; opacity: 1; }
-    .round-chip:disabled { opacity: 0.45; cursor: not-allowed; }
-    .round-chip.is-small { --ctl-h: 1.7rem; height: 1.7rem; font-size: 0.8rem; padding: 0 0.55rem; }
     .round .round-value { line-height: var(--ctl-h); }
     .play-line > .play-label, .play-line > .play-need { line-height: var(--ctl-h); align-self: flex-end; }
     .round-init { display: flex; flex-direction: column; gap: 0.2rem; }
@@ -812,7 +804,9 @@
     .round-item { border: 1px solid var(--accent); border-radius: var(--radius); background: var(--surface); }
     .round-item-head { display: flex; align-items: baseline; gap: 0.6rem; padding: 0.5rem 0.7rem; flex-wrap: wrap; }
     .round-item-head { align-items: center; }
-    .round-item-head .round-item-extra { margin-left: auto; }
+    .round-item-head .round-item-extra { margin-left: auto; display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.85rem; color: var(--ink-muted); cursor: pointer; }
+    .round-item-extra input { accent-color: var(--accent); }
+    .round-item-extra:has(input:disabled) { opacity: 0.5; cursor: not-allowed; }
     .round-remove-btn { height: 1.7rem; }
     .play-name { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; letter-spacing: 0.04em; }
     .play-meta { font-size: 0.85rem; color: var(--ink-muted); }
@@ -4253,21 +4247,21 @@ const {scenarioType, scenarioSpell, scenarioWeapon, spellArrow, castSpeed, scena
 // character acts. "extra": the player marks it as an extra attack, which the
 // DM's page places by its extra-attack setting.
 //
-// Each attack line: { same, target: { id, label, size }, flanking, ground,
+// Each attack line: { target: { id, label, size }, flanking, rear, ground,
 // charging, other, roll }. A target is a foe as players know it: the DM's
-// fixed ID for it and its size, never its AC or the DM's name for it. "same" (the default on every line after the
-// first) follows the line above, target and conditions included.
+// fixed ID for it and its size, never its AC or the DM's name for it. Every
+// line is set on its own: target and conditions are deliberate choices.
 // The DM decides where extra attacks go in the order; the record only says
 // which attacks there are.
 
 
 // Situational modifiers (the DM Helper's table rules)
 const ROUND_MODS = {
-  flankingToHit: 2, chargingToHit: 2, chargingAC: 1,
+  flankingToHit: 2, rearToHit: 2, chargingToHit: 2, chargingAC: 1,
   groundToHit: 1, groundInit: 1, moveFirstInit: 3, setVsChargeInit: 2,
 };
 const MOVE_MULTS = ['1', '1.5', '2', '3', '4'];
-const blankLine = () => ({ same: true, target: null, flanking: false, ground: '', charging: false, other: 0, roll: null });
+const blankLine = () => ({ target: null, flanking: false, rear: false, ground: '', charging: false, other: 0, roll: null });
 
 const newRound = (character, round = 1) => ({
   character, round, init: { roll: null, adj: 0 },
@@ -4283,10 +4277,6 @@ function queueAttack(rec, scenarioId) {
 }
 function unqueueAttack(rec, qid) {
   const lines = { ...(rec.lines || {}) };
-  // The next attack, if it was "same as above", keeps this one's target and conditions
-  const queue = roundQueue(rec), i = queue.findIndex(q => q.qid === qid), next = queue[i + 1];
-  const gone = lines[qid];
-  if (gone && next && (!lines[next.qid] || lines[next.qid].same !== false)) lines[next.qid] = { ...gone, same: i > 0 && !!gone.same, roll: (lines[next.qid] || {}).roll || null };
   delete lines[qid];
   return { ...rec, queue: roundQueue(rec).filter(q => q.qid !== qid), lines };
 }
@@ -4302,8 +4292,8 @@ function attackSpeed(ctx, sc) {
   return w ? parseInt(w.speed, 10) || 0 : 0;
 }
 
-// This round's attack lines, one for each attack added, with "same as
-// above" worked out. Only the first is left when you move first.
+// This round's attack lines, one for each attack added, each with its own
+// target and conditions. Only the first is left when you move first.
 function roundLines(ctx, rec, scenarios) {
   const keys = [];
   roundQueue(rec).forEach(q => {
@@ -4311,14 +4301,10 @@ function roundLines(ctx, rec, scenarios) {
     if (sc) keys.push({ key: q.qid, qid: q.qid, label: ORD[keys.length] || `#${keys.length + 1}`, sc, extra: !!q.extra });
   });
   const allowed = rec.you && rec.you.moveFirst ? keys.slice(0, 1) : keys;
-  let prev = null;
-  return allowed.map((k, i) => {
+  return allowed.map(k => {
     const own = { ...blankLine(), ...(rec.lines || {})[k.key] };
-    if (i === 0) own.same = false;
-    const set = own.same && prev ? { ...prev.set } : { target: own.target, flanking: !!own.flanking, ground: own.ground || '', charging: !!own.charging, other: modNum(own.other) };
-    const line = { key: k.key, qid: k.qid, label: k.label, sc: k.sc, extra: k.extra, same: !!own.same && i > 0, set, roll: own.roll ? scoreRoll(ctx, { sc: k.sc, set }, own.roll) : null };
-    prev = line;
-    return line;
+    const set = { target: own.target, flanking: !!own.flanking, rear: !!own.rear, ground: own.ground || '', charging: !!own.charging, other: modNum(own.other) };
+    return { key: k.key, qid: k.qid, label: k.label, sc: k.sc, extra: k.extra, set, roll: own.roll ? scoreRoll(ctx, { sc: k.sc, set }, own.roll) : null };
   });
 }
 const ORD = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'];
@@ -4327,6 +4313,7 @@ const ORD = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10t
 function lineToHit(set) {
   let n = 0;
   if (set.flanking) n += ROUND_MODS.flankingToHit;
+  if (set.rear) n += ROUND_MODS.rearToHit;
   if (set.ground === 'high') n += ROUND_MODS.groundToHit;
   else if (set.ground === 'low') n -= ROUND_MODS.groundToHit;
   if (set.charging) n += ROUND_MODS.chargingToHit;
@@ -7483,8 +7470,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       const queued = SheetRound.roundQueue(rec).map(q => scenarios.find(s => s.id === q.scenarioId)).filter(Boolean);
       const sc = queued[0];
       const lines = SheetRound.roundLines(ctx, rec, scenarios);
-      const tags = set => [set.flanking && 'flanking', set.ground === 'high' && 'higher ground', set.ground === 'low' && 'lower ground',
-        set.charging && 'charging', set.other && `other ${set.other > 0 ? '+' : ''}${set.other}`].filter(Boolean);
+      const tags = roundTags;
       return {
         actOn: SheetRound.actOn(ctx, rec, scenarios, who),
         initRoll: rec.init.roll, speed: sc ? SheetRound.attackSpeed(ctx, sc) : null,
@@ -7501,6 +7487,9 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         }),
       };
     }
+    // A line's conditions in words (the DM's page and the rolled line)
+    const roundTags = set => [set.flanking && 'flanking', set.rear && 'rear attack', set.ground === 'high' && 'higher ground', set.ground === 'low' && 'lower ground',
+      set.charging && 'charging', set.other && `other ${set.other > 0 ? '+' : ''}${set.other}`].filter(Boolean);
     function roundWho() {
       let quickness = false;
       try { quickness = nwps.some(p => /^quickness\b/i.test(p.name || '')); } catch (e) { /* not loaded yet */ }
@@ -7528,13 +7517,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
     }
 
     const escR = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-    // An on/off choice: a toggle chip the height of a select (focus stays on it after the redraw)
-    const check = (id, label, checked, onChange) => {
-      const b = document.createElement('button'); b.type = 'button'; b.className = 'round-chip'; b.id = id;
-      b.setAttribute('aria-pressed', checked ? 'true' : 'false'); b.textContent = label;
-      b.addEventListener('click', () => { onChange(b.getAttribute('aria-pressed') !== 'true'); document.getElementById(id)?.focus(); });
-      return b;
-    };
     // Situational on/off choices most players rarely need: a select-like
     // button whose list holds checkboxes. It stays open while you tick (the
     // round redraws, so which one is open is remembered) and closes on
@@ -7594,13 +7576,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       closeMulti(false);
     });
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && openMulti) closeMulti(true); });
-    // Chips under a label, lined up with the selects beside them
-    const field = (label, ...els) => {
-      const g = document.createElement('div'); g.className = 'round-pick'; g.setAttribute('role', 'group'); g.setAttribute('aria-label', label);
-      const t = document.createElement('span'); t.className = 'scenario-field-label'; t.textContent = label; t.setAttribute('aria-hidden', 'true');
-      const row = document.createElement('div'); row.className = 'round-chips'; row.append(...els);
-      g.append(t, row); return g;
-    };
     const pick = (id, label, pairs, value, onChange) => {
       const l = document.createElement('label'); l.className = 'round-pick'; l.htmlFor = id;
       const t = document.createElement('span'); t.className = 'scenario-field-label'; t.textContent = label;
@@ -7705,11 +7680,13 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         const rm = document.createElement('button'); rm.type = 'button'; rm.className = 'round-add-btn round-remove-btn'; rm.textContent = 'Remove';
         rm.setAttribute('aria-label', `Take ${sc.name || 'this attack'} out of this round`);
         rm.addEventListener('click', () => saveRound(SheetRound.unqueueAttack(rec, q.qid)));
-        const ex = check(`round-${q.qid}-extra`, 'Extra Attack', q.extra, v => { q.extra = v; saveRound(rec); });
-        ex.classList.add('round-item-extra', 'is-small');
-        // Rolled: the attack is settled; only Remove is left
-        if ((rec.lines[q.qid] || {}).roll) ex.disabled = true;
+        const ex = document.createElement('label'); ex.className = 'round-item-extra';
+        const exBox = document.createElement('input'); exBox.type = 'checkbox'; exBox.id = `round-${q.qid}-extra`; exBox.checked = !!q.extra;
+        exBox.addEventListener('change', () => { q.extra = exBox.checked; saveRound(rec); document.getElementById(exBox.id)?.focus(); });
+        ex.append(exBox, ' Extra Attack');
         ex.title = 'Counts as an extra attack: the DM places it by the extra-attack setting';
+        // Rolled: the attack is settled; only Remove is left
+        if ((rec.lines[q.qid] || {}).roll) exBox.disabled = true;
         head.append(ex, rm);
         item.appendChild(head);
         item.appendChild(renderLines(rec, ctx, foes, q, lines));
@@ -7761,7 +7738,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       const lines = all.filter(l => l.qid === q.qid);
       if (!lines.length) { const n = document.createElement('p'); n.className = 'round-note'; n.textContent = 'Moving first: this attack doesn\u2019t happen.'; wrap.appendChild(n); }
       const own = key => (rec.lines[key] = rec.lines[key] || {});
-      const setOwn = (line, patch) => { rec.lines[line.key] = { ...line.set, ...own(line.key), same: false, ...patch, roll: own(line.key).roll || null }; saveRound(rec); };
+      const setOwn = (line, patch) => { rec.lines[line.key] = { ...line.set, ...own(line.key), ...patch, roll: own(line.key).roll || null }; saveRound(rec); };
       lines.forEach(line => {
         const i = all.indexOf(line);
         const row = document.createElement('div'); row.className = 'play-line';
@@ -7769,22 +7746,10 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         row.appendChild(lab);
         const id = `round-${line.key}`;
         // Rolled: what it was rolled with, no longer editable
-        const tags = set => [set.flanking && 'flanking', set.ground === 'high' && 'higher ground', set.ground === 'low' && 'lower ground',
-          set.charging && 'charging', set.other && `other ${set.other > 0 ? '+' : ''}${set.other}`].filter(Boolean);
+        const tags = roundTags;
         if (line.roll) {
           const s = document.createElement('span'); s.className = 'round-note';
           s.textContent = [line.set.target ? `vs ${line.set.target.label}${line.set.target.size === 'l' ? ' (L)' : ''}` : 'no target', ...tags(line.set)].join(' · ');
-          row.appendChild(s);
-        } else if (i > 0) row.appendChild(field('Setup', check(`${id}-same`, 'Same as above', line.same, v => {
-          if (v) rec.lines[line.key] = { ...own(line.key), same: true };
-          else rec.lines[line.key] = { ...line.set, ...own(line.key), same: false, target: line.set.target, flanking: line.set.flanking, ground: line.set.ground, charging: line.set.charging, other: line.set.other };
-          saveRound(rec);
-        })));
-        if (line.roll) {
-          // shown above
-        } else if (line.same) {
-          const s = document.createElement('span'); s.className = 'round-note';
-          s.textContent = [line.set.target ? `vs ${line.set.target.label}` : '', ...tags(line.set)].filter(Boolean).join(' · ');
           row.appendChild(s);
         } else {
           const t = line.set.target;
@@ -7797,9 +7762,11 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           if (t && t.id === 'other') row.appendChild(pick(`${id}-size`, 'Size', [['sm', 'S/M'], ['l', 'L']], t.size || 'sm', v => setOwn(line, { target: { ...t, size: v } })));
           row.append(
             pick(`${id}-ground`, 'Ground', [['', 'Level'], ['high', 'Higher'], ['low', 'Lower']], line.set.ground, v => setOwn(line, { ground: v })),
-            field('Conditions',
-              check(`${id}-flank`, 'Flanking', line.set.flanking, v => setOwn(line, { flanking: v })),
-              check(`${id}-charge`, 'Charging', line.set.charging, v => setOwn(line, { charging: v }))),
+            multi(`${id}-cond`, 'Conditions', [
+              { key: 'flanking', label: 'Flanking', note: '+2 to hit', on: line.set.flanking },
+              { key: 'rear', label: 'Rear attack', note: '+2 to hit', on: line.set.rear },
+              { key: 'charging', label: 'Charging', note: '+2 to hit; your AC 1 worse this round', on: line.set.charging },
+            ], (key, v) => setOwn(line, { [key]: v })),
             pick(`${id}-other`, 'Other', OTHER_OPTS, String(line.set.other || 0), v => setOwn(line, { other: parseInt(v, 10) || 0 })));
         }
         const thac0 = line.roll && line.roll.frozen ? line.roll.thac0 : SheetRound.lineTHAC0(ctx, line);
@@ -7812,7 +7779,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           b.innerHTML = `${D20_SVG}<span>${thac0 == null ? 'Roll damage' : 'Roll to hit'}</span>`;
           b.addEventListener('click', () => {
             // The card keeps what it was rolled with (no longer "same as above")
-            rec.lines[line.key] = { ...own(line.key), ...line.set, same: false, roll: SheetRound.rollLine(ctx, line) };
+            rec.lines[line.key] = { ...own(line.key), ...line.set, roll: SheetRound.rollLine(ctx, line) };
             freshRoll = line.key;
             saveRound(rec, false, line.key);   // once sent, the roll goes straight to the DM (later attacks are rolled when they happen)
             freshRoll = null;
