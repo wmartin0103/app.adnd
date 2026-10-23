@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { scenarioContext } from '../src/rules/scenarios.js';
-import { newRound, roundLines, lineTHAC0, judgeRoll, actOn, rollLine, rollDice, lineToHit, roundACPenalty, queueAttack, unqueueAttack, roundQueue, rerollDamage, lineSay, lineKind } from '../src/rules/round.js';
+import { newRound, roundLines, lineTHAC0, judgeRoll, actOn, rollLine, rollDice, lineToHit, roundACPenalty, queueAttack, unqueueAttack, roundQueue, rerollDamage, lineSay, lineKind, hasRoll, isHealing } from '../src/rules/round.js';
 import { createRoundSync } from '../src/round-sync.js';
 
 const load = f => JSON.parse(readFileSync(new URL(`../samples/${f}`, import.meta.url)));
@@ -144,6 +144,13 @@ test('several targets: a d20 each, one area roll for all, or damage each', () =>
   const area = rollLine(ctxR, areaLine, fixed(0.99, 0));
   assert.deepEqual(area.each.map(e => e.dmg), [4, 4]);
   assert.match(lineSay({ ...areaLine, roll: area }), /target saves/);
+});
+
+test('a spell with no dice has nothing to roll; healing dice are healing', () => {
+  const spell = spellId => ({ id: 't', attackType: 'spell', spellId, group: 'wizard', levelMode: 'sheet' });
+  assert.deepEqual([hasRoll(ctxR, spell('spl-19')), hasRoll(ctxR, spell('spl-35'))], [false, false]);   // Sleep, Grease
+  assert.deepEqual([hasRoll(ctxR, spell('spl-11')), isHealing(ctxR, spell('spl-11'))], [true, false]);  // Magic Missile
+  assert.equal(hasRoll(ctxR, rifiyr.__scenarios.find(s => s.id === 'sc-8')), true);                     // a bow always rolls
 });
 
 test('a roll sent before several targets (old format, frozen) still shows', () => {

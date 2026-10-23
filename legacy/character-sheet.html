@@ -4390,6 +4390,11 @@ const lineDamage = (ctx, sc, target) => {
 const rollSig = (sig, rand) => (sig ? rollDice(sig, rand) : null);
 // How a line with several targets resolves: 'attack' (a d20 each), 'area'
 // (one damage roll, each target saves) or 'split' (damage for each target)
+// Is there anything for the player to roll? A spell with no attack roll and
+// no dice (Charm Person, Sleep, Bless) is only declared: the DM resolves it.
+const hasRoll = (ctx, sc) => !noAttackRoll(ctx, sc) || !!scenarioDamage(ctx, sc);
+// Healing dice (Cure Light Wounds) rather than damage
+const isHealing = (ctx, sc) => !!(scenarioDamage(ctx, sc) || {}).heal;
 function lineKind(ctx, sc) {
   if (!noAttackRoll(ctx, sc)) return 'attack';
   const sp = scenarioSpell(ctx, sc);
@@ -4419,7 +4424,7 @@ function rollLine(ctx, line, rand = Math.random) {
     }
     return Object.assign(raw, shared || damageDice(ctx, line.sc, target, rand));
   });
-  return scoreRoll(ctx, line, { kind, each });
+  return scoreRoll(ctx, line, { kind, heal: isHealing(ctx, line.sc), each });
 }
 // A roll with the sheet's current numbers: change an effect (Bless off) or the
 // conditions after rolling and the THAC0, AC hit and damage follow, until it's
@@ -4448,14 +4453,14 @@ function scoreRoll(ctx, line, raw) {
       thac0: e.d20 != null ? thac0 : null, hitsAC: e.d20 != null && thac0 != null ? thac0 - e.d20 : null,
     };
   });
-  return { kind: raw.kind || lineKind(ctx, line.sc), each: scored, dmgStale: scored.some(e => e.dmgStale) };
+  return { kind: raw.kind || lineKind(ctx, line.sc), heal: !!raw.heal, each: scored, dmgStale: scored.some(e => e.dmgStale) };
 }
 // Rolls the damage dice again where they changed, keeping the d20s (after dmgStale)
 function rerollDamage(ctx, line, raw, rand = Math.random) {
   const cur = scoreRoll(ctx, line, raw);
   const shared = cur.kind === 'area' ? damageDice(ctx, line.sc, cur.each[0] && cur.each[0].target, rand) : null;
   const each = cur.each.map(e => (e.dmgStale ? { ...e, ...(shared || damageDice(ctx, line.sc, e.target, rand)) } : e));
-  return scoreRoll(ctx, line, { kind: cur.kind, each });
+  return scoreRoll(ctx, line, { kind: cur.kind, heal: cur.heal, each });
 }
 
 // The DM's side: did it hit this AC? Good Hits and Bad Misses: a natural 20
@@ -4481,6 +4486,7 @@ function lineSay(line) {
   if (!line.roll) return `${line.label}: vs ${targets.map(whoText).join(', ')}`;
   const parts = line.roll.each.map(r => {
     const t = whoText(r.target);
+    if (r.d20 == null && line.roll.heal) return `${t}, heals ${r.dmg ?? '—'}`;
     if (r.d20 == null) return `vs ${t}, ${r.dmg ?? '—'} damage (${line.roll.kind === 'area' ? 'target saves' : 'no save'})`;
     const nat = r.d20 === 20 ? ' (natural 20)' : r.d20 === 1 ? ' (natural 1)' : '';
     return `vs ${t}, d20 ${r.d20}${nat}, hits AC ${acText(r.hitsAC)} or worse, ${r.dmg ?? '—'} damage${r.spell != null ? ` + spell ${r.spell}` : ''}`;
@@ -4488,7 +4494,7 @@ function lineSay(line) {
   return `${line.label}: ${parts.join('; ')}`;
 }
 
-return { ROUND_MODS, MOVE_MULTS, newRound, roundQueue, queueAttack, unqueueAttack, attackSpeed, roundLines, lineToHit, roundACPenalty, actOn, rollDice, lineTHAC0, splitDice, lineKind, rollLine, scoreRoll, rerollDamage, judgeRoll, lineSay };
+return { ROUND_MODS, MOVE_MULTS, newRound, roundQueue, queueAttack, unqueueAttack, attackSpeed, roundLines, lineToHit, roundACPenalty, actOn, rollDice, lineTHAC0, splitDice, hasRoll, isHealing, lineKind, rollLine, scoreRoll, rerollDamage, judgeRoll, lineSay };
 })();
 // ── rules/character ──
 __m["rules/character"] = (() => {
@@ -5592,7 +5598,7 @@ return { CLOUD_URL, CLOUD_KEY, cloudClient, cloudSession, createCloudRoundSync, 
 window.SheetSpells = { findSpell: __m["rules/spells"].findSpell };
 window.SheetScenarios = { modNum: __m["rules/scenarios"].modNum, signed: __m["rules/scenarios"].signed, ATTACK_TYPES: __m["rules/scenarios"].ATTACK_TYPES, RATE_OPTIONS: __m["rules/scenarios"].RATE_OPTIONS, scenarioRate: __m["rules/scenarios"].scenarioRate, scenarioType: __m["rules/scenarios"].scenarioType, scenarioSpell: __m["rules/scenarios"].scenarioSpell, scenarioAbility: __m["rules/scenarios"].scenarioAbility, activeEffectsFor: __m["rules/scenarios"].activeEffectsFor, scenarioDamage: __m["rules/scenarios"].scenarioDamage, scenarioBreakdown: __m["rules/scenarios"].scenarioBreakdown, normalizeEffects: __m["rules/scenarios"].normalizeEffects, effectOption: __m["rules/scenarios"].effectOption, isBowcaster: __m["rules/scenarios"].isBowcaster, spellArrow: __m["rules/scenarios"].spellArrow, usesAmmo: __m["rules/scenarios"].usesAmmo, weaponAmmoType: __m["rules/scenarios"].weaponAmmoType, ammoType: __m["rules/scenarios"].ammoType, ammoFor: __m["rules/scenarios"].ammoFor, scenarioAmmo: __m["rules/scenarios"].scenarioAmmo, AMMO_TYPES: __m["rules/scenarios"].AMMO_TYPES };
 window.SheetKits = { HOUSE_KITS: __m["rules/kits"].HOUSE_KITS, classKit: __m["rules/kits"].classKit };
-window.SheetRound = { ROUND_MODS: __m["rules/round"].ROUND_MODS, MOVE_MULTS: __m["rules/round"].MOVE_MULTS, newRound: __m["rules/round"].newRound, roundQueue: __m["rules/round"].roundQueue, queueAttack: __m["rules/round"].queueAttack, unqueueAttack: __m["rules/round"].unqueueAttack, roundLines: __m["rules/round"].roundLines, lineToHit: __m["rules/round"].lineToHit, roundACPenalty: __m["rules/round"].roundACPenalty, lineTHAC0: __m["rules/round"].lineTHAC0, judgeRoll: __m["rules/round"].judgeRoll, actOn: __m["rules/round"].actOn, attackSpeed: __m["rules/round"].attackSpeed, rollLine: __m["rules/round"].rollLine, scoreRoll: __m["rules/round"].scoreRoll, rerollDamage: __m["rules/round"].rerollDamage, lineKind: __m["rules/round"].lineKind, lineSay: __m["rules/round"].lineSay };
+window.SheetRound = { ROUND_MODS: __m["rules/round"].ROUND_MODS, MOVE_MULTS: __m["rules/round"].MOVE_MULTS, newRound: __m["rules/round"].newRound, roundQueue: __m["rules/round"].roundQueue, queueAttack: __m["rules/round"].queueAttack, unqueueAttack: __m["rules/round"].unqueueAttack, roundLines: __m["rules/round"].roundLines, lineToHit: __m["rules/round"].lineToHit, roundACPenalty: __m["rules/round"].roundACPenalty, lineTHAC0: __m["rules/round"].lineTHAC0, judgeRoll: __m["rules/round"].judgeRoll, actOn: __m["rules/round"].actOn, attackSpeed: __m["rules/round"].attackSpeed, rollLine: __m["rules/round"].rollLine, scoreRoll: __m["rules/round"].scoreRoll, rerollDamage: __m["rules/round"].rerollDamage, lineKind: __m["rules/round"].lineKind, hasRoll: __m["rules/round"].hasRoll, isHealing: __m["rules/round"].isHealing, lineSay: __m["rules/round"].lineSay };
 window.RoundSync = { createRoundSync: __m["round-sync"].createRoundSync };
 window.Cloud = { cloudClient: __m["cloud"].cloudClient, cloudSession: __m["cloud"].cloudSession, createCloudRoundSync: __m["cloud"].createCloudRoundSync, mountCloud: __m["cloud"].mountCloud };
 window.SheetRules = { PHB_WEAPONS: __m["rules/weapons"].PHB_WEAPONS };
@@ -7518,10 +7524,18 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           return {
             key: l.key, label: queued.length > 1 ? `${l.sc.name || 'Attack'} ${l.label}` : l.label, extra: !!l.extra, scenario: l.sc.name || '',
             targets: l.set.targets.map(t => ({ id: t.id, label: t.label, size: t.size })),
+            // Nothing to roll: the DM resolves it (with the save it allows)
+            ...(SheetRound.hasRoll(ctx, l.sc) ? {} : { cast: true, save: spellSaveText(l.sc) }),
             tags: tags(l.set), thac0: l.roll && l.roll.frozen && l.roll.each ? l.roll.each[0].thac0 : SheetRound.lineTHAC0(ctx, l), roll: l.roll || null,
           };
         }),
       };
+    }
+    // A spell's save in words: "Target saves (Negates)", or "No save"
+    function spellSaveText(sc) {
+      const sp = scenarioType(sc) === 'spell' ? scenarioSpell(sc) : null;
+      const save = String((sp && sp.save) || '').trim();
+      return save && !/^(none|n\/a|-|—)$/i.test(save) ? `Target saves (${save})` : 'No save';
     }
     // A line's conditions in words (the DM's page and the rolled line)
     const roundTags = set => [set.flanking && 'flanking', set.rear && 'rear attack', set.ground === 'high' && 'higher ground', set.ground === 'low' && 'lower ground',
@@ -7758,8 +7772,8 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         const dmgCls = 'is-dmg' + (moved('dmg') ? ' is-updated' : '');
         const tag = whoText ? `<span class="hit-who">${escR(whoText)}</span>` : '';
         if (r.d20 == null) {
-          const saves = roll.kind === 'area' ? 'each target saves' : 'no save';
-          el.innerHTML = tag + stat(dmgCls, 'Damage', dmg, `${dmgSub}${dmgSub ? ' · ' : ''}${saves}`);
+          const saves = roll.heal ? '' : roll.kind === 'area' ? 'each target saves' : 'no save';
+          el.innerHTML = tag + stat(dmgCls, roll.heal ? 'Healing' : 'Damage', dmg, [dmgSub, saves].filter(Boolean).join(' · '));
         } else {
           el.innerHTML = tag + `<span class="hit-die">${D20_SVG}<span class="hit-die-num">${r.d20}</span></span>`
             + stat(moved('ac') ? 'is-updated' : '', 'Hits AC', acT(r.hitsAC), 'or worse')
@@ -7804,8 +7818,12 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           // Foes as players know them: the DM's fixed ID and size (never AC);
           // several for an area spell, a sweep of small foes, or missiles split
           const foeLabel = f => f.label + (f.size === 'l' ? ' (L)' : '');
+          // A spell can also go to yourself or the party (healing, Bless)
+          const isSpell = scenarioType(line.sc) === 'spell';
           const tOpts = [
-            ...foes.map(f => ({ key: f.id, label: foeLabel(f), t: { id: f.id, label: f.label, size: f.size || 'sm' } })),
+            ...(isSpell ? [{ key: 'self', label: `Self (${charName()})`, t: { id: 'self', label: charName(), size: 'sm' } }] : []),
+            ...foes.filter(f => f.ally ? isSpell && f.label !== charName() : true)
+              .map(f => ({ key: f.id, label: foeLabel(f), t: { id: f.id, label: f.label, size: f.size || 'sm', ...(f.ally ? { ally: true } : {}) } })),
             { key: 'other-sm', label: 'Other (S/M)', t: { id: 'other-sm', label: 'Other', size: 'sm' } },
             { key: 'other-l', label: 'Other (L)', t: { id: 'other-l', label: 'Other (L)', size: 'l' } },
           ];
@@ -7826,12 +7844,16 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         }
         const thac0 = line.roll && line.roll.frozen && line.roll.each ? line.roll.each[0].thac0 : SheetRound.lineTHAC0(ctx, line);
         const n = document.createElement('span'); n.className = 'play-need';
-        n.textContent = thac0 != null ? `THAC0 ${thac0}` : SheetRound.lineKind(ctx, line.sc) === 'area' ? 'Targets save' : 'No save';
-        n.title = 'With this line\'s conditions. The DM decides the hit from the foe\'s AC.';
+        // Nothing to roll (Charm Person, Sleep): the spell is declared and the
+        // DM resolves it, saves and all; the line says which save applies
+        const canRoll = SheetRound.hasRoll(ctx, line.sc), heal = SheetRound.isHealing(ctx, line.sc);
+        const saveText = spellSaveText(line.sc);
+        n.textContent = thac0 != null ? `THAC0 ${thac0}` : heal ? 'Healing' : saveText;
+        n.title = thac0 != null ? 'With this line\'s conditions. The DM decides the hit from the foe\'s AC.' : canRoll ? '' : 'Nothing to roll: the DM resolves the spell when you send the round';
         row.appendChild(n);
-        if (!line.roll) {
+        if (!line.roll && canRoll) {
           const b = document.createElement('button'); b.type = 'button'; b.className = 'round-btn roll-hit-btn';
-          b.innerHTML = `${D20_SVG}<span>${thac0 == null ? 'Roll damage' : 'Roll to hit'}</span>`;
+          b.innerHTML = `${D20_SVG}<span>${thac0 != null ? 'Roll to hit' : heal ? 'Roll healing' : 'Roll damage'}</span>`;
           b.addEventListener('click', () => {
             // The card keeps what it was rolled with (no longer "same as above")
             rec.lines[line.key] = { ...own(line.key), ...line.set, target: null, roll: SheetRound.rollLine(ctx, line) };
@@ -7840,7 +7862,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
             freshRoll = null;
           });
           row.appendChild(b);
-        } else {
+        } else if (line.roll) {
           row.appendChild(hitRoll(line, freshRoll === line.key, () => {
             own(line.key).roll = SheetRound.rerollDamage(ctx, line, own(line.key).roll);
             saveRound(rec, false, line.key);

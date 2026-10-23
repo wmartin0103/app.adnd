@@ -1904,6 +1904,11 @@ const lineDamage = (ctx, sc, target) => {
 const rollSig = (sig, rand) => (sig ? rollDice(sig, rand) : null);
 // How a line with several targets resolves: 'attack' (a d20 each), 'area'
 // (one damage roll, each target saves) or 'split' (damage for each target)
+// Is there anything for the player to roll? A spell with no attack roll and
+// no dice (Charm Person, Sleep, Bless) is only declared: the DM resolves it.
+const hasRoll = (ctx, sc) => !noAttackRoll(ctx, sc) || !!scenarioDamage(ctx, sc);
+// Healing dice (Cure Light Wounds) rather than damage
+const isHealing = (ctx, sc) => !!(scenarioDamage(ctx, sc) || {}).heal;
 function lineKind(ctx, sc) {
   if (!noAttackRoll(ctx, sc)) return 'attack';
   const sp = scenarioSpell(ctx, sc);
@@ -1933,7 +1938,7 @@ function rollLine(ctx, line, rand = Math.random) {
     }
     return Object.assign(raw, shared || damageDice(ctx, line.sc, target, rand));
   });
-  return scoreRoll(ctx, line, { kind, each });
+  return scoreRoll(ctx, line, { kind, heal: isHealing(ctx, line.sc), each });
 }
 // A roll with the sheet's current numbers: change an effect (Bless off) or the
 // conditions after rolling and the THAC0, AC hit and damage follow, until it's
@@ -1962,14 +1967,14 @@ function scoreRoll(ctx, line, raw) {
       thac0: e.d20 != null ? thac0 : null, hitsAC: e.d20 != null && thac0 != null ? thac0 - e.d20 : null,
     };
   });
-  return { kind: raw.kind || lineKind(ctx, line.sc), each: scored, dmgStale: scored.some(e => e.dmgStale) };
+  return { kind: raw.kind || lineKind(ctx, line.sc), heal: !!raw.heal, each: scored, dmgStale: scored.some(e => e.dmgStale) };
 }
 // Rolls the damage dice again where they changed, keeping the d20s (after dmgStale)
 function rerollDamage(ctx, line, raw, rand = Math.random) {
   const cur = scoreRoll(ctx, line, raw);
   const shared = cur.kind === 'area' ? damageDice(ctx, line.sc, cur.each[0] && cur.each[0].target, rand) : null;
   const each = cur.each.map(e => (e.dmgStale ? { ...e, ...(shared || damageDice(ctx, line.sc, e.target, rand)) } : e));
-  return scoreRoll(ctx, line, { kind: cur.kind, each });
+  return scoreRoll(ctx, line, { kind: cur.kind, heal: cur.heal, each });
 }
 
 // The DM's side: did it hit this AC? Good Hits and Bad Misses: a natural 20
@@ -1995,6 +2000,7 @@ function lineSay(line) {
   if (!line.roll) return `${line.label}: vs ${targets.map(whoText).join(', ')}`;
   const parts = line.roll.each.map(r => {
     const t = whoText(r.target);
+    if (r.d20 == null && line.roll.heal) return `${t}, heals ${r.dmg ?? '—'}`;
     if (r.d20 == null) return `vs ${t}, ${r.dmg ?? '—'} damage (${line.roll.kind === 'area' ? 'target saves' : 'no save'})`;
     const nat = r.d20 === 20 ? ' (natural 20)' : r.d20 === 1 ? ' (natural 1)' : '';
     return `vs ${t}, d20 ${r.d20}${nat}, hits AC ${acText(r.hitsAC)} or worse, ${r.dmg ?? '—'} damage${r.spell != null ? ` + spell ${r.spell}` : ''}`;
@@ -2002,7 +2008,7 @@ function lineSay(line) {
   return `${line.label}: ${parts.join('; ')}`;
 }
 
-return { ROUND_MODS, MOVE_MULTS, newRound, roundQueue, queueAttack, unqueueAttack, attackSpeed, roundLines, lineToHit, roundACPenalty, actOn, rollDice, lineTHAC0, splitDice, lineKind, rollLine, scoreRoll, rerollDamage, judgeRoll, lineSay };
+return { ROUND_MODS, MOVE_MULTS, newRound, roundQueue, queueAttack, unqueueAttack, attackSpeed, roundLines, lineToHit, roundACPenalty, actOn, rollDice, lineTHAC0, splitDice, hasRoll, isHealing, lineKind, rollLine, scoreRoll, rerollDamage, judgeRoll, lineSay };
 })();
 // ── rules/character ──
 __m["rules/character"] = (() => {
@@ -3104,7 +3110,7 @@ function mountCloud(el, onChange) {
 return { CLOUD_URL, CLOUD_KEY, cloudClient, cloudSession, createCloudRoundSync, mountCloud };
 })();
 window.SheetConverter = { toDMHelper: __m["adapters/dm-helper"].toDMHelper };
-window.SheetRound = { ROUND_MODS: __m["rules/round"].ROUND_MODS, MOVE_MULTS: __m["rules/round"].MOVE_MULTS, newRound: __m["rules/round"].newRound, roundQueue: __m["rules/round"].roundQueue, queueAttack: __m["rules/round"].queueAttack, unqueueAttack: __m["rules/round"].unqueueAttack, roundLines: __m["rules/round"].roundLines, lineToHit: __m["rules/round"].lineToHit, roundACPenalty: __m["rules/round"].roundACPenalty, lineTHAC0: __m["rules/round"].lineTHAC0, judgeRoll: __m["rules/round"].judgeRoll, actOn: __m["rules/round"].actOn, attackSpeed: __m["rules/round"].attackSpeed, rollLine: __m["rules/round"].rollLine, scoreRoll: __m["rules/round"].scoreRoll, rerollDamage: __m["rules/round"].rerollDamage, lineKind: __m["rules/round"].lineKind, lineSay: __m["rules/round"].lineSay };
+window.SheetRound = { ROUND_MODS: __m["rules/round"].ROUND_MODS, MOVE_MULTS: __m["rules/round"].MOVE_MULTS, newRound: __m["rules/round"].newRound, roundQueue: __m["rules/round"].roundQueue, queueAttack: __m["rules/round"].queueAttack, unqueueAttack: __m["rules/round"].unqueueAttack, roundLines: __m["rules/round"].roundLines, lineToHit: __m["rules/round"].lineToHit, roundACPenalty: __m["rules/round"].roundACPenalty, lineTHAC0: __m["rules/round"].lineTHAC0, judgeRoll: __m["rules/round"].judgeRoll, actOn: __m["rules/round"].actOn, attackSpeed: __m["rules/round"].attackSpeed, rollLine: __m["rules/round"].rollLine, scoreRoll: __m["rules/round"].scoreRoll, rerollDamage: __m["rules/round"].rerollDamage, lineKind: __m["rules/round"].lineKind, hasRoll: __m["rules/round"].hasRoll, isHealing: __m["rules/round"].isHealing, lineSay: __m["rules/round"].lineSay };
 window.RoundSync = { createRoundSync: __m["round-sync"].createRoundSync };
 window.Cloud = { cloudClient: __m["cloud"].cloudClient, cloudSession: __m["cloud"].cloudSession, createCloudRoundSync: __m["cloud"].createCloudRoundSync, mountCloud: __m["cloud"].mountCloud };
 })();
@@ -4573,14 +4579,17 @@ function lineEntries(line){
   const targets = line.targets && line.targets.length ? line.targets : line.target ? [line.target] : [null];
   const r = line.roll;
   if(!r) return targets.map(t=>({target:t, roll:null}));
-  if(r.each) return r.each.map(e=>({target:e.target, roll:e, kind:r.kind}));
+  if(r.each) return r.each.map(e=>({target:e.target, roll:e, kind:r.kind, heal:r.heal}));
   return [{target:targets[0], roll:r}];
 }
-function judgeLine(line, bdAC){ return lineEntries(line).map(e=>judgeOne(e.target, e.roll, e.kind, line, bdAC)); }
+function judgeLine(line, bdAC){ return lineEntries(line).map(e=>judgeOne(e.target, e.roll, e.heal ? 'heal' : e.kind, line, bdAC)); }
 function judgeOne(target, r, kind, line, bdAC){
   const fb = target && !/^other/.test(target.id) ? foeBlock(target.id) : null;
   const who = fb ? `${fb.b.nameInput.value||fb.name} [${fb.b.bdId}]` : (target ? target.label : 'no target');
+  // A spell with nothing to roll (Charm Person, Sleep): cast; the DM resolves it
+  if(!r && line.cast) return {who, text:`cast · ${(line.save || 'no save').replace(/^Target saves/, 'target saves').replace(/^No save/, 'no save')}`, cls:''};
   if(!r) return {who, text:'not rolled yet', cls:''};
+  if(r.d20==null && kind==='heal') return {who, text:`heals ${r.dmg??'—'}`, cls:'hit'};
   if(r.d20==null) return {who, text:`${r.dmg??'—'} damage (${kind==='split'?'no save':'target saves'})`, cls:'hit'};
   const ac = fb ? bdAC[fb.name] : null;
   if(ac==null || isNaN(ac)) return {who, text:`d20 ${r.d20}${r.d20===20?' · <b>Natural 20</b>: critical if it hits':r.d20===1?' · <b>Natural 1</b>: a Bad Miss if it misses':''} · hits AC ${r.hitsAC} or worse · ${r.dmg??'—'} dmg`, cls: r.d20===20?'crit':r.d20===1?'fumble':''};
@@ -4628,7 +4637,9 @@ function renderExtras(bdAC, n){
 }
 function tellPlayers(){
   if(!ROUND) return;
-  const foes = baddies.filter(n=>blocks[n] && blocks[n].inRound && blocks[n].inRound.checked).map(n=>({id:blocks[n].bdId, label:blocks[n].bdId, size: blocks[n].bsize ? blocks[n].bsize.value : 'sm'}));
+  const foes = baddies.filter(n=>blocks[n] && blocks[n].inRound && blocks[n].inRound.checked).map(n=>({id:blocks[n].bdId, label:blocks[n].bdId, size: blocks[n].bsize ? blocks[n].bsize.value : 'sm'}))
+    // The party too, for spells cast on an ally (healing, Bless); sheets list them for spells only
+    .concat(PCS.filter(isActive).map(n=>({id:`pc:${n}`, label:n, size:'sm', ally:true})));
   const key = JSON.stringify(foes);
   if(key!==lastFoes){ lastFoes=key; syncState = ROUND.sendDM({foes}); }
 }

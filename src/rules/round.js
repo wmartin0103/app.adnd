@@ -157,6 +157,11 @@ const lineDamage = (ctx, sc, target) => {
 const rollSig = (sig, rand) => (sig ? rollDice(sig, rand) : null);
 // How a line with several targets resolves: 'attack' (a d20 each), 'area'
 // (one damage roll, each target saves) or 'split' (damage for each target)
+// Is there anything for the player to roll? A spell with no attack roll and
+// no dice (Charm Person, Sleep, Bless) is only declared: the DM resolves it.
+export const hasRoll = (ctx, sc) => !noAttackRoll(ctx, sc) || !!scenarioDamage(ctx, sc);
+// Healing dice (Cure Light Wounds) rather than damage
+export const isHealing = (ctx, sc) => !!(scenarioDamage(ctx, sc) || {}).heal;
 export function lineKind(ctx, sc) {
   if (!noAttackRoll(ctx, sc)) return 'attack';
   const sp = scenarioSpell(ctx, sc);
@@ -186,7 +191,7 @@ export function rollLine(ctx, line, rand = Math.random) {
     }
     return Object.assign(raw, shared || damageDice(ctx, line.sc, target, rand));
   });
-  return scoreRoll(ctx, line, { kind, each });
+  return scoreRoll(ctx, line, { kind, heal: isHealing(ctx, line.sc), each });
 }
 // A roll with the sheet's current numbers: change an effect (Bless off) or the
 // conditions after rolling and the THAC0, AC hit and damage follow, until it's
@@ -215,14 +220,14 @@ export function scoreRoll(ctx, line, raw) {
       thac0: e.d20 != null ? thac0 : null, hitsAC: e.d20 != null && thac0 != null ? thac0 - e.d20 : null,
     };
   });
-  return { kind: raw.kind || lineKind(ctx, line.sc), each: scored, dmgStale: scored.some(e => e.dmgStale) };
+  return { kind: raw.kind || lineKind(ctx, line.sc), heal: !!raw.heal, each: scored, dmgStale: scored.some(e => e.dmgStale) };
 }
 // Rolls the damage dice again where they changed, keeping the d20s (after dmgStale)
 export function rerollDamage(ctx, line, raw, rand = Math.random) {
   const cur = scoreRoll(ctx, line, raw);
   const shared = cur.kind === 'area' ? damageDice(ctx, line.sc, cur.each[0] && cur.each[0].target, rand) : null;
   const each = cur.each.map(e => (e.dmgStale ? { ...e, ...(shared || damageDice(ctx, line.sc, e.target, rand)) } : e));
-  return scoreRoll(ctx, line, { kind: cur.kind, each });
+  return scoreRoll(ctx, line, { kind: cur.kind, heal: cur.heal, each });
 }
 
 // The DM's side: did it hit this AC? Good Hits and Bad Misses: a natural 20
@@ -248,6 +253,7 @@ export function lineSay(line) {
   if (!line.roll) return `${line.label}: vs ${targets.map(whoText).join(', ')}`;
   const parts = line.roll.each.map(r => {
     const t = whoText(r.target);
+    if (r.d20 == null && line.roll.heal) return `${t}, heals ${r.dmg ?? '—'}`;
     if (r.d20 == null) return `vs ${t}, ${r.dmg ?? '—'} damage (${line.roll.kind === 'area' ? 'target saves' : 'no save'})`;
     const nat = r.d20 === 20 ? ' (natural 20)' : r.d20 === 1 ? ' (natural 1)' : '';
     return `vs ${t}, d20 ${r.d20}${nat}, hits AC ${acText(r.hitsAC)} or worse, ${r.dmg ?? '—'} damage${r.spell != null ? ` + spell ${r.spell}` : ''}`;
