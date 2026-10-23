@@ -7163,9 +7163,17 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
     }
     // Saves the round. Until it's sent, the DM sees only the initiative roll;
     // after, what was last sent (send: send it now)
-    function saveRound(rec, send) {
+    // A roll after sending sends that one attack line (updated, or added at
+    // the end); the round's other unsent changes wait for Send changes
+    function saveRound(rec, send, onlyLine) {
       const s = roundSync();
-      if (send) { rec.sent = true; rec.view = roundView(rec); }
+      if (onlyLine && rec.sent) {
+        const line = roundView(rec).lines.find(l => l.key === onlyLine);
+        const lines = [...rec.view.lines];
+        const at = lines.findIndex(l => l.key === onlyLine);
+        if (line) { if (at >= 0) lines[at] = line; else lines.push(line); }
+        rec.view = { ...rec.view, lines };
+      } else if (send) { rec.sent = true; rec.view = roundView(rec); }
       const view = rec.sent ? rec.view : { pending: true, initRoll: rec.init.roll, actOn: null, attack: '', you: [], lines: [] };
       if (s) s.sendRecord({ ...rec, view });
       renderScenarios();
@@ -7341,6 +7349,8 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         rm.addEventListener('click', () => saveRound(SheetRound.unqueueAttack(rec, q.qid)));
         const ex = check(`round-${q.qid}-extra`, 'Extra Attack', q.extra, v => { q.extra = v; saveRound(rec); });
         ex.classList.add('round-item-extra');
+        // Rolled: the attack is settled; only Remove is left
+        if ((rec.lines[q.qid] || {}).roll) ex.querySelector('input').disabled = true;
         ex.title = 'Counts as an extra attack: the DM places it by the extra-attack setting';
         head.append(ex, rm);
         item.appendChild(head);
@@ -7400,14 +7410,23 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         const lab = document.createElement('span'); lab.className = 'play-label'; lab.textContent = line.label;
         row.appendChild(lab);
         const id = `round-${line.key}`;
-        if (i > 0) row.appendChild(check(`${id}-same`, 'Same as above', line.same, v => {
+        // Rolled: what it was rolled with, no longer editable
+        const tags = set => [set.flanking && 'flanking', set.ground === 'high' && 'higher ground', set.ground === 'low' && 'lower ground',
+          set.charging && 'charging', set.other && `other ${set.other > 0 ? '+' : ''}${set.other}`].filter(Boolean);
+        if (line.roll) {
+          const s = document.createElement('span'); s.className = 'round-note';
+          s.textContent = [line.set.target ? `vs ${line.set.target.label}${line.set.target.size === 'l' ? ' (L)' : ''}` : 'no target', ...tags(line.set)].join(' · ');
+          row.appendChild(s);
+        } else if (i > 0) row.appendChild(check(`${id}-same`, 'Same as above', line.same, v => {
           if (v) rec.lines[line.key] = { ...own(line.key), same: true };
           else rec.lines[line.key] = { ...line.set, ...own(line.key), same: false, target: line.set.target, flanking: line.set.flanking, ground: line.set.ground, charging: line.set.charging, other: line.set.other };
           saveRound(rec);
         }));
-        if (line.same) {
+        if (line.roll) {
+          // shown above
+        } else if (line.same) {
           const s = document.createElement('span'); s.className = 'round-note';
-          s.textContent = line.set.target ? `vs ${line.set.target.label}` : '';
+          s.textContent = [line.set.target ? `vs ${line.set.target.label}` : '', ...tags(line.set)].filter(Boolean).join(' · ');
           row.appendChild(s);
         } else {
           const t = line.set.target;
@@ -7433,16 +7452,17 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           const b = document.createElement('button'); b.type = 'button'; b.className = 'round-btn roll-hit-btn';
           b.innerHTML = `${D20_SVG}<span>${thac0 == null ? 'Roll damage' : 'Roll to hit'}</span>`;
           b.addEventListener('click', () => {
-            own(line.key).roll = SheetRound.rollLine(ctx, line);
+            // The card keeps what it was rolled with (no longer "same as above")
+            rec.lines[line.key] = { ...own(line.key), ...line.set, same: false, roll: SheetRound.rollLine(ctx, line) };
             freshRoll = line.key;
-            saveRound(rec, rec.sent);   // once sent, a roll goes straight to the DM (later attacks are rolled when they happen)
+            saveRound(rec, false, line.key);   // once sent, the roll goes straight to the DM (later attacks are rolled when they happen)
             freshRoll = null;
           });
           row.appendChild(b);
         } else {
           row.appendChild(hitRoll(line, freshRoll === line.key, () => {
             own(line.key).roll = SheetRound.rerollDamage(ctx, line, own(line.key).roll);
-            saveRound(rec, rec.sent);
+            saveRound(rec, false, line.key);
           }));
         }
         wrap.appendChild(row);
