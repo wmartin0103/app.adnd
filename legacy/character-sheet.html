@@ -4109,6 +4109,178 @@ function scenarioTHAC0(ctx, sc) {
 
 return { modNum, signed, ATTACK_TYPES, RATE_OPTIONS, racialWeaponBonus, strengthRow, scenarioContext, scenarioRate, rateValue, scenarioType, normalizeEffects, effectOption, activeEffectsFor, effectsACBonus, casterLevel, diceAtLevel, isBowcaster, lessPerDie, scenarioSpell, scenarioAbility, castSpeed, spellArrow, AMMO_TYPES, PHB_AMMO, isBow, weaponAmmoType, usesAmmo, ammoType, ammoFor, scenarioAmmo, scenarioDice, scenarioWeapon, scenarioDamage, scenarioBreakdown, scenarioTHAC0 };
 })();
+// ── rules/round ──
+__m["rules/round"] = (() => {
+const {scenarioType, scenarioRate, rateValue, scenarioSpell, scenarioWeapon, spellArrow, castSpeed, scenarioBreakdown, scenarioDamage, modNum} = __m["rules/scenarios"];
+// ── ONE ROUND OF COMBAT ─────────────────────────────────────────
+// A character's round as the sheet's Combat section declares it and the DM's
+// initiative page shows it. Both work from the same record (the "round
+// record"), so they always agree; it's also what the sync sends.
+//
+//   {
+//     character: 'Rifiyr', round: 3,
+//     scenarioId: 'sc-1',                 // this round's attack (a Combat scenario)
+//     init: { roll: 7 },                  // the d10, rolled once a round
+//     quick: { roll: 12 },                // Quickness d20 (characters who have it)
+//     you: { moveFirst, moveMult: '1', setVsCharge },
+//     extra: false,                       // the half attack of a 3/2 or 5/2 rate, this round
+//     offhand: false,                     // also the off-hand attack
+//     lines: { a1: {...}, a2: {...}, extra: {...}, off: {...} },
+//   }
+//
+// Each attack line: { same, target: { id, name, ac, size }, flanking, ground,
+// charging, other, roll }. "same" (the default on every line after the
+// first) follows the line above, target and conditions included.
+// The DM decides where extra attacks go in the order; the record only says
+// which attacks there are.
+
+
+// Situational modifiers (the DM Helper's table rules)
+const ROUND_MODS = {
+  flankingToHit: 2, chargingToHit: 2, chargingAC: 1,
+  groundToHit: 1, groundInit: 1, moveFirstInit: 3, setVsChargeInit: 2,
+  quicknessInit: -2,
+};
+const MOVE_MULTS = ['1', '1.5', '2', '3', '4'];
+const blankLine = () => ({ same: true, target: null, flanking: false, ground: '', charging: false, other: 0, roll: null });
+
+const newRound = (character, round = 1) => ({
+  character, round, scenarioId: null, init: { roll: null }, quick: { roll: null },
+  you: { moveFirst: false, moveMult: '1', setVsCharge: false }, extra: false, offhand: false, lines: {},
+});
+
+// The attack's speed in the order: the weapon's, a spell's casting time, or a
+// Spellarrow's bow + casting time
+function attackSpeed(ctx, sc) {
+  if (!sc) return 0;
+  const type = scenarioType(sc);
+  if (type === 'spellarrow') return (spellArrow(ctx, sc) || {}).speed || 0;
+  if (type === 'spell') { const sp = scenarioSpell(ctx, sc); return (sp && castSpeed(sp.castTimeNow)) ?? 1; }
+  const w = scenarioWeapon(ctx, sc);
+  return w ? parseInt(w.speed, 10) || 0 : 0;
+}
+
+// The off-hand scenario that goes with a main-hand attack, if the character has one
+const offhandScenario = (scenarios, sc) =>
+  sc && sc.handedness !== 'off' && scenarioType(sc) !== 'spell' ? (scenarios || []).find(s => s.handedness === 'off' && s.weaponId) || null : null;
+
+// This round's attack lines, with "same as above" worked out. `scenarios` is
+// the character's list; lines beyond the first go when you move first.
+function roundLines(ctx, rec, scenarios) {
+  const sc = (scenarios || []).find(s => s.id === rec.scenarioId);
+  if (!sc) return [];
+  const type = scenarioType(sc);
+  const rate = type === 'spell' ? 1 : rateValue(scenarioRate(sc));
+  const full = Math.max(1, Math.floor(rate));
+  const keys = Array.from({ length: full }, (_, i) => ({ key: `a${i + 1}`, label: ORD[i], sc }));
+  const half = rate - Math.floor(rate) > 0;
+  if (half && rec.extra) keys.push({ key: 'extra', label: 'Extra', sc });
+  const off = offhandScenario(scenarios, sc);
+  if (off && rec.offhand) keys.push({ key: 'off', label: 'Off-hand', sc: off });
+  const allowed = rec.you && rec.you.moveFirst ? keys.slice(0, 1) : keys;
+  let prev = null;
+  return allowed.map((k, i) => {
+    const own = { ...blankLine(), ...(rec.lines || {})[k.key] };
+    if (i === 0) own.same = false;
+    const set = own.same && prev ? { ...prev.set } : { target: own.target, flanking: !!own.flanking, ground: own.ground || '', charging: !!own.charging, other: modNum(own.other) };
+    const line = { key: k.key, label: k.label, sc: k.sc, same: !!own.same && i > 0, set, roll: own.roll || null };
+    prev = line;
+    return line;
+  });
+}
+const ORD = ['1st', '2nd', '3rd', '4th', '5th', '6th'];
+const lineHalfAvailable = (scenarios, rec) => {
+  const sc = (scenarios || []).find(s => s.id === rec.scenarioId);
+  return !!sc && scenarioType(sc) !== 'spell' && rateValue(scenarioRate(sc)) % 1 > 0;
+};
+
+// To-hit modifier for one line's conditions
+function lineToHit(set) {
+  let n = 0;
+  if (set.flanking) n += ROUND_MODS.flankingToHit;
+  if (set.ground === 'high') n += ROUND_MODS.groundToHit;
+  else if (set.ground === 'low') n -= ROUND_MODS.groundToHit;
+  if (set.charging) n += ROUND_MODS.chargingToHit;
+  return n + modNum(set.other);
+}
+// Any line charging makes your AC worse this round
+const roundACPenalty = (lines) => (lines.some(l => l.set.charging) ? ROUND_MODS.chargingAC : 0);
+
+// The number to roll for one line against its target (null: no attack roll,
+// or no target AC yet)
+function lineNeed(ctx, line) {
+  const bd = scenarioBreakdown(ctx, line.sc);
+  if (!bd || !line.set.target || line.set.target.ac === '' || line.set.target.ac == null) return null;
+  return bd.thac0 - parseInt(line.set.target.ac, 10) - lineToHit(line.set);
+}
+
+// When the character acts: initiative roll + the attack's speed + this
+// round's adjustments (Move 1st +3, set vs charge −2, higher ground −1 from
+// the first attack's target, Quickness −2 on a success). Lowest goes first.
+function actOn(ctx, rec, scenarios, who = {}) {
+  if (!rec.init || rec.init.roll == null) return null;
+  const sc = (scenarios || []).find(s => s.id === rec.scenarioId);
+  const lines = roundLines(ctx, rec, scenarios);
+  let n = rec.init.roll + attackSpeed(ctx, sc) + (who.initBonus || 0);
+  if (rec.you.moveFirst) n += ROUND_MODS.moveFirstInit;
+  if (rec.you.setVsCharge) n -= ROUND_MODS.setVsChargeInit;
+  if (lines[0] && lines[0].set.ground === 'high') n -= ROUND_MODS.groundInit;
+  if (quicknessWorks(rec, who)) n += ROUND_MODS.quicknessInit;
+  return n;
+}
+// Quickness (a proficiency): d20 at or under Dex
+const quicknessWorks = (rec, who) => !!who.quickness && rec.quick && rec.quick.roll != null && rec.quick.roll <= (who.dex || 0);
+
+// ── Dice ──
+function rollDice(expr, rand = Math.random) {
+  const terms = String(expr || '').toLowerCase().replace(/\s+/g, '').replace(/-/g, '+-').split('+').filter(Boolean);
+  let total = 0, seen = false;
+  for (const t of terms) {
+    const m = t.match(/^(-?)(\d*)d(\d+)$/);
+    if (m) { seen = true; const n = parseInt(m[2] || '1', 10); let s = 0; for (let i = 0; i < n; i++) s += 1 + Math.floor(rand() * parseInt(m[3], 10)); total += m[1] ? -s : s; }
+    else if (/^-?\d+$/.test(t)) { seen = true; total += parseInt(t, 10); }
+  }
+  return seen ? Math.max(total, 0) : null;
+}
+
+// Rolls one line: d20 against the need, and damage on a hit. Good Hits and
+// Bad Misses: a natural 20 always hits, and is a critical only if it would
+// have hit anyway; a natural 1 always misses, and is a fumble only if it would
+// have missed anyway. A critical or fumble also rolls d% for the DM's table.
+function rollLine(ctx, line, rand = Math.random) {
+  const dmg0 = scenarioDamage(ctx, line.sc);
+  // A spell with no attack roll (the target saves): just its damage
+  if (scenarioType(line.sc) === 'spell' && !scenarioBreakdown(ctx, line.sc)) {
+    const e = dmg0 ? dmg0.sm : '';
+    return { d20: null, need: null, hit: true, crit: false, fumble: false, pct: null, dmg: e ? rollDice(e, rand) : null, dmgExpr: e, spell: null };
+  }
+  const need = lineNeed(ctx, line);
+  const d20 = 1 + Math.floor(rand() * 20);
+  const hit = d20 === 20 ? true : d20 === 1 ? false : need != null && d20 >= need;
+  const crit = d20 === 20 && need != null && need <= 20;
+  const fumble = d20 === 1 && need != null && need > 1;
+  const dmg = dmg0;
+  const big = line.set.target && line.set.target.size === 'l';
+  const expr = dmg ? (big ? dmg.l : dmg.sm) : '';
+  return {
+    d20, need, hit, crit, fumble,
+    pct: crit || fumble ? 1 + Math.floor(rand() * 100) : null,
+    dmg: hit && expr ? rollDice(expr, rand) : null, dmgExpr: expr,
+    spell: hit && dmg && dmg.spell ? rollDice(dmg.spell, rand) : null,
+  };
+}
+
+// What to say at the table, for one line
+function lineSay(line) {
+  const r = line.roll;
+  const t = line.set.target ? line.set.target.name || `AC ${line.set.target.ac}` : 'no target';
+  if (!r) return `${line.label}: vs ${t}`;
+  const res = r.crit ? `Good Hit (d% ${r.pct}), ${r.dmg}` : r.fumble ? `Bad Miss (d% ${r.pct})` : r.hit ? `hit, ${r.dmg ?? '—'}` : 'miss';
+  return `${line.label}: vs ${t}, d20 ${r.d20} — ${res}${r.spell != null ? ` + spell ${r.spell}` : ''}`;
+}
+
+return { ROUND_MODS, MOVE_MULTS, newRound, attackSpeed, offhandScenario, roundLines, lineHalfAvailable, lineToHit, roundACPenalty, lineNeed, actOn, quicknessWorks, rollDice, rollLine, lineSay };
+})();
 // ── rules/character ──
 __m["rules/character"] = (() => {
 const {DEX_TABLE} = __m["rules/tables"];
@@ -4926,9 +5098,65 @@ function formatDMHelperConfig(list) {
 
 return { toDMHelper, formatDMHelperConfig };
 })();
+// ── round-sync ──
+__m["round-sync"] = (() => {
+
+// ── ROUND SYNC ──────────────────────────────────────────────────
+// Keeps one combat round shared between the players' sheets and the DM's
+// initiative page. The state:
+//   { round, foes: [{ id, name, ac, size }], timing: 'end' | 'turn',
+//     records: { [character]: round record (rules/round.js) }, at }
+// The DM sends the round, foes and timing (and clears the records on a new
+// round); each sheet sends its own record.
+//
+// This first connection works within one browser: the preview's Sheet and DM
+// tabs, or two tabs side by side. It keeps the state in browser storage, so a
+// page that opens later still sees the round, and tells the other pages the
+// moment it changes. A cross-device connection (Supabase) will offer the same
+// calls. With no connection, the sheet still works on its own.
+
+const CHANNEL = 'adnd-round';
+const STORE = 'adnd-round-state';
+const empty = () => ({ round: 1, foes: [], timing: 'end', records: {}, at: 0 });
+
+function createRoundSync() {
+  const listeners = [];
+  let channel = null;
+  try { channel = typeof BroadcastChannel === 'function' ? new BroadcastChannel(CHANNEL) : null; } catch (e) { channel = null; }
+  const read = () => { try { return { ...empty(), ...JSON.parse(localStorage.getItem(STORE) || 'null') }; } catch (e) { return empty(); } };
+  let ok = true;
+  const write = s => { try { localStorage.setItem(STORE, JSON.stringify(s)); ok = true; } catch (e) { ok = false; } };
+  const tell = s => { listeners.forEach(fn => { try { fn(s); } catch (e) { /* a listener's problem */ } }); };
+  const announce = s => { try { channel && channel.postMessage(s); } catch (e) { ok = false; } };
+  if (channel) channel.onmessage = e => tell(e.data);
+  try { window.addEventListener('storage', e => { if (e.key === STORE) tell(read()); }); } catch (e) { /* no window */ }
+
+  const change = fn => { const s = read(); fn(s); s.at = Date.now(); write(s); announce(s); return s; };
+  return {
+    // Connected to a shared round? (false: the sheet works alone)
+    get live() { return ok && !!channel; },
+    state: read,
+    // A sheet's own round
+    sendRecord: rec => change(s => { s.records[rec.character] = { ...rec, round: s.round }; }),
+    // The DM: round number, foes, timing. A new round number clears the records.
+    sendDM: ({ round, foes, timing }) => change(s => {
+      if (round != null && round !== s.round) { s.round = round; s.records = {}; }
+      if (foes) s.foes = foes;
+      if (timing) s.timing = timing;
+    }),
+    // Called with the whole state whenever another page changes it
+    onChange: fn => { listeners.push(fn); },
+    close: () => { try { channel && channel.close(); } catch (e) { /* already closed */ } },
+  };
+}
+
+return { createRoundSync };
+})();
 window.SheetSpells = { findSpell: __m["rules/spells"].findSpell };
 window.SheetScenarios = { modNum: __m["rules/scenarios"].modNum, signed: __m["rules/scenarios"].signed, ATTACK_TYPES: __m["rules/scenarios"].ATTACK_TYPES, RATE_OPTIONS: __m["rules/scenarios"].RATE_OPTIONS, scenarioRate: __m["rules/scenarios"].scenarioRate, scenarioType: __m["rules/scenarios"].scenarioType, scenarioSpell: __m["rules/scenarios"].scenarioSpell, scenarioAbility: __m["rules/scenarios"].scenarioAbility, activeEffectsFor: __m["rules/scenarios"].activeEffectsFor, scenarioDamage: __m["rules/scenarios"].scenarioDamage, scenarioBreakdown: __m["rules/scenarios"].scenarioBreakdown, normalizeEffects: __m["rules/scenarios"].normalizeEffects, effectOption: __m["rules/scenarios"].effectOption, isBowcaster: __m["rules/scenarios"].isBowcaster, spellArrow: __m["rules/scenarios"].spellArrow, usesAmmo: __m["rules/scenarios"].usesAmmo, weaponAmmoType: __m["rules/scenarios"].weaponAmmoType, ammoType: __m["rules/scenarios"].ammoType, ammoFor: __m["rules/scenarios"].ammoFor, scenarioAmmo: __m["rules/scenarios"].scenarioAmmo, AMMO_TYPES: __m["rules/scenarios"].AMMO_TYPES };
 window.SheetKits = { HOUSE_KITS: __m["rules/kits"].HOUSE_KITS, classKit: __m["rules/kits"].classKit };
+window.SheetRound = { ROUND_MODS: __m["rules/round"].ROUND_MODS, MOVE_MULTS: __m["rules/round"].MOVE_MULTS, newRound: __m["rules/round"].newRound, roundLines: __m["rules/round"].roundLines, lineHalfAvailable: __m["rules/round"].lineHalfAvailable, offhandScenario: __m["rules/round"].offhandScenario, lineToHit: __m["rules/round"].lineToHit, roundACPenalty: __m["rules/round"].roundACPenalty, lineNeed: __m["rules/round"].lineNeed, actOn: __m["rules/round"].actOn, quicknessWorks: __m["rules/round"].quicknessWorks, attackSpeed: __m["rules/round"].attackSpeed, rollLine: __m["rules/round"].rollLine, lineSay: __m["rules/round"].lineSay };
+window.RoundSync = { createRoundSync: __m["round-sync"].createRoundSync };
 window.SheetRules = { PHB_WEAPONS: __m["rules/weapons"].PHB_WEAPONS };
 window.SheetGuess = { guessCategory: __m["rules/migrate"].guessCategory };
 })();

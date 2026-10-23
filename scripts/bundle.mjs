@@ -44,8 +44,10 @@ export const RULES_FILES = [
   'src/rules/kits.js',
   'src/rules/spells.js',
   'src/rules/scenarios.js',
+  'src/rules/round.js',
   'src/rules/character.js',
   'src/rules/migrate.js',
   'src/rules/combat.js',
   'src/adapters/dm-helper.js',
+  'src/round-sync.js',
 ];
