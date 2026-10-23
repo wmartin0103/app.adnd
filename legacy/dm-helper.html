@@ -1936,6 +1936,8 @@ function rollLine(ctx, line, rand = Math.random) {
       raw.d20 = 1 + Math.floor(rand() * 20);
       raw.pct = raw.d20 === 20 || raw.d20 === 1 ? 1 + Math.floor(rand() * 100) : null;
     }
+    // A natural 1 always misses: no damage to roll
+    if (raw.d20 === 1) return Object.assign(raw, { dmgSig: '', dmgDice: null, spellSig: '', spellDice: null });
     return Object.assign(raw, shared || damageDice(ctx, line.sc, target, rand));
   });
   return scoreRoll(ctx, line, { kind, heal: isHealing(ctx, line.sc), each });
@@ -1952,6 +1954,8 @@ function scoreRoll(ctx, line, raw) {
   const each = asEach(raw).each;
   const thac0 = noAttackRoll(ctx, line.sc) ? null : lineTHAC0(ctx, line);
   const scored = each.map(e => {
+    // A natural 1 always misses (2e): no damage, nothing to roll again
+    if (e.d20 === 1) return { ...e, miss: true, dmg: null, spell: null, dmgStale: false, dmgExpr: '', thac0, hitsAC: thac0 != null ? thac0 - 1 : null };
     if (!('dmgSig' in e)) {   // from before the dice were kept: its damage stays, the AC hit follows
       return e.d20 == null || thac0 == null ? e : { ...e, thac0, hitsAC: thac0 - e.d20 };
     }
@@ -2002,7 +2006,8 @@ function lineSay(line) {
     const t = whoText(r.target);
     if (r.d20 == null && line.roll.heal) return `${t}, heals ${r.dmg ?? '—'}`;
     if (r.d20 == null) return `vs ${t}, ${r.dmg ?? '—'} damage (${line.roll.kind === 'area' ? 'target saves' : 'no save'})`;
-    const nat = r.d20 === 20 ? ' (natural 20)' : r.d20 === 1 ? ' (natural 1)' : '';
+    if (r.d20 === 1) return `vs ${t}, d20 1 (natural 1), an automatic miss`;
+    const nat = r.d20 === 20 ? ' (natural 20)' : '';
     return `vs ${t}, d20 ${r.d20}${nat}, hits AC ${acText(r.hitsAC)} or worse, ${r.dmg ?? '—'} damage${r.spell != null ? ` + spell ${r.spell}` : ''}`;
   });
   return `${line.label}: ${parts.join('; ')}`;
@@ -4592,7 +4597,8 @@ function judgeOne(target, r, kind, line, bdAC){
   if(r.d20==null && kind==='heal') return {who, text:`heals ${r.dmg??'—'}`, cls:'hit'};
   if(r.d20==null) return {who, text:`${r.dmg??'—'} damage (${kind==='split'?'no save':'target saves'})`, cls:'hit'};
   const ac = fb ? bdAC[fb.name] : null;
-  if(ac==null || isNaN(ac)) return {who, text:`d20 ${r.d20}${r.d20===20?' · <b>Natural 20</b>: critical if it hits':r.d20===1?' · <b>Natural 1</b>: a Bad Miss if it misses':''} · hits AC ${r.hitsAC} or worse · ${r.dmg??'—'} dmg`, cls: r.d20===20?'crit':r.d20===1?'fumble':''};
+  if((ac==null || isNaN(ac)) && r.d20===1) return {who, text:`d20 1 · <b>Natural 1</b>: automatic miss (a Bad Miss on the table if it would have missed anyway)`, cls:'fumble'};
+  if(ac==null || isNaN(ac)) return {who, text:`d20 ${r.d20}${r.d20===20?' · <b>Natural 20</b>: critical if it hits':''} · hits AC ${r.hitsAC} or worse · ${r.dmg??'—'} dmg`, cls: r.d20===20?'crit':''};
   const j = SheetRound.judgeRoll(r, ac);
   const t = CRIT_TYPES[line.scenario]; const ct = Array.isArray(t) ? t[0] : (t||'P');
   if(j.crit) return {who, text:`d20 20 · <b>Critical hit</b> (Good Hit) · ${r.dmg??'—'} dmg before your crit rule · ${critText(ct, r.pct, false)}`, cls:'crit'};
