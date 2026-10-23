@@ -2044,11 +2044,6 @@
       transition: border-color 0.2s, box-shadow 0.2s;
     }
 
-    .scenario-card.is-active {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(139,46,18,0.08);
-    }
-
     .scenario-header {
       display: flex;
       flex-wrap: wrap;
@@ -2074,14 +2069,6 @@
       display: block;
     }
 
-    /* The radio button that marks a scenario as "active" */
-    .scenario-active-radio {
-      width: 1rem;
-      height: 1rem;
-      accent-color: var(--accent);
-      cursor: pointer;
-      flex-shrink: 0;
-    }
 
     .scenario-name-input {
       font-family: var(--font-display);
@@ -2673,14 +2660,6 @@
     <section class="section" aria-labelledby="combat-heading">
       <h2 id="combat-heading" class="section-heading">Character Details</h2>
       <div class="combat-grid">
-
-        <!-- THAC0 — driven by active Combat Scenario below -->
-        <div class="combat-card">
-          <span class="combat-label" id="thac0-label">THAC0</span>
-          <output id="thac0" class="combat-value" aria-labelledby="thac0-label"
-            aria-describedby="thac0-desc" style="display:block;">—</output>
-          <span id="thac0-desc" class="combat-sublabel">From active scenario</span>
-        </div>
 
         <!-- Armor Class — Base + Effective combined -->
         <div class="combat-card ac-combined-card">
@@ -6127,11 +6106,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       } else {
         effectiveEl.textContent = '—';
       }
-
-      // ── THAC0 is driven by active Combat Scenario ────────────
-      // See updateActiveTHAC0(). Scenarios that use "sheet level"
-      // will call getEffectiveLevel() which returns the highest
-      // level across all class entries.
     }
 
 
@@ -6405,7 +6379,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           cls.kit = kitSelect.value;
           renderClasses();
           renderScenarios();
-          updateActiveTHAC0();
           saveToItems();
           document.querySelector(`[aria-controls="${kitPanelId}"]`)?.focus();
         });
@@ -6475,7 +6448,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           updateProfSlotBadges();
           renderScenarios();
           renderEnemies();
-          updateActiveTHAC0();
           renderSavingThrows();
           renderThievingAbilities();
           updateSpellSlotHeader();
@@ -6545,7 +6517,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           renderClasses();
           updateCombatFields();
           renderScenarios();
-          updateActiveTHAC0();
           renderSavingThrows();
           saveToItems();
         });
@@ -6706,9 +6677,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
         // ── Outer card ──────────────────────────────────────────
         const card = document.createElement('article');
-        card.className = 'scenario-card'
-          + (scenario.active    ? ' is-active'   : '')
-          + (scenario.collapsed ? ' is-collapsed' : '');
+        card.className = 'scenario-card' + (scenario.collapsed ? ' is-collapsed' : '');
         const isSpell = scenarioType(scenario) === 'spell';
         const spellInfo = isSpell ? scenarioSpell(scenario) : null;
         // Spellarrow (Bowcaster kit): a bow shot carrying a memorized spell
@@ -6722,21 +6691,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         header.className = 'scenario-header';
         // Layout handled by flexbox — no inline grid columns needed
 
-        // Radio button to set as active
-        const radio = document.createElement('input');
-        radio.type = 'radio';
-        radio.name = 'active-scenario';
-        radio.className = 'scenario-active-radio';
-        radio.checked = scenario.active;
-        radio.setAttribute('aria-label', `Set "${scenario.name || 'Scenario ' + (index + 1)}" as active`);
-        radio.addEventListener('change', () => {
-          scenarios.forEach(s => s.active = false);
-          scenario.active = true;
-          renderScenarios();
-          updateActiveTHAC0();
-          saveToItems();
-        });
-
         // Scenario name
         const nameInput = document.createElement('input');
         nameInput.type = 'text';
@@ -6746,8 +6700,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         nameInput.setAttribute('aria-label', 'Scenario name');
         nameInput.addEventListener('input', (e) => {
           scenario.name = e.target.value;
-          // Update the radio's aria-label live
-          radio.setAttribute('aria-label', `Set "${scenario.name || 'Scenario ' + (index + 1)}" as active`);
           saveToItems();
         });
         // Prevent clicking the name from toggling the header
@@ -6777,17 +6729,12 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         deleteBtn.innerHTML = '&#x2715;'; // × symbol
         deleteBtn.addEventListener('click', (e) => {
           e.stopPropagation();
-          const wasActive = scenario.active;
           scenarios.splice(index, 1);
-          // If we deleted the active one, promote the first remaining
-          if (wasActive && scenarios.length > 0) scenarios[0].active = true;
           renderScenarios();
-          updateActiveTHAC0();
           saveToItems();
         });
 
         header.appendChild(chevron);
-        header.appendChild(radio);
         header.appendChild(nameInput);
 
         // Wrap toggle + badge together so they always move as one unit on wrap
@@ -6807,7 +6754,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
               e.stopPropagation();
               scenario.handedness = hand;
               renderScenarios();
-              updateActiveTHAC0();
               saveToItems();
             });
             headerHandToggle.appendChild(btn);
@@ -6869,7 +6815,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         groupSelect.addEventListener('change', (e) => {
           scenario.group = e.target.value;
           renderScenarios();
-          updateActiveTHAC0();
           saveToItems();
         });
         groupField.appendChild(groupLabel);
@@ -6889,7 +6834,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           sel.id = id;
           sel.className = 'scenario-select';
           pairs.forEach(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; o.selected = String(value) === v; sel.appendChild(o); });
-          sel.addEventListener('change', () => { onChange(sel.value); renderScenarios(); updateActiveTHAC0(); saveToItems(); });
+          sel.addEventListener('change', () => { onChange(sel.value); renderScenarios(); saveToItems(); });
           f.append(l, sel);
           return f;
         };
@@ -6931,7 +6876,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           wpnSelect.addEventListener('change', () => {
             scenario.weaponId = wpnSelect.value || null;
             renderScenarios();
-            updateActiveTHAC0();
             saveToItems();
           });
 
@@ -6960,7 +6904,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
               inp.style.width = key === 'range' ? '9rem' : '6rem';
               inp.value = spellInfo[key] || '';
               inp.placeholder = ph;
-              inp.addEventListener('change', () => { scenario.spell = { ...(scenario.spell || {}), [key]: inp.value.trim() }; renderScenarios(); updateActiveTHAC0(); saveToItems(); });
+              inp.addEventListener('change', () => { scenario.spell = { ...(scenario.spell || {}), [key]: inp.value.trim() }; renderScenarios(); saveToItems(); });
               f.append(l, inp);
               body.appendChild(f);
             });
@@ -7012,7 +6956,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
             }
             const v = document.getElementById(`scenario-thac0-val-${scenario.id}`);
             if (v) v.textContent = newThac0 !== null ? newThac0 : '—';
-            updateActiveTHAC0();
             saveToItems();
           });
           hitModInp.addEventListener('change', () => {
@@ -7073,7 +7016,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           penInp.addEventListener('input', () => {
             scenario.offHandPenalty = penInp.value;
             renderScenarios();
-            updateActiveTHAC0();
             saveToItems();
           });
           penField.appendChild(penLabel);
@@ -7205,7 +7147,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
     function refreshAfterStances(focusSel) {
       renderStances();
       renderScenarios();
-      updateActiveTHAC0();
       saveToItems();
       if (focusSel) document.querySelector(focusSel)?.focus();
     }
@@ -7873,7 +7814,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       return wrap;
     }
     // Weapon edits change scenario numbers
-    document.getElementById('weapons-list')?.addEventListener('change', () => { renderScenarios(); updateActiveTHAC0(); });
+    document.getElementById('weapons-list')?.addEventListener('change', () => { renderScenarios(); });
     // Any edit anywhere on the sheet, even mid-typing (abilities, level, the
     // attack cards, weapons, effects): This round follows, its rolls keeping
     // their dice and taking the new numbers. Edits inside This round redraw it
@@ -7911,17 +7852,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         <span class="sr-spell-warn">${sp.catalog ? '' : 'Not in the spell catalog yet: fill in the details above. '}${sp.penalty ? `${esc(sp.penalty)}. ` : ''}Casting time adds to initiative; if you're hit before your turn, the spell is lost.</span></p>`;
     }
 
-    // Update the THAC0 display in the combat block to reflect the active scenario
-    function updateActiveTHAC0() {
-      const active = scenarios.find(s => s.active);
-      const el = document.getElementById('thac0');
-      if (active) {
-        const val = calcScenarioTHAC0(active);
-        el.textContent = val !== null ? val : '—';
-      } else {
-        el.textContent = '—';
-      }
-    }
 
     // Add Scenario button
     document.getElementById('add-enemy-btn').addEventListener('click', addNewEnemy);
@@ -7931,7 +7861,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       const sc = makeScenario({ active: isFirst, group: primaryGroup });
       scenarios.push(sc);
       renderScenarios();
-      updateActiveTHAC0();
       saveToItems();
       // Focus the name input of the new card for immediate editing
       const newCard = document.querySelector(`[data-scenario-id="${sc.id}"] .scenario-name-input`);
@@ -8303,7 +8232,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
             if (v === cur) o.selected = true;
             sel.appendChild(o);
           });
-          sel.addEventListener('change', () => { wpn[field] = sel.value; saveToItems(); renderScenarios(); updateActiveTHAC0(); });
+          sel.addEventListener('change', () => { wpn[field] = sel.value; saveToItems(); renderScenarios(); });
           return sel;
         }
         function pickPair(a, b) {
@@ -8424,7 +8353,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         ss.addEventListener('change', () => {
           wpn.ammoType = ss.value;
           delete wpn.usesAmmo;
-          renderWeapons(); renderScenarios(); updateActiveTHAC0(); saveToItems();
+          renderWeapons(); renderScenarios(); saveToItems();
           document.querySelector(`[aria-controls="${settingsId}"]`)?.focus();
         });
         settings.append(sl, ss);
@@ -8460,7 +8389,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         header.appendChild(c);
       });
       list.appendChild(header);
-      const changed = () => { saveToItems(); renderScenarios(); updateActiveTHAC0(); };
+      const changed = () => { saveToItems(); renderScenarios(); };
       ammo.forEach(a => {
         const row = document.createElement('div');
         row.className = 'wpn-row';
@@ -10893,7 +10822,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       updateConHpBadge();
       renderStances();
       renderScenarios();
-      updateActiveTHAC0();
       renderSavingThrows();
       renderRacialTraits();
       renderThievingAbilities();
@@ -10933,7 +10861,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         // STR and DEX feed scenario to-hit and damage
         if (target.dataset.ability === 'str' || target.dataset.ability === 'dex') {
           renderScenarios();
-          updateActiveTHAC0();
         }
         // INT/WIS affect spell slots
         if (target.dataset.ability === 'int' || target.dataset.ability === 'wis') {
@@ -10942,7 +10869,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         // STR affects THAC0 via hit adj — re-render scenarios
         if (target.dataset.ability === 'str') {
           renderScenarios();
-          updateActiveTHAC0();
         }
         // Any ability change may affect NWP roll targets
         renderNWPs();
