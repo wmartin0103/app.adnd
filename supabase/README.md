@@ -3,9 +3,11 @@
 The database behind sign-in and the live round (and, later, cloud saves).
 
 - **`migrations/`** — the database's structure: tables, permission rules
-  (Row Level Security), triggers, realtime. Supabase's GitHub integration
-  applies new files here when they land on the production branch, and keeps
-  a record of which ones it has run.
+  (Row Level Security), triggers, realtime. Applied with the Supabase CLI
+  from this folder (linked to the project): `npx.cmd supabase db push`
+  (`npx.cmd` on Windows PowerShell). Supabase keeps a record of which ones
+  have run; `npx.cmd supabase migration list --linked` shows it. The GitHub
+  integration is connected but didn't deploy on push (as of 2026-10-23).
 - **`setup-first-admin.sql`** — data, not structure: makes the owner an admin
   and DM of the first campaign. Run by hand in the SQL Editor, once.
 
