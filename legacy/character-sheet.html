@@ -7446,6 +7446,13 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
     }
     // Weapon edits change scenario numbers
     document.getElementById('weapons-list')?.addEventListener('change', () => { renderScenarios(); updateActiveTHAC0(); });
+    // Any edit to the attacks, weapons or effects, even mid-typing: This round
+    // follows (its rolls keep their dice and take the new numbers)
+    let roundRedraw = 0;
+    ['scenarios-list', 'weapons-list', 'stances-list'].forEach(id => document.getElementById(id)?.addEventListener('input', () => {
+      clearTimeout(roundRedraw);
+      roundRedraw = setTimeout(renderRound, 30);
+    }));
 
     // One line under a spell's result: range, save, the catalog link, and the
     // reminder that being hit first loses the spell
