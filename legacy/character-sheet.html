@@ -773,6 +773,19 @@
     .round .round-pick .scenario-select, .round .round-btn, .round .round-chip, .round input.round-typed { height: var(--ctl-h); box-sizing: border-box; }
     .round .round-btn { display: inline-flex; align-items: center; padding-top: 0; padding-bottom: 0; }
     .round-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
+    /* A select with checkboxes in its list */
+    .round-multi { position: relative; }
+    .round .round-pick .round-multi-btn { width: auto; min-width: 8.5rem; text-align: left; padding-right: 1.9rem; position: relative; white-space: nowrap; }
+    .round-multi-btn::after { content: ''; position: absolute; right: 0.65rem; top: 50%; width: 0.4rem; height: 0.4rem; margin-top: -0.3rem;
+      border-right: 1.5px solid var(--ink-muted); border-bottom: 1.5px solid var(--ink-muted); transform: rotate(45deg); }
+    .round-multi.is-open .round-multi-btn { border-color: var(--accent); }
+    .round-multi.is-open .round-multi-btn::after { transform: rotate(-135deg); margin-top: -0.1rem; }
+    .round-multi-list { position: absolute; top: 100%; left: 0; z-index: 30; margin-top: 0.25rem; min-width: 100%; width: max-content; max-width: 18rem;
+      background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); box-shadow: 0 6px 18px rgba(26,23,20,0.12); padding: 0.3rem; }
+    .round-multi-opt { display: flex; align-items: flex-start; gap: 0.55rem; padding: 0.45rem 0.55rem; border-radius: var(--radius); cursor: pointer; font-size: 0.95rem; }
+    .round-multi-opt:hover, .round-multi-opt:focus-within { background: var(--parchment); }
+    .round-multi-opt input { accent-color: var(--accent); margin-top: 0.2rem; }
+    .round-multi-opt small { display: block; font-size: 0.8rem; color: var(--ink-muted); }
     .round-chip { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0 0.75rem; border: 1px solid var(--rule); border-radius: var(--radius);
       background: var(--surface); color: var(--ink-muted); font: 0.95rem var(--font-body); cursor: pointer; white-space: nowrap; }
     .round-chip::before { content: ''; width: 0.55rem; height: 0.55rem; border-radius: 50%; border: 1.5px solid currentColor; opacity: 0.6; }
@@ -7522,6 +7535,61 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       b.addEventListener('click', () => { onChange(b.getAttribute('aria-pressed') !== 'true'); document.getElementById(id)?.focus(); });
       return b;
     };
+    // Situational on/off choices most players rarely need: a select-like
+    // button whose list holds checkboxes. It stays open while you tick (the
+    // round redraws, so which one is open is remembered) and closes on
+    // Escape, on a second click or on a click elsewhere.
+    let openMulti = null;
+    const multi = (id, label, options, onToggle) => {
+      const wrap = document.createElement('div'); wrap.className = 'round-pick round-multi';
+      const t = document.createElement('span'); t.className = 'scenario-field-label'; t.id = `${id}-label`; t.textContent = label;
+      const on = options.filter(o => o.on);
+      const btn = document.createElement('button'); btn.type = 'button'; btn.id = id; btn.className = 'scenario-select round-multi-btn';
+      btn.textContent = !on.length ? 'None' : on.length === 1 ? on[0].label : `${on.length} on`;
+      btn.setAttribute('aria-haspopup', 'true'); btn.setAttribute('aria-controls', `${id}-list`);
+      btn.setAttribute('aria-labelledby', `${id}-label ${id}`);
+      const list = document.createElement('div'); list.className = 'round-multi-list'; list.id = `${id}-list`;
+      list.setAttribute('role', 'group'); list.setAttribute('aria-labelledby', `${id}-label`);
+      options.forEach(o => {
+        const row = document.createElement('label'); row.className = 'round-multi-opt';
+        const box = document.createElement('input'); box.type = 'checkbox'; box.id = `${id}-${o.key}`; box.checked = !!o.on;
+        box.addEventListener('change', () => { openMulti = { id, focus: box.id }; onToggle(o.key, box.checked); });
+        const text = document.createElement('span'); text.innerHTML = `${escR(o.label)}${o.note ? `<small>${escR(o.note)}</small>` : ''}`;
+        row.append(box, text); list.appendChild(row);
+      });
+      const setOpen = open => {
+        list.hidden = !open; btn.setAttribute('aria-expanded', open ? 'true' : 'false'); wrap.classList.toggle('is-open', open);
+        const kept = openMulti && openMulti.id === id ? openMulti.focus : null;
+        openMulti = open ? { id, focus: kept } : (openMulti && openMulti.id === id ? null : openMulti);
+      };
+      btn.addEventListener('click', () => { setOpen(list.hidden); if (!list.hidden) list.querySelector('input')?.focus(); });
+      wrap.addEventListener('keydown', e => { if (e.key === 'Escape' && !list.hidden) { e.stopPropagation(); setOpen(false); btn.focus(); } });
+      // Which box has focus, so a redraw (this page or a save echoed back) puts it back
+      list.addEventListener('focusin', e => { if (openMulti && openMulti.id === id) openMulti.focus = e.target.id; });
+      wrap.append(t, btn, list);
+      // Open again after a redraw, focus back where it was (unless it has moved on)
+      const reopen = openMulti && openMulti.id === id;
+      const focusId = reopen && openMulti.focus;
+      setOpen(reopen);
+      if (focusId) setTimeout(() => {
+        const a = document.activeElement;
+        if (!a || a === document.body || !a.isConnected) document.getElementById(focusId)?.focus();
+      }, 0);
+      return wrap;
+    };
+    const closeMulti = refocus => {
+      const btn = openMulti && document.getElementById(openMulti.id);
+      openMulti = null;
+      if (!btn) return;
+      btn.setAttribute('aria-expanded', 'false'); btn.closest('.round-multi')?.classList.remove('is-open');
+      document.getElementById(`${btn.id}-list`).hidden = true;
+      if (refocus) btn.focus();
+    };
+    document.addEventListener('click', e => {
+      if (!openMulti || e.target.closest(`#${openMulti.id}, #${openMulti.id}-list`)) return;
+      closeMulti(false);
+    });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && openMulti) closeMulti(true); });
     // Chips under a label, lined up with the selects beside them
     const field = (label, ...els) => {
       const g = document.createElement('div'); g.className = 'round-pick'; g.setAttribute('role', 'group'); g.setAttribute('aria-label', label);
@@ -7575,9 +7643,10 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       // You, this round
       row.append(
         pick('round-mult', 'Movement', SheetRound.MOVE_MULTS.map(m => [m, `${m}×`]), rec.you.moveMult, v => { rec.you.moveMult = v; saveRound(rec); }),
-        field('You',
-          check('round-move', 'Move 1st', rec.you.moveFirst, v => { rec.you.moveFirst = v; saveRound(rec); }),
-          check('round-set', 'Set vs charge', rec.you.setVsCharge, v => { rec.you.setVsCharge = v; saveRound(rec); })));
+        multi('round-you', 'You', [
+          { key: 'moveFirst', label: 'Move 1st', note: '+3 initiative; one attack', on: rec.you.moveFirst },
+          { key: 'setVsCharge', label: 'Set vs charge', note: '−2 initiative', on: rec.you.setVsCharge },
+        ], (key, v) => { rec.you[key] = v; saveRound(rec); }));
       // When you act
       const ao = SheetRound.actOn(ctx, rec, scenarios, who);
       const act = document.createElement('div'); act.className = 'round-init round-acton';
