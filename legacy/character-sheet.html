@@ -1968,68 +1968,6 @@
     }
 
     /* ─── Combat Scenarios ──────────────────────────────────── */
-    /* ── Enemy Tracker ─────────────────────────────────────── */
-    .enemy-tracker {
-      border-top: 1px solid var(--rule);
-      padding-top: 1rem;
-      margin-top: 1rem;
-    }
-
-    .enemy-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 0.75rem;
-      margin-bottom: 0.75rem;
-    }
-
-    /* Enemy cards reuse spell-card shell — only overrides here */
-    .enemy-card.is-dead {
-      opacity: 0.4;
-    }
-    .enemy-card.is-dead .spell-card-name {
-      text-decoration: line-through;
-    }
-
-    /* Bottom bar number inputs (AC / HP Taken) */
-    .enemy-stat-inp {
-      font-family: var(--font-display);
-      font-size: 0.6rem;
-      background: transparent;
-      border: 1px solid var(--rule);
-      border-radius: var(--radius);
-      padding: 0.15em 0.3em;
-      color: var(--ink-muted);
-      outline: none;
-      width: 100%;
-      min-width: 0;
-      text-align: center;
-      -moz-appearance: textfield;
-      transition: border-color 0.2s;
-      box-sizing: border-box;
-    }
-    .enemy-stat-inp::-webkit-outer-spin-button,
-    .enemy-stat-inp::-webkit-inner-spin-button { -webkit-appearance: none; }
-    .enemy-stat-inp:focus { border-color: var(--accent); }
-    .enemy-stat-inp::placeholder { color: var(--ink-faint); }
-
-    .enemy-stat-label {
-      font-family: var(--font-display);
-      font-size: 0.6rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--ink-muted);
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-
-    .enemy-stat-wrap {
-      display: flex;
-      align-items: center;
-      gap: 0.2rem;
-      flex: 1;
-      min-width: 0;
-    }
-
     .scenarios-list {
       display: flex;
       flex-direction: column;
@@ -2795,14 +2733,6 @@
         <span aria-hidden="true">＋</span> Add Scenario
       </button>
 
-      </div>
-
-      <!-- ── Enemy Tracker ──────────────────────────────────── -->
-      <div class="enemy-tracker">
-        <div id="enemy-list" class="enemy-grid" aria-label="Enemy tracker"></div>
-        <button class="add-class-btn" id="add-enemy-btn" type="button">
-          <span aria-hidden="true">＋</span> Add Enemy
-        </button>
       </div>
     </section>
 
@@ -6447,7 +6377,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           updateCombatFields();          // THAC0 uses effective level
           updateProfSlotBadges();
           renderScenarios();
-          renderEnemies();
           renderSavingThrows();
           renderThievingAbilities();
           updateSpellSlotHeader();
@@ -6583,8 +6512,10 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
     let scenarios = [];
     let scenarioCounter = 0;
+    // The old Enemy Tracker's list: no longer shown (foes come from the DM as
+    // Targets), but carried through saves untouched so nothing is lost
     let enemies = [];
-    let enemyCounter = 0; // used to create unique IDs
+    let enemyCounter = 0;
 
     function makeScenario(overrides = {}) {
       return {
@@ -7854,7 +7785,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
 
     // Add Scenario button
-    document.getElementById('add-enemy-btn').addEventListener('click', addNewEnemy);
     document.getElementById('add-scenario-btn').addEventListener('click', () => {
       const isFirst = scenarios.length === 0;
       const primaryGroup = characterClasses[0]?.group || 'warrior';
@@ -10655,106 +10585,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       renderItems();
       const rows = document.querySelectorAll('#items-list .wpn-row:not(.wpn-row-header)');
       rows[rows.length - 1]?.querySelector('.wpn-inp')?.focus();
-      saveToItems();
-    }
-
-    // ── ENEMY TRACKER ────────────────────────────────────────────
-    function makeEnemy(overrides = {}) {
-      return {
-        id:    `enemy-${++enemyCounter}`,
-        name:  '',
-        ac:    '',
-        dmg:   '',
-        notes: '',
-        ...overrides,
-      };
-    }
-
-    function renderEnemies() {
-      const list = document.getElementById('enemy-list');
-      if (!list) return;
-      list.innerHTML = '';
-      if (enemies.length === 0) return;
-
-      enemies.forEach(enemy => {
-        const card = document.createElement('div');
-        card.className = 'spell-card enemy-card';
-
-        // ── Top bar: name · delete ───────────────────────────
-        const topBar = document.createElement('div');
-        topBar.className = 'spell-card-top';
-
-        const nameInp = document.createElement('input');
-        nameInp.type = 'text';
-        nameInp.className = 'spell-card-name ability-card-name';
-        nameInp.value = enemy.name;
-        nameInp.placeholder = 'Enemy name…';
-        nameInp.setAttribute('aria-label', 'Enemy name');
-        nameInp.addEventListener('input',  () => { enemy.name = nameInp.value; });
-        nameInp.addEventListener('change', () => saveToItems());
-        topBar.appendChild(nameInp);
-
-        const delBtn = document.createElement('button');
-        delBtn.type = 'button';
-        delBtn.className = 'spell-del-btn';
-        delBtn.innerHTML = '&times;';
-        delBtn.setAttribute('aria-label', 'Remove enemy');
-        delBtn.addEventListener('click', () => {
-          enemies = enemies.filter(e => e.id !== enemy.id);
-          renderEnemies();
-          saveToItems();
-        });
-        topBar.appendChild(delBtn);
-        card.appendChild(topBar);
-
-        // ── Notes (expandable textarea) ───────────────────────
-        const notesInp = document.createElement('textarea');
-        notesInp.className = 'nwp-card-desc ability-card-desc';
-        notesInp.value = enemy.notes;
-        notesInp.placeholder = 'Resistances, spells, movement…';
-        notesInp.setAttribute('aria-label', 'Enemy notes');
-        notesInp.addEventListener('input',  () => { enemy.notes = notesInp.value; });
-        notesInp.addEventListener('change', () => saveToItems());
-        card.appendChild(notesInp);
-
-        // ── Bottom bar: AC · Dmg Taken ────────────────────────
-        const bottomBar = document.createElement('div');
-        bottomBar.className = 'spell-card-bottom';
-
-        [
-          { label: 'AC',        key: 'ac',  type: 'number', placeholder: '—', flex: '1' },
-          { label: 'Dmg Taken', key: 'dmg', type: 'text',   placeholder: '0', flex: '2' },
-        ].forEach(({ label, key, type, placeholder, flex }) => {
-          const wrap = document.createElement('div');
-          wrap.className = 'enemy-stat-wrap';
-          wrap.style.flex = flex;
-          const lbl = document.createElement('span');
-          lbl.className = 'enemy-stat-label';
-          lbl.textContent = label;
-          const inp = document.createElement('input');
-          inp.type = type;
-          inp.className = 'enemy-stat-inp';
-          inp.value = enemy[key] || '';
-          inp.placeholder = placeholder;
-          if (type === 'number') inp.min = 0;
-          inp.setAttribute('aria-label', label);
-          inp.addEventListener('input',  () => { enemy[key] = inp.value; });
-          inp.addEventListener('change', () => saveToItems());
-          wrap.appendChild(lbl);
-          wrap.appendChild(inp);
-          bottomBar.appendChild(wrap);
-        });
-
-        card.appendChild(bottomBar);
-        list.appendChild(card);
-      });
-    }
-
-    function addNewEnemy() {
-      enemies.push(makeEnemy());
-      renderEnemies();
-      const cards = document.querySelectorAll('#enemy-list .enemy-card');
-      cards[cards.length - 1]?.querySelector('.enemy-name-inp')?.focus();
       saveToItems();
     }
 
