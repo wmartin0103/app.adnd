@@ -1447,10 +1447,16 @@ const {scenarioType, scenarioSpell, scenarioWeapon, spellArrow, castSpeed, scena
 // character acts. "extra": the player marks it as an extra attack, which the
 // DM's page places by its extra-attack setting.
 //
-// Each attack line: { target: { id, label, size }, flanking, rear, ground,
+// Each attack line: { targets: [{ id, label, size }], flanking, rear, ground,
 // charging, other, roll }. A target is a foe as players know it: the DM's
 // fixed ID for it and its size, never its AC or the DM's name for it. Every
-// line is set on its own: target and conditions are deliberate choices.
+// line is set on its own: targets and conditions are deliberate choices.
+//
+// Several targets, the 2e way: an attack that rolls to hit rolls a d20 (and
+// damage) for each target, as every attack is its own roll; an area spell the
+// targets save against (Fireball) rolls its damage once for all of them; a
+// spell with neither (Magic Missile: missiles split among targets) rolls
+// damage for each target.
 // The DM decides where extra attacks go in the order; the record only says
 // which attacks there are.
 
@@ -1461,7 +1467,9 @@ const ROUND_MODS = {
   groundToHit: 1, groundInit: 1, moveFirstInit: 3, setVsChargeInit: 2,
 };
 const MOVE_MULTS = ['1', '1.5', '2', '3', '4'];
-const blankLine = () => ({ target: null, flanking: false, rear: false, ground: '', charging: false, other: 0, roll: null });
+const blankLine = () => ({ targets: [], flanking: false, rear: false, ground: '', charging: false, other: 0, roll: null });
+// A line's targets (a line from before there could be several had one: target)
+const ownTargets = own => (own.targets && own.targets.length ? own.targets : own.target ? [own.target] : []);
 
 const newRound = (character, round = 1) => ({
   character, round, init: { roll: null, adj: 0 },
@@ -1503,7 +1511,7 @@ function roundLines(ctx, rec, scenarios) {
   const allowed = rec.you && rec.you.moveFirst ? keys.slice(0, 1) : keys;
   return allowed.map(k => {
     const own = { ...blankLine(), ...(rec.lines || {})[k.key] };
-    const set = { target: own.target, flanking: !!own.flanking, rear: !!own.rear, ground: own.ground || '', charging: !!own.charging, other: modNum(own.other) };
+    const set = { targets: ownTargets(own), flanking: !!own.flanking, rear: !!own.rear, ground: own.ground || '', charging: !!own.charging, other: modNum(own.other) };
     return { key: k.key, qid: k.qid, label: k.label, sc: k.sc, extra: k.extra, set, roll: own.roll ? scoreRoll(ctx, { sc: k.sc, set }, own.roll) : null };
   });
 }
@@ -1570,60 +1578,80 @@ function splitDice(expr) {
   });
   return { sig: dice.join('+'), flat };
 }
-const lineDamage = (ctx, line) => {
-  const dmg = scenarioDamage(ctx, line.sc);
-  const big = line.set.target && line.set.target.size === 'l';
+// The damage dice against one target (its size picks S/M or L)
+const lineDamage = (ctx, sc, target) => {
+  const dmg = scenarioDamage(ctx, sc);
+  const big = target && target.size === 'l';
   return { expr: dmg ? (big ? dmg.l : dmg.sm) : '', spell: dmg && dmg.spell ? dmg.spell : '' };
 };
 const rollSig = (sig, rand) => (sig ? rollDice(sig, rand) : null);
-
-// Rolls one line on the sheet: the d20, d% too on a natural 20 or 1 (for the
-// DM's Good Hits / Bad Misses tables, if it turns out to be one), and the
-// damage dice by the target's size, which the DM counts only on a hit. A
-// spell with no attack roll (the target saves) just rolls its damage. Only
-// the dice are kept: scoreRoll adds the sheet's numbers as they are now.
-function rollLine(ctx, line, rand = Math.random) {
-  const d = lineDamage(ctx, line);
+// How a line with several targets resolves: 'attack' (a d20 each), 'area'
+// (one damage roll, each target saves) or 'split' (damage for each target)
+function lineKind(ctx, sc) {
+  if (!noAttackRoll(ctx, sc)) return 'attack';
+  const sp = scenarioSpell(ctx, sc);
+  const save = String((sp && sp.save) || '').trim();
+  return save && !/^(none|n\/a|-|—)$/i.test(save) ? 'area' : 'split';
+}
+const targetsOf = line => (line.set.targets && line.set.targets.length ? line.set.targets : [null]);
+const damageDice = (ctx, sc, target, rand) => {
+  const d = lineDamage(ctx, sc, target);
   const dmgSig = splitDice(d.expr).sig, spellSig = splitDice(d.spell).sig;
-  const raw = { d20: null, pct: null };
-  if (!noAttackRoll(ctx, line.sc)) {
-    raw.d20 = 1 + Math.floor(rand() * 20);
-    raw.pct = raw.d20 === 20 || raw.d20 === 1 ? 1 + Math.floor(rand() * 100) : null;
-  }
-  Object.assign(raw, { dmgSig, dmgDice: rollSig(dmgSig, rand), spellSig, spellDice: rollSig(spellSig, rand) });
-  return scoreRoll(ctx, line, raw);
+  return { dmgSig, dmgDice: rollSig(dmgSig, rand), spellSig, spellDice: rollSig(spellSig, rand) };
+};
+
+// Rolls one line on the sheet: for each target, the d20, d% too on a natural
+// 20 or 1 (for the DM's Good Hits / Bad Misses tables, if it turns out to be
+// one), and the damage dice by that target's size, which the DM counts only on
+// a hit. A spell with no attack roll just rolls its damage (once for an area
+// spell). Only the dice are kept: scoreRoll adds the sheet's numbers as they are now.
+function rollLine(ctx, line, rand = Math.random) {
+  const kind = lineKind(ctx, line.sc);
+  const shared = kind === 'area' ? damageDice(ctx, line.sc, targetsOf(line)[0], rand) : null;
+  const each = targetsOf(line).map(target => {
+    const raw = { target, d20: null, pct: null };
+    if (kind === 'attack') {
+      raw.d20 = 1 + Math.floor(rand() * 20);
+      raw.pct = raw.d20 === 20 || raw.d20 === 1 ? 1 + Math.floor(rand() * 100) : null;
+    }
+    return Object.assign(raw, shared || damageDice(ctx, line.sc, target, rand));
+  });
+  return scoreRoll(ctx, line, { kind, each });
 }
 // A roll with the sheet's current numbers: change an effect (Bless off) or the
-// target after rolling and the THAC0, AC hit and damage follow, until it's
+// conditions after rolling and the THAC0, AC hit and damage follow, until it's
 // sent to the DM (frozen). If the damage dice themselves changed (another
 // size of target), dmgStale: roll them again.
 function scoreRoll(ctx, line, raw) {
   if (!raw) return null;
   if (raw.frozen) return raw;   // sent to the DM: the numbers it was sent with
-  if (!('dmgSig' in raw)) {   // a roll from before the dice were kept: its damage stays, the AC hit follows
-    if (raw.d20 == null || noAttackRoll(ctx, line.sc)) return raw;
-    const thac0 = lineTHAC0(ctx, line);
-    return { ...raw, thac0, hitsAC: thac0 - raw.d20 };
-  }
-  const d = lineDamage(ctx, line);
-  const dmg = splitDice(d.expr), spell = splitDice(d.spell);
-  const total = (sig, dice, part) => (!sig ? null : sig === part.sig ? Math.max(dice + part.flat, 0) : undefined);
-  const dmgNow = total(raw.dmgSig, raw.dmgDice, dmg), spellNow = total(raw.spellSig, raw.spellDice, spell);
-  const out = {
-    ...raw, dmgExpr: d.expr,
-    dmg: dmgNow === undefined ? null : dmgNow ?? (dmg.sig ? null : dmg.flat || null),
-    spell: spellNow === undefined ? null : spellNow,
-    dmgStale: dmgNow === undefined || (!raw.dmgSig && !!dmg.sig) || spellNow === undefined || (!raw.spellSig && !!spell.sig),
-    thac0: null, hitsAC: null,
-  };
-  if (raw.d20 != null && !noAttackRoll(ctx, line.sc)) { out.thac0 = lineTHAC0(ctx, line); out.hitsAC = out.thac0 - raw.d20; }
-  return out;
+  // A roll from before several targets: one entry, against the line's first target
+  const each = raw.each || [{ ...raw, target: targetsOf(line)[0] }];
+  const thac0 = noAttackRoll(ctx, line.sc) ? null : lineTHAC0(ctx, line);
+  const scored = each.map(e => {
+    if (!('dmgSig' in e)) {   // from before the dice were kept: its damage stays, the AC hit follows
+      return e.d20 == null || thac0 == null ? e : { ...e, thac0, hitsAC: thac0 - e.d20 };
+    }
+    const d = lineDamage(ctx, line.sc, e.target);
+    const dmg = splitDice(d.expr), spell = splitDice(d.spell);
+    const total = (sig, dice, part) => (!sig ? null : sig === part.sig ? Math.max(dice + part.flat, 0) : undefined);
+    const dmgNow = total(e.dmgSig, e.dmgDice, dmg), spellNow = total(e.spellSig, e.spellDice, spell);
+    return {
+      ...e, dmgExpr: d.expr,
+      dmg: dmgNow === undefined ? null : dmgNow ?? (dmg.sig ? null : dmg.flat || null),
+      spell: spellNow === undefined ? null : spellNow,
+      dmgStale: dmgNow === undefined || (!e.dmgSig && !!dmg.sig) || spellNow === undefined || (!e.spellSig && !!spell.sig),
+      thac0: e.d20 != null ? thac0 : null, hitsAC: e.d20 != null && thac0 != null ? thac0 - e.d20 : null,
+    };
+  });
+  return { kind: raw.kind || lineKind(ctx, line.sc), each: scored, dmgStale: scored.some(e => e.dmgStale) };
 }
-// Rolls the damage dice again, keeping the d20 (after dmgStale)
+// Rolls the damage dice again where they changed, keeping the d20s (after dmgStale)
 function rerollDamage(ctx, line, raw, rand = Math.random) {
-  const d = lineDamage(ctx, line);
-  const dmgSig = splitDice(d.expr).sig, spellSig = splitDice(d.spell).sig;
-  return scoreRoll(ctx, line, { ...raw, dmgSig, dmgDice: rollSig(dmgSig, rand), spellSig, spellDice: rollSig(spellSig, rand) });
+  const cur = scoreRoll(ctx, line, raw);
+  const shared = cur.kind === 'area' ? damageDice(ctx, line.sc, cur.each[0] && cur.each[0].target, rand) : null;
+  const each = cur.each.map(e => (e.dmgStale ? { ...e, ...(shared || damageDice(ctx, line.sc, e.target, rand)) } : e));
+  return scoreRoll(ctx, line, { kind: cur.kind, each });
 }
 
 // The DM's side: did it hit this AC? Good Hits and Bad Misses: a natural 20
@@ -1641,18 +1669,22 @@ function judgeRoll(roll, ac) {
   };
 }
 
-// What to say at the table, for one line
+// What to say at the table, for one line (each target in turn)
 const acText = n => (n < 0 ? `−${-n}` : String(n));
+const whoText = t => (t ? t.label || t.name || 'target' : 'no target');
 function lineSay(line) {
-  const r = line.roll;
-  const t = line.set.target ? line.set.target.label || line.set.target.name || 'target' : 'no target';
-  if (!r) return `${line.label}: vs ${t}`;
-  if (r.d20 == null) return `${line.label}: vs ${t}, ${r.dmg ?? '—'} damage (target saves)`;
-  const nat = r.d20 === 20 ? ' (natural 20)' : r.d20 === 1 ? ' (natural 1)' : '';
-  return `${line.label}: vs ${t}, d20 ${r.d20}${nat}, hits AC ${acText(r.hitsAC)} or worse, ${r.dmg ?? '—'} damage${r.spell != null ? ` + spell ${r.spell}` : ''}`;
+  const targets = line.set.targets && line.set.targets.length ? line.set.targets : [null];
+  if (!line.roll) return `${line.label}: vs ${targets.map(whoText).join(', ')}`;
+  const parts = line.roll.each.map(r => {
+    const t = whoText(r.target);
+    if (r.d20 == null) return `vs ${t}, ${r.dmg ?? '—'} damage (${line.roll.kind === 'area' ? 'target saves' : 'no save'})`;
+    const nat = r.d20 === 20 ? ' (natural 20)' : r.d20 === 1 ? ' (natural 1)' : '';
+    return `vs ${t}, d20 ${r.d20}${nat}, hits AC ${acText(r.hitsAC)} or worse, ${r.dmg ?? '—'} damage${r.spell != null ? ` + spell ${r.spell}` : ''}`;
+  });
+  return `${line.label}: ${parts.join('; ')}`;
 }
 
-return { ROUND_MODS, MOVE_MULTS, newRound, roundQueue, queueAttack, unqueueAttack, attackSpeed, roundLines, lineToHit, roundACPenalty, actOn, rollDice, lineTHAC0, splitDice, rollLine, scoreRoll, rerollDamage, judgeRoll, lineSay };
+return { ROUND_MODS, MOVE_MULTS, newRound, roundQueue, queueAttack, unqueueAttack, attackSpeed, roundLines, lineToHit, roundACPenalty, actOn, rollDice, lineTHAC0, splitDice, lineKind, rollLine, scoreRoll, rerollDamage, judgeRoll, lineSay };
 })();
 // ── rules/character ──
 __m["rules/character"] = (() => {

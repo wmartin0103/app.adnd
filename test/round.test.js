@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { scenarioContext } from '../src/rules/scenarios.js';
-import { newRound, roundLines, lineTHAC0, judgeRoll, actOn, rollLine, rollDice, lineToHit, roundACPenalty, queueAttack, unqueueAttack, roundQueue, rerollDamage, lineSay } from '../src/rules/round.js';
+import { newRound, roundLines, lineTHAC0, judgeRoll, actOn, rollLine, rollDice, lineToHit, roundACPenalty, queueAttack, unqueueAttack, roundQueue, rerollDamage, lineSay, lineKind } from '../src/rules/round.js';
 import { createRoundSync } from '../src/round-sync.js';
 
 const load = f => JSON.parse(readFileSync(new URL(`../samples/${f}`, import.meta.url)));
@@ -15,18 +15,20 @@ const orc = { id: 'B1', label: 'B1', size: 'sm' };
 const shaman = { id: 'B2', label: 'B2', size: 'sm' };
 // Dice that always come up the same way
 const withAttacks = (rec, ...ids) => ids.reduce(queueAttack, rec);
+// A roll's entry for its only target
+const one = r => r.each[0];
 const fixed = (...vals) => { let i = 0; return () => vals[Math.min(i++, vals.length - 1)]; };
 
 test('one line for each attack added, each set on its own', () => {
   const rec = { ...withAttacks(newRound('Rifiyr'), 'sc-1', 'sc-1'), lines: { q1: { target: orc, flanking: true } } };   // Long bow, flight, twice (2/1)
   let lines = roundLines(ctxR, rec, rifiyr.__scenarios);
   // The 2nd shot doesn't copy the 1st: no target, no conditions until chosen
-  assert.deepEqual(lines.map(l => [l.label, l.set.target && l.set.target.label, l.set.flanking]), [['1st', 'B1', true], ['2nd', null, false]]);
+  assert.deepEqual(lines.map(l => [l.label, l.set.targets.map(t => t.label), l.set.flanking]), [['1st', ['B1'], true], ['2nd', [], false]]);
   assert.deepEqual(lines.map(l => lineTHAC0(ctxR, l)), [14, 16]);   // THAC0 16, flanking +2
   // The 2nd shot at the shaman, from behind: rear attack +2
   rec.lines.q2 = { target: shaman, rear: true };
   lines = roundLines(ctxR, rec, rifiyr.__scenarios);
-  assert.deepEqual(lines.map(l => [l.set.target.label, lineTHAC0(ctxR, l)]), [['B1', 14], ['B2', 14]]);
+  assert.deepEqual(lines.map(l => [l.set.targets[0].label, lineTHAC0(ctxR, l)]), [['B1', 14], ['B2', 14]]);
   // Moving first: no extra attacks
   assert.equal(roundLines(ctxR, { ...rec, you: { ...rec.you, moveFirst: true } }, rifiyr.__scenarios).length, 1);
 });
@@ -40,7 +42,7 @@ test('the round is the attacks the player adds, each marked extra or not', () =>
     [['q1', '1st', 'Dagger, melee', false], ['q2', '2nd', 'Dagger, melee', true], ['q3', '3rd', 'Off-hand dagger', true]]);
   // Taking one out takes its settings with it; the others keep theirs; the next one added gets a new id
   const out = unqueueAttack({ ...rec, lines: { q2: { target: orc }, q3: { target: shaman } } }, 'q2');
-  assert.deepEqual([out.queue.map(q => q.qid), roundLines(ctxJ, out, jaque.__scenarios).map(l => l.set.target)], [['q1', 'q3'], [null, shaman]]);
+  assert.deepEqual([out.queue.map(q => q.qid), roundLines(ctxJ, out, jaque.__scenarios).map(l => l.set.targets[0] || null)], [['q1', 'q3'], [null, shaman]]);
   assert.equal(queueAttack(out, 'sc-1').queue[2].qid, 'q4');
   // A record from before the queue: its one attack
   assert.deepEqual(roundQueue({ scenarioId: 'sc-1' }).map(q => q.scenarioId), ['sc-1']);
@@ -72,22 +74,23 @@ test('when the character acts: roll + speed + this round\'s adjustments', () => 
 test('rolling a line on the sheet, and the DM judging it against the AC', () => {
   const rec = { ...withAttacks(newRound('Rifiyr'), 'sc-8'), lines: { q1: { target: orc } } };   // Long bow, sheaf: 1d8, THAC0 16
   const [line] = roundLines(ctxR, rec, rifiyr.__scenarios);
-  const r = rollLine(ctxR, line, fixed(0.5, 0.99));                 // d20 11, 1d8 → 8
-  assert.deepEqual([r.d20, r.thac0, r.hitsAC, r.pct, r.dmg], [11, 16, 5, null, 8]);
-  assert.equal(lineSay({ ...line, roll: r }), '1st: vs B1, d20 11, hits AC 5 or worse, 8 damage');
+  const roll = rollLine(ctxR, line, fixed(0.5, 0.99));              // d20 11, 1d8 → 8
+  const r = one(roll);
+  assert.deepEqual([roll.kind, r.target.id, r.d20, r.thac0, r.hitsAC, r.pct, r.dmg], ['attack', 'B1', 11, 16, 5, null, 8]);
+  assert.equal(lineSay({ ...line, roll }), '1st: vs B1, d20 11, hits AC 5 or worse, 8 damage');
   // The DM's page, which knows B1 is AC 6: a hit (needs 10)
   assert.deepEqual(judgeRoll(r, 6), { need: 10, hit: true, crit: false, fumble: false });
   assert.equal(judgeRoll(r, 4).hit, false);
   // A natural 20 also rolls d%; it's a Good Hit only if it would have hit anyway
-  const n20 = rollLine(ctxR, line, fixed(0.99, 0.42, 0));
+  const n20 = one(rollLine(ctxR, line, fixed(0.99, 0.42, 0)));
   assert.deepEqual([n20.d20, n20.pct], [20, 43]);
   assert.deepEqual([judgeRoll(n20, 6).crit, judgeRoll(n20, -10).crit, judgeRoll(n20, -10).hit], [true, false, true]);
   // A natural 1: a Bad Miss only if it would have missed anyway
-  const n1 = rollLine(ctxR, line, fixed(0, 0.1));
+  const n1 = one(rollLine(ctxR, line, fixed(0, 0.1)));
   assert.deepEqual([judgeRoll(n1, 6).fumble, judgeRoll(n1, 20).fumble, judgeRoll(n1, 20).hit], [true, false, false]);
   // A spell with no attack roll: just damage, and it counts
   const [mm] = roundLines(ctxR, withAttacks(newRound('Rifiyr'), 'sc-3'), rifiyr.__scenarios);
-  const m = rollLine(ctxR, mm, fixed(0.99));
+  const m = one(rollLine(ctxR, mm, fixed(0.99)));
   assert.deepEqual([m.d20, m.dmg, judgeRoll(m, 6).hit], [null, 4, true]);
   assert.equal(rollDice('2d4+1', fixed(0.99)), 9);
 });
@@ -99,24 +102,48 @@ test('after rolling, the numbers follow the sheet; the dice stay', () => {
   // Flanking after the roll: THAC0 14, so it hits AC 3 or worse; same d20
   rec.lines.q1.flanking = true;
   let [now] = roundLines(ctxR, rec, rifiyr.__scenarios);
-  assert.deepEqual([now.roll.d20, now.roll.thac0, now.roll.hitsAC, now.roll.dmg], [11, 14, 3, 8]);
+  assert.deepEqual([one(now.roll).d20, one(now.roll).thac0, one(now.roll).hitsAC, one(now.roll).dmg], [11, 14, 3, 8]);
   // Sent to the DM (frozen): it keeps those numbers whatever changes next
   const sent = { ...rec, lines: { q1: { ...rec.lines.q1, flanking: false, roll: { ...now.roll, frozen: true } } } };
-  assert.deepEqual([roundLines(ctxR, sent, rifiyr.__scenarios)[0].roll.thac0, roundLines(ctxR, sent, rifiyr.__scenarios)[0].roll.hitsAC], [14, 3]);
+  assert.deepEqual([one(roundLines(ctxR, sent, rifiyr.__scenarios)[0].roll).thac0, one(roundLines(ctxR, sent, rifiyr.__scenarios)[0].roll).hitsAC], [14, 3]);
   // A damage bonus taken away after the roll: same dice, less damage
   const plus2 = rifiyr.__scenarios.map(s => (s.id === 'sc-8' ? { ...s, dmgMod: '2' } : s));
   const two = { ...rec, lines: { q1: { ...rec.lines.q1, roll: rollLine(ctxR, roundLines(ctxR, rec, plus2)[0], fixed(0.5, 0.99)) } } };
-  assert.equal(roundLines(ctxR, two, plus2)[0].roll.dmg, 10);
-  assert.equal(roundLines(ctxR, two, rifiyr.__scenarios)[0].roll.dmg, 8);
+  assert.equal(one(roundLines(ctxR, two, plus2)[0].roll).dmg, 10);
+  assert.equal(one(roundLines(ctxR, two, rifiyr.__scenarios)[0].roll).dmg, 8);
   // A Large target with other dice (dagger 1d4 → 1d3): the damage needs rolling again
   const dagger = rifiyr.__scenarios.find(s => s.name === 'Dagger').id;
   const recD = { ...withAttacks(newRound('Rifiyr'), dagger), lines: { q1: { target: orc } } };
   recD.lines.q1.roll = rollLine(ctxR, roundLines(ctxR, recD, rifiyr.__scenarios)[0], fixed(0.5, 0.99));
-  recD.lines.q1.target = { ...orc, size: 'l' };
+  recD.lines.q1.roll.each[0].target = { ...orc, size: 'l' };
   [now] = roundLines(ctxR, recD, rifiyr.__scenarios);
-  assert.deepEqual([now.roll.d20, now.roll.dmgStale, now.roll.dmg], [11, true, null]);
+  assert.deepEqual([one(now.roll).d20, now.roll.dmgStale, one(now.roll).dmg], [11, true, null]);
   const again = rerollDamage(ctxR, now, recD.lines.q1.roll, fixed(0.99));
-  assert.deepEqual([again.d20, again.dmgStale, again.dmg], [11, false, 3]);
+  assert.deepEqual([one(again).d20, again.dmgStale, one(again).dmg], [11, false, 3]);
+});
+
+test('several targets: a d20 each, one area roll for all, or damage each', () => {
+  // An attack that rolls to hit: its own d20 and damage for each target
+  const bow = { ...withAttacks(newRound('Rifiyr'), 'sc-8'), lines: { q1: { targets: [orc, shaman] } } };   // Long bow, sheaf: 1d8
+  const [line] = roundLines(ctxR, bow, rifiyr.__scenarios);
+  const roll = rollLine(ctxR, line, fixed(0.5, 0.99, 0.1, 0));       // B1: d20 11, 8 · B2: d20 3, 1
+  assert.deepEqual(roll.each.map(e => [e.target.id, e.d20, e.hitsAC, e.dmg]), [['B1', 11, 5, 8], ['B2', 3, 13, 1]]);
+  assert.equal(lineSay({ ...line, roll }), '1st: vs B1, d20 11, hits AC 5 or worse, 8 damage; vs B2, d20 3, hits AC 13 or worse, 1 damage');
+  // The DM judges each against its own AC
+  assert.deepEqual(roll.each.map((e, i) => judgeRoll(e, [6, 6][i]).hit), [true, false]);
+  // A spell with no attack roll and no save (Magic Missile): damage for each target
+  const mm = { ...withAttacks(newRound('Rifiyr'), 'sc-3'), lines: { q1: { targets: [orc, shaman] } } };
+  const [mmLine] = roundLines(ctxR, mm, rifiyr.__scenarios);
+  assert.equal(lineKind(ctxR, mmLine.sc), 'split');
+  const mmRoll = rollLine(ctxR, mmLine, fixed(0.99, 0));
+  assert.deepEqual(mmRoll.each.map(e => [e.d20, e.dmg]), [[null, 4], [null, 1]]);
+  // An area spell the targets save against: one damage roll for all of them
+  const areaScenarios = rifiyr.__scenarios.map(x => (x.id === 'sc-3' ? { ...x, spell: { save: '½' } } : x));
+  const [areaLine] = roundLines(ctxR, mm, areaScenarios);
+  assert.equal(lineKind(ctxR, areaLine.sc), 'area');
+  const area = rollLine(ctxR, areaLine, fixed(0.99, 0));
+  assert.deepEqual(area.each.map(e => e.dmg), [4, 4]);
+  assert.match(lineSay({ ...areaLine, roll: area }), /target saves/);
 });
 
 test('round sync: the DM\'s round and a sheet\'s record reach the other page', async () => {

@@ -823,6 +823,9 @@
     .roll-hit-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; padding: 0.4rem 0.85rem 0.4rem 0.6rem; box-shadow: 0 2px 0 #5a1d0b; }
     .roll-hit-btn svg { width: 1.15rem; height: 1.15rem; }
     .roll-hit-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 #5a1d0b; }
+    .hit-rolls { flex-basis: 100%; display: grid; gap: 0.45rem; justify-items: start; }
+    .hit-rolls > .hit-roll { width: 100%; box-sizing: border-box; }
+    .hit-who { font-family: var(--font-display); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted); min-width: 4.5rem; }
     .hit-roll { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1.5rem; padding: 0.55rem 0.9rem; border-radius: var(--radius);
       background: linear-gradient(100deg, #fbf3ee, var(--surface) 70%); border: 1px solid #e9cfc2; }
     .hit-die { position: relative; width: 3.4rem; height: 3.4rem; flex: none; color: var(--accent); }
@@ -4247,10 +4250,16 @@ const {scenarioType, scenarioSpell, scenarioWeapon, spellArrow, castSpeed, scena
 // character acts. "extra": the player marks it as an extra attack, which the
 // DM's page places by its extra-attack setting.
 //
-// Each attack line: { target: { id, label, size }, flanking, rear, ground,
+// Each attack line: { targets: [{ id, label, size }], flanking, rear, ground,
 // charging, other, roll }. A target is a foe as players know it: the DM's
 // fixed ID for it and its size, never its AC or the DM's name for it. Every
-// line is set on its own: target and conditions are deliberate choices.
+// line is set on its own: targets and conditions are deliberate choices.
+//
+// Several targets, the 2e way: an attack that rolls to hit rolls a d20 (and
+// damage) for each target, as every attack is its own roll; an area spell the
+// targets save against (Fireball) rolls its damage once for all of them; a
+// spell with neither (Magic Missile: missiles split among targets) rolls
+// damage for each target.
 // The DM decides where extra attacks go in the order; the record only says
 // which attacks there are.
 
@@ -4261,7 +4270,9 @@ const ROUND_MODS = {
   groundToHit: 1, groundInit: 1, moveFirstInit: 3, setVsChargeInit: 2,
 };
 const MOVE_MULTS = ['1', '1.5', '2', '3', '4'];
-const blankLine = () => ({ target: null, flanking: false, rear: false, ground: '', charging: false, other: 0, roll: null });
+const blankLine = () => ({ targets: [], flanking: false, rear: false, ground: '', charging: false, other: 0, roll: null });
+// A line's targets (a line from before there could be several had one: target)
+const ownTargets = own => (own.targets && own.targets.length ? own.targets : own.target ? [own.target] : []);
 
 const newRound = (character, round = 1) => ({
   character, round, init: { roll: null, adj: 0 },
@@ -4303,7 +4314,7 @@ function roundLines(ctx, rec, scenarios) {
   const allowed = rec.you && rec.you.moveFirst ? keys.slice(0, 1) : keys;
   return allowed.map(k => {
     const own = { ...blankLine(), ...(rec.lines || {})[k.key] };
-    const set = { target: own.target, flanking: !!own.flanking, rear: !!own.rear, ground: own.ground || '', charging: !!own.charging, other: modNum(own.other) };
+    const set = { targets: ownTargets(own), flanking: !!own.flanking, rear: !!own.rear, ground: own.ground || '', charging: !!own.charging, other: modNum(own.other) };
     return { key: k.key, qid: k.qid, label: k.label, sc: k.sc, extra: k.extra, set, roll: own.roll ? scoreRoll(ctx, { sc: k.sc, set }, own.roll) : null };
   });
 }
@@ -4370,60 +4381,80 @@ function splitDice(expr) {
   });
   return { sig: dice.join('+'), flat };
 }
-const lineDamage = (ctx, line) => {
-  const dmg = scenarioDamage(ctx, line.sc);
-  const big = line.set.target && line.set.target.size === 'l';
+// The damage dice against one target (its size picks S/M or L)
+const lineDamage = (ctx, sc, target) => {
+  const dmg = scenarioDamage(ctx, sc);
+  const big = target && target.size === 'l';
   return { expr: dmg ? (big ? dmg.l : dmg.sm) : '', spell: dmg && dmg.spell ? dmg.spell : '' };
 };
 const rollSig = (sig, rand) => (sig ? rollDice(sig, rand) : null);
-
-// Rolls one line on the sheet: the d20, d% too on a natural 20 or 1 (for the
-// DM's Good Hits / Bad Misses tables, if it turns out to be one), and the
-// damage dice by the target's size, which the DM counts only on a hit. A
-// spell with no attack roll (the target saves) just rolls its damage. Only
-// the dice are kept: scoreRoll adds the sheet's numbers as they are now.
-function rollLine(ctx, line, rand = Math.random) {
-  const d = lineDamage(ctx, line);
+// How a line with several targets resolves: 'attack' (a d20 each), 'area'
+// (one damage roll, each target saves) or 'split' (damage for each target)
+function lineKind(ctx, sc) {
+  if (!noAttackRoll(ctx, sc)) return 'attack';
+  const sp = scenarioSpell(ctx, sc);
+  const save = String((sp && sp.save) || '').trim();
+  return save && !/^(none|n\/a|-|—)$/i.test(save) ? 'area' : 'split';
+}
+const targetsOf = line => (line.set.targets && line.set.targets.length ? line.set.targets : [null]);
+const damageDice = (ctx, sc, target, rand) => {
+  const d = lineDamage(ctx, sc, target);
   const dmgSig = splitDice(d.expr).sig, spellSig = splitDice(d.spell).sig;
-  const raw = { d20: null, pct: null };
-  if (!noAttackRoll(ctx, line.sc)) {
-    raw.d20 = 1 + Math.floor(rand() * 20);
-    raw.pct = raw.d20 === 20 || raw.d20 === 1 ? 1 + Math.floor(rand() * 100) : null;
-  }
-  Object.assign(raw, { dmgSig, dmgDice: rollSig(dmgSig, rand), spellSig, spellDice: rollSig(spellSig, rand) });
-  return scoreRoll(ctx, line, raw);
+  return { dmgSig, dmgDice: rollSig(dmgSig, rand), spellSig, spellDice: rollSig(spellSig, rand) };
+};
+
+// Rolls one line on the sheet: for each target, the d20, d% too on a natural
+// 20 or 1 (for the DM's Good Hits / Bad Misses tables, if it turns out to be
+// one), and the damage dice by that target's size, which the DM counts only on
+// a hit. A spell with no attack roll just rolls its damage (once for an area
+// spell). Only the dice are kept: scoreRoll adds the sheet's numbers as they are now.
+function rollLine(ctx, line, rand = Math.random) {
+  const kind = lineKind(ctx, line.sc);
+  const shared = kind === 'area' ? damageDice(ctx, line.sc, targetsOf(line)[0], rand) : null;
+  const each = targetsOf(line).map(target => {
+    const raw = { target, d20: null, pct: null };
+    if (kind === 'attack') {
+      raw.d20 = 1 + Math.floor(rand() * 20);
+      raw.pct = raw.d20 === 20 || raw.d20 === 1 ? 1 + Math.floor(rand() * 100) : null;
+    }
+    return Object.assign(raw, shared || damageDice(ctx, line.sc, target, rand));
+  });
+  return scoreRoll(ctx, line, { kind, each });
 }
 // A roll with the sheet's current numbers: change an effect (Bless off) or the
-// target after rolling and the THAC0, AC hit and damage follow, until it's
+// conditions after rolling and the THAC0, AC hit and damage follow, until it's
 // sent to the DM (frozen). If the damage dice themselves changed (another
 // size of target), dmgStale: roll them again.
 function scoreRoll(ctx, line, raw) {
   if (!raw) return null;
   if (raw.frozen) return raw;   // sent to the DM: the numbers it was sent with
-  if (!('dmgSig' in raw)) {   // a roll from before the dice were kept: its damage stays, the AC hit follows
-    if (raw.d20 == null || noAttackRoll(ctx, line.sc)) return raw;
-    const thac0 = lineTHAC0(ctx, line);
-    return { ...raw, thac0, hitsAC: thac0 - raw.d20 };
-  }
-  const d = lineDamage(ctx, line);
-  const dmg = splitDice(d.expr), spell = splitDice(d.spell);
-  const total = (sig, dice, part) => (!sig ? null : sig === part.sig ? Math.max(dice + part.flat, 0) : undefined);
-  const dmgNow = total(raw.dmgSig, raw.dmgDice, dmg), spellNow = total(raw.spellSig, raw.spellDice, spell);
-  const out = {
-    ...raw, dmgExpr: d.expr,
-    dmg: dmgNow === undefined ? null : dmgNow ?? (dmg.sig ? null : dmg.flat || null),
-    spell: spellNow === undefined ? null : spellNow,
-    dmgStale: dmgNow === undefined || (!raw.dmgSig && !!dmg.sig) || spellNow === undefined || (!raw.spellSig && !!spell.sig),
-    thac0: null, hitsAC: null,
-  };
-  if (raw.d20 != null && !noAttackRoll(ctx, line.sc)) { out.thac0 = lineTHAC0(ctx, line); out.hitsAC = out.thac0 - raw.d20; }
-  return out;
+  // A roll from before several targets: one entry, against the line's first target
+  const each = raw.each || [{ ...raw, target: targetsOf(line)[0] }];
+  const thac0 = noAttackRoll(ctx, line.sc) ? null : lineTHAC0(ctx, line);
+  const scored = each.map(e => {
+    if (!('dmgSig' in e)) {   // from before the dice were kept: its damage stays, the AC hit follows
+      return e.d20 == null || thac0 == null ? e : { ...e, thac0, hitsAC: thac0 - e.d20 };
+    }
+    const d = lineDamage(ctx, line.sc, e.target);
+    const dmg = splitDice(d.expr), spell = splitDice(d.spell);
+    const total = (sig, dice, part) => (!sig ? null : sig === part.sig ? Math.max(dice + part.flat, 0) : undefined);
+    const dmgNow = total(e.dmgSig, e.dmgDice, dmg), spellNow = total(e.spellSig, e.spellDice, spell);
+    return {
+      ...e, dmgExpr: d.expr,
+      dmg: dmgNow === undefined ? null : dmgNow ?? (dmg.sig ? null : dmg.flat || null),
+      spell: spellNow === undefined ? null : spellNow,
+      dmgStale: dmgNow === undefined || (!e.dmgSig && !!dmg.sig) || spellNow === undefined || (!e.spellSig && !!spell.sig),
+      thac0: e.d20 != null ? thac0 : null, hitsAC: e.d20 != null && thac0 != null ? thac0 - e.d20 : null,
+    };
+  });
+  return { kind: raw.kind || lineKind(ctx, line.sc), each: scored, dmgStale: scored.some(e => e.dmgStale) };
 }
-// Rolls the damage dice again, keeping the d20 (after dmgStale)
+// Rolls the damage dice again where they changed, keeping the d20s (after dmgStale)
 function rerollDamage(ctx, line, raw, rand = Math.random) {
-  const d = lineDamage(ctx, line);
-  const dmgSig = splitDice(d.expr).sig, spellSig = splitDice(d.spell).sig;
-  return scoreRoll(ctx, line, { ...raw, dmgSig, dmgDice: rollSig(dmgSig, rand), spellSig, spellDice: rollSig(spellSig, rand) });
+  const cur = scoreRoll(ctx, line, raw);
+  const shared = cur.kind === 'area' ? damageDice(ctx, line.sc, cur.each[0] && cur.each[0].target, rand) : null;
+  const each = cur.each.map(e => (e.dmgStale ? { ...e, ...(shared || damageDice(ctx, line.sc, e.target, rand)) } : e));
+  return scoreRoll(ctx, line, { kind: cur.kind, each });
 }
 
 // The DM's side: did it hit this AC? Good Hits and Bad Misses: a natural 20
@@ -4441,18 +4472,22 @@ function judgeRoll(roll, ac) {
   };
 }
 
-// What to say at the table, for one line
+// What to say at the table, for one line (each target in turn)
 const acText = n => (n < 0 ? `−${-n}` : String(n));
+const whoText = t => (t ? t.label || t.name || 'target' : 'no target');
 function lineSay(line) {
-  const r = line.roll;
-  const t = line.set.target ? line.set.target.label || line.set.target.name || 'target' : 'no target';
-  if (!r) return `${line.label}: vs ${t}`;
-  if (r.d20 == null) return `${line.label}: vs ${t}, ${r.dmg ?? '—'} damage (target saves)`;
-  const nat = r.d20 === 20 ? ' (natural 20)' : r.d20 === 1 ? ' (natural 1)' : '';
-  return `${line.label}: vs ${t}, d20 ${r.d20}${nat}, hits AC ${acText(r.hitsAC)} or worse, ${r.dmg ?? '—'} damage${r.spell != null ? ` + spell ${r.spell}` : ''}`;
+  const targets = line.set.targets && line.set.targets.length ? line.set.targets : [null];
+  if (!line.roll) return `${line.label}: vs ${targets.map(whoText).join(', ')}`;
+  const parts = line.roll.each.map(r => {
+    const t = whoText(r.target);
+    if (r.d20 == null) return `vs ${t}, ${r.dmg ?? '—'} damage (${line.roll.kind === 'area' ? 'target saves' : 'no save'})`;
+    const nat = r.d20 === 20 ? ' (natural 20)' : r.d20 === 1 ? ' (natural 1)' : '';
+    return `vs ${t}, d20 ${r.d20}${nat}, hits AC ${acText(r.hitsAC)} or worse, ${r.dmg ?? '—'} damage${r.spell != null ? ` + spell ${r.spell}` : ''}`;
+  });
+  return `${line.label}: ${parts.join('; ')}`;
 }
 
-return { ROUND_MODS, MOVE_MULTS, newRound, roundQueue, queueAttack, unqueueAttack, attackSpeed, roundLines, lineToHit, roundACPenalty, actOn, rollDice, lineTHAC0, splitDice, rollLine, scoreRoll, rerollDamage, judgeRoll, lineSay };
+return { ROUND_MODS, MOVE_MULTS, newRound, roundQueue, queueAttack, unqueueAttack, attackSpeed, roundLines, lineToHit, roundACPenalty, actOn, rollDice, lineTHAC0, splitDice, lineKind, rollLine, scoreRoll, rerollDamage, judgeRoll, lineSay };
 })();
 // ── rules/character ──
 __m["rules/character"] = (() => {
@@ -5556,7 +5591,7 @@ return { CLOUD_URL, CLOUD_KEY, cloudClient, cloudSession, createCloudRoundSync, 
 window.SheetSpells = { findSpell: __m["rules/spells"].findSpell };
 window.SheetScenarios = { modNum: __m["rules/scenarios"].modNum, signed: __m["rules/scenarios"].signed, ATTACK_TYPES: __m["rules/scenarios"].ATTACK_TYPES, RATE_OPTIONS: __m["rules/scenarios"].RATE_OPTIONS, scenarioRate: __m["rules/scenarios"].scenarioRate, scenarioType: __m["rules/scenarios"].scenarioType, scenarioSpell: __m["rules/scenarios"].scenarioSpell, scenarioAbility: __m["rules/scenarios"].scenarioAbility, activeEffectsFor: __m["rules/scenarios"].activeEffectsFor, scenarioDamage: __m["rules/scenarios"].scenarioDamage, scenarioBreakdown: __m["rules/scenarios"].scenarioBreakdown, normalizeEffects: __m["rules/scenarios"].normalizeEffects, effectOption: __m["rules/scenarios"].effectOption, isBowcaster: __m["rules/scenarios"].isBowcaster, spellArrow: __m["rules/scenarios"].spellArrow, usesAmmo: __m["rules/scenarios"].usesAmmo, weaponAmmoType: __m["rules/scenarios"].weaponAmmoType, ammoType: __m["rules/scenarios"].ammoType, ammoFor: __m["rules/scenarios"].ammoFor, scenarioAmmo: __m["rules/scenarios"].scenarioAmmo, AMMO_TYPES: __m["rules/scenarios"].AMMO_TYPES };
 window.SheetKits = { HOUSE_KITS: __m["rules/kits"].HOUSE_KITS, classKit: __m["rules/kits"].classKit };
-window.SheetRound = { ROUND_MODS: __m["rules/round"].ROUND_MODS, MOVE_MULTS: __m["rules/round"].MOVE_MULTS, newRound: __m["rules/round"].newRound, roundQueue: __m["rules/round"].roundQueue, queueAttack: __m["rules/round"].queueAttack, unqueueAttack: __m["rules/round"].unqueueAttack, roundLines: __m["rules/round"].roundLines, lineToHit: __m["rules/round"].lineToHit, roundACPenalty: __m["rules/round"].roundACPenalty, lineTHAC0: __m["rules/round"].lineTHAC0, judgeRoll: __m["rules/round"].judgeRoll, actOn: __m["rules/round"].actOn, attackSpeed: __m["rules/round"].attackSpeed, rollLine: __m["rules/round"].rollLine, scoreRoll: __m["rules/round"].scoreRoll, rerollDamage: __m["rules/round"].rerollDamage, lineSay: __m["rules/round"].lineSay };
+window.SheetRound = { ROUND_MODS: __m["rules/round"].ROUND_MODS, MOVE_MULTS: __m["rules/round"].MOVE_MULTS, newRound: __m["rules/round"].newRound, roundQueue: __m["rules/round"].roundQueue, queueAttack: __m["rules/round"].queueAttack, unqueueAttack: __m["rules/round"].unqueueAttack, roundLines: __m["rules/round"].roundLines, lineToHit: __m["rules/round"].lineToHit, roundACPenalty: __m["rules/round"].roundACPenalty, lineTHAC0: __m["rules/round"].lineTHAC0, judgeRoll: __m["rules/round"].judgeRoll, actOn: __m["rules/round"].actOn, attackSpeed: __m["rules/round"].attackSpeed, rollLine: __m["rules/round"].rollLine, scoreRoll: __m["rules/round"].scoreRoll, rerollDamage: __m["rules/round"].rerollDamage, lineKind: __m["rules/round"].lineKind, lineSay: __m["rules/round"].lineSay };
 window.RoundSync = { createRoundSync: __m["round-sync"].createRoundSync };
 window.Cloud = { cloudClient: __m["cloud"].cloudClient, cloudSession: __m["cloud"].cloudSession, createCloudRoundSync: __m["cloud"].createCloudRoundSync, mountCloud: __m["cloud"].mountCloud };
 window.SheetRules = { PHB_WEAPONS: __m["rules/weapons"].PHB_WEAPONS };
@@ -7481,8 +7516,8 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         lines: lines.map((l, i) => {
           return {
             key: l.key, label: queued.length > 1 ? `${l.sc.name || 'Attack'} ${l.label}` : l.label, extra: !!l.extra, scenario: l.sc.name || '',
-            target: l.set.target ? { id: l.set.target.id, label: l.set.target.label, size: l.set.target.size } : null,
-            tags: tags(l.set), thac0: l.roll && l.roll.frozen ? l.roll.thac0 : SheetRound.lineTHAC0(ctx, l), roll: l.roll || null,
+            targets: l.set.targets.map(t => ({ id: t.id, label: t.label, size: t.size })),
+            tags: tags(l.set), thac0: l.roll && l.roll.frozen && l.roll.each ? l.roll.each[0].thac0 : SheetRound.lineTHAC0(ctx, l), roll: l.roll || null,
           };
         }),
       };
@@ -7702,35 +7737,48 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
     // after rolling changes them, and the panel flashes what changed)
     const shownRolls = {};
     function hitRoll(line, fresh, onReroll) {
-      const r = line.roll;
-      const nat = r.d20 === 20 ? 'crit' : r.d20 === 1 ? 'fumble' : '';
-      const el = document.createElement('div');
-      const was = shownRolls[line.key], now = { ac: r.hitsAC, dmg: r.dmg };
-      shownRolls[line.key] = now;
-      const moved = k => !fresh && was && was[k] !== now[k];
-      el.className = 'hit-roll' + (nat ? ` is-${nat}` : '') + (fresh ? ' is-fresh' : '');
-      el.setAttribute('role', 'status');
+      const roll = line.roll;
+      const wrap = document.createElement('div'); wrap.className = 'hit-rolls';
+      wrap.setAttribute('role', 'status'); wrap.setAttribute('aria-label', SheetRound.lineSay(line));
       const stat = (cls, label, value, sub) => `<span class="hit-stat ${cls}"><span class="hit-stat-label">${label}</span><span class="hit-stat-value">${escR(value)}</span>${sub ? `<span class="hit-stat-sub">${sub}</span>` : ''}</span>`;
       const acT = n => (n < 0 ? `−${-n}` : String(n));
-      const dmg = r.dmgStale ? '—' : `${r.dmg ?? '—'}`;
-      const dmgSub = r.dmgStale ? 'the damage dice changed'
-        : escR([r.dmgExpr, r.spell != null ? `+ spell ${r.spell}` : ''].filter(Boolean).join(' '));
-      const dmgCls = 'is-dmg' + (moved('dmg') ? ' is-updated' : '');
-      el.setAttribute('aria-label', SheetRound.lineSay(line));
-      if (r.d20 == null) {
-        el.innerHTML = stat(dmgCls, 'Damage', dmg, `${dmgSub}${dmgSub ? ' · ' : ''}target saves`);
+      const who = t => (t ? `${t.label}${t.size === 'l' && !/\(L\)/.test(t.label) ? ' (L)' : ''}` : 'No target');
+      const many = roll.each.length > 1;
+      const panel = (r, i, whoText) => {
+        const nat = r.d20 === 20 ? 'crit' : r.d20 === 1 ? 'fumble' : '';
+        const key = `${line.key}:${i}`, was = shownRolls[key], now = { ac: r.hitsAC, dmg: r.dmg };
+        shownRolls[key] = now;
+        const moved = k => !fresh && was && was[k] !== now[k];
+        const el = document.createElement('div');
+        el.className = 'hit-roll' + (nat ? ` is-${nat}` : '') + (fresh ? ' is-fresh' : '');
+        const dmg = r.dmgStale ? '—' : `${r.dmg ?? '—'}`;
+        const dmgSub = r.dmgStale ? 'the damage dice changed'
+          : escR([r.dmgExpr, r.spell != null ? `+ spell ${r.spell}` : ''].filter(Boolean).join(' '));
+        const dmgCls = 'is-dmg' + (moved('dmg') ? ' is-updated' : '');
+        const tag = whoText ? `<span class="hit-who">${escR(whoText)}</span>` : '';
+        if (r.d20 == null) {
+          const saves = roll.kind === 'area' ? 'each target saves' : 'no save';
+          el.innerHTML = tag + stat(dmgCls, 'Damage', dmg, `${dmgSub}${dmgSub ? ' · ' : ''}${saves}`);
+        } else {
+          el.innerHTML = tag + `<span class="hit-die">${D20_SVG}<span class="hit-die-num">${r.d20}</span></span>`
+            + stat(moved('ac') ? 'is-updated' : '', 'Hits AC', acT(r.hitsAC), 'or worse')
+            + stat(dmgCls, 'Damage', dmg, dmgSub + (r.dmgStale ? '' : nat === 'crit' ? ' · critical if it hits' : r.d20 !== 1 ? ' · if it hits' : ''))
+            + (nat === 'crit' ? '<span class="hit-nat">Natural 20 · Critical?</span>' : nat === 'fumble' ? '<span class="hit-nat">Natural 1</span>' : '');
+        }
+        return el;
+      };
+      if (roll.kind === 'area') {
+        // An area spell: one damage roll for everyone in it
+        wrap.appendChild(panel(roll.each[0], 0, many ? `vs ${roll.each.map(e => who(e.target)).join(', ')}` : ''));
       } else {
-        el.innerHTML = `<span class="hit-die">${D20_SVG}<span class="hit-die-num">${r.d20}</span></span>`
-          + stat(moved('ac') ? 'is-updated' : '', 'Hits AC', acT(r.hitsAC), 'or worse')
-          + stat(dmgCls, 'Damage', dmg, dmgSub + (r.dmgStale ? '' : nat === 'crit' ? ' · critical if it hits' : r.d20 !== 1 ? ' · if it hits' : ''))
-          + (nat === 'crit' ? '<span class="hit-nat">Natural 20 · Critical?</span>' : nat === 'fumble' ? '<span class="hit-nat">Natural 1</span>' : '');
+        roll.each.forEach((r, i) => wrap.appendChild(panel(r, i, many ? `vs ${who(r.target)}` : '')));
       }
-      if (r.dmgStale && onReroll) {
+      if (roll.dmgStale && onReroll) {
         const b = document.createElement('button'); b.type = 'button'; b.className = 'round-btn'; b.textContent = 'Roll damage';
         b.addEventListener('click', onReroll);
-        el.appendChild(b);
+        wrap.appendChild(b);
       }
-      return el;
+      return wrap;
     }
 
     function renderLines(rec, ctx, foes, q, all) {
@@ -7749,17 +7797,23 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         const tags = roundTags;
         if (line.roll) {
           const s = document.createElement('span'); s.className = 'round-note';
-          s.textContent = [line.set.target ? `vs ${line.set.target.label}${line.set.target.size === 'l' ? ' (L)' : ''}` : 'no target', ...tags(line.set)].join(' · ');
+          s.textContent = [line.set.targets.length ? `vs ${line.set.targets.map(t => t.label + (t.size === 'l' && !/\(L\)/.test(t.label) ? ' (L)' : '')).join(', ')}` : 'no target', ...tags(line.set)].join(' · ');
           row.appendChild(s);
         } else {
-          const t = line.set.target;
-          // Foes as players know them: the DM's fixed ID and size (never AC)
+          // Foes as players know them: the DM's fixed ID and size (never AC);
+          // several for an area spell, a sweep of small foes, or missiles split
           const foeLabel = f => f.label + (f.size === 'l' ? ' (L)' : '');
-          row.appendChild(pick(`${id}-target`, 'Target', [['', foes.length ? '— Choose —' : '— None —'], ...foes.map(f => [f.id, foeLabel(f)]), ['other', 'Other']], t ? t.id : '', v => {
-            const f = foes.find(x => x.id === v);
-            setOwn(line, { target: f ? { id: f.id, label: f.label, size: f.size || 'sm' } : v === 'other' ? { id: 'other', label: 'Other', size: 'sm' } : null });
+          const tOpts = [
+            ...foes.map(f => ({ key: f.id, label: foeLabel(f), t: { id: f.id, label: f.label, size: f.size || 'sm' } })),
+            { key: 'other-sm', label: 'Other (S/M)', t: { id: 'other-sm', label: 'Other', size: 'sm' } },
+            { key: 'other-l', label: 'Other (L)', t: { id: 'other-l', label: 'Other (L)', size: 'l' } },
+          ];
+          const chosen = line.set.targets.map(t => t.id);
+          row.appendChild(multi(`${id}-targets`, 'Targets', tOpts.map(o => ({ key: o.key, label: o.label, on: chosen.includes(o.key) })), (key, v) => {
+            const keep = line.set.targets.filter(t => t.id !== key);
+            const add = v ? tOpts.find(o => o.key === key).t : null;
+            setOwn(line, { targets: add ? [...keep, add] : keep, target: null });
           }));
-          if (t && t.id === 'other') row.appendChild(pick(`${id}-size`, 'Size', [['sm', 'S/M'], ['l', 'L']], t.size || 'sm', v => setOwn(line, { target: { ...t, size: v } })));
           row.append(
             pick(`${id}-ground`, 'Ground', [['', 'Level'], ['high', 'Higher'], ['low', 'Lower']], line.set.ground, v => setOwn(line, { ground: v })),
             multi(`${id}-cond`, 'Conditions', [
@@ -7769,9 +7823,9 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
             ], (key, v) => setOwn(line, { [key]: v })),
             pick(`${id}-other`, 'Other', OTHER_OPTS, String(line.set.other || 0), v => setOwn(line, { other: parseInt(v, 10) || 0 })));
         }
-        const thac0 = line.roll && line.roll.frozen ? line.roll.thac0 : SheetRound.lineTHAC0(ctx, line);
+        const thac0 = line.roll && line.roll.frozen && line.roll.each ? line.roll.each[0].thac0 : SheetRound.lineTHAC0(ctx, line);
         const n = document.createElement('span'); n.className = 'play-need';
-        n.textContent = thac0 == null ? 'Target saves' : `THAC0 ${thac0}`;
+        n.textContent = thac0 != null ? `THAC0 ${thac0}` : SheetRound.lineKind(ctx, line.sc) === 'area' ? 'Targets save' : 'No save';
         n.title = 'With this line\'s conditions. The DM decides the hit from the foe\'s AC.';
         row.appendChild(n);
         if (!line.roll) {
@@ -7779,7 +7833,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           b.innerHTML = `${D20_SVG}<span>${thac0 == null ? 'Roll damage' : 'Roll to hit'}</span>`;
           b.addEventListener('click', () => {
             // The card keeps what it was rolled with (no longer "same as above")
-            rec.lines[line.key] = { ...own(line.key), ...line.set, roll: SheetRound.rollLine(ctx, line) };
+            rec.lines[line.key] = { ...own(line.key), ...line.set, target: null, roll: SheetRound.rollLine(ctx, line) };
             freshRoll = line.key;
             saveRound(rec, false, line.key);   // once sent, the roll goes straight to the DM (later attacks are rolled when they happen)
             freshRoll = null;

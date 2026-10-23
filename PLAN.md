@@ -57,6 +57,13 @@ show **Send changes**. Rolls after sending go straight to the DM (and are then
 fixed: later effect changes no longer move them), so a player can
 send their actions and roll each attack when it happens.
 
+**Several targets (2e):** Targets is a select with checkboxes. An attack that
+rolls to hit rolls a d20 and damage per target; an area spell the targets
+save against (catalog `save` set: Fireball) rolls damage once for all; a spell
+with neither (Magic Missile) rolls damage per target. The DM's page judges
+each target against its own AC. No cleave (not a core 2e rule); missiles
+aren't counted, so two on one target is said at the table.
+
 **Later, if players ask for it:** typed-in rolls for physical dice (the d20,
 d% and damage), next to Roll to hit. Initiative already takes a typed roll.
 Crits: the sheet and the DM's page say "critical" on a natural 20 that

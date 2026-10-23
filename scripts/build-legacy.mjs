@@ -16,7 +16,7 @@ const END = '/* ── end sheet converter ── */';
 export const TARGETS = {
   'legacy/dm-helper.html': {
     SheetConverter: ['adapters/dm-helper', ['toDMHelper']],
-    SheetRound: ['rules/round', ['ROUND_MODS', 'MOVE_MULTS', 'newRound', 'roundQueue', 'queueAttack', 'unqueueAttack', 'roundLines', 'lineToHit', 'roundACPenalty', 'lineTHAC0', 'judgeRoll', 'actOn', 'attackSpeed', 'rollLine', 'scoreRoll', 'rerollDamage', 'lineSay']],
+    SheetRound: ['rules/round', ['ROUND_MODS', 'MOVE_MULTS', 'newRound', 'roundQueue', 'queueAttack', 'unqueueAttack', 'roundLines', 'lineToHit', 'roundACPenalty', 'lineTHAC0', 'judgeRoll', 'actOn', 'attackSpeed', 'rollLine', 'scoreRoll', 'rerollDamage', 'lineKind', 'lineSay']],
     RoundSync: ['round-sync', ['createRoundSync']],
     Cloud: ['cloud', ['cloudClient', 'cloudSession', 'createCloudRoundSync', 'mountCloud']],
   },
@@ -26,7 +26,7 @@ export const TARGETS = {
       'scenarioSpell', 'scenarioAbility', 'activeEffectsFor', 'scenarioDamage', 'scenarioBreakdown', 'normalizeEffects', 'effectOption',
       'isBowcaster', 'spellArrow', 'usesAmmo', 'weaponAmmoType', 'ammoType', 'ammoFor', 'scenarioAmmo', 'AMMO_TYPES']],
     SheetKits: ['rules/kits', ['HOUSE_KITS', 'classKit']],
-    SheetRound: ['rules/round', ['ROUND_MODS', 'MOVE_MULTS', 'newRound', 'roundQueue', 'queueAttack', 'unqueueAttack', 'roundLines', 'lineToHit', 'roundACPenalty', 'lineTHAC0', 'judgeRoll', 'actOn', 'attackSpeed', 'rollLine', 'scoreRoll', 'rerollDamage', 'lineSay']],
+    SheetRound: ['rules/round', ['ROUND_MODS', 'MOVE_MULTS', 'newRound', 'roundQueue', 'queueAttack', 'unqueueAttack', 'roundLines', 'lineToHit', 'roundACPenalty', 'lineTHAC0', 'judgeRoll', 'actOn', 'attackSpeed', 'rollLine', 'scoreRoll', 'rerollDamage', 'lineKind', 'lineSay']],
     RoundSync: ['round-sync', ['createRoundSync']],
     Cloud: ['cloud', ['cloudClient', 'cloudSession', 'createCloudRoundSync', 'mountCloud']],
     SheetRules: ['rules/weapons', ['PHB_WEAPONS']],
