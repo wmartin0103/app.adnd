@@ -2838,8 +2838,10 @@ function createRoundSync() {
     // The DM: round number, foes, timing. A new round number clears the records.
     // (A sheet on its own starts its next round with dm: false; `dmAt` says
     // when the DM's page last spoke, which is how a sheet knows it's live.)
-    sendDM: ({ round, foes, timing, dm = true }) => change(s => {
-      if (round != null && round !== s.round) { s.round = round; s.records = {}; }
+    // reset: start over (round 1 unless given), every record cleared
+    sendDM: ({ round, foes, timing, dm = true, reset = false }) => change(s => {
+      if (reset) { s.round = round ?? 1; s.records = {}; }
+      else if (round != null && round !== s.round) { s.round = round; s.records = {}; }
       if (foes) s.foes = foes;
       if (timing) s.timing = timing;
       if (dm) s.dmAt = Date.now();
@@ -2916,6 +2918,9 @@ function createCloudRoundSync({ client, campaignId, userId }) {
     return { ...base, records };
   };
   const tell = () => { const s = state(); listeners.forEach(fn => { try { fn(s); } catch (e) { /* a listener's problem */ } }); };
+  // Every round change reads the records again (a reset deletes them)
+  const reload = () => client.from('round_records').select('*').eq('campaign_id', campaignId)
+    .then(({ data }) => { Object.keys(rows).forEach(k => delete rows[k]); (data || []).forEach(fromRecord); tell(); }, () => {});
   const fromState = r => { base = { round: r.round, foes: r.foes || [], timing: r.timing || 'end', dmAt: Date.parse(r.updated_at) || Date.now(), at: Date.now() }; };
   const fromRecord = r => {
     const name = r.record && r.record.character;
@@ -2938,7 +2943,7 @@ function createCloudRoundSync({ client, campaignId, userId }) {
 
   const channel = client.channel(`round-${campaignId}`)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'round_state', filter: `campaign_id=eq.${campaignId}` },
-      p => { if (p.new && p.new.campaign_id) { fromState(p.new); tell(); } })
+      p => { if (p.new && p.new.campaign_id) { const was = base.round; fromState(p.new); tell(); if (p.new.round !== was || p.new.round === 1) reload(); } })
     .on('postgres_changes', { event: '*', schema: 'public', table: 'round_records', filter: `campaign_id=eq.${campaignId}` },
       p => { if (p.new && p.new.record) { fromRecord(p.new); tell(); } })
     .subscribe();
@@ -2953,8 +2958,9 @@ function createCloudRoundSync({ client, campaignId, userId }) {
     if (error) throw error;
     return (ids[name] = made.id);
   }
-  function applyDM({ round, foes, timing, dm = true }) {
-    if (round != null) base.round = round;
+  function applyDM({ round, foes, timing, dm = true, reset = false }) {
+    if (reset) { base.round = round ?? 1; Object.keys(rows).forEach(k => delete rows[k]); }
+    else if (round != null) base.round = round;
     if (foes) base.foes = foes;
     if (timing) base.timing = timing;
     if (dm) base.dmAt = Date.now();
@@ -2983,7 +2989,9 @@ function createCloudRoundSync({ client, campaignId, userId }) {
       // Before the first load, the database's round wins and these apply on top
       if (!loaded) { dmChanges = { ...(dmChanges || {}), ...change }; applyDM(change); return state(); }
       applyDM(change);
-      if (change.dm !== false) writeDM();
+      // A reset deletes the campaign's records first, so pages that reload them find none
+      if (change.reset) client.from('round_records').delete().eq('campaign_id', campaignId).then(writeDM, writeDM);
+      else if (change.dm !== false) writeDM();
       return state();
     },
     onChange(fn) { listeners.push(fn); },
@@ -4513,10 +4521,10 @@ function judgeLine(line, bdAC){
   if(!r) return {who, text:'not rolled yet', cls:''};
   if(r.d20==null) return {who, text:`${r.dmg??'—'} damage (target saves)`, cls:'hit'};
   const ac = fb ? bdAC[fb.name] : null;
-  if(ac==null || isNaN(ac)) return {who, text:`d20 ${r.d20} · hits AC ${r.hitsAC} or worse · ${r.dmg??'—'} dmg`, cls:''};
+  if(ac==null || isNaN(ac)) return {who, text:`d20 ${r.d20}${r.d20===20?' · <b>Natural 20</b>: critical if it hits':r.d20===1?' · <b>Natural 1</b>: a Bad Miss if it misses':''} · hits AC ${r.hitsAC} or worse · ${r.dmg??'—'} dmg`, cls: r.d20===20?'crit':r.d20===1?'fumble':''};
   const j = SheetRound.judgeRoll(r, ac);
   const t = CRIT_TYPES[line.scenario]; const ct = Array.isArray(t) ? t[0] : (t||'P');
-  if(j.crit) return {who, text:`d20 20 · Good Hit · ${r.dmg??'—'} dmg · ${critText(ct, r.pct, false)}`, cls:'crit'};
+  if(j.crit) return {who, text:`d20 20 · <b>Critical hit</b> (Good Hit) · ${r.dmg??'—'} dmg before your crit rule · ${critText(ct, r.pct, false)}`, cls:'crit'};
   if(j.fumble) return {who, text:`d20 1 · Bad Miss · ${tableLookup(FUMBLE_TABLE, r.pct)}`, cls:'fumble'};
   return {who, text:`d20 ${r.d20} vs ${j.need} (AC ${ac}) · ${j.hit ? `hit · ${r.dmg??'—'} dmg${r.spell!=null?` + spell ${r.spell}`:''}` : 'miss'}`, cls: j.hit ? 'hit' : 'miss'};
 }
@@ -5919,6 +5927,8 @@ function resetAll(){
   document.getElementById('surpriseBar').style.display='none';
   displayOrder=[]; reorderPending=false;
   resetBaddies();
+  // The shared round starts over too: round 1, every player's round cleared
+  if(ROUND){ lastFoes=''; syncState = ROUND.sendDM({round:1, reset:true}); showRound(); }
   rollSkills(); Object.keys(SAVES).forEach(rollSavesFor);
   rxParty=null;
   update(); renderGroup(); renderSaves(); renderReaction();

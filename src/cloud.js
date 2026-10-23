@@ -59,6 +59,9 @@ export function createCloudRoundSync({ client, campaignId, userId }) {
     return { ...base, records };
   };
   const tell = () => { const s = state(); listeners.forEach(fn => { try { fn(s); } catch (e) { /* a listener's problem */ } }); };
+  // Every round change reads the records again (a reset deletes them)
+  const reload = () => client.from('round_records').select('*').eq('campaign_id', campaignId)
+    .then(({ data }) => { Object.keys(rows).forEach(k => delete rows[k]); (data || []).forEach(fromRecord); tell(); }, () => {});
   const fromState = r => { base = { round: r.round, foes: r.foes || [], timing: r.timing || 'end', dmAt: Date.parse(r.updated_at) || Date.now(), at: Date.now() }; };
   const fromRecord = r => {
     const name = r.record && r.record.character;
@@ -81,7 +84,7 @@ export function createCloudRoundSync({ client, campaignId, userId }) {
 
   const channel = client.channel(`round-${campaignId}`)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'round_state', filter: `campaign_id=eq.${campaignId}` },
-      p => { if (p.new && p.new.campaign_id) { fromState(p.new); tell(); } })
+      p => { if (p.new && p.new.campaign_id) { const was = base.round; fromState(p.new); tell(); if (p.new.round !== was || p.new.round === 1) reload(); } })
     .on('postgres_changes', { event: '*', schema: 'public', table: 'round_records', filter: `campaign_id=eq.${campaignId}` },
       p => { if (p.new && p.new.record) { fromRecord(p.new); tell(); } })
     .subscribe();
@@ -96,8 +99,9 @@ export function createCloudRoundSync({ client, campaignId, userId }) {
     if (error) throw error;
     return (ids[name] = made.id);
   }
-  function applyDM({ round, foes, timing, dm = true }) {
-    if (round != null) base.round = round;
+  function applyDM({ round, foes, timing, dm = true, reset = false }) {
+    if (reset) { base.round = round ?? 1; Object.keys(rows).forEach(k => delete rows[k]); }
+    else if (round != null) base.round = round;
     if (foes) base.foes = foes;
     if (timing) base.timing = timing;
     if (dm) base.dmAt = Date.now();
@@ -126,7 +130,9 @@ export function createCloudRoundSync({ client, campaignId, userId }) {
       // Before the first load, the database's round wins and these apply on top
       if (!loaded) { dmChanges = { ...(dmChanges || {}), ...change }; applyDM(change); return state(); }
       applyDM(change);
-      if (change.dm !== false) writeDM();
+      // A reset deletes the campaign's records first, so pages that reload them find none
+      if (change.reset) client.from('round_records').delete().eq('campaign_id', campaignId).then(writeDM, writeDM);
+      else if (change.dm !== false) writeDM();
       return state();
     },
     onChange(fn) { listeners.push(fn); },

@@ -135,6 +135,11 @@ test('round sync: the DM\'s round and a sheet\'s record reach the other page', a
     // A new round clears last round's records
     dm.sendDM({ round: 4 });
     assert.deepEqual(sheet.state().records, {});
+    // Reset: round 1 and no records, even from round 1
+    dm.sendDM({ round: 1 });
+    sheet.sendRecord({ ...newRound('Rifiyr'), init: { roll: 2 } });
+    dm.sendDM({ round: 1, reset: true });
+    assert.deepEqual([sheet.state().round, sheet.state().records], [1, {}]);
     dm.close(); sheet.close();
   } finally { delete globalThis.localStorage; }
 });

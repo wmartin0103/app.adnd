@@ -57,6 +57,11 @@ show **Send changes**. Rolls after sending go straight to the DM (and are then
 fixed: later effect changes no longer move them), so a player can
 send their actions and roll each attack when it happens.
 
+**Later, if players ask for it:** typed-in rolls for physical dice (the d20,
+d% and damage), next to Roll to hit. Initiative already takes a typed roll.
+Crits: the sheet and the DM's page say "critical" on a natural 20 that
+would have hit; the damage shown is before the table's crit rule.
+
 **Built in:** Good Hits and Bad Misses for criticals and fumbles; Quickness
 (Jaque) and Danger Sense (Goroth); group proficiency checks and group saves.
 

@@ -38,8 +38,10 @@ export function createRoundSync() {
     // The DM: round number, foes, timing. A new round number clears the records.
     // (A sheet on its own starts its next round with dm: false; `dmAt` says
     // when the DM's page last spoke, which is how a sheet knows it's live.)
-    sendDM: ({ round, foes, timing, dm = true }) => change(s => {
-      if (round != null && round !== s.round) { s.round = round; s.records = {}; }
+    // reset: start over (round 1 unless given), every record cleared
+    sendDM: ({ round, foes, timing, dm = true, reset = false }) => change(s => {
+      if (reset) { s.round = round ?? 1; s.records = {}; }
+      else if (round != null && round !== s.round) { s.round = round; s.records = {}; }
       if (foes) s.foes = foes;
       if (timing) s.timing = timing;
       if (dm) s.dmAt = Date.now();

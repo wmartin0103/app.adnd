@@ -19,6 +19,10 @@ function fakeDB() {
         rows.push(row);
         return { data: one ? row : [row], error: null };
       }
+      if (op === 'delete') {
+        tables[table] = rows.filter(r => !where.every(([c, v]) => r[c] === v));
+        return { data: null, error: null };
+      }
       if (op === 'upsert') {
         const k = keyOf[table], at = rows.findIndex(r => r[k] === payload[k]);
         if (at >= 0) rows[at] = { ...rows[at], ...payload }; else rows.push({ ...payload });
@@ -31,7 +35,7 @@ function fakeDB() {
     const b = {
       select() { return b; }, eq(c, v) { where.push([c, v]); return b; }, limit() { return b; },
       maybeSingle() { maybe = true; return b; }, single() { one = true; return b; },
-      insert(p) { op = 'insert'; payload = p; return b; }, upsert(p) { op = 'upsert'; payload = p; return b; },
+      insert(p) { op = 'insert'; payload = p; return b; }, delete() { op = 'delete'; return b; }, upsert(p) { op = 'upsert'; payload = p; return b; },
       then(res, rej) { return Promise.resolve().then(run).then(res, rej); },
     };
     return b;
@@ -76,4 +80,10 @@ test('cloud round: the DM runs the round, a sheet sends its record, both hear it
   late.sendDM({});
   await settle();
   assert.equal(late.state().round, 4);
+  // The DM resets: round 1, every record gone, here and on the sheet
+  sheet.sendRecord({ character: 'Rifiyr', init: { roll: 3 } });
+  await settle();
+  dm.sendDM({ round: 1, reset: true });
+  await settle();
+  assert.deepEqual([db.tables.round_records.length, sheet.state().round, sheet.state().records], [0, 1, {}]);
 });
