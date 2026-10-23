@@ -2788,7 +2788,7 @@
           <span class="stances-ac" id="stances-ac" aria-live="polite"></span>
         </div>
         <div id="effects-body">
-          <p class="stances-hint">Stances and temporary effects. Switch one on and every attack below includes it. A stance with several options (Bladesong) lets you pick one at a time. Mark one Temporary, like a Bless from a friend, and it counts down with Next round and ends on its own.</p>
+          <p class="stances-hint">Anything permanent or temporary that can have an impact in combat.</p>
           <div id="stances-list" role="list"></div>
           <div class="stances-actions">
             <button class="add-class-btn" id="add-stance-btn" type="button"><span aria-hidden="true">＋</span> Add Effect</button>
@@ -7291,7 +7291,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       target.addEventListener('change', () => { st.target = target.value; refreshAfterStances(); });
       const top = document.createElement('div');
       top.className = 'stance-editor-row';
-      top.append(field('Name', input(st, 'name', 'e.g. Bladesong, Bless')), field('Applies to', target));
+      top.append(field('Name', input(st, 'name', 'e.g. Bless, Haste, Ring of Protection')), field('Applies to', target));
       box.appendChild(top);
 
       // Options: one row each; more than one makes it pick-one
@@ -7328,7 +7328,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       const addOpt = document.createElement('button');
       addOpt.type = 'button'; addOpt.className = 'stance-btn';
       addOpt.textContent = '＋ Add option';
-      addOpt.title = 'More than one option makes this a pick-one, like Bladesong';
+      addOpt.title = 'More than one option makes this a pick-one: choose one at a time';
       addOpt.addEventListener('click', () => { st.options.push(makeOption()); refreshAfterStances(`[data-stance-id="${st.id}"] .stance-opts tbody tr:last-child input`); });
       box.appendChild(addOpt);
 
