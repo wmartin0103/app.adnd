@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { scenarioContext } from '../src/rules/scenarios.js';
-import { newRound, roundLines, lineNeed, actOn, rollLine, rollDice, lineToHit, roundACPenalty, lineHalfAvailable } from '../src/rules/round.js';
+import { newRound, roundLines, lineTHAC0, judgeRoll, actOn, rollLine, rollDice, lineToHit, roundACPenalty, lineHalfAvailable, lineSay } from '../src/rules/round.js';
 import { createRoundSync } from '../src/round-sync.js';
 
 const load = f => JSON.parse(readFileSync(new URL(`../samples/${f}`, import.meta.url)));
@@ -10,20 +10,21 @@ const catalog = JSON.parse(readFileSync(new URL('../data/spell-catalog.json', im
 const rifiyr = load('rifiyr_10-12.json');
 const jaque = load('jaque_10-09.json');
 const ctxR = scenarioContext(rifiyr, catalog);
-const orc = { id: 'f1', name: 'Orc 1', ac: 6, size: 'sm' };
-const shaman = { id: 'f2', name: 'Shaman', ac: 8, size: 'sm' };
+// Foes as players know them: the DM's fixed ID and size, never AC
+const orc = { id: 'B1', label: 'B1', size: 'sm' };
+const shaman = { id: 'B2', label: 'B2', size: 'sm' };
 // Dice that always come up the same way
 const fixed = (...vals) => { let i = 0; return () => vals[Math.min(i++, vals.length - 1)]; };
 
 test('attack lines come from the rate; later lines follow the one above until set apart', () => {
   const rec = { ...newRound('Rifiyr'), scenarioId: 'sc-1', lines: { a1: { target: orc, flanking: true } } };   // Long bow, flight: 2/1
   let lines = roundLines(ctxR, rec, rifiyr.__scenarios);
-  assert.deepEqual(lines.map(l => [l.label, l.same, l.set.target.name, l.set.flanking]), [['1st', false, 'Orc 1', true], ['2nd', true, 'Orc 1', true]]);
-  assert.deepEqual(lines.map(l => lineNeed(ctxR, l)), [8, 8]);   // THAC0 16 − AC 6 − flanking 2
+  assert.deepEqual(lines.map(l => [l.label, l.same, l.set.target.label, l.set.flanking]), [['1st', false, 'B1', true], ['2nd', true, 'B1', true]]);
+  assert.deepEqual(lines.map(l => lineTHAC0(ctxR, l)), [14, 14]);   // THAC0 16, flanking +2
   // The 2nd shot at the shaman, not flanking
   rec.lines.a2 = { same: false, target: shaman, flanking: false };
   lines = roundLines(ctxR, rec, rifiyr.__scenarios);
-  assert.deepEqual(lines.map(l => [l.set.target.name, lineNeed(ctxR, l)]), [['Orc 1', 8], ['Shaman', 8]]);
+  assert.deepEqual(lines.map(l => [l.set.target.label, lineTHAC0(ctxR, l)]), [['B1', 14], ['B2', 16]]);
   // Moving first: no extra attacks
   assert.equal(roundLines(ctxR, { ...rec, you: { ...rec.you, moveFirst: true } }, rifiyr.__scenarios).length, 1);
 });
@@ -56,19 +57,26 @@ test('when the character acts: roll + speed + this round\'s adjustments', () => 
   assert.equal(actOn(ctxJ, recJ, jaque.__scenarios, { quickness: true, dex: 19 }), 4 + 2 - 2);
 });
 
-test('rolling a line: hits, Good Hits and Bad Misses, damage by target size', () => {
-  const rec = { ...newRound('Rifiyr'), scenarioId: 'sc-8', lines: { a1: { target: orc } } };   // Long bow, sheaf: 1d8
+test('rolling a line on the sheet, and the DM judging it against the AC', () => {
+  const rec = { ...newRound('Rifiyr'), scenarioId: 'sc-8', lines: { a1: { target: orc } } };   // Long bow, sheaf: 1d8, THAC0 16
   const [line] = roundLines(ctxR, rec, rifiyr.__scenarios);
-  const hit = rollLine(ctxR, line, fixed(0.5, 0.99));             // d20 11 vs need 10; 1d8 → 8
-  assert.deepEqual([hit.d20, hit.need, hit.hit, hit.crit, hit.dmg], [11, 10, true, false, 8]);
-  const crit = rollLine(ctxR, line, fixed(0.99, 0.42, 0));        // natural 20: a Good Hit, with d%
-  assert.deepEqual([crit.d20, crit.crit, crit.pct, crit.dmg], [20, true, 43, 1]);
-  const fumble = rollLine(ctxR, line, fixed(0, 0.1));             // natural 1: a Bad Miss
-  assert.deepEqual([fumble.hit, fumble.fumble, fumble.pct], [false, true, 11]);
-  // A spell with no attack roll: just damage
+  const r = rollLine(ctxR, line, fixed(0.5, 0.99));                 // d20 11, 1d8 → 8
+  assert.deepEqual([r.d20, r.thac0, r.hitsAC, r.pct, r.dmg], [11, 16, 5, null, 8]);
+  assert.equal(lineSay({ ...line, roll: r }), '1st: vs B1, d20 11, hits AC 5 or worse, 8 damage');
+  // The DM's page, which knows B1 is AC 6: a hit (needs 10)
+  assert.deepEqual(judgeRoll(r, 6), { need: 10, hit: true, crit: false, fumble: false });
+  assert.equal(judgeRoll(r, 4).hit, false);
+  // A natural 20 also rolls d%; it's a Good Hit only if it would have hit anyway
+  const n20 = rollLine(ctxR, line, fixed(0.99, 0.42, 0));
+  assert.deepEqual([n20.d20, n20.pct], [20, 43]);
+  assert.deepEqual([judgeRoll(n20, 6).crit, judgeRoll(n20, -10).crit, judgeRoll(n20, -10).hit], [true, false, true]);
+  // A natural 1: a Bad Miss only if it would have missed anyway
+  const n1 = rollLine(ctxR, line, fixed(0, 0.1));
+  assert.deepEqual([judgeRoll(n1, 6).fumble, judgeRoll(n1, 20).fumble, judgeRoll(n1, 20).hit], [true, false, false]);
+  // A spell with no attack roll: just damage, and it counts
   const [mm] = roundLines(ctxR, { ...newRound('Rifiyr'), scenarioId: 'sc-3' }, rifiyr.__scenarios);
-  const r = rollLine(ctxR, mm, fixed(0.99));
-  assert.deepEqual([r.d20, r.hit, r.dmg], [null, true, 4]);       // Magic Missile 1d4 (−1 per die: 1d4)
+  const m = rollLine(ctxR, mm, fixed(0.99));
+  assert.deepEqual([m.d20, m.dmg, judgeRoll(m, 6).hit], [null, 4, true]);
   assert.equal(rollDice('2d4+1', fixed(0.99)), 9);
 });
 

@@ -14,8 +14,9 @@
 //     lines: { a1: {...}, a2: {...}, extra: {...}, off: {...} },
 //   }
 //
-// Each attack line: { same, target: { id, name, ac, size }, flanking, ground,
-// charging, other, roll }. "same" (the default on every line after the
+// Each attack line: { same, target: { id, label, size }, flanking, ground,
+// charging, other, roll }. A target is a foe as players know it: the DM's
+// fixed ID for it and its size, never its AC or the DM's name for it. "same" (the default on every line after the
 // first) follows the line above, target and conditions included.
 // The DM decides where extra attacks go in the order; the record only says
 // which attacks there are.
@@ -93,14 +94,6 @@ export function lineToHit(set) {
 // Any line charging makes your AC worse this round
 export const roundACPenalty = (lines) => (lines.some(l => l.set.charging) ? ROUND_MODS.chargingAC : 0);
 
-// The number to roll for one line against its target (null: no attack roll,
-// or no target AC yet)
-export function lineNeed(ctx, line) {
-  const bd = scenarioBreakdown(ctx, line.sc);
-  if (!bd || !line.set.target || line.set.target.ac === '' || line.set.target.ac == null) return null;
-  return bd.thac0 - parseInt(line.set.target.ac, 10) - lineToHit(line.set);
-}
-
 // When the character acts: initiative roll + the attack's speed + this
 // round's adjustments (Move 1st +3, set vs charge −2, higher ground −1 from
 // the first attack's target, Quickness −2 on a success). Lowest goes first.
@@ -130,38 +123,57 @@ export function rollDice(expr, rand = Math.random) {
   return seen ? Math.max(total, 0) : null;
 }
 
-// Rolls one line: d20 against the need, and damage on a hit. Good Hits and
-// Bad Misses: a natural 20 always hits, and is a critical only if it would
-// have hit anyway; a natural 1 always misses, and is a fumble only if it would
-// have missed anyway. A critical or fumble also rolls d% for the DM's table.
+// Players never see a foe's AC, so the sheet can't say "hit" or "miss". It
+// knows the line's THAC0 with its conditions and the d20, which give the
+// best AC the roll hits ("hits AC 2 or worse", as players announce it); the
+// DM's page, which has the AC, decides. Null: no attack roll.
+export function lineTHAC0(ctx, line) {
+  const bd = scenarioBreakdown(ctx, line.sc);
+  return bd ? bd.thac0 - lineToHit(line.set) : null;
+}
+const noAttackRoll = (ctx, sc) => scenarioType(sc) === 'spell' && !scenarioBreakdown(ctx, sc);
+
+// Rolls one line on the sheet: the d20, d% too on a natural 20 or 1 (for the
+// DM's Good Hits / Bad Misses tables, if it turns out to be one), and damage
+// by the target's size, which the DM counts only on a hit. A spell with no
+// attack roll (the target saves) just rolls its damage.
 export function rollLine(ctx, line, rand = Math.random) {
-  const dmg0 = scenarioDamage(ctx, line.sc);
-  // A spell with no attack roll (the target saves): just its damage
-  if (scenarioType(line.sc) === 'spell' && !scenarioBreakdown(ctx, line.sc)) {
-    const e = dmg0 ? dmg0.sm : '';
-    return { d20: null, need: null, hit: true, crit: false, fumble: false, pct: null, dmg: e ? rollDice(e, rand) : null, dmgExpr: e, spell: null };
-  }
-  const need = lineNeed(ctx, line);
-  const d20 = 1 + Math.floor(rand() * 20);
-  const hit = d20 === 20 ? true : d20 === 1 ? false : need != null && d20 >= need;
-  const crit = d20 === 20 && need != null && need <= 20;
-  const fumble = d20 === 1 && need != null && need > 1;
-  const dmg = dmg0;
+  const dmg = scenarioDamage(ctx, line.sc);
   const big = line.set.target && line.set.target.size === 'l';
   const expr = dmg ? (big ? dmg.l : dmg.sm) : '';
+  if (noAttackRoll(ctx, line.sc)) return { d20: null, thac0: null, hitsAC: null, pct: null, dmg: expr ? rollDice(expr, rand) : null, dmgExpr: expr, spell: null };
+  const thac0 = lineTHAC0(ctx, line);
+  const d20 = 1 + Math.floor(rand() * 20);
   return {
-    d20, need, hit, crit, fumble,
-    pct: crit || fumble ? 1 + Math.floor(rand() * 100) : null,
-    dmg: hit && expr ? rollDice(expr, rand) : null, dmgExpr: expr,
-    spell: hit && dmg && dmg.spell ? rollDice(dmg.spell, rand) : null,
+    d20, thac0, hitsAC: thac0 - d20,
+    pct: d20 === 20 || d20 === 1 ? 1 + Math.floor(rand() * 100) : null,
+    dmg: expr ? rollDice(expr, rand) : null, dmgExpr: expr,
+    spell: dmg && dmg.spell ? rollDice(dmg.spell, rand) : null,
+  };
+}
+
+// The DM's side: did it hit this AC? Good Hits and Bad Misses: a natural 20
+// always hits, and is a critical only if it would have hit anyway; a natural 1
+// always misses, and is a fumble only if it would have missed anyway.
+export function judgeRoll(roll, ac) {
+  if (!roll) return null;
+  if (roll.d20 == null) return { hit: true, crit: false, fumble: false, need: null };   // no attack roll
+  const need = roll.thac0 - ac;
+  return {
+    need,
+    hit: roll.d20 === 20 ? true : roll.d20 === 1 ? false : roll.d20 >= need,
+    crit: roll.d20 === 20 && need <= 20,
+    fumble: roll.d20 === 1 && need > 1,
   };
 }
 
 // What to say at the table, for one line
+const acText = n => (n < 0 ? `−${-n}` : String(n));
 export function lineSay(line) {
   const r = line.roll;
-  const t = line.set.target ? line.set.target.name || `AC ${line.set.target.ac}` : 'no target';
+  const t = line.set.target ? line.set.target.label || line.set.target.name || 'target' : 'no target';
   if (!r) return `${line.label}: vs ${t}`;
-  const res = r.crit ? `Good Hit (d% ${r.pct}), ${r.dmg}` : r.fumble ? `Bad Miss (d% ${r.pct})` : r.hit ? `hit, ${r.dmg ?? '—'}` : 'miss';
-  return `${line.label}: vs ${t}, d20 ${r.d20} — ${res}${r.spell != null ? ` + spell ${r.spell}` : ''}`;
+  if (r.d20 == null) return `${line.label}: vs ${t}, ${r.dmg ?? '—'} damage (target saves)`;
+  const nat = r.d20 === 20 ? ' (natural 20)' : r.d20 === 1 ? ' (natural 1)' : '';
+  return `${line.label}: vs ${t}, d20 ${r.d20}${nat}, hits AC ${acText(r.hitsAC)} or worse, ${r.dmg ?? '—'} damage${r.spell != null ? ` + spell ${r.spell}` : ''}`;
 }
