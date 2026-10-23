@@ -346,6 +346,12 @@ file-passing workflow, before any backend exists.
 
 ### Phase 3 — Accounts and cloud saves
 - Supabase project, tables, permission rules, password login.
+  **Started 2026-10-23:** the project exists (owner's account); `supabase/schema.sql`
+  and `setup-first-admin.sql` have been run. Both tools have **Sign in**
+  (`src/cloud.js`); signed in with a campaign, This round goes through the
+  database (`round_state`, `round_records`) across devices. A sheet's first
+  round record adds its character to the campaign by name (data: just the
+  name until cloud saves).
 - Admin page: create users with temporary passwords, reset passwords, assign
   roles; forced password change at first login.
 - Version history for characters; stand-in access for absent players.

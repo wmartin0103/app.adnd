@@ -18,6 +18,7 @@ export const TARGETS = {
     SheetConverter: ['adapters/dm-helper', ['toDMHelper']],
     SheetRound: ['rules/round', ['ROUND_MODS', 'MOVE_MULTS', 'newRound', 'roundQueue', 'queueAttack', 'unqueueAttack', 'roundLines', 'lineToHit', 'roundACPenalty', 'lineTHAC0', 'judgeRoll', 'actOn', 'attackSpeed', 'rollLine', 'scoreRoll', 'rerollDamage', 'lineSay']],
     RoundSync: ['round-sync', ['createRoundSync']],
+    Cloud: ['cloud', ['cloudClient', 'cloudSession', 'createCloudRoundSync', 'mountCloud']],
   },
   'legacy/character-sheet.html': {
     SheetSpells: ['rules/spells', ['findSpell']],
@@ -27,6 +28,7 @@ export const TARGETS = {
     SheetKits: ['rules/kits', ['HOUSE_KITS', 'classKit']],
     SheetRound: ['rules/round', ['ROUND_MODS', 'MOVE_MULTS', 'newRound', 'roundQueue', 'queueAttack', 'unqueueAttack', 'roundLines', 'lineToHit', 'roundACPenalty', 'lineTHAC0', 'judgeRoll', 'actOn', 'attackSpeed', 'rollLine', 'scoreRoll', 'rerollDamage', 'lineSay']],
     RoundSync: ['round-sync', ['createRoundSync']],
+    Cloud: ['cloud', ['cloudClient', 'cloudSession', 'createCloudRoundSync', 'mountCloud']],
     SheetRules: ['rules/weapons', ['PHB_WEAPONS']],
     SheetGuess: ['rules/migrate', ['guessCategory']],
   },

@@ -50,4 +50,5 @@ export const RULES_FILES = [
   'src/rules/combat.js',
   'src/adapters/dm-helper.js',
   'src/round-sync.js',
+  'src/cloud.js',
 ];
