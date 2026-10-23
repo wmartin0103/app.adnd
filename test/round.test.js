@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { scenarioContext } from '../src/rules/scenarios.js';
-import { newRound, roundLines, lineTHAC0, judgeRoll, actOn, rollLine, rollDice, lineToHit, roundACPenalty, queueAttack, unqueueAttack, roundQueue, lineSay } from '../src/rules/round.js';
+import { newRound, roundLines, lineTHAC0, judgeRoll, actOn, rollLine, rollDice, lineToHit, roundACPenalty, queueAttack, unqueueAttack, roundQueue, rerollDamage, lineSay } from '../src/rules/round.js';
 import { createRoundSync } from '../src/round-sync.js';
 
 const load = f => JSON.parse(readFileSync(new URL(`../samples/${f}`, import.meta.url)));
@@ -90,6 +90,30 @@ test('rolling a line on the sheet, and the DM judging it against the AC', () => 
   const m = rollLine(ctxR, mm, fixed(0.99));
   assert.deepEqual([m.d20, m.dmg, judgeRoll(m, 6).hit], [null, 4, true]);
   assert.equal(rollDice('2d4+1', fixed(0.99)), 9);
+});
+
+test('after rolling, the numbers follow the sheet; the dice stay', () => {
+  const rec = { ...withAttacks(newRound('Rifiyr'), 'sc-8'), lines: { q1: { target: orc } } };   // Long bow, sheaf: 1d8, THAC0 16
+  const [line] = roundLines(ctxR, rec, rifiyr.__scenarios);
+  rec.lines.q1.roll = rollLine(ctxR, line, fixed(0.5, 0.99));      // d20 11, 1d8 → 8
+  // Flanking after the roll: THAC0 14, so it hits AC 3 or worse; same d20
+  rec.lines.q1.flanking = true;
+  let [now] = roundLines(ctxR, rec, rifiyr.__scenarios);
+  assert.deepEqual([now.roll.d20, now.roll.thac0, now.roll.hitsAC, now.roll.dmg], [11, 14, 3, 8]);
+  // A damage bonus taken away after the roll: same dice, less damage
+  const plus2 = rifiyr.__scenarios.map(s => (s.id === 'sc-8' ? { ...s, dmgMod: '2' } : s));
+  const two = { ...rec, lines: { q1: { ...rec.lines.q1, roll: rollLine(ctxR, roundLines(ctxR, rec, plus2)[0], fixed(0.5, 0.99)) } } };
+  assert.equal(roundLines(ctxR, two, plus2)[0].roll.dmg, 10);
+  assert.equal(roundLines(ctxR, two, rifiyr.__scenarios)[0].roll.dmg, 8);
+  // A Large target with other dice (dagger 1d4 → 1d3): the damage needs rolling again
+  const dagger = rifiyr.__scenarios.find(s => s.name === 'Dagger').id;
+  const recD = { ...withAttacks(newRound('Rifiyr'), dagger), lines: { q1: { target: orc } } };
+  recD.lines.q1.roll = rollLine(ctxR, roundLines(ctxR, recD, rifiyr.__scenarios)[0], fixed(0.5, 0.99));
+  recD.lines.q1.target = { ...orc, size: 'l' };
+  [now] = roundLines(ctxR, recD, rifiyr.__scenarios);
+  assert.deepEqual([now.roll.d20, now.roll.dmgStale, now.roll.dmg], [11, true, null]);
+  const again = rerollDamage(ctxR, now, recD.lines.q1.roll, fixed(0.99));
+  assert.deepEqual([again.d20, again.dmgStale, again.dmg], [11, false, 3]);
 });
 
 test('round sync: the DM\'s round and a sheet\'s record reach the other page', async () => {

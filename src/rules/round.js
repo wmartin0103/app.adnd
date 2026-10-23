@@ -82,7 +82,7 @@ export function roundLines(ctx, rec, scenarios) {
     const own = { ...blankLine(), ...(rec.lines || {})[k.key] };
     if (i === 0) own.same = false;
     const set = own.same && prev ? { ...prev.set } : { target: own.target, flanking: !!own.flanking, ground: own.ground || '', charging: !!own.charging, other: modNum(own.other) };
-    const line = { key: k.key, qid: k.qid, label: k.label, sc: k.sc, extra: k.extra, same: !!own.same && i > 0, set, roll: own.roll || null };
+    const line = { key: k.key, qid: k.qid, label: k.label, sc: k.sc, extra: k.extra, same: !!own.same && i > 0, set, roll: own.roll ? scoreRoll(ctx, { sc: k.sc, set }, own.roll) : null };
     prev = line;
     return line;
   });
@@ -141,23 +141,63 @@ export function lineTHAC0(ctx, line) {
 }
 const noAttackRoll = (ctx, sc) => scenarioType(sc) === 'spell' && !scenarioBreakdown(ctx, sc);
 
-// Rolls one line on the sheet: the d20, d% too on a natural 20 or 1 (for the
-// DM's Good Hits / Bad Misses tables, if it turns out to be one), and damage
-// by the target's size, which the DM counts only on a hit. A spell with no
-// attack roll (the target saves) just rolls its damage.
-export function rollLine(ctx, line, rand = Math.random) {
+// A damage expression's dice and its flat part: '1d8+2' → { sig: '1d8', flat: 2 }
+export function splitDice(expr) {
+  const dice = [];
+  let flat = 0;
+  String(expr || '').toLowerCase().replace(/\s+/g, '').replace(/-/g, '+-').split('+').filter(Boolean).forEach(t => {
+    if (/^-?\d*d\d+$/.test(t)) dice.push(t.replace(/^(-?)d/, '$11d'));
+    else if (/^-?\d+$/.test(t)) flat += parseInt(t, 10);
+  });
+  return { sig: dice.join('+'), flat };
+}
+const lineDamage = (ctx, line) => {
   const dmg = scenarioDamage(ctx, line.sc);
   const big = line.set.target && line.set.target.size === 'l';
-  const expr = dmg ? (big ? dmg.l : dmg.sm) : '';
-  if (noAttackRoll(ctx, line.sc)) return { d20: null, thac0: null, hitsAC: null, pct: null, dmg: expr ? rollDice(expr, rand) : null, dmgExpr: expr, spell: null };
-  const thac0 = lineTHAC0(ctx, line);
-  const d20 = 1 + Math.floor(rand() * 20);
-  return {
-    d20, thac0, hitsAC: thac0 - d20,
-    pct: d20 === 20 || d20 === 1 ? 1 + Math.floor(rand() * 100) : null,
-    dmg: expr ? rollDice(expr, rand) : null, dmgExpr: expr,
-    spell: dmg && dmg.spell ? rollDice(dmg.spell, rand) : null,
+  return { expr: dmg ? (big ? dmg.l : dmg.sm) : '', spell: dmg && dmg.spell ? dmg.spell : '' };
+};
+const rollSig = (sig, rand) => (sig ? rollDice(sig, rand) : null);
+
+// Rolls one line on the sheet: the d20, d% too on a natural 20 or 1 (for the
+// DM's Good Hits / Bad Misses tables, if it turns out to be one), and the
+// damage dice by the target's size, which the DM counts only on a hit. A
+// spell with no attack roll (the target saves) just rolls its damage. Only
+// the dice are kept: scoreRoll adds the sheet's numbers as they are now.
+export function rollLine(ctx, line, rand = Math.random) {
+  const d = lineDamage(ctx, line);
+  const dmgSig = splitDice(d.expr).sig, spellSig = splitDice(d.spell).sig;
+  const raw = { d20: null, pct: null };
+  if (!noAttackRoll(ctx, line.sc)) {
+    raw.d20 = 1 + Math.floor(rand() * 20);
+    raw.pct = raw.d20 === 20 || raw.d20 === 1 ? 1 + Math.floor(rand() * 100) : null;
+  }
+  Object.assign(raw, { dmgSig, dmgDice: rollSig(dmgSig, rand), spellSig, spellDice: rollSig(spellSig, rand) });
+  return scoreRoll(ctx, line, raw);
+}
+// A roll with the sheet's current numbers: change an effect (Bless off) or the
+// target after rolling and the THAC0, AC hit and damage follow. If the damage
+// dice themselves changed (another size of target), dmgStale: roll them again.
+export function scoreRoll(ctx, line, raw) {
+  if (!raw || !('dmgSig' in raw)) return raw || null;   // a roll from before this
+  const d = lineDamage(ctx, line);
+  const dmg = splitDice(d.expr), spell = splitDice(d.spell);
+  const total = (sig, dice, part) => (!sig ? null : sig === part.sig ? Math.max(dice + part.flat, 0) : undefined);
+  const dmgNow = total(raw.dmgSig, raw.dmgDice, dmg), spellNow = total(raw.spellSig, raw.spellDice, spell);
+  const out = {
+    ...raw, dmgExpr: d.expr,
+    dmg: dmgNow === undefined ? null : dmgNow ?? (dmg.sig ? null : dmg.flat || null),
+    spell: spellNow === undefined ? null : spellNow,
+    dmgStale: dmgNow === undefined || (!raw.dmgSig && !!dmg.sig) || spellNow === undefined || (!raw.spellSig && !!spell.sig),
+    thac0: null, hitsAC: null,
   };
+  if (raw.d20 != null && !noAttackRoll(ctx, line.sc)) { out.thac0 = lineTHAC0(ctx, line); out.hitsAC = out.thac0 - raw.d20; }
+  return out;
+}
+// Rolls the damage dice again, keeping the d20 (after dmgStale)
+export function rerollDamage(ctx, line, raw, rand = Math.random) {
+  const d = lineDamage(ctx, line);
+  const dmgSig = splitDice(d.expr).sig, spellSig = splitDice(d.spell).sig;
+  return scoreRoll(ctx, line, { ...raw, dmgSig, dmgDice: rollSig(dmgSig, rand), spellSig, spellDice: rollSig(spellSig, rand) });
 }
 
 // The DM's side: did it hit this AC? Good Hits and Bad Misses: a natural 20
