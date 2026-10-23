@@ -7668,7 +7668,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           // A natural 1 always misses: no AC, no damage; the DM has the Bad Misses table
           el.innerHTML = tag + `<span class="hit-die">${D20_SVG}<span class="hit-die-num">1</span></span>`
             + stat('is-miss', 'Result', 'Miss', 'no damage')
-            + '<span class="hit-nat">Natural 1 · Automatic miss</span>';
+            + '<span class="hit-nat">Natural 1 · Critical Miss</span>';
         } else {
           el.innerHTML = tag + `<span class="hit-die">${D20_SVG}<span class="hit-die-num">${r.d20}</span></span>`
             + stat(moved('ac') ? 'is-updated' : '', 'Hits AC', acT(r.hitsAC), 'or worse')

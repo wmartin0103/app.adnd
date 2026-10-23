@@ -4597,7 +4597,7 @@ function judgeOne(target, r, kind, line, bdAC){
   if(r.d20==null && kind==='heal') return {who, text:`heals ${r.dmg??'—'}`, cls:'hit'};
   if(r.d20==null) return {who, text:`${r.dmg??'—'} damage (${kind==='split'?'no save':'target saves'})`, cls:'hit'};
   const ac = fb ? bdAC[fb.name] : null;
-  if((ac==null || isNaN(ac)) && r.d20===1) return {who, text:`d20 1 · <b>Natural 1</b>: automatic miss (a Bad Miss on the table if it would have missed anyway)`, cls:'fumble'};
+  if((ac==null || isNaN(ac)) && r.d20===1) return {who, text:`d20 1 · <b>Natural 1</b>: critical miss (a Bad Miss on the table if it would have missed anyway)`, cls:'fumble'};
   if(ac==null || isNaN(ac)) return {who, text:`d20 ${r.d20}${r.d20===20?' · <b>Natural 20</b>: critical if it hits':''} · hits AC ${r.hitsAC} or worse · ${r.dmg??'—'} dmg`, cls: r.d20===20?'crit':''};
   const j = SheetRound.judgeRoll(r, ac);
   const t = CRIT_TYPES[line.scenario]; const ct = Array.isArray(t) ? t[0] : (t||'P');

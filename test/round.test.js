@@ -91,7 +91,7 @@ test('rolling a line on the sheet, and the DM judging it against the AC', () => 
   assert.deepEqual([judgeRoll(n1, 6).fumble, judgeRoll(n1, 20).fumble, judgeRoll(n1, 20).hit], [true, false, false]);
   // ...and always misses: no damage, nothing to roll again
   assert.deepEqual([n1.miss, n1.dmg, n1roll.dmgStale, n1.pct], [true, null, false, 11]);
-  assert.equal(lineSay({ ...line, roll: n1roll }), '1st: vs B1, d20 1 (natural 1), an automatic miss');
+  assert.equal(lineSay({ ...line, roll: n1roll }), '1st: vs B1, d20 1 (natural 1), a critical miss');
   // A spell with no attack roll: just damage, and it counts
   const [mm] = roundLines(ctxR, withAttacks(newRound('Rifiyr'), 'sc-3'), rifiyr.__scenarios);
   const m = one(rollLine(ctxR, mm, fixed(0.99)));
