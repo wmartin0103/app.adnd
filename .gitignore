@@ -1,2 +1,6 @@
 dist/
 .claude/launch.json
+
+# Supabase CLI: local link details (never commit)
+supabase/.temp/
+supabase/.branches/
