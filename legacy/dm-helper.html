@@ -74,6 +74,14 @@
   .char.inplayer .mods .m-ground select,.char.inplayer .mods .m-other select{font-size:13px;min-height:26px;padding:1px 2px;width:auto}
   /* player view: the Actions section in the same small type as Conditions */
   .char.inplayer{--sm:clamp(.62rem,2.8vw,.72rem)}
+  .char.synced .cfields,.char.synced .mods,.char.synced table.acts,.char.synced .moveafter{display:none !important}
+  .syncpanel{padding:8px 12px 10px;font-family:var(--sans);font-size:.85rem;display:grid;gap:4px}
+  .syncpanel .sphead{color:var(--muted)}
+  .syncpanel .spline{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;border-top:1px solid var(--edge);padding-top:4px}
+  .syncpanel .splabel{font-family:var(--serif);color:var(--brass);min-width:3.5em}
+  .syncpanel .hit{color:#7cc58a}.syncpanel .miss{color:var(--muted)}.syncpanel .crit{color:#7cc58a;font-weight:600}.syncpanel .fumble{color:#f08b7c;font-weight:600}
+  .roundctl b{font-family:var(--serif);margin-right:4px}
+  .extrablock .chead{font-family:var(--serif)}
   .char.inplayer .mods .item.m-move,.char.inplayer .mods .item.m-mult,.char.inplayer .mods .item.m-quick{font-family:var(--sans);font-size:var(--sm);color:var(--muted);gap:4px}
   .char.inplayer .mods .item.m-move input{width:17px;height:17px;margin:0}
   .char.inplayer .mods .item.m-mult select{font-size:13px;min-height:26px;padding:1px 2px}
@@ -440,6 +448,7 @@
     <div class="char" id="surpriseBar" style="display:none"><div id="surpriseWrap"></div></div>
     <div class="toolbar between">
       <span class="lockwrap"><button class="reroll" id="rollInit" title="roll initiative for the Baddies in this round; players roll their own">⚄ Roll initiative for Baddies</button><label class="lock" title="locked: players can no longer roll their own initiative"><input type="checkbox" id="lockInit"> Lock</label></span>
+      <span class="lockwrap roundctl" title="players' sheets play this round and show here"><b id="roundNo">Round 1</b> <button class="reroll" id="nextRoundSync" title="start the next round: every player's sheet clears its round">Next round ▸</button> <label class="gclabel">Extra attacks <select id="extraTiming" class="sursel"><option value="end">End of the order</option><option value="turn">At their turn</option></select></label></span>
       <span class="lockwrap"><button class="reroll" id="newRoundLight" title="clear the players' attack rolls and roll the Baddies' attacks again; picked actions and conditions stay">↻ New round</button></span>
     </div>
     <div class="tracker" id="tracker"></div>
@@ -3969,6 +3978,19 @@ function update(){
       return;
     }
 
+    // A player whose sheet is playing this round: the block shows the sheet's round
+    const synced = syncedView(name);
+    b.el.classList.toggle('synced', !!synced);
+    if(synced){
+      renderSynced(b, name, synced, bdAC);
+      const ao = synced.actOn;
+      b.actson.textContent = ao==null ? '—' : String(ao);
+      b.actson.title = ao==null ? 'not rolled yet' : `acts on ${ao} · ${synced.attack} (from the sheet)`;
+      order.push({name, sortInit: ao==null ? Infinity : ao});
+      return;
+    }
+    if(b.syncPanel){ b.syncPanel.remove(); b.syncPanel=null; }
+
     const sit=situation(b);
     if(b.parrySel){                                                // targeted parry: list the Baddies in the round
       const keep=b.parrySel.value; [...b.parrySel.querySelectorAll('option')].slice(1).forEach(o=>o.remove());
@@ -4179,6 +4201,8 @@ function update(){
   if(reorderPending){ order.sort((a,b)=> a.sortInit - b.sortInit); reorderPending=false; }
   else{ const rank = n => { const i=displayOrder.indexOf(n); return i>=0 ? i : 10000+setupRank(n); }; order.sort((a,b)=> rank(a.name)-rank(b.name)); }
   if(!lightSortPending){ displayOrder=order.map(o=>o.name); try{ localStorage.setItem(ORDER_KEY, JSON.stringify(displayOrder)); }catch(e){} }
+  renderExtras(bdAC, order.length);
+  tellPlayers();
   order.forEach((o,i)=>{
     const b=blocks[o.name];
     b.el.style.order=i;
@@ -4191,6 +4215,92 @@ function update(){
   if(typeof renderReaction==='function') renderReaction();                             // live CHA
   if(typeof renderLight==='function') renderLight();
 }
+
+/* ---------------- Players' sheets: this round (round sync) ----------------
+   Each player's sheet sends its round: when the character acts, and each
+   attack line's target, conditions, THAC0 and roll. Players never see a
+   Baddy's AC; this page judges each roll against it. The page sends the
+   round number and the Baddies in the round, by their fixed ID and size. */
+const ROUND = window.RoundSync ? RoundSync.createRoundSync() : null;
+let syncState = ROUND ? ROUND.state() : null;
+let lastFoes = '';
+function syncedView(name){
+  const r = syncState && syncState.records && syncState.records[name];
+  return r && r.view && r.round === syncState.round ? r.view : null;
+}
+function foeBlock(id){ const n = baddies.find(n=>blocks[n] && blocks[n].bdId===id); return n ? {name:n, b:blocks[n]} : null; }
+function judgeLine(line, bdAC){
+  const fb = line.target && line.target.id !== 'other' ? foeBlock(line.target.id) : null;
+  const who = fb ? `${fb.b.nameInput.value||fb.name} [${fb.b.bdId}]` : (line.target ? line.target.label : 'no target');
+  const r = line.roll;
+  if(!r) return {who, text:'not rolled yet', cls:''};
+  if(r.d20==null) return {who, text:`${r.dmg??'—'} damage (target saves)`, cls:'hit'};
+  const ac = fb ? bdAC[fb.name] : null;
+  if(ac==null || isNaN(ac)) return {who, text:`d20 ${r.d20} · hits AC ${r.hitsAC} or worse · ${r.dmg??'—'} dmg`, cls:''};
+  const j = SheetRound.judgeRoll(r, ac);
+  const t = CRIT_TYPES[line.scenario]; const ct = Array.isArray(t) ? t[0] : (t||'P');
+  if(j.crit) return {who, text:`d20 20 · Good Hit · ${r.dmg??'—'} dmg · ${critText(ct, r.pct, false)}`, cls:'crit'};
+  if(j.fumble) return {who, text:`d20 1 · Bad Miss · ${tableLookup(FUMBLE_TABLE, r.pct)}`, cls:'fumble'};
+  return {who, text:`d20 ${r.d20} vs ${j.need} (AC ${ac}) · ${j.hit ? `hit · ${r.dmg??'—'} dmg${r.spell!=null?` + spell ${r.spell}`:''}` : 'miss'}`, cls: j.hit ? 'hit' : 'miss'};
+}
+function lineHTML(line, bdAC, prefix){
+  const j = judgeLine(line, bdAC);
+  const tags = line.tags && line.tags.length ? ` · ${line.tags.join(', ')}` : '';
+  return `<div class="spline"><span class="splabel">${esc(prefix||line.label)}</span><span>vs ${esc(j.who)}${esc(tags)}${line.thac0!=null?` · THAC0 ${line.thac0}`:''}</span><span class="${j.cls}">${j.text}</span></div>`;
+}
+function renderSynced(b, name, v, bdAC){
+  if(!b.syncPanel){ b.syncPanel=document.createElement('div'); b.syncPanel.className='syncpanel'; b.el.appendChild(b.syncPanel); }
+  const timing = (syncState && syncState.timing) || 'end';
+  const lines = (v.lines||[]).filter(l => timing==='turn' || !l.extra);
+  const extras = [v.you && v.you.length ? v.you.join(', ') : '', v.quick ? `Quickness ${v.quick.roll}${v.quick.ok?' (−2)':''}` : '', v.acPenalty ? `AC ${v.acPenalty} worse (charging)` : ''].filter(Boolean).join(' · ');
+  b.syncPanel.innerHTML = `<div class="sphead">From ${esc(name)}'s sheet · ${esc(v.attack||'no attack chosen')}${extras?` · ${esc(extras)}`:''}</div>` + lines.map(l=>lineHTML(l, bdAC)).join('')
+    + (timing==='end' && (v.lines||[]).some(l=>l.extra) ? `<div class="sphead">Extra attacks: at the end of the order</div>` : '');
+}
+let extraBlock=null;
+// The Baddies' current ACs (as the order works them out)
+function baddyACs(){ const o={}; Object.keys(blocks).forEach(n=>{ const b=blocks[n]; if(!b.placeholder) return; o[n]=parseInt(b.ac.value,10)+(b.shieldless.checked?1:0)+situation(b).ac; }); return o; }
+let lightExtraTr=null;
+function lightExtrasRow(){
+  const timing=(syncState&&syncState.timing)||'end', ac=baddyACs(), rows=[];
+  if(timing==='end') PCS.forEach(name=>{ const v=syncedView(name); if(!v||!isActive(name)) return; (v.lines||[]).filter(l=>l.extra).forEach(l=>rows.push(lineHTML(l, ac, `${name} · ${l.label}`))); });
+  if(!rows.length) return null;
+  if(!lightExtraTr){ lightExtraTr=document.createElement('tr'); lightExtraTr.className='extrarow'; const td=document.createElement('td'); td.colSpan=4; lightExtraTr.appendChild(td); }
+  lightExtraTr.firstChild.innerHTML=`<div class="syncpanel"><div class="sphead">End of the round: extra attacks</div>${rows.join('')}</div>`;
+  return lightExtraTr;
+}
+function renderExtras(bdAC, n){
+  const timing = (syncState && syncState.timing) || 'end';
+  const rows=[];
+  if(timing==='end') PCS.forEach(name=>{ const v=syncedView(name); if(!v||!isActive(name)) return; (v.lines||[]).filter(l=>l.extra).forEach(l=>rows.push(lineHTML(l, bdAC, `${name} · ${l.label}`))); });
+  if(!rows.length){ if(extraBlock){ extraBlock.remove(); extraBlock=null; } return; }
+  if(!extraBlock){ extraBlock=document.createElement('div'); extraBlock.className='char extrablock'; tracker.appendChild(extraBlock); }
+  extraBlock.style.order = n + 1;
+  extraBlock.innerHTML = `<div class="chead">End of the round: extra attacks</div><div class="syncpanel">${rows.join('')}</div>`;
+}
+function tellPlayers(){
+  if(!ROUND) return;
+  const foes = baddies.filter(n=>blocks[n] && blocks[n].inRound && blocks[n].inRound.checked).map(n=>({id:blocks[n].bdId, label:blocks[n].bdId, size: blocks[n].bsize ? blocks[n].bsize.value : 'sm'}));
+  const key = JSON.stringify(foes);
+  if(key!==lastFoes){ lastFoes=key; syncState = ROUND.sendDM({foes}); }
+}
+function showRound(){
+  document.getElementById('roundNo').textContent = `Round ${syncState ? syncState.round : 1}`;
+  document.getElementById('extraTiming').value = (syncState && syncState.timing) || 'end';
+}
+if(ROUND){
+  ROUND.onChange(st=>{ syncState=st; showRound(); update(); });
+  syncState = ROUND.sendDM({});            // the sheets now know the DM is here
+}
+document.getElementById('nextRoundSync').addEventListener('click', ()=>{
+  if(!ROUND) return;
+  syncState = ROUND.sendDM({round: (syncState ? syncState.round : 1) + 1});
+  showRound(); update();
+});
+document.getElementById('extraTiming').addEventListener('change', e=>{
+  if(!ROUND) return;
+  syncState = ROUND.sendDM({timing: e.target.value});
+  update();
+});
 
 function newRound(){
   Object.keys(blocks).forEach(name=>{ const b=blocks[name];
@@ -4980,6 +5090,19 @@ function renderLight(){
       return;
     }
     const lr=lightRowFor(name);
+    // A player whose sheet is playing this round: the row shows the sheet's round
+    const sv = syncedView(name);
+    if(sv){
+      lr.nameLabel.textContent=name;
+      if(sv.initRoll!=null) lr.irSel.value=String(sv.initRoll);
+      if(sv.speed!=null && [...lr.spSel.options].some(o=>o.value===String(sv.speed))) lr.spSel.value=String(sv.speed);
+      lr.actSpan.textContent = sv.actOn==null ? '—' : String(sv.actOn); lr.actSpan.title='from the sheet';
+      const timing=(syncState&&syncState.timing)||'end', ac=baddyACs();
+      const acts=(sv.lines||[]).filter(l=>timing==='turn'||!l.extra).map(l=>{ const j=judgeLine(l, ac); return {t:`${l.label} vs ${j.who}${l.tags&&l.tags.length?' · '+l.tags.join(', '):''}: ${j.text.replace(/<[^>]+>/g,' ')}`, cls:j.cls}; });
+      paintLightDetail(lr, {conds: sv.you||[], acts: [{t: `From the sheet: ${sv.attack||'no attack chosen'}`}, ...acts]});
+      entries.push({name, act: sv.actOn==null ? 1e9 : sv.actOn, trs:[lr.tr, lr.detailTr]});
+      return;
+    }
     const dex = b.placeholder ? 10 : parseInt(b.statsSel.dex.value,10);          // only Quickness reads it, straight from the card
     if(b.placeholder){ if(lr.nameLabel.value!==b.nameInput.value) lr.nameLabel.value=b.nameInput.value; } else lr.nameLabel.textContent=name;
     let quick=0;
@@ -5021,6 +5144,8 @@ function renderLight(){
     const rest=displayOrder.filter(n=> !entries.some(e=>e.name===n));
     displayOrder=entries.map(e=>e.name).concat(rest); try{ localStorage.setItem(ORDER_KEY, JSON.stringify(displayOrder)); }catch(e){}
   }
+  const xr = lightExtrasRow();
+  if(xr) entries.push({name:'__extras', act:1e10, trs:[xr]});
   const flat=entries.flatMap(e=>e.trs), current=[...body.children];
   const same = current.length===flat.length && flat.every((tr,i)=> current[i]===tr);
   if(!same){ flat.forEach(tr=> body.appendChild(tr)); current.forEach(tr=>{ if(!flat.includes(tr)) tr.remove(); }); }   // leave the DOM alone while typing
@@ -5547,6 +5672,7 @@ applyLock();
 
 Object.keys(CHARACTERS).forEach(buildChar);
 addBaddy();
+showRound();
 buildSkills();
 buildSaves();
 buildReaction();

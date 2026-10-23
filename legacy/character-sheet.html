@@ -7084,6 +7084,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         set.charging && 'charging', set.other && `other ${set.other > 0 ? '+' : ''}${set.other}`].filter(Boolean);
       return {
         actOn: SheetRound.actOn(ctx, rec, scenarios, who),
+        initRoll: rec.init.roll, speed: sc ? SheetRound.attackSpeed(ctx, sc) : null,
         attack: sc ? sc.name || 'Attack' : '',
         quick: who.quickness && rec.quick.roll != null ? { roll: rec.quick.roll, ok: SheetRound.quicknessWorks(rec, who) } : null,
         you: [rec.you.moveFirst && 'moving first', rec.you.moveMult !== '1' && `movement ${rec.you.moveMult}×`, rec.you.setVsCharge && 'set vs charge'].filter(Boolean),
