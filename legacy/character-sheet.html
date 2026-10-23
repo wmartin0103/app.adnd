@@ -775,7 +775,7 @@
     .round-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
     /* A select with checkboxes in its list */
     .round-multi { position: relative; }
-    .round .round-pick .round-multi-btn { width: auto; min-width: 8.5rem; text-align: left; padding-right: 1.9rem; position: relative; white-space: nowrap; }
+    .round .round-pick .round-multi-btn { width: auto; min-width: 9.5rem; max-width: 16rem; overflow: hidden; text-overflow: ellipsis; text-align: left; padding-right: 1.9rem; position: relative; white-space: nowrap; }
     .round-multi-btn::after { content: ''; position: absolute; right: 0.65rem; top: 50%; width: 0.4rem; height: 0.4rem; margin-top: -0.3rem;
       border-right: 1.5px solid var(--ink-muted); border-bottom: 1.5px solid var(--ink-muted); transform: rotate(45deg); }
     .round-multi.is-open .round-multi-btn { border-color: var(--accent); }
@@ -7545,9 +7545,13 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       const t = document.createElement('span'); t.className = 'scenario-field-label'; t.id = `${id}-label`; t.textContent = label;
       const on = options.filter(o => o.on);
       const btn = document.createElement('button'); btn.type = 'button'; btn.id = id; btn.className = 'scenario-select round-multi-btn';
-      btn.textContent = !on.length ? 'None' : on.length === 1 ? on[0].label : `${on.length} on`;
+      // What's ticked: the names while they fit, else the first and "+ N more";
+      // the tooltip and the screen-reader name always have the whole list
+      const all = on.map(o => o.label).join(', ');
+      btn.textContent = !on.length ? 'None' : all.length <= 24 ? all : `${on[0].label} + ${on.length - 1} more`;
+      btn.title = on.length ? all : '';
+      btn.setAttribute('aria-label', `${label}: ${on.length ? all : 'none'}`);
       btn.setAttribute('aria-haspopup', 'true'); btn.setAttribute('aria-controls', `${id}-list`);
-      btn.setAttribute('aria-labelledby', `${id}-label ${id}`);
       const list = document.createElement('div'); list.className = 'round-multi-list'; list.id = `${id}-list`;
       list.setAttribute('role', 'group'); list.setAttribute('aria-labelledby', `${id}-label`);
       options.forEach(o => {
@@ -7643,7 +7647,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       // You, this round
       row.append(
         pick('round-mult', 'Movement', SheetRound.MOVE_MULTS.map(m => [m, `${m}×`]), rec.you.moveMult, v => { rec.you.moveMult = v; saveRound(rec); }),
-        multi('round-you', 'You', [
+        multi('round-you', 'Additional Actions', [
           { key: 'moveFirst', label: 'Move 1st', note: '+3 initiative; one attack', on: rec.you.moveFirst },
           { key: 'setVsCharge', label: 'Set vs charge', note: '−2 initiative', on: rec.you.setVsCharge },
         ], (key, v) => { rec.you[key] = v; saveRound(rec); }));
