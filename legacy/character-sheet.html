@@ -813,6 +813,11 @@
     .meta-k { font-family: var(--font-display); font-size: 0.6rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted); margin-right: 0.15rem; }
     /* A read-only value in a line, the height of the controls beside it */
     .round-read-value { display: inline-flex; align-items: center; height: var(--ctl-h); font-size: 0.95rem; color: var(--ink); white-space: nowrap; }
+    /* A rolled line: one strip, same type throughout, pieces split by dividers */
+    .round-summary { display: flex; flex-wrap: wrap; align-items: center; min-height: var(--ctl-h); font-size: 0.95rem; color: var(--ink); }
+    .round-summary > span { padding: 0 0.75rem; border-left: 1px solid var(--rule); line-height: 1.3; }
+    .round-summary > span:first-child { padding-left: 0; border-left: 0; }
+    .round-summary > .is-key { font-family: var(--font-display); font-weight: 700; color: var(--accent); }
     .round-read.is-key .round-read-value { font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; color: var(--accent); }
     .round-send { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.9rem; margin-top: 0.75rem; }
     .round-add-btn { background: none; border: 1px solid var(--rule); border-radius: var(--radius); font-family: var(--font-display); font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.2rem 0.5rem; cursor: pointer; color: var(--ink-muted); white-space: nowrap; }
@@ -7725,14 +7730,20 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         row.appendChild(lab);
         const id = `round-${line.key}`;
         // Rolled: what it was rolled with, no longer editable
+        // Rolled: one strip, pieces split by dividers (THAC0 joins it below)
+        let summary = null;
         if (line.roll) {
-          // The same columns as the controls, as read-only values
           const st = line.set;
           const conds = [st.flanking && 'Flanking', st.rear && 'Rear attack', st.charging && 'Charging'].filter(Boolean);
-          row.append(readField('Targets', st.targets.length ? st.targets.map(t => t.label + (t.size === 'l' && !/\(L\)/.test(t.label) ? ' (L)' : '')).join(', ') : 'None'));
-          if (st.ground) row.append(readField('Ground', st.ground === 'high' ? 'Higher' : 'Lower'));
-          row.append(readField('Conditions', conds.length ? conds.join(', ') : 'None'));
-          if (st.other) row.append(readField('Other', st.other > 0 ? `+${st.other}` : `−${-st.other}`));
+          const parts = [
+            st.targets.length ? `vs ${st.targets.map(t => t.label + (t.size === 'l' && !/\(L\)/.test(t.label) ? ' (L)' : '')).join(', ')}` : 'No target',
+            st.ground ? (st.ground === 'high' ? 'Higher ground' : 'Lower ground') : '',
+            conds.join(', '),
+            st.other ? `Other ${st.other > 0 ? '+' : '−'}${Math.abs(st.other)}` : '',
+          ].filter(Boolean);
+          summary = document.createElement('div'); summary.className = 'round-summary';
+          parts.forEach(p => { const s = document.createElement('span'); s.textContent = p; summary.appendChild(s); });
+          row.appendChild(summary);
         } else {
           // Foes as players know them: the DM's fixed ID and size (never AC);
           // several for an area spell, a sweep of small foes, or missiles split
@@ -7770,7 +7781,12 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           : heal ? readField('Roll', 'Healing')
           : readField('Save', saveText === 'No save' ? 'None' : saveText.replace(/^Target saves \((.*)\)$/, '$1'));
         n.title = thac0 != null ? 'With this line\'s conditions. The DM decides the hit from the foe\'s AC.' : canRoll ? '' : 'Nothing to roll: the DM resolves the spell when you send the round';
-        row.appendChild(n);
+        if (summary) {
+          // In the rolled strip, as one more piece: "THAC0 12"
+          const s = document.createElement('span'); s.className = 'is-key'; s.title = n.title;
+          s.textContent = thac0 != null ? `THAC0 ${thac0}` : heal ? 'Healing' : saveText;
+          summary.appendChild(s);
+        } else row.appendChild(n);
         if (!line.roll && canRoll) {
           const b = document.createElement('button'); b.type = 'button'; b.className = 'round-btn roll-hit-btn';
           b.innerHTML = `${D20_SVG}<span>${thac0 != null ? 'Roll to hit' : 'Roll'}</span>`;
