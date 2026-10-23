@@ -1,0 +1,5 @@
+# Marks this folder as the Supabase project for the GitHub integration.
+# Deliberately minimal: the integration applies migrations/ to production;
+# auth, API and other settings stay as set in the dashboard (no [remotes]
+# block, so nothing here is pushed to the live project).
+project_id = "app-adnd"
