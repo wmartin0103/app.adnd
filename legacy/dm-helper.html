@@ -1941,9 +1941,10 @@ function rollLine(ctx, line, rand = Math.random) {
 // size of target), dmgStale: roll them again.
 function scoreRoll(ctx, line, raw) {
   if (!raw) return null;
-  if (raw.frozen) return raw;   // sent to the DM: the numbers it was sent with
   // A roll from before several targets: one entry, against the line's first target
-  const each = raw.each || [{ ...raw, target: targetsOf(line)[0] }];
+  const asEach = r => (r.each ? r : { kind: lineKind(ctx, line.sc), each: [{ ...r, target: targetsOf(line)[0] }], dmgStale: !!r.dmgStale, frozen: r.frozen });
+  if (raw.frozen) return asEach(raw);   // sent to the DM: the numbers it was sent with
+  const each = asEach(raw).each;
   const thac0 = noAttackRoll(ctx, line.sc) ? null : lineTHAC0(ctx, line);
   const scored = each.map(e => {
     if (!('dmgSig' in e)) {   // from before the dice were kept: its damage stays, the AC hit follows

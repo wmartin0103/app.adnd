@@ -146,6 +146,14 @@ test('several targets: a d20 each, one area roll for all, or damage each', () =>
   assert.match(lineSay({ ...areaLine, roll: area }), /target saves/);
 });
 
+test('a roll sent before several targets (old format, frozen) still shows', () => {
+  const old = { d20: 15, thac0: 16, hitsAC: 1, dmg: 5, dmgExpr: '1d6', frozen: true };
+  const rec = { ...withAttacks(newRound('Rifiyr'), 'sc-1'), lines: { q1: { target: orc, roll: old } } };
+  const [line] = roundLines(ctxR, rec, rifiyr.__scenarios);
+  assert.deepEqual([line.roll.frozen, line.roll.each.length, one(line.roll).d20, one(line.roll).target.id], [true, 1, 15, 'B1']);
+  assert.equal(lineSay(line), '1st: vs B1, d20 15, hits AC 1 or worse, 5 damage');
+});
+
 test('round sync: the DM\'s round and a sheet\'s record reach the other page', async () => {
   const store = {};
   globalThis.localStorage = { getItem: k => store[k] ?? null, setItem: (k, v) => { store[k] = String(v); } };
