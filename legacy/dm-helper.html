@@ -4,18 +4,26 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DM Helper</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet" />
 <style>
   :root{
-    --ink:#171c17; --panel:#20261e; --panel-2:#272e24; --edge:#3a4433;
-    --parchment:#e9e1cf; --muted:#9aa08c;
-    --brass:#c9a24b; --verdigris:#5fa38f; --rust:#c05a30;
-    --serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', serif;
-    --sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    /* The character sheet's palette and type, under this page's own names:
+       --ink is the page, --parchment the text, --brass the accent */
+    --ink:#f5f5f5; --panel:#ffffff; --panel-2:#faf7f4; --edge:#d8d0c8;
+    --parchment:#1a1714; --muted:#5a534e;
+    --brass:#8b2e12; --verdigris:#2f6b3a; --rust:#9b2a1f;
+    --serif: 'Cinzel', Georgia, serif;
+    --sans: 'Crimson Pro', Georgia, serif;
   }
   *{box-sizing:border-box}
   html,body{margin:0}
+  /* As on the sheet: Cinzel for labels, headings and names; the body face
+     for anything typed or picked */
+  input, select, textarea, option { font-family: var(--sans) !important; }
+  .roundctl b { white-space: nowrap; }
   body{
-    background:radial-gradient(120% 90% at 50% -10%, #1f261d 0%, var(--ink) 60%);
+    background:var(--ink);
     color:var(--parchment); font-family:var(--sans);
     min-height:100vh; padding:32px 16px 64px; line-height:1.4;
     display:flex; justify-content:center; align-items:flex-start;
@@ -40,7 +48,7 @@
   .tab:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
   header.top .reset{margin-left:auto;align-self:center;background:none;border:1px solid var(--edge);border-radius:5px;color:var(--muted);font-family:var(--serif);font-size:.85rem;padding:5px 12px;cursor:pointer}
   header.top .reset:hover{border-color:var(--rust);color:var(--rust)}
-  header.top .reset.armed{border-color:var(--rust);color:var(--parchment);background:rgba(192,90,48,.35)}
+  header.top .reset.armed{border-color:var(--rust);color:var(--parchment);background:rgba(155,42,31,.35)}
   header.top .reset:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
   .hidden{display:none}
   .toptabs{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch}
@@ -79,7 +87,7 @@
   .syncpanel .sphead{color:var(--muted)}
   .syncpanel .spline{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;border-top:1px solid var(--edge);padding-top:4px}
   .syncpanel .splabel{font-family:var(--serif);color:var(--brass);min-width:3.5em}
-  .syncpanel .hit{color:#7cc58a}.syncpanel .miss{color:var(--muted)}.syncpanel .crit{color:#7cc58a;font-weight:600}.syncpanel .fumble{color:#f08b7c;font-weight:600}
+  .syncpanel .hit{color:#2f6b3a}.syncpanel .miss{color:var(--muted)}.syncpanel .crit{color:#2f6b3a;font-weight:600}.syncpanel .fumble{color:#9b2a1f;font-weight:600}
   .roundctl b{font-family:var(--serif);margin-right:4px}
   /* Sign in (src/cloud.js) */
   .cloud-bar{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:.85rem;opacity:.9}
@@ -91,7 +99,7 @@
   .cloud-title{font-size:1.05rem;margin:0}
   .cloud-field{display:grid;gap:4px;font-size:.8rem}
   .cloud-field input{font:inherit;font-size:1rem;padding:6px 8px;border:1px solid #999;border-radius:4px}
-  .cloud-error{color:#b3261e;font-size:.85rem;min-height:1em;margin:0}
+  .cloud-error{color:#9b2a1f;font-size:.85rem;min-height:1em;margin:0}
   .cloud-actions{display:flex;justify-content:flex-end;gap:8px}
   .extrablock .chead{font-family:var(--serif)}
   .char.inplayer .mods .item.m-move,.char.inplayer .mods .item.m-mult,.char.inplayer .mods .item.m-quick{font-family:var(--sans);font-size:var(--sm);color:var(--muted);gap:4px}
@@ -234,7 +242,7 @@
   .reroll.small.quick.rm{border-color:var(--rust);color:var(--rust)}
   .apsave{font-size:.72rem;padding:1px 2px}
   .reroll.small.quick.ok{border-color:var(--verdigris)!important;color:var(--verdigris)!important}
-  .reroll.small.quick.bad{border-color:#e04e4e!important;color:#e04e4e!important;font-weight:700}
+  .reroll.small.quick.bad{border-color:#9b2a1f!important;color:#9b2a1f!important;font-weight:700}
   .addrow.inner{padding:6px 14px 10px}
   .nameline .reroll.small{padding:2px 8px;font-size:.72rem}
   .nameline .reroll.small.rm{border-color:var(--rust);color:var(--rust)}
@@ -304,7 +312,7 @@
   table.acts tr:last-child td{border-bottom:none}
   table.acts thead th{color:var(--muted);font-weight:600;font-size:.72rem;text-align:right}
   table.acts thead th.l{text-align:left}
-  table.acts thead th .sub2{display:block;color:#6f7563;font-size:.68rem;font-weight:400;margin-top:2px}
+  table.acts thead th .sub2{display:block;color:#9a9390;font-size:.68rem;font-weight:400;margin-top:2px}
   table.acts .pick{width:42px;text-align:center}
   table.acts .pick input{width:18px;height:18px}
   td.name{font-family:var(--serif);font-size:1rem}
@@ -315,7 +323,7 @@
   td.thac0 .n{font-family:var(--serif);font-weight:700;font-size:1.15rem;color:var(--brass);cursor:default}
   td.thac0.none .n{color:var(--muted);font-weight:400}
   td.tgtroll .n{font-family:var(--serif);font-weight:700;font-size:1.15rem;color:var(--parchment);cursor:default}
-  tr.act.sel{background:rgba(95,163,143,.10)}
+  tr.act.sel{background:rgba(47,107,58,.08)}
   tr.act.blocked td{opacity:.35}
   tr.act.blocked input{cursor:not-allowed}
   tr.act.sel td.init .n{color:var(--verdigris)}
@@ -329,9 +337,9 @@
   .turnwrap{display:flex;flex-wrap:wrap;gap:4px 6px}
   .turnchip{font-size:.72rem;color:var(--muted);border:1px solid var(--edge);border-radius:3px;padding:1px 6px;white-space:nowrap;cursor:default}
   .turnchip b{font-family:var(--serif);font-weight:700;margin-left:2px}
-  .turnchip.pass{color:var(--verdigris);border-color:rgba(95,163,143,.5)}
-  .turnchip.fail{color:var(--rust);border-color:rgba(192,90,48,.5)}
-  .turnchip.auto{color:var(--verdigris);border-color:rgba(95,163,143,.5);background:rgba(95,163,143,.08)}
+  .turnchip.pass{color:var(--verdigris);border-color:rgba(47,107,58,.45)}
+  .turnchip.fail{color:var(--rust);border-color:rgba(155,42,31,.5)}
+  .turnchip.auto{color:var(--verdigris);border-color:rgba(47,107,58,.45);background:rgba(47,107,58,.06)}
   .turnchip.na{opacity:.45}
   tr.critres td{padding:3px 14px 8px 52px;border-bottom:1px solid var(--edge);font-size:.8rem;line-height:1.35}
   .crit{color:var(--verdigris)} .fumble{color:var(--rust)}
@@ -362,8 +370,8 @@
   table.skills td.tgt{font-family:var(--serif);font-size:1.05rem;cursor:default}
   td.tgt.pass{color:var(--verdigris)}
   td.tgt.fail{color:var(--rust)}
-  td.tgt.crit{background:rgba(95,163,143,.22);font-weight:800;border-radius:3px}
-  td.tgt.critfail{background:rgba(192,90,48,.24);font-weight:800;border-radius:3px}
+  td.tgt.crit{background:rgba(47,107,58,.18);font-weight:800;border-radius:3px}
+  td.tgt.critfail{background:rgba(155,42,31,.18);font-weight:800;border-radius:3px}
 
   .reroll.small{padding:3px 9px;font-size:.78rem;margin-left:auto}
   .groupcheck{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}
@@ -378,10 +386,10 @@
   .gctable td.name{font-family:var(--serif)}
   .gctable td.tgt{font-family:var(--serif);font-size:1.15rem;font-weight:700}
   .src{margin-left:8px;font-family:var(--sans);font-size:.62rem;color:var(--muted);border:1px solid var(--edge);border-radius:3px;padding:0 4px;vertical-align:middle;cursor:default;letter-spacing:.02em}
-  .src.kit{color:var(--brass);border-color:rgba(201,162,75,.5)}
-  .src.int{color:var(--verdigris);border-color:rgba(95,163,143,.5)}
-  .src.lvl{color:var(--parchment);border-color:rgba(233,225,207,.35)}
-  .src.pov{color:#b58cd6;border-color:rgba(181,140,214,.5)}
+  .src.kit{color:var(--brass);border-color:rgba(139,46,18,.5)}
+  .src.int{color:var(--verdigris);border-color:rgba(47,107,58,.45)}
+  .src.lvl{color:var(--parchment);border-color:rgba(26,23,20,.35)}
+  .src.pov{color:#6b4a8a;border-color:rgba(107,74,138,.5)}
   .svnote{font-size:.74rem;color:var(--muted);line-height:1.3;max-width:60%}
   .svtable td.basecell{color:var(--muted);font-family:var(--serif)}
   .svtable td.modcell{color:var(--verdigris);font-family:var(--serif)}
@@ -389,7 +397,7 @@
   #svBlocks .char{margin-bottom:12px}
   td.rxres{font-family:var(--serif);font-weight:700;font-size:1.05rem}
   .rx-friendly{color:var(--verdigris)} .rx-indiff{color:var(--parchment)} .rx-caut{color:var(--brass)}
-  .rx-threat{color:#d08a4a} .rx-host{color:var(--rust)} .rx-flight{color:#7fa8d8}
+  .rx-threat{color:#a0521c} .rx-host{color:var(--rust)} .rx-flight{color:#2f5d8a}
   .playerrx{display:flex;justify-content:flex-start;align-items:baseline;gap:8px;margin:0 0 8px;font-size:.95rem;flex-wrap:wrap}
   .playerrx .lbl{color:var(--muted);font-size:.8rem;letter-spacing:.04em;text-transform:uppercase}
   .playerrx b{font-family:var(--serif);font-size:1.1rem}
