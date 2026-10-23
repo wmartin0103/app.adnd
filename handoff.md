@@ -385,6 +385,22 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
 - [ ] Saves from every other active player (PLAN status list).
 - [ ] Leprechaun Dagger damage stays "?" until the DM reveals the effect; then set the value or make it an Effect.
 
+**DM Helper: one product with the sheet** (paused 2026-10-23, owner out of credits)
+
+- [x] Step 1: the DM Helper uses the sheet's palette and type (light; tokens
+  mapped onto its own names in its `:root`). Layout unchanged.
+- [ ] Layout issues remain throughout the DM Helper after the re-skin; the owner
+  will go through them next session (not yet listed). Expect many small fixes.
+- [ ] Step 2: one shared source for tokens and components (labelled controls,
+  the select with checkboxes, result panels, strips, collapsible sections),
+  copied into both tools by the build like the rules. Basis for light/dark
+  mode for both, a short-term goal.
+- [ ] Step 3: the Initiative tab's structure from
+  `prototypes/dm-initiative-mockup.html` (owner: "a fine place to start, will
+  need work"): one order with Baddies in it, attacks as the sheet's cards,
+  the DM's verdict in the result panel. Do it in pieces; start with how
+  players' synced rounds show.
+
 **Rules questions** (the owner is asking the table)
 
 - [ ] Flanking vs Rear attack to-hit (asked 2026-10-23). Both are +2 in This round today
