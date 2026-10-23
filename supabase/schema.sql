@@ -50,6 +50,9 @@ begin
 end $$;
 create trigger on_new_user after insert on auth.users
   for each row execute function public.on_new_user();
+-- Accounts made before this file ran
+insert into public.profiles (id, display_name)
+  select id, split_part(email, '@', 1) from auth.users;
 
 -- ── Campaigns and who's in them ─────────────────────────────────────────
 
