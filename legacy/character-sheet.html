@@ -766,16 +766,27 @@
     .round { border: 1px solid var(--rule); border-radius: var(--radius); background: var(--surface); padding: 0.6rem 0.8rem 0.7rem; margin: 0.75rem 0 1rem; }
     .round-head { display: flex; align-items: baseline; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
     .round-status { font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 0.08em; color: var(--ink-muted); }
-    .round-row { display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem; align-items: flex-end; }
+    .round-row { display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; align-items: flex-end; }
+    /* One control system: every control 2.1rem tall under a small label;
+       on/off choices are toggle chips, not checkboxes */
+    .round { --ctl-h: 2.1rem; }
+    .round .round-pick .scenario-select, .round .round-btn, .round .round-chip, .round input.round-typed { height: var(--ctl-h); box-sizing: border-box; }
+    .round .round-btn { display: inline-flex; align-items: center; padding-top: 0; padding-bottom: 0; }
+    .round-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
+    .round-chip { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0 0.75rem; border: 1px solid var(--rule); border-radius: var(--radius);
+      background: var(--surface); color: var(--ink-muted); font: 0.95rem var(--font-body); cursor: pointer; white-space: nowrap; }
+    .round-chip::before { content: ''; width: 0.55rem; height: 0.55rem; border-radius: 50%; border: 1.5px solid currentColor; opacity: 0.6; }
+    .round-chip:hover, .round-chip:focus-visible { border-color: var(--accent); color: var(--ink); }
+    .round-chip[aria-pressed="true"] { border-color: var(--accent); background: rgba(139,46,18,0.07); color: var(--accent); }
+    .round-chip[aria-pressed="true"]::before { background: currentColor; opacity: 1; }
+    .round-chip:disabled { opacity: 0.45; cursor: not-allowed; }
+    .round-chip.is-small { --ctl-h: 1.7rem; height: 1.7rem; font-size: 0.8rem; padding: 0 0.55rem; }
+    .round .round-value { line-height: var(--ctl-h); }
+    .play-line > .play-label, .play-line > .play-need { line-height: var(--ctl-h); align-self: flex-end; }
     .round-init { display: flex; flex-direction: column; gap: 0.2rem; }
-    .round-init > .round-btn, .round-init > .round-typed { margin-right: 0.3rem; }
-    .round-init { flex-direction: row; flex-wrap: wrap; align-items: center; }
-    .round-init > .scenario-field-label { flex-basis: 100%; }
+
     .round-value { font-family: var(--font-display); font-size: 1.5rem; color: var(--accent); line-height: 1; }
     .round-acton { margin-left: auto; }
-    .round-you { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: flex-end; }
-    .round-check { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.9rem; }
-    .round-check input { accent-color: var(--accent); }
     .round-pick { display: inline-flex; flex-direction: column; gap: 0.15rem; }
     .round-pick .scenario-select { width: auto; min-width: 4.5rem; }
     input.scenario-select.round-typed { width: 4.5rem; }
@@ -787,8 +798,9 @@
     .round-queue { margin-top: 0.75rem; display: grid; gap: 0.5rem; }
     .round-item { border: 1px solid var(--accent); border-radius: var(--radius); background: var(--surface); }
     .round-item-head { display: flex; align-items: baseline; gap: 0.6rem; padding: 0.5rem 0.7rem; flex-wrap: wrap; }
-    .round-item-head .round-item-extra { margin-left: auto; font-size: 0.85rem; }
-    .round-remove-btn { align-self: center; }
+    .round-item-head { align-items: center; }
+    .round-item-head .round-item-extra { margin-left: auto; }
+    .round-remove-btn { height: 1.7rem; }
     .play-name { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; letter-spacing: 0.04em; }
     .play-meta { font-size: 0.85rem; color: var(--ink-muted); }
     .round-send { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.9rem; margin-top: 0.75rem; }
@@ -5381,6 +5393,7 @@ function createCloudRoundSync({ client, campaignId, userId }) {
   const rows = {};          // character name → { round, record }
   const ids = {};           // character name → character id
   const local = new Set();  // records written here before the first load
+  const writes = {};        // character name → this page's saves, in order
   const state = () => {
     const records = {};
     Object.entries(rows).forEach(([name, r]) => { if (r.round === base.round) records[name] = { ...r.record, round: r.round }; });
@@ -5417,7 +5430,13 @@ function createCloudRoundSync({ client, campaignId, userId }) {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'round_state', filter: `campaign_id=eq.${campaignId}` },
       p => { if (p.new && p.new.campaign_id) { const was = base.round; fromState(p.new); tell(); if (p.new.round !== was || p.new.round === 1) reload(); } })
     .on('postgres_changes', { event: '*', schema: 'public', table: 'round_records', filter: `campaign_id=eq.${campaignId}` },
-      p => { if (p.new && p.new.record) { fromRecord(p.new); tell(); } })
+      p => {
+        if (!p.new || !p.new.record) return;
+        // An echo older than this page's last save of that character: stale
+        const w = writes[p.new.record.character];
+        if (w && w.sentAt && p.new.updated_at && Date.parse(p.new.updated_at) < Date.parse(w.sentAt)) return;
+        fromRecord(p.new); tell();
+      })
     .subscribe();
 
   // The character's row in the campaign, found by name (made if it's new)
@@ -5453,10 +5472,19 @@ function createCloudRoundSync({ client, campaignId, userId }) {
       const round = base.round;
       rows[rec.character] = { round, record: { ...rec, round } };
       if (!loaded) local.add(rec.character);
-      const record = rows[rec.character].record;
-      ready.then(() => characterId(rec.character))
-        .then(id => client.from('round_records').upsert({ character_id: id, campaign_id: campaignId, round, record, updated_at: new Date().toISOString() }))
-        .then(() => {}, () => {});
+      // One save at a time per character, always the latest: quick changes
+      // can't land out of order and undo each other
+      const name = rec.character;
+      const w = writes[name] || (writes[name] = { chain: Promise.resolve(), next: null });
+      w.next = { round, record: rows[name].record, at: new Date().toISOString() };
+      w.sentAt = w.next.at;
+      w.chain = w.chain.then(() => {
+        const job = w.next;
+        if (!job) return null;
+        w.next = null;
+        return ready.then(() => characterId(name))
+          .then(id => client.from('round_records').upsert({ character_id: id, campaign_id: campaignId, round: job.round, record: job.record, updated_at: job.at }));
+      }).then(() => {}, () => {});
       return state();
     },
     sendDM(change) {
@@ -7487,11 +7515,19 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
     }
 
     const escR = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    // An on/off choice: a toggle chip the height of a select (focus stays on it after the redraw)
     const check = (id, label, checked, onChange) => {
-      const l = document.createElement('label'); l.className = 'round-check';
-      const b = document.createElement('input'); b.type = 'checkbox'; b.id = id; b.checked = !!checked;
-      b.addEventListener('change', () => onChange(b.checked));
-      l.append(b, ` ${label}`); return l;
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'round-chip'; b.id = id;
+      b.setAttribute('aria-pressed', checked ? 'true' : 'false'); b.textContent = label;
+      b.addEventListener('click', () => { onChange(b.getAttribute('aria-pressed') !== 'true'); document.getElementById(id)?.focus(); });
+      return b;
+    };
+    // Chips under a label, lined up with the selects beside them
+    const field = (label, ...els) => {
+      const g = document.createElement('div'); g.className = 'round-pick'; g.setAttribute('role', 'group'); g.setAttribute('aria-label', label);
+      const t = document.createElement('span'); t.className = 'scenario-field-label'; t.textContent = label; t.setAttribute('aria-hidden', 'true');
+      const row = document.createElement('div'); row.className = 'round-chips'; row.append(...els);
+      g.append(t, row); return g;
     };
     const pick = (id, label, pairs, value, onChange) => {
       const l = document.createElement('label'); l.className = 'round-pick'; l.htmlFor = id;
@@ -7515,19 +7551,21 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       body.innerHTML = '';
       const row = document.createElement('div'); row.className = 'round-row';
       // Initiative: d10 once a round (rolled here or typed in from real dice)
-      const init = document.createElement('div'); init.className = 'round-init';
+      const init = document.createElement('div'); init.className = 'round-pick round-init';
       const il = document.createElement('span'); il.className = 'scenario-field-label'; il.textContent = 'Initiative';
       init.appendChild(il);
+      const initRow = document.createElement('div'); initRow.className = 'round-chips';
       if (rec.init.roll == null) {
         const roll = document.createElement('button'); roll.type = 'button'; roll.className = 'round-btn'; roll.textContent = 'Roll d10';
         roll.addEventListener('click', () => { rec.init.roll = 1 + Math.floor(Math.random() * 10); saveRound(rec); });
         const typed = document.createElement('input'); typed.type = 'number'; typed.min = 1; typed.max = 10; typed.className = 'scenario-select round-typed';
         typed.setAttribute('aria-label', 'Or type your initiative roll'); typed.placeholder = 'or type';
         typed.addEventListener('change', () => { const v = parseInt(typed.value, 10); if (v >= 1 && v <= 10) { rec.init.roll = v; saveRound(rec); } });
-        init.append(roll, typed);
+        initRow.append(roll, typed);
       } else {
-        const v = document.createElement('b'); v.className = 'round-value'; v.textContent = rec.init.roll; init.appendChild(v);
+        const v = document.createElement('b'); v.className = 'round-value'; v.textContent = rec.init.roll; initRow.appendChild(v);
       }
+      init.appendChild(initRow);
       row.appendChild(init);
       // Anything else that moves initiative this round (a Quickness check
       // made at the table, a spell): − acts sooner
@@ -7535,12 +7573,11 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       adj.title = 'Added to your initiative roll. Negative acts sooner (Quickness: −2).';
       row.appendChild(adj);
       // You, this round
-      const you = document.createElement('div'); you.className = 'round-you';
-      you.append(
-        check('round-move', 'Move 1st', rec.you.moveFirst, v => { rec.you.moveFirst = v; saveRound(rec); }),
+      row.append(
         pick('round-mult', 'Movement', SheetRound.MOVE_MULTS.map(m => [m, `${m}×`]), rec.you.moveMult, v => { rec.you.moveMult = v; saveRound(rec); }),
-        check('round-set', 'Set vs charge', rec.you.setVsCharge, v => { rec.you.setVsCharge = v; saveRound(rec); }));
-      row.appendChild(you);
+        field('You',
+          check('round-move', 'Move 1st', rec.you.moveFirst, v => { rec.you.moveFirst = v; saveRound(rec); }),
+          check('round-set', 'Set vs charge', rec.you.setVsCharge, v => { rec.you.setVsCharge = v; saveRound(rec); })));
       // When you act
       const ao = SheetRound.actOn(ctx, rec, scenarios, who);
       const act = document.createElement('div'); act.className = 'round-init round-acton';
@@ -7596,9 +7633,9 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         rm.setAttribute('aria-label', `Take ${sc.name || 'this attack'} out of this round`);
         rm.addEventListener('click', () => saveRound(SheetRound.unqueueAttack(rec, q.qid)));
         const ex = check(`round-${q.qid}-extra`, 'Extra Attack', q.extra, v => { q.extra = v; saveRound(rec); });
-        ex.classList.add('round-item-extra');
+        ex.classList.add('round-item-extra', 'is-small');
         // Rolled: the attack is settled; only Remove is left
-        if ((rec.lines[q.qid] || {}).roll) ex.querySelector('input').disabled = true;
+        if ((rec.lines[q.qid] || {}).roll) ex.disabled = true;
         ex.title = 'Counts as an extra attack: the DM places it by the extra-attack setting';
         head.append(ex, rm);
         item.appendChild(head);
@@ -7665,11 +7702,11 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           const s = document.createElement('span'); s.className = 'round-note';
           s.textContent = [line.set.target ? `vs ${line.set.target.label}${line.set.target.size === 'l' ? ' (L)' : ''}` : 'no target', ...tags(line.set)].join(' · ');
           row.appendChild(s);
-        } else if (i > 0) row.appendChild(check(`${id}-same`, 'Same as above', line.same, v => {
+        } else if (i > 0) row.appendChild(field('Setup', check(`${id}-same`, 'Same as above', line.same, v => {
           if (v) rec.lines[line.key] = { ...own(line.key), same: true };
           else rec.lines[line.key] = { ...line.set, ...own(line.key), same: false, target: line.set.target, flanking: line.set.flanking, ground: line.set.ground, charging: line.set.charging, other: line.set.other };
           saveRound(rec);
-        }));
+        })));
         if (line.roll) {
           // shown above
         } else if (line.same) {
@@ -7686,9 +7723,10 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           }));
           if (t && t.id === 'other') row.appendChild(pick(`${id}-size`, 'Size', [['sm', 'S/M'], ['l', 'L']], t.size || 'sm', v => setOwn(line, { target: { ...t, size: v } })));
           row.append(
-            check(`${id}-flank`, 'Flanking', line.set.flanking, v => setOwn(line, { flanking: v })),
             pick(`${id}-ground`, 'Ground', [['', 'Level'], ['high', 'Higher'], ['low', 'Lower']], line.set.ground, v => setOwn(line, { ground: v })),
-            check(`${id}-charge`, 'Charging', line.set.charging, v => setOwn(line, { charging: v })),
+            field('Conditions',
+              check(`${id}-flank`, 'Flanking', line.set.flanking, v => setOwn(line, { flanking: v })),
+              check(`${id}-charge`, 'Charging', line.set.charging, v => setOwn(line, { charging: v }))),
             pick(`${id}-other`, 'Other', OTHER_OPTS, String(line.set.other || 0), v => setOwn(line, { other: parseInt(v, 10) || 0 })));
         }
         const thac0 = line.roll && line.roll.frozen ? line.roll.thac0 : SheetRound.lineTHAC0(ctx, line);

@@ -4,7 +4,8 @@ import { createCloudRoundSync } from '../src/cloud.js';
 
 // A stand-in for the Supabase client: tables in memory, the calls the round
 // sync makes, and realtime that reaches every sync on the same "database"
-function fakeDB() {
+function fakeDB({ upsertDelay = () => 0 } = {}) {
+  let upserts = 0;
   const tables = { round_state: [], round_records: [], characters: [] };
   const subs = [];
   const keyOf = { round_state: 'campaign_id', round_records: 'character_id', characters: 'id' };
@@ -36,7 +37,10 @@ function fakeDB() {
       select() { return b; }, eq(c, v) { where.push([c, v]); return b; }, limit() { return b; },
       maybeSingle() { maybe = true; return b; }, single() { one = true; return b; },
       insert(p) { op = 'insert'; payload = p; return b; }, delete() { op = 'delete'; return b; }, upsert(p) { op = 'upsert'; payload = p; return b; },
-      then(res, rej) { return Promise.resolve().then(run).then(res, rej); },
+      then(res, rej) {
+        const wait = op === 'upsert' ? upsertDelay(upserts++) : 0;
+        return new Promise(ok => setTimeout(ok, wait)).then(run).then(res, rej);
+      },
     };
     return b;
   };
@@ -50,7 +54,7 @@ function fakeDB() {
   });
   return { tables, client };
 }
-const settle = () => new Promise(r => setTimeout(r, 10));
+const settle = () => new Promise(r => setTimeout(r, 60));
 
 test('cloud round: the DM runs the round, a sheet sends its record, both hear it', async () => {
   const db = fakeDB();
@@ -86,4 +90,16 @@ test('cloud round: the DM runs the round, a sheet sends its record, both hear it
   dm.sendDM({ round: 1, reset: true });
   await settle();
   assert.deepEqual([db.tables.round_records.length, sheet.state().round, sheet.state().records], [0, 1, {}]);
+});
+
+test('cloud round: quick saves land in order (a slow save never undoes a newer one)', async () => {
+  // The first save takes far longer than the second
+  const db = fakeDB({ upsertDelay: n => (n === 0 ? 40 : 0) });
+  const sheet = createCloudRoundSync({ client: db.client(), campaignId: 'camp', userId: 'p' });
+  await settle();
+  sheet.sendRecord({ character: 'Rifiyr', lines: {} });
+  sheet.sendRecord({ character: 'Rifiyr', lines: { q1: { roll: { d20: 17 } } } });
+  await new Promise(r => setTimeout(r, 120));
+  assert.equal(db.tables.round_records[0].record.lines.q1.roll.d20, 17);
+  assert.equal(sheet.state().records.Rifiyr.lines.q1.roll.d20, 17);
 });

@@ -2600,6 +2600,7 @@ function createCloudRoundSync({ client, campaignId, userId }) {
   const rows = {};          // character name → { round, record }
   const ids = {};           // character name → character id
   const local = new Set();  // records written here before the first load
+  const writes = {};        // character name → this page's saves, in order
   const state = () => {
     const records = {};
     Object.entries(rows).forEach(([name, r]) => { if (r.round === base.round) records[name] = { ...r.record, round: r.round }; });
@@ -2636,7 +2637,13 @@ function createCloudRoundSync({ client, campaignId, userId }) {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'round_state', filter: `campaign_id=eq.${campaignId}` },
       p => { if (p.new && p.new.campaign_id) { const was = base.round; fromState(p.new); tell(); if (p.new.round !== was || p.new.round === 1) reload(); } })
     .on('postgres_changes', { event: '*', schema: 'public', table: 'round_records', filter: `campaign_id=eq.${campaignId}` },
-      p => { if (p.new && p.new.record) { fromRecord(p.new); tell(); } })
+      p => {
+        if (!p.new || !p.new.record) return;
+        // An echo older than this page's last save of that character: stale
+        const w = writes[p.new.record.character];
+        if (w && w.sentAt && p.new.updated_at && Date.parse(p.new.updated_at) < Date.parse(w.sentAt)) return;
+        fromRecord(p.new); tell();
+      })
     .subscribe();
 
   // The character's row in the campaign, found by name (made if it's new)
@@ -2672,10 +2679,19 @@ function createCloudRoundSync({ client, campaignId, userId }) {
       const round = base.round;
       rows[rec.character] = { round, record: { ...rec, round } };
       if (!loaded) local.add(rec.character);
-      const record = rows[rec.character].record;
-      ready.then(() => characterId(rec.character))
-        .then(id => client.from('round_records').upsert({ character_id: id, campaign_id: campaignId, round, record, updated_at: new Date().toISOString() }))
-        .then(() => {}, () => {});
+      // One save at a time per character, always the latest: quick changes
+      // can't land out of order and undo each other
+      const name = rec.character;
+      const w = writes[name] || (writes[name] = { chain: Promise.resolve(), next: null });
+      w.next = { round, record: rows[name].record, at: new Date().toISOString() };
+      w.sentAt = w.next.at;
+      w.chain = w.chain.then(() => {
+        const job = w.next;
+        if (!job) return null;
+        w.next = null;
+        return ready.then(() => characterId(name))
+          .then(id => client.from('round_records').upsert({ character_id: id, campaign_id: campaignId, round: job.round, record: job.record, updated_at: job.at }));
+      }).then(() => {}, () => {});
       return state();
     },
     sendDM(change) {
