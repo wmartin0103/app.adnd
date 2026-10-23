@@ -53,7 +53,8 @@ has its own line (target, conditions, roll), an **Extra Attack** checkbox for
 the DM's extra-attack placement, and **Remove**.
 **Send to DM** sends the attacks, and only then does the DM see when the
 character acts, since speed and conditions change it. Changes after sending
-show **Send changes**; rolling an attack after sending goes straight through.
+show **Send changes**. Rolls after sending go straight to the DM, so a player can
+send their actions and roll each attack when it happens.
 
 **Built in:** Good Hits and Bad Misses for criticals and fumbles; Quickness
 (Jaque) and Danger Sense (Goroth); group proficiency checks and group saves.

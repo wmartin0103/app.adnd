@@ -4374,7 +4374,12 @@ function rollLine(ctx, line, rand = Math.random) {
 // target after rolling and the THAC0, AC hit and damage follow. If the damage
 // dice themselves changed (another size of target), dmgStale: roll them again.
 function scoreRoll(ctx, line, raw) {
-  if (!raw || !('dmgSig' in raw)) return raw || null;   // a roll from before this
+  if (!raw) return null;
+  if (!('dmgSig' in raw)) {   // a roll from before the dice were kept: its damage stays, the AC hit follows
+    if (raw.d20 == null || noAttackRoll(ctx, line.sc)) return raw;
+    const thac0 = lineTHAC0(ctx, line);
+    return { ...raw, thac0, hitsAC: thac0 - raw.d20 };
+  }
   const d = lineDamage(ctx, line);
   const dmg = splitDice(d.expr), spell = splitDice(d.spell);
   const total = (sig, dice, part) => (!sig ? null : sig === part.sig ? Math.max(dice + part.flat, 0) : undefined);
@@ -7430,7 +7435,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           b.addEventListener('click', () => {
             own(line.key).roll = SheetRound.rollLine(ctx, line);
             freshRoll = line.key;
-            saveRound(rec, rec.sent);
+            saveRound(rec, rec.sent);   // once sent, a roll goes straight to the DM (later attacks are rolled when they happen)
             freshRoll = null;
           });
           row.appendChild(b);
@@ -7446,13 +7451,16 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
     }
     // Weapon edits change scenario numbers
     document.getElementById('weapons-list')?.addEventListener('change', () => { renderScenarios(); updateActiveTHAC0(); });
-    // Any edit to the attacks, weapons or effects, even mid-typing: This round
-    // follows (its rolls keep their dice and take the new numbers)
+    // Any edit anywhere on the sheet, even mid-typing (abilities, level, the
+    // attack cards, weapons, effects): This round follows, its rolls keeping
+    // their dice and taking the new numbers. Edits inside This round redraw it
+    // themselves. Capture, so a handler that stops the event still counts.
     let roundRedraw = 0;
-    ['scenarios-list', 'weapons-list', 'stances-list'].forEach(id => document.getElementById(id)?.addEventListener('input', () => {
+    ['input', 'change', 'click'].forEach(type => document.addEventListener(type, e => {
+      if (e.target.closest && e.target.closest('#round-panel')) return;
       clearTimeout(roundRedraw);
       roundRedraw = setTimeout(renderRound, 30);
-    }));
+    }, true));
 
     // One line under a spell's result: range, save, the catalog link, and the
     // reminder that being hit first loses the spell
