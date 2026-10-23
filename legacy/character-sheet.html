@@ -4366,10 +4366,12 @@ function rollLine(ctx, line, rand = Math.random) {
   return scoreRoll(ctx, line, raw);
 }
 // A roll with the sheet's current numbers: change an effect (Bless off) or the
-// target after rolling and the THAC0, AC hit and damage follow. If the damage
-// dice themselves changed (another size of target), dmgStale: roll them again.
+// target after rolling and the THAC0, AC hit and damage follow, until it's
+// sent to the DM (frozen). If the damage dice themselves changed (another
+// size of target), dmgStale: roll them again.
 function scoreRoll(ctx, line, raw) {
   if (!raw) return null;
+  if (raw.frozen) return raw;   // sent to the DM: the numbers it was sent with
   if (!('dmgSig' in raw)) {   // a roll from before the dice were kept: its damage stays, the AC hit follows
     if (raw.d20 == null || noAttackRoll(ctx, line.sc)) return raw;
     const thac0 = lineTHAC0(ctx, line);
@@ -7157,6 +7159,13 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
     // the end); the round's other unsent changes wait for Send changes
     function saveRound(rec, send, onlyLine) {
       const s = roundSync();
+      // A rolled attack that goes to the DM keeps the numbers it went with:
+      // later changes to effects no longer move it
+      const freeze = keys => SheetRound.roundLines(scenarioCtx(), rec, scenarios).forEach(l => {
+        if (l.roll && !l.roll.dmgStale && keys(l.key)) rec.lines[l.key].roll = { ...l.roll, frozen: true };
+      });
+      if (onlyLine && rec.sent) freeze(k => k === onlyLine);
+      else if (send) freeze(() => true);
       if (onlyLine && rec.sent) {
         const line = roundView(rec).lines.find(l => l.key === onlyLine);
         const lines = [...rec.view.lines];
@@ -7196,7 +7205,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           return {
             key: l.key, label: queued.length > 1 ? `${l.sc.name || 'Attack'} ${l.label}` : l.label, extra: !!l.extra, scenario: l.sc.name || '',
             target: l.set.target ? { id: l.set.target.id, label: l.set.target.label, size: l.set.target.size } : null,
-            tags: tags(l.set), thac0: SheetRound.lineTHAC0(ctx, l), roll: l.roll || null,
+            tags: tags(l.set), thac0: l.roll && l.roll.frozen ? l.roll.thac0 : SheetRound.lineTHAC0(ctx, l), roll: l.roll || null,
           };
         }),
       };
@@ -7422,7 +7431,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
             check(`${id}-charge`, 'Charging', line.set.charging, v => setOwn(line, { charging: v })),
             pick(`${id}-other`, 'Other', OTHER_OPTS, String(line.set.other || 0), v => setOwn(line, { other: parseInt(v, 10) || 0 })));
         }
-        const thac0 = SheetRound.lineTHAC0(ctx, line);
+        const thac0 = line.roll && line.roll.frozen ? line.roll.thac0 : SheetRound.lineTHAC0(ctx, line);
         const n = document.createElement('span'); n.className = 'play-need';
         n.textContent = thac0 == null ? 'Target saves' : `THAC0 ${thac0}`;
         n.title = 'With this line\'s conditions. The DM decides the hit from the foe\'s AC.';

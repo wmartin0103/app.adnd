@@ -1903,10 +1903,12 @@ function rollLine(ctx, line, rand = Math.random) {
   return scoreRoll(ctx, line, raw);
 }
 // A roll with the sheet's current numbers: change an effect (Bless off) or the
-// target after rolling and the THAC0, AC hit and damage follow. If the damage
-// dice themselves changed (another size of target), dmgStale: roll them again.
+// target after rolling and the THAC0, AC hit and damage follow, until it's
+// sent to the DM (frozen). If the damage dice themselves changed (another
+// size of target), dmgStale: roll them again.
 function scoreRoll(ctx, line, raw) {
   if (!raw) return null;
+  if (raw.frozen) return raw;   // sent to the DM: the numbers it was sent with
   if (!('dmgSig' in raw)) {   // a roll from before the dice were kept: its damage stays, the AC hit follows
     if (raw.d20 == null || noAttackRoll(ctx, line.sc)) return raw;
     const thac0 = lineTHAC0(ctx, line);

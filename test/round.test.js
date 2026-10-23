@@ -100,6 +100,9 @@ test('after rolling, the numbers follow the sheet; the dice stay', () => {
   rec.lines.q1.flanking = true;
   let [now] = roundLines(ctxR, rec, rifiyr.__scenarios);
   assert.deepEqual([now.roll.d20, now.roll.thac0, now.roll.hitsAC, now.roll.dmg], [11, 14, 3, 8]);
+  // Sent to the DM (frozen): it keeps those numbers whatever changes next
+  const sent = { ...rec, lines: { q1: { ...rec.lines.q1, flanking: false, roll: { ...now.roll, frozen: true } } } };
+  assert.deepEqual([roundLines(ctxR, sent, rifiyr.__scenarios)[0].roll.thac0, roundLines(ctxR, sent, rifiyr.__scenarios)[0].roll.hitsAC], [14, 3]);
   // A damage bonus taken away after the roll: same dice, less damage
   const plus2 = rifiyr.__scenarios.map(s => (s.id === 'sc-8' ? { ...s, dmgMod: '2' } : s));
   const two = { ...rec, lines: { q1: { ...rec.lines.q1, roll: rollLine(ctxR, roundLines(ctxR, rec, plus2)[0], fixed(0.5, 0.99)) } } };
