@@ -808,7 +808,12 @@
     .round-item-extra:has(input:disabled) { opacity: 0.5; cursor: not-allowed; }
     .round-remove-btn { height: 1.7rem; }
     .play-name { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; letter-spacing: 0.04em; }
-    .play-meta { font-size: 0.85rem; color: var(--ink-muted); }
+    .play-meta { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 0.15rem 0.9rem; font-size: 0.9rem; color: var(--ink); }
+    .meta-item { white-space: nowrap; }
+    .meta-k { font-family: var(--font-display); font-size: 0.6rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted); margin-right: 0.15rem; }
+    /* A read-only value in a line, the height of the controls beside it */
+    .round-read-value { display: inline-flex; align-items: center; height: var(--ctl-h); font-size: 0.95rem; color: var(--ink); white-space: nowrap; }
+    .round-read.is-key .round-read-value { font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; color: var(--accent); }
     .round-send { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.9rem; margin-top: 0.75rem; }
     .round-add-btn { background: none; border: 1px solid var(--rule); border-radius: var(--radius); font-family: var(--font-display); font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.2rem 0.5rem; cursor: pointer; color: var(--ink-muted); white-space: nowrap; }
     .round-add-btn:hover, .round-add-btn:focus-visible { border-color: var(--accent); color: var(--accent); }
@@ -7428,6 +7433,13 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         }),
       };
     }
+    // A read-only value under a small label, lined up with the controls beside it
+    function readField(label, value, cls = '') {
+      const f = document.createElement('div'); f.className = `round-pick round-read ${cls}`.trim();
+      const l = document.createElement('span'); l.className = 'scenario-field-label'; l.textContent = label;
+      const v = document.createElement('span'); v.className = 'round-read-value'; v.textContent = value;
+      f.append(l, v); return f;
+    }
     // A spell's save in words: "Target saves (Negates)", or "No save"
     function spellSaveText(sc) {
       const sp = scenarioType(sc) === 'spell' ? scenarioSpell(sc) : null;
@@ -7613,10 +7625,19 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         const item = document.createElement('div'); item.className = 'round-item';
         const head = document.createElement('div'); head.className = 'round-item-head';
         const thac0 = calcScenarioTHAC0(sc), dmg = calcScenarioDamage(sc), isSp = scenarioType(sc) === 'spell';
-        const meta = [thac0 != null ? `THAC0 ${thac0}` : 'No attack roll',
-          dmg ? (isSp ? dmg.sm : `${dmg.sm} · ${dmg.l}`) + (dmg.spell ? ` + spell ${dmg.spell}` : '') : '',
-          isSp ? '' : `${scenarioRate(sc)}`, `speed ${SheetRound.attackSpeed(ctx, sc)}`].filter(Boolean).join(' · ');
-        head.innerHTML = `<span class="play-name">${escR(sc.name || 'Unnamed attack')}</span><span class="play-meta">${escR(meta)}</span>`;
+        // The attack at a glance, as label–value pairs: damage names its size
+        // (S/M and L) when the two differ, and is given once when they don't
+        const kv = (k, v) => `<span class="meta-item"><span class="meta-k">${k}</span> ${escR(v)}</span>`;
+        const heal = isSp && dmg && dmg.heal;
+        const meta = [
+          thac0 != null ? kv('THAC0', thac0) : kv('No attack roll', ''),
+          dmg && (isSp || dmg.sm === dmg.l) ? kv(heal ? 'Heal' : 'Dmg', dmg.sm) : '',
+          dmg && !isSp && dmg.sm !== dmg.l ? kv('Dmg S/M', dmg.sm) + kv('L', dmg.l) : '',
+          dmg && dmg.spell ? kv('Spell', dmg.spell) : '',
+          isSp ? '' : kv('Attacks', scenarioRate(sc)),
+          kv('Speed', SheetRound.attackSpeed(ctx, sc)),
+        ].filter(Boolean).join('');
+        head.innerHTML = `<span class="play-name">${escR(sc.name || 'Unnamed attack')}</span><span class="play-meta">${meta}</span>`;
         const rm = document.createElement('button'); rm.type = 'button'; rm.className = 'round-add-btn round-remove-btn'; rm.textContent = 'Remove';
         rm.setAttribute('aria-label', `Take ${sc.name || 'this attack'} out of this round`);
         rm.addEventListener('click', () => saveRound(SheetRound.unqueueAttack(rec, q.qid)));
@@ -7704,11 +7725,14 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         row.appendChild(lab);
         const id = `round-${line.key}`;
         // Rolled: what it was rolled with, no longer editable
-        const tags = roundTags;
         if (line.roll) {
-          const s = document.createElement('span'); s.className = 'round-note';
-          s.textContent = [line.set.targets.length ? `vs ${line.set.targets.map(t => t.label + (t.size === 'l' && !/\(L\)/.test(t.label) ? ' (L)' : '')).join(', ')}` : 'no target', ...tags(line.set)].join(' · ');
-          row.appendChild(s);
+          // The same columns as the controls, as read-only values
+          const st = line.set;
+          const conds = [st.flanking && 'Flanking', st.rear && 'Rear attack', st.charging && 'Charging'].filter(Boolean);
+          row.append(readField('Targets', st.targets.length ? st.targets.map(t => t.label + (t.size === 'l' && !/\(L\)/.test(t.label) ? ' (L)' : '')).join(', ') : 'None'));
+          if (st.ground) row.append(readField('Ground', st.ground === 'high' ? 'Higher' : 'Lower'));
+          row.append(readField('Conditions', conds.length ? conds.join(', ') : 'None'));
+          if (st.other) row.append(readField('Other', st.other > 0 ? `+${st.other}` : `−${-st.other}`));
         } else {
           // Foes as players know them: the DM's fixed ID and size (never AC);
           // several for an area spell, a sweep of small foes, or missiles split
@@ -7738,12 +7762,13 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
             pick(`${id}-other`, 'Other', OTHER_OPTS, String(line.set.other || 0), v => setOwn(line, { other: parseInt(v, 10) || 0 })));
         }
         const thac0 = line.roll && line.roll.frozen && line.roll.each ? line.roll.each[0].thac0 : SheetRound.lineTHAC0(ctx, line);
-        const n = document.createElement('span'); n.className = 'play-need';
         // Nothing to roll (Charm Person, Sleep): the spell is declared and the
         // DM resolves it, saves and all; the line says which save applies
         const canRoll = SheetRound.hasRoll(ctx, line.sc), heal = SheetRound.isHealing(ctx, line.sc);
         const saveText = spellSaveText(line.sc);
-        n.textContent = thac0 != null ? `THAC0 ${thac0}` : heal ? 'Healing' : saveText;
+        const n = thac0 != null ? readField('THAC0', String(thac0), 'is-key')
+          : heal ? readField('Roll', 'Healing')
+          : readField('Save', saveText === 'No save' ? 'None' : saveText.replace(/^Target saves \((.*)\)$/, '$1'));
         n.title = thac0 != null ? 'With this line\'s conditions. The DM decides the hit from the foe\'s AC.' : canRoll ? '' : 'Nothing to roll: the DM resolves the spell when you send the round';
         row.appendChild(n);
         if (!line.roll && canRoll) {
