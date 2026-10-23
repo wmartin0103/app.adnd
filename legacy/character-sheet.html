@@ -875,6 +875,7 @@
       letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-muted);
       margin-bottom: 0.4rem;
     }
+    .ammo-count:not(:empty)::before { content: '·'; margin: 0 0.4rem; }
 
     .wpn-cell {
       padding: 0.25rem 0.1rem;
@@ -2761,11 +2762,15 @@
         </button>
         <!-- Ammunition: only when a weapon uses it (its settings gear) -->
         <div class="ammo-block" id="ammo-block" hidden>
-          <h3 class="ammo-heading" id="ammo-heading">Special Ammunition</h3>
-          <div id="ammo-list" aria-labelledby="ammo-heading"></div>
-          <button class="add-class-btn" id="add-ammo-btn" type="button">
-            <span aria-hidden="true">＋</span> Add Special Ammunition
-          </button>
+          <h3 class="ammo-heading" id="ammo-heading"><button type="button" id="ammo-toggle" class="effects-toggle" aria-expanded="false" aria-controls="ammo-body">
+            <span class="effects-chev" aria-hidden="true"></span>Special Ammunition<span class="ammo-count" id="ammo-count"></span></button></h3>
+          <!-- Closed until needed: magic or silvered ammo turns up now and then -->
+          <div id="ammo-body" hidden>
+            <div id="ammo-list" aria-labelledby="ammo-heading"></div>
+            <button class="add-class-btn" id="add-ammo-btn" type="button">
+              <span aria-hidden="true">＋</span> Add Special Ammunition
+            </button>
+          </div>
         </div>
       </div>
     </section>
@@ -7270,6 +7275,21 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       set(saved !== 'closed');
       btn.addEventListener('click', () => set(btn.getAttribute('aria-expanded') !== 'true'));
     })();
+    // Special Ammunition collapses too: closed unless opened (remembered per browser)
+    (function initAmmoToggle() {
+      const btn = document.getElementById('ammo-toggle');
+      const body = document.getElementById('ammo-body');
+      if (!btn || !body) return;
+      const set = open => {
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        body.hidden = !open;
+        try { localStorage.setItem('panel-ammo', open ? 'open' : 'closed'); } catch (e) { /* storage blocked */ }
+      };
+      let saved = null;
+      try { saved = localStorage.getItem('panel-ammo'); } catch (e) { /* storage blocked */ }
+      set(saved === 'open');
+      btn.addEventListener('click', () => set(btn.getAttribute('aria-expanded') !== 'true'));
+    })();
 
     document.getElementById('add-stance-btn')?.addEventListener('click', () => {
       const st = makeStance();
@@ -8300,6 +8320,9 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       const list = document.getElementById('ammo-list');
       if (!block || !list) return;
       block.hidden = !weapons.some(w => SheetScenarios.usesAmmo(w));
+      // While it's closed, the heading still says how many there are
+      const count = document.getElementById('ammo-count');
+      if (count) count.textContent = ammo.length ? String(ammo.length) : '';
       list.innerHTML = '';
       const COL = 'minmax(8rem, 1.6fr) 7.5rem 5.6rem 7.4rem minmax(6rem, 1.4fr) 1.4rem';
       if (!ammo.length) {
