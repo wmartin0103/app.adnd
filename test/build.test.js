@@ -5,7 +5,9 @@ import { TARGETS, bundleFor, catalogScript, CATALOG_JS, CATALOG_TAG } from '../s
 
 for (const file of Object.keys(TARGETS)) {
   test(`${file} carries the current rules code (run scripts/build-legacy.mjs if this fails)`, () => {
-    assert.ok(readFileSync(file, 'utf8').includes(bundleFor(file)), `${file} is out of date`);
+    // Line endings aside: an editor on Windows may save the page with CRLF
+    const lf = t => t.replace(/\r\n/g, '\n');
+    assert.ok(lf(readFileSync(file, 'utf8')).includes(lf(bundleFor(file))), `${file} is out of date`);
   });
 }
 
