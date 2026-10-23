@@ -63,10 +63,10 @@ test('when the character acts: roll + speed + this round\'s adjustments', () => 
   // The roll alone doesn't say when: the first attack's speed does
   assert.equal(actOn(ctxR, { ...rec, queue: [] }, rifiyr.__scenarios), null);
   assert.equal(actOn(ctxR, withAttacks(rec, 'sc-8'), rifiyr.__scenarios), 13);
-  // Quickness: d20 at or under Dex, −2
+  // The player's own adjustment (Quickness made at the table: −2)
   const ctxJ = scenarioContext(jaque, catalog);
-  const recJ = { ...withAttacks(newRound('Jaque'), 'sc-1'), init: { roll: 4 }, quick: { roll: 11 } };
-  assert.equal(actOn(ctxJ, recJ, jaque.__scenarios, { quickness: true, dex: 19 }), 4 + 2 - 2);
+  const recJ = { ...withAttacks(newRound('Jaque'), 'sc-1'), init: { roll: 4, adj: -2 } };
+  assert.equal(actOn(ctxJ, recJ, jaque.__scenarios), 4 + 2 - 2);
 });
 
 test('rolling a line on the sheet, and the DM judging it against the AC', () => {

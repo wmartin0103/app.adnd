@@ -2755,11 +2755,10 @@
           <span class="stances-ac" id="stances-ac" aria-live="polite"></span>
         </div>
         <div id="effects-body">
-          <p class="stances-hint">Stances and temporary effects. Switch one on and every attack below includes it. A stance with several options (Bladesong) lets you pick one at a time. Temporary effects, like a Bless from a friend, count down with Next round and end on their own.</p>
+          <p class="stances-hint">Stances and temporary effects. Switch one on and every attack below includes it. A stance with several options (Bladesong) lets you pick one at a time. Mark one Temporary, like a Bless from a friend, and it counts down with Next round and ends on its own.</p>
           <div id="stances-list" role="list"></div>
           <div class="stances-actions">
-            <button class="add-class-btn" id="add-stance-btn" type="button"><span aria-hidden="true">＋</span> Add stance</button>
-            <button class="add-class-btn" id="add-effect-btn" type="button"><span aria-hidden="true">＋</span> Add temporary effect</button>
+            <button class="add-class-btn" id="add-stance-btn" type="button"><span aria-hidden="true">＋</span> Add Effect</button>
             <button class="add-class-btn" id="next-round-btn" type="button">Next round</button>
           </div>
         </div>
@@ -4202,8 +4201,7 @@ const {scenarioType, scenarioSpell, scenarioWeapon, spellArrow, castSpeed, scena
 //
 //   {
 //     character: 'Rifiyr', round: 3,
-//     init: { roll: 7 },                  // the d10, rolled once a round
-//     quick: { roll: 12 },                // Quickness d20 (characters who have it)
+//     init: { roll: 7, adj: -2 },          // the d10, rolled once a round; adj: anything else that moves it (Quickness rolled at the table)
 //     you: { moveFirst, moveMult: '1', setVsCharge },
 //     queue: [{ qid: 'q1', scenarioId: 'sc-1', extra: false }, ...],   // the attacks added this round, in order
 //     lines: { q1: {...}, q2: {...} },     // one attack line for each
@@ -4226,13 +4224,12 @@ const {scenarioType, scenarioSpell, scenarioWeapon, spellArrow, castSpeed, scena
 const ROUND_MODS = {
   flankingToHit: 2, chargingToHit: 2, chargingAC: 1,
   groundToHit: 1, groundInit: 1, moveFirstInit: 3, setVsChargeInit: 2,
-  quicknessInit: -2,
 };
 const MOVE_MULTS = ['1', '1.5', '2', '3', '4'];
 const blankLine = () => ({ same: true, target: null, flanking: false, ground: '', charging: false, other: 0, roll: null });
 
 const newRound = (character, round = 1) => ({
-  character, round, init: { roll: null }, quick: { roll: null },
+  character, round, init: { roll: null, adj: 0 },
   you: { moveFirst: false, moveMult: '1', setVsCharge: false }, queue: [], lines: {},
 });
 // The queue (a record from before the queue had one attack, `scenarioId`)
@@ -4298,8 +4295,8 @@ function lineToHit(set) {
 const roundACPenalty = (lines) => (lines.some(l => l.set.charging) ? ROUND_MODS.chargingAC : 0);
 
 // When the character acts: initiative roll + the attack's speed + this
-// round's adjustments (Move 1st +3, set vs charge −2, higher ground −1 from
-// the first attack's target, Quickness −2 on a success). Lowest goes first.
+// round's adjustments (the player's own adjustment, Move 1st +3, set vs
+// charge −2, higher ground −1 from the first attack's target). Lowest goes first.
 function actOn(ctx, rec, scenarios, who = {}) {
   if (!rec.init || rec.init.roll == null) return null;
   const sc = roundQueue(rec).map(q => (scenarios || []).find(s => s.id === q.scenarioId)).find(Boolean);
@@ -4309,11 +4306,9 @@ function actOn(ctx, rec, scenarios, who = {}) {
   if (rec.you.moveFirst) n += ROUND_MODS.moveFirstInit;
   if (rec.you.setVsCharge) n -= ROUND_MODS.setVsChargeInit;
   if (lines[0] && lines[0].set.ground === 'high') n -= ROUND_MODS.groundInit;
-  if (quicknessWorks(rec, who)) n += ROUND_MODS.quicknessInit;
+  n += modNum(rec.init.adj);
   return n;
 }
-// Quickness (a proficiency): d20 at or under Dex
-const quicknessWorks = (rec, who) => !!who.quickness && rec.quick && rec.quick.roll != null && rec.quick.roll <= (who.dex || 0);
 
 // ── Dice ──
 function rollDice(expr, rand = Math.random) {
@@ -4427,7 +4422,7 @@ function lineSay(line) {
   return `${line.label}: vs ${t}, d20 ${r.d20}${nat}, hits AC ${acText(r.hitsAC)} or worse, ${r.dmg ?? '—'} damage${r.spell != null ? ` + spell ${r.spell}` : ''}`;
 }
 
-return { ROUND_MODS, MOVE_MULTS, newRound, roundQueue, queueAttack, unqueueAttack, attackSpeed, roundLines, lineToHit, roundACPenalty, actOn, quicknessWorks, rollDice, lineTHAC0, splitDice, rollLine, scoreRoll, rerollDamage, judgeRoll, lineSay };
+return { ROUND_MODS, MOVE_MULTS, newRound, roundQueue, queueAttack, unqueueAttack, attackSpeed, roundLines, lineToHit, roundACPenalty, actOn, rollDice, lineTHAC0, splitDice, rollLine, scoreRoll, rerollDamage, judgeRoll, lineSay };
 })();
 // ── rules/character ──
 __m["rules/character"] = (() => {
@@ -5306,7 +5301,7 @@ return { createRoundSync };
 window.SheetSpells = { findSpell: __m["rules/spells"].findSpell };
 window.SheetScenarios = { modNum: __m["rules/scenarios"].modNum, signed: __m["rules/scenarios"].signed, ATTACK_TYPES: __m["rules/scenarios"].ATTACK_TYPES, RATE_OPTIONS: __m["rules/scenarios"].RATE_OPTIONS, scenarioRate: __m["rules/scenarios"].scenarioRate, scenarioType: __m["rules/scenarios"].scenarioType, scenarioSpell: __m["rules/scenarios"].scenarioSpell, scenarioAbility: __m["rules/scenarios"].scenarioAbility, activeEffectsFor: __m["rules/scenarios"].activeEffectsFor, scenarioDamage: __m["rules/scenarios"].scenarioDamage, scenarioBreakdown: __m["rules/scenarios"].scenarioBreakdown, normalizeEffects: __m["rules/scenarios"].normalizeEffects, effectOption: __m["rules/scenarios"].effectOption, isBowcaster: __m["rules/scenarios"].isBowcaster, spellArrow: __m["rules/scenarios"].spellArrow, usesAmmo: __m["rules/scenarios"].usesAmmo, weaponAmmoType: __m["rules/scenarios"].weaponAmmoType, ammoType: __m["rules/scenarios"].ammoType, ammoFor: __m["rules/scenarios"].ammoFor, scenarioAmmo: __m["rules/scenarios"].scenarioAmmo, AMMO_TYPES: __m["rules/scenarios"].AMMO_TYPES };
 window.SheetKits = { HOUSE_KITS: __m["rules/kits"].HOUSE_KITS, classKit: __m["rules/kits"].classKit };
-window.SheetRound = { ROUND_MODS: __m["rules/round"].ROUND_MODS, MOVE_MULTS: __m["rules/round"].MOVE_MULTS, newRound: __m["rules/round"].newRound, roundQueue: __m["rules/round"].roundQueue, queueAttack: __m["rules/round"].queueAttack, unqueueAttack: __m["rules/round"].unqueueAttack, roundLines: __m["rules/round"].roundLines, lineToHit: __m["rules/round"].lineToHit, roundACPenalty: __m["rules/round"].roundACPenalty, lineTHAC0: __m["rules/round"].lineTHAC0, judgeRoll: __m["rules/round"].judgeRoll, actOn: __m["rules/round"].actOn, quicknessWorks: __m["rules/round"].quicknessWorks, attackSpeed: __m["rules/round"].attackSpeed, rollLine: __m["rules/round"].rollLine, scoreRoll: __m["rules/round"].scoreRoll, rerollDamage: __m["rules/round"].rerollDamage, lineSay: __m["rules/round"].lineSay };
+window.SheetRound = { ROUND_MODS: __m["rules/round"].ROUND_MODS, MOVE_MULTS: __m["rules/round"].MOVE_MULTS, newRound: __m["rules/round"].newRound, roundQueue: __m["rules/round"].roundQueue, queueAttack: __m["rules/round"].queueAttack, unqueueAttack: __m["rules/round"].unqueueAttack, roundLines: __m["rules/round"].roundLines, lineToHit: __m["rules/round"].lineToHit, roundACPenalty: __m["rules/round"].roundACPenalty, lineTHAC0: __m["rules/round"].lineTHAC0, judgeRoll: __m["rules/round"].judgeRoll, actOn: __m["rules/round"].actOn, attackSpeed: __m["rules/round"].attackSpeed, rollLine: __m["rules/round"].rollLine, scoreRoll: __m["rules/round"].scoreRoll, rerollDamage: __m["rules/round"].rerollDamage, lineSay: __m["rules/round"].lineSay };
 window.RoundSync = { createRoundSync: __m["round-sync"].createRoundSync };
 window.SheetRules = { PHB_WEAPONS: __m["rules/weapons"].PHB_WEAPONS };
 window.SheetGuess = { guessCategory: __m["rules/migrate"].guessCategory };
@@ -7111,11 +7106,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       stances.push(st); editingStance = st.id;
       refreshAfterStances(`[data-stance-id="${st.id}"] .stance-editor input`);
     });
-    document.getElementById('add-effect-btn')?.addEventListener('click', () => {
-      const st = makeStance({ temporary: true, on: true });
-      stances.push(st); editingStance = st.id;
-      refreshAfterStances(`[data-stance-id="${st.id}"] .stance-editor input`);
-    });
     // Next round: temporary effects count down; at 0 they end and leave the list.
     // With the DM connected, the DM's New round does this; the button shows only
     // when the sheet is on its own, and then also starts the next round here.
@@ -7199,7 +7189,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         actOn: SheetRound.actOn(ctx, rec, scenarios, who),
         initRoll: rec.init.roll, speed: sc ? SheetRound.attackSpeed(ctx, sc) : null,
         attack: attackNames(queued),
-        quick: who.quickness && rec.quick.roll != null ? { roll: rec.quick.roll, ok: SheetRound.quicknessWorks(rec, who) } : null,
+        initAdj: parseInt(rec.init.adj, 10) || 0,
         you: [rec.you.moveFirst && 'moving first', rec.you.moveMult !== '1' && `movement ${rec.you.moveMult}×`, rec.you.setVsCharge && 'set vs charge'].filter(Boolean),
         acPenalty: SheetRound.roundACPenalty(lines),
         lines: lines.map((l, i) => {
@@ -7243,6 +7233,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       l.append(t, s); return l;
     };
     const OTHER_OPTS = [-4, -3, -2, -1, 0, 1, 2, 3, 4].map(n => [String(n), n > 0 ? `+${n}` : String(n)]);
+    const INIT_ADJ_OPTS = [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6].map(n => [String(n), n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0']);
 
     function renderRound() {
       const body = document.getElementById('round-body');
@@ -7269,23 +7260,11 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         const v = document.createElement('b'); v.className = 'round-value'; v.textContent = rec.init.roll; init.appendChild(v);
       }
       row.appendChild(init);
-      // Quickness: d20 at or under Dex for −2
-      if (who.quickness) {
-        const q = document.createElement('div'); q.className = 'round-init';
-        const ql = document.createElement('span'); ql.className = 'scenario-field-label'; ql.textContent = 'Quickness';
-        q.appendChild(ql);
-        if (rec.quick.roll == null) {
-          const b = document.createElement('button'); b.type = 'button'; b.className = 'round-btn'; b.textContent = 'Roll d20';
-          b.addEventListener('click', () => { rec.quick.roll = 1 + Math.floor(Math.random() * 20); saveRound(rec); });
-          q.appendChild(b);
-        } else {
-          const ok = SheetRound.quicknessWorks(rec, who);
-          const v = document.createElement('span'); v.className = 'round-note';
-          v.textContent = `${rec.quick.roll} vs Dex ${who.dex}: ${ok ? '−2 initiative' : 'no effect'}`;
-          q.appendChild(v);
-        }
-        row.appendChild(q);
-      }
+      // Anything else that moves initiative this round (a Quickness check
+      // made at the table, a spell): − acts sooner
+      const adj = pick('round-init-adj', 'Init adjust', INIT_ADJ_OPTS, String(parseInt(rec.init.adj, 10) || 0), v => { rec.init.adj = parseInt(v, 10) || 0; saveRound(rec); });
+      adj.title = 'Added to your initiative roll. Negative acts sooner (Quickness: −2).';
+      row.appendChild(adj);
       // You, this round
       const you = document.createElement('div'); you.className = 'round-you';
       you.append(
@@ -7297,7 +7276,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       const ao = SheetRound.actOn(ctx, rec, scenarios, who);
       const act = document.createElement('div'); act.className = 'round-init round-acton';
       act.innerHTML = `<span class="scenario-field-label">Act on</span><b class="round-value">${ao ?? '—'}</b>`;
-      act.title = 'Initiative roll + the first attack\'s speed + this round\'s adjustments. Lowest acts first.';
+      act.title = 'Initiative roll + adjustment + the first attack\'s speed + this round\'s conditions. Lowest acts first.';
       row.appendChild(act);
       body.appendChild(row);
       // This round's attacks, then sending them

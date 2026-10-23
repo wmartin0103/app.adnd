@@ -5,8 +5,7 @@
 //
 //   {
 //     character: 'Rifiyr', round: 3,
-//     init: { roll: 7 },                  // the d10, rolled once a round
-//     quick: { roll: 12 },                // Quickness d20 (characters who have it)
+//     init: { roll: 7, adj: -2 },          // the d10, rolled once a round; adj: anything else that moves it (Quickness rolled at the table)
 //     you: { moveFirst, moveMult: '1', setVsCharge },
 //     queue: [{ qid: 'q1', scenarioId: 'sc-1', extra: false }, ...],   // the attacks added this round, in order
 //     lines: { q1: {...}, q2: {...} },     // one attack line for each
@@ -30,13 +29,12 @@ import { scenarioType, scenarioSpell, scenarioWeapon, spellArrow, castSpeed, sce
 export const ROUND_MODS = {
   flankingToHit: 2, chargingToHit: 2, chargingAC: 1,
   groundToHit: 1, groundInit: 1, moveFirstInit: 3, setVsChargeInit: 2,
-  quicknessInit: -2,
 };
 export const MOVE_MULTS = ['1', '1.5', '2', '3', '4'];
 const blankLine = () => ({ same: true, target: null, flanking: false, ground: '', charging: false, other: 0, roll: null });
 
 export const newRound = (character, round = 1) => ({
-  character, round, init: { roll: null }, quick: { roll: null },
+  character, round, init: { roll: null, adj: 0 },
   you: { moveFirst: false, moveMult: '1', setVsCharge: false }, queue: [], lines: {},
 });
 // The queue (a record from before the queue had one attack, `scenarioId`)
@@ -102,8 +100,8 @@ export function lineToHit(set) {
 export const roundACPenalty = (lines) => (lines.some(l => l.set.charging) ? ROUND_MODS.chargingAC : 0);
 
 // When the character acts: initiative roll + the attack's speed + this
-// round's adjustments (Move 1st +3, set vs charge −2, higher ground −1 from
-// the first attack's target, Quickness −2 on a success). Lowest goes first.
+// round's adjustments (the player's own adjustment, Move 1st +3, set vs
+// charge −2, higher ground −1 from the first attack's target). Lowest goes first.
 export function actOn(ctx, rec, scenarios, who = {}) {
   if (!rec.init || rec.init.roll == null) return null;
   const sc = roundQueue(rec).map(q => (scenarios || []).find(s => s.id === q.scenarioId)).find(Boolean);
@@ -113,11 +111,9 @@ export function actOn(ctx, rec, scenarios, who = {}) {
   if (rec.you.moveFirst) n += ROUND_MODS.moveFirstInit;
   if (rec.you.setVsCharge) n -= ROUND_MODS.setVsChargeInit;
   if (lines[0] && lines[0].set.ground === 'high') n -= ROUND_MODS.groundInit;
-  if (quicknessWorks(rec, who)) n += ROUND_MODS.quicknessInit;
+  n += modNum(rec.init.adj);
   return n;
 }
-// Quickness (a proficiency): d20 at or under Dex
-export const quicknessWorks = (rec, who) => !!who.quickness && rec.quick && rec.quick.roll != null && rec.quick.roll <= (who.dex || 0);
 
 // ── Dice ──
 export function rollDice(expr, rand = Math.random) {
