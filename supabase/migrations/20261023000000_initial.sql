@@ -306,7 +306,7 @@ create policy "play your character's round" on public.round_records for all to a
 -- ── Live updates ────────────────────────────────────────────────────────
 -- Open sheets and the DM Helper hear about saves as they happen (HP sync, the
 -- live round). Realtime respects the select policies above.
-do $
+do $$
 declare t text;
 begin
   foreach t in array array['characters', 'character_editors', 'round_state', 'round_records'] loop
@@ -314,7 +314,7 @@ begin
       execute format('alter publication supabase_realtime add table public.%I', t);
     end if;
   end loop;
-end $;
+end $$;
 
 -- ── Saving from the app (for later) ─────────────────────────────────────
 -- Save only if nobody saved since this copy was opened:
