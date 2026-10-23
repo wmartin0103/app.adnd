@@ -1,6 +1,10 @@
 -- ════════════════════════════════════════════════════════════════════════
 -- AD&D campaign app: database draft for Phase 3 (Supabase / Postgres)
--- Run once in the Supabase SQL editor (whole file), then setup-first-admin.sql.
+-- The first migration: everything the app needs. Written to be safe on a
+-- database that already has it (the project was first set up by hand), so
+-- it creates only what's missing and re-creates functions, triggers and the
+-- permission rules. New changes go in later migrations, not here.
+-- After the first deploy: supabase/setup-first-admin.sql (data, run by hand).
 -- ════════════════════════════════════════════════════════════════════════
 --
 -- In plain words (PLAN.md section 3 and decisions 3 and 6):
@@ -33,7 +37,7 @@
 
 -- ── People ──────────────────────────────────────────────────────────────
 
-create table public.profiles (
+create table if not exists public.profiles (
   id           uuid primary key references auth.users (id) on delete cascade,
   display_name text not null,
   is_admin     boolean not null default false,
@@ -41,28 +45,30 @@ create table public.profiles (
 );
 
 -- Every new account gets a profile (named from its email until renamed)
-create function public.on_new_user() returns trigger
+create or replace function public.on_new_user() returns trigger
 language plpgsql security definer set search_path = public as $$
 begin
   insert into profiles (id, display_name)
     values (new.id, coalesce(new.raw_user_meta_data ->> 'display_name', split_part(new.email, '@', 1)));
   return new;
 end $$;
+drop trigger if exists on_new_user on auth.users;
 create trigger on_new_user after insert on auth.users
   for each row execute function public.on_new_user();
 -- Accounts made before this file ran
 insert into public.profiles (id, display_name)
-  select id, split_part(email, '@', 1) from auth.users;
+  select id, split_part(email, '@', 1) from auth.users
+  on conflict (id) do nothing;
 
 -- ── Campaigns and who's in them ─────────────────────────────────────────
 
-create table public.campaigns (
+create table if not exists public.campaigns (
   id         uuid primary key default gen_random_uuid(),
   name       text not null,
   created_at timestamptz not null default now()
 );
 
-create table public.campaign_members (
+create table if not exists public.campaign_members (
   campaign_id uuid not null references public.campaigns (id) on delete cascade,
   user_id     uuid not null references public.profiles (id) on delete cascade,
   role        text not null check (role in ('dm', 'player')),
@@ -71,7 +77,7 @@ create table public.campaign_members (
 
 -- ── Characters ──────────────────────────────────────────────────────────
 
-create table public.characters (
+create table if not exists public.characters (
   id          uuid primary key default gen_random_uuid(),
   campaign_id uuid not null references public.campaigns (id) on delete restrict,
   owner_id    uuid not null references public.profiles (id) on delete restrict,
@@ -81,11 +87,11 @@ create table public.characters (
   updated_at  timestamptz not null default now(),
   updated_by  uuid references public.profiles (id)
 );
-create index characters_campaign_idx on public.characters (campaign_id);
+create index if not exists characters_campaign_idx on public.characters (campaign_id);
 
 -- Players granted edit access to a character they don't own, for a session.
 -- Removing the row revokes it.
-create table public.character_editors (
+create table if not exists public.character_editors (
   character_id uuid not null references public.characters (id) on delete cascade,
   user_id      uuid not null references public.profiles (id) on delete cascade,
   granted_by   uuid not null references public.profiles (id),
@@ -94,7 +100,7 @@ create table public.character_editors (
 );
 
 -- Earlier versions of each sheet (written by a trigger, never by the app)
-create table public.character_versions (
+create table if not exists public.character_versions (
   id           bigint generated always as identity primary key,
   character_id uuid not null references public.characters (id) on delete cascade,
   version      integer not null,
@@ -102,29 +108,29 @@ create table public.character_versions (
   saved_at     timestamptz not null,
   saved_by     uuid references public.profiles (id)
 );
-create index character_versions_idx on public.character_versions (character_id, version desc);
+create index if not exists character_versions_idx on public.character_versions (character_id, version desc);
 
 -- ── Questions the policies ask ──────────────────────────────────────────
 -- "security definer" lets them read the membership tables without tripping
 -- over those tables' own policies.
 
-create function public.is_admin() returns boolean
+create or replace function public.is_admin() returns boolean
 language sql stable security definer set search_path = public as $$
   select coalesce((select is_admin from profiles where id = auth.uid()), false);
 $$;
 
-create function public.is_member(c uuid) returns boolean
+create or replace function public.is_member(c uuid) returns boolean
 language sql stable security definer set search_path = public as $$
   select exists (select 1 from campaign_members where campaign_id = c and user_id = auth.uid());
 $$;
 
-create function public.is_dm(c uuid) returns boolean
+create or replace function public.is_dm(c uuid) returns boolean
 language sql stable security definer set search_path = public as $$
   select exists (select 1 from campaign_members where campaign_id = c and user_id = auth.uid() and role = 'dm');
 $$;
 
 -- Owner, the campaign's DM, or an admin
-create function public.can_manage_character(ch uuid) returns boolean
+create or replace function public.can_manage_character(ch uuid) returns boolean
 language sql stable security definer set search_path = public as $$
   select exists (
     select 1 from characters
@@ -133,7 +139,7 @@ language sql stable security definer set search_path = public as $$
 $$;
 
 -- Anyone who can manage it, plus players granted edit access
-create function public.can_edit_character(ch uuid) returns boolean
+create or replace function public.can_edit_character(ch uuid) returns boolean
 language sql stable security definer set search_path = public as $$
   select can_manage_character(ch)
       or exists (select 1 from character_editors where character_id = ch and user_id = auth.uid());
@@ -149,50 +155,64 @@ alter table public.character_editors  enable row level security;
 alter table public.character_versions enable row level security;
 
 -- Profiles: everyone signed in sees names; you rename yourself; admins manage
+drop policy if exists "see profiles" on public.profiles;
 create policy "see profiles"    on public.profiles for select to authenticated using (true);
+drop policy if exists "rename yourself" on public.profiles;
 create policy "rename yourself" on public.profiles for update to authenticated
   using (id = auth.uid() or is_admin()) with check (id = auth.uid() or is_admin());
 
 -- Campaigns and membership: members see them; admins manage them
+drop policy if exists "see own campaigns" on public.campaigns;
 create policy "see own campaigns" on public.campaigns for select to authenticated
   using (is_member(id) or is_admin());
+drop policy if exists "admins manage campaigns" on public.campaigns;
 create policy "admins manage campaigns" on public.campaigns for all to authenticated
   using (is_admin()) with check (is_admin());
+drop policy if exists "see fellow members" on public.campaign_members;
 create policy "see fellow members" on public.campaign_members for select to authenticated
   using (is_member(campaign_id) or is_admin());
+drop policy if exists "admins manage members" on public.campaign_members;
 create policy "admins manage members" on public.campaign_members for all to authenticated
   using (is_admin()) with check (is_admin());
 
 -- Characters
+drop policy if exists "campaign sees characters" on public.characters;
 create policy "campaign sees characters" on public.characters for select to authenticated
   using (is_member(campaign_id) or is_admin());
 -- A player creates their own; the DM or an admin can create one for anyone in the campaign
+drop policy if exists "create characters" on public.characters;
 create policy "create characters" on public.characters for insert to authenticated
   with check (
     (owner_id = auth.uid() and is_member(campaign_id))
     or ((is_dm(campaign_id) or is_admin()) and exists (
       select 1 from campaign_members m where m.campaign_id = characters.campaign_id and m.user_id = owner_id))
   );
+drop policy if exists "edit characters" on public.characters;
 create policy "edit characters" on public.characters for update to authenticated
   using (can_edit_character(id)) with check (can_edit_character(id));
+drop policy if exists "DM or admin deletes" on public.characters;
 create policy "DM or admin deletes" on public.characters for delete to authenticated
   using (is_dm(campaign_id) or is_admin());
 
 -- Granted editors: the campaign sees who has access; owner, DM or admin grant
 -- and revoke, and only to someone in the same campaign
+drop policy if exists "campaign sees grants" on public.character_editors;
 create policy "campaign sees grants" on public.character_editors for select to authenticated
   using (exists (select 1 from characters c where c.id = character_id and (is_member(c.campaign_id) or is_admin())));
+drop policy if exists "grant edit access" on public.character_editors;
 create policy "grant edit access" on public.character_editors for insert to authenticated
   with check (
     can_manage_character(character_id) and granted_by = auth.uid()
     and exists (select 1 from characters c join campaign_members m on m.campaign_id = c.campaign_id
                 where c.id = character_id and m.user_id = character_editors.user_id)
   );
+drop policy if exists "revoke edit access" on public.character_editors;
 create policy "revoke edit access" on public.character_editors for delete to authenticated
   using (can_manage_character(character_id));
 
 -- Versions: the campaign can read them (to restore, the app saves an old
 -- version as the new one, through the normal edit rules)
+drop policy if exists "campaign sees versions" on public.character_versions;
 create policy "campaign sees versions" on public.character_versions for select to authenticated
   using (exists (select 1 from characters c where c.id = character_id and (is_member(c.campaign_id) or is_admin())));
 
@@ -200,7 +220,7 @@ create policy "campaign sees versions" on public.character_versions for select t
 
 -- Only admins change who is an admin (the SQL editor, with no signed-in
 -- user, can: that's how the first admin is made)
-create function public.guard_profile() returns trigger
+create or replace function public.guard_profile() returns trigger
 language plpgsql security definer set search_path = public as $$
 begin
   if new.is_admin is distinct from old.is_admin and auth.uid() is not null and not is_admin() then
@@ -208,12 +228,13 @@ begin
   end if;
   return new;
 end $$;
+drop trigger if exists guard_profile on public.profiles;
 create trigger guard_profile before update on public.profiles
   for each row execute function public.guard_profile();
 
 -- On every save: a granted editor can change the sheet but not who owns it or
 -- which campaign it's in; keep the old version; bump the version number
-create function public.on_character_save() returns trigger
+create or replace function public.on_character_save() returns trigger
 language plpgsql security definer set search_path = public as $$
 begin
   if (new.owner_id is distinct from old.owner_id or new.campaign_id is distinct from old.campaign_id)
@@ -233,6 +254,7 @@ begin
   new.name       := coalesce(nullif(new.data ->> 'name', ''), new.name);
   return new;
 end $$;
+drop trigger if exists on_character_save on public.characters;
 create trigger on_character_save before update on public.characters
   for each row execute function public.on_character_save();
 
@@ -241,7 +263,7 @@ create trigger on_character_save before update on public.characters
 -- (round number, the foes by ID and size, where extra attacks go) and each
 -- character's round record. A record from an earlier round is simply ignored.
 
-create table public.round_state (
+create table if not exists public.round_state (
   campaign_id uuid primary key references public.campaigns (id) on delete cascade,
   round       integer not null default 1,
   foes        jsonb not null default '[]',   -- [{ id, label, size }]: never AC or the DM's names
@@ -249,28 +271,33 @@ create table public.round_state (
   encounter   integer not null default 1,     -- up by one when the DM resets initiative
   updated_at  timestamptz not null default now()
 );
+alter table public.round_state add column if not exists encounter integer not null default 1;
 
-create table public.round_records (
+create table if not exists public.round_records (
   character_id uuid primary key references public.characters (id) on delete cascade,
   campaign_id  uuid not null references public.campaigns (id) on delete cascade,
   round        integer not null,
   record       jsonb not null,               -- the round record, with the view the DM sees
   updated_at   timestamptz not null default now()
 );
-create index round_records_campaign_idx on public.round_records (campaign_id);
+create index if not exists round_records_campaign_idx on public.round_records (campaign_id);
 
 alter table public.round_state   enable row level security;
 alter table public.round_records enable row level security;
 
 -- The campaign sees the round; the DM (or an admin) runs it
+drop policy if exists "campaign sees the round" on public.round_state;
 create policy "campaign sees the round" on public.round_state for select to authenticated
   using (is_member(campaign_id) or is_admin());
+drop policy if exists "DM runs the round" on public.round_state;
 create policy "DM runs the round" on public.round_state for all to authenticated
   using (is_dm(campaign_id) or is_admin()) with check (is_dm(campaign_id) or is_admin());
 
 -- The campaign sees everyone's round; whoever can edit a character plays it
+drop policy if exists "campaign sees rounds" on public.round_records;
 create policy "campaign sees rounds" on public.round_records for select to authenticated
   using (is_member(campaign_id) or is_admin());
+drop policy if exists "play your character's round" on public.round_records;
 create policy "play your character's round" on public.round_records for all to authenticated
   using (can_edit_character(character_id))
   with check (can_edit_character(character_id)
@@ -279,8 +306,15 @@ create policy "play your character's round" on public.round_records for all to a
 -- ── Live updates ────────────────────────────────────────────────────────
 -- Open sheets and the DM Helper hear about saves as they happen (HP sync, the
 -- live round). Realtime respects the select policies above.
-alter publication supabase_realtime add table public.characters, public.character_editors,
-  public.round_state, public.round_records;
+do $
+declare t text;
+begin
+  foreach t in array array['characters', 'character_editors', 'round_state', 'round_records'] loop
+    if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = t) then
+      execute format('alter publication supabase_realtime add table public.%I', t);
+    end if;
+  end loop;
+end $;
 
 -- ── Saving from the app (for later) ─────────────────────────────────────
 -- Save only if nobody saved since this copy was opened:

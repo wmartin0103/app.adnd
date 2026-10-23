@@ -1,6 +1,6 @@
 // ── CLOUD (Supabase) ────────────────────────────────────────────
 // Signing in, and the live round across devices. The database and its
-// permission rules are in supabase/schema.sql. The URL and publishable key
+// permission rules are in supabase/migrations/. The URL and publishable key
 // below are public by design: the rules in the database decide what anyone
 // can see or change. (The secret key never goes in the app.)
 //
@@ -50,7 +50,7 @@ export const cloudSession = async (client = cloudClient()) => {
 export function createCloudRoundSync({ client, campaignId, userId }) {
   const listeners = [];
   let base = { round: 1, encounter: 1, foes: [], timing: 'end', dmAt: 0, at: 0 };
-  let hasEncounter = false;   // the database has round_state.encounter (supabase/schema.sql)
+  let hasEncounter = false;   // the database has round_state.encounter (a migration)
   const rows = {};          // character name → { round, record }
   const ids = {};           // character name → character id
   const local = new Set();  // records written here before the first load

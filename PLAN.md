@@ -351,7 +351,7 @@ file-passing workflow, before any backend exists.
 
 ### Phase 3 — Accounts and cloud saves
 - Supabase project, tables, permission rules, password login.
-  **Started 2026-10-23:** the project exists (owner's account); `supabase/schema.sql`
+  **Started 2026-10-23:** the project exists (owner's account); the database (`supabase/migrations/`, deployed by the GitHub integration)
   and `setup-first-admin.sql` have been run. Both tools have **Sign in**
   (`src/cloud.js`); signed in with a campaign, This round goes through the
   database (`round_state`, `round_records`) across devices. A sheet's first

@@ -1,10 +1,10 @@
 -- ════════════════════════════════════════════════════════════════════════
--- Run after schema.sql, in the Supabase SQL editor. Safe to run again.
+-- Run after the migrations (supabase/migrations/), in the Supabase SQL editor. Safe to run again.
 -- First create your own account: Authentication → Users → Add user.
 -- Then replace the three values below and run the whole file.
 -- ════════════════════════════════════════════════════════════════════════
 
--- Accounts made before schema.sql ran have no profile yet: add them
+-- Accounts made before the migrations ran have no profile yet: add them
 insert into public.profiles (id, display_name)
   select id, split_part(email, '@', 1) from auth.users
   where id not in (select id from public.profiles);
