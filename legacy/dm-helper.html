@@ -2006,7 +2006,7 @@ function lineSay(line) {
     const t = whoText(r.target);
     if (r.d20 == null && line.roll.heal) return `${t}, heals ${r.dmg ?? '—'}`;
     if (r.d20 == null) return `vs ${t}, ${r.dmg ?? '—'} damage (${line.roll.kind === 'area' ? 'target saves' : 'no save'})`;
-    if (r.d20 === 1) return `vs ${t}, d20 1 (natural 1), an automatic miss`;
+    if (r.d20 === 1) return `vs ${t}, d20 1 (natural 1), a critical miss`;
     const nat = r.d20 === 20 ? ' (natural 20)' : '';
     return `vs ${t}, d20 ${r.d20}${nat}, hits AC ${acText(r.hitsAC)} or worse, ${r.dmg ?? '—'} damage${r.spell != null ? ` + spell ${r.spell}` : ''}`;
   });
