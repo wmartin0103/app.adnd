@@ -385,6 +385,19 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
 - [ ] Saves from every other active player (PLAN status list).
 - [ ] Leprechaun Dagger damage stays "?" until the DM reveals the effect; then set the value or make it an Effect.
 
+**Live site** (2026-10-24)
+
+- [x] https://wmartin0103.github.io/app.adnd/ — GitHub Pages from the public
+  repo (the owner's choice), deployed by `.github/workflows/pages.yml` on
+  every push to the working branch (Pages source must stay "GitHub
+  Actions"; "Deploy from a branch" shows the README). See `docs/deploy.md`.
+- [x] The landing page is a sign-in page; signed in it offers the Character
+  Sheet, and the DM Helper to the campaign's DM or an admin.
+- [ ] Custom domain: none yet (the owner tried a CNAME and removed it).
+- [ ] Saves move between browsers by Export / Import JSON; cloud saves of
+  whole sheets are the next big piece. Jaque's current save is
+  `samples/jaque_10-09.json` (the owner has loaded it on the live site).
+
 **DM Helper: one product with the sheet** (paused 2026-10-23, owner out of credits)
 
 - [x] Step 1: the DM Helper uses the sheet's palette and type (light; tokens
