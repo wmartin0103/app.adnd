@@ -4,7 +4,7 @@ The site is the landing page (`site/index.html`), the two tools and the
 shared spell catalog. `npm run build` copies just those into `dist/`, so the
 repo's character saves, docs and scripts are never published.
 
-Both steps below are done once, by the owner, in their own accounts.
+The steps below are done once, by the owner, in their own accounts.
 
 ## 1. Cloudflare Pages: host the site
 
