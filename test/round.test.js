@@ -77,6 +77,7 @@ test('rolling a line on the sheet, and the DM judging it against the AC', () => 
   const roll = rollLine(ctxR, line, fixed(0.5, 0.99));              // d20 11, 1d8 → 8
   const r = one(roll);
   assert.deepEqual([roll.kind, r.target.id, r.d20, r.thac0, r.hitsAC, r.pct, r.dmg], ['attack', 'B1', 11, 16, 5, null, 8]);
+  assert.deepEqual([r.dmgFaces, r.dmgFlat], [[8], 0]);                 // each die kept, for "1d8: 8"
   assert.equal(lineSay({ ...line, roll }), '1st: vs B1, d20 11, hits AC 5 or worse, 8 damage');
   // The DM's page, which knows B1 is AC 6: a hit (needs 10)
   assert.deepEqual(judgeRoll(r, 6), { need: 10, hit: true, crit: false, fumble: false });
@@ -114,6 +115,7 @@ test('after rolling, the numbers follow the sheet; the dice stay', () => {
   const plus2 = rifiyr.__scenarios.map(s => (s.id === 'sc-8' ? { ...s, dmgMod: '2' } : s));
   const two = { ...rec, lines: { q1: { ...rec.lines.q1, roll: rollLine(ctxR, roundLines(ctxR, rec, plus2)[0], fixed(0.5, 0.99)) } } };
   assert.equal(one(roundLines(ctxR, two, plus2)[0].roll).dmg, 10);
+  assert.deepEqual([one(roundLines(ctxR, two, plus2)[0].roll).dmgFaces, one(roundLines(ctxR, two, plus2)[0].roll).dmgFlat], [[8], 2]);   // "1d8+2: 8 + 2"
   assert.equal(one(roundLines(ctxR, two, rifiyr.__scenarios)[0].roll).dmg, 8);
   // A Large target with other dice (dagger 1d4 → 1d3): the damage needs rolling again
   const dagger = rifiyr.__scenarios.find(s => s.name === 'Dagger').id;

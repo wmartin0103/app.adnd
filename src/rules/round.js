@@ -154,7 +154,6 @@ const lineDamage = (ctx, sc, target) => {
   const big = target && target.size === 'l';
   return { expr: dmg ? (big ? dmg.l : dmg.sm) : '', spell: dmg && dmg.spell ? dmg.spell : '' };
 };
-const rollSig = (sig, rand) => (sig ? rollDice(sig, rand) : null);
 // How a line with several targets resolves: 'attack' (a d20 each), 'area'
 // (one damage roll, each target saves) or 'split' (damage for each target)
 // Is there anything for the player to roll? A spell with no attack roll and
@@ -169,10 +168,28 @@ export function lineKind(ctx, sc) {
   return save && !/^(none|n\/a|-|—)$/i.test(save) ? 'area' : 'split';
 }
 const targetsOf = line => (line.set.targets && line.set.targets.length ? line.set.targets : [null]);
+// Rolls the dice of a sig ('2d4', '1d8+1d6'), keeping each die: { total, faces }
+export function rollFaces(sig, rand = Math.random) {
+  const faces = [];
+  let total = 0;
+  String(sig || '').split('+').filter(Boolean).forEach(t => {
+    const m = t.match(/^(-?)(\d*)d(\d+)$/);
+    if (!m) return;
+    for (let i = 0; i < parseInt(m[2] || '1', 10); i++) {
+      const v = (1 + Math.floor(rand() * parseInt(m[3], 10))) * (m[1] ? -1 : 1);
+      faces.push(v); total += v;
+    }
+  });
+  return { total, faces };
+}
 const damageDice = (ctx, sc, target, rand) => {
   const d = lineDamage(ctx, sc, target);
   const dmgSig = splitDice(d.expr).sig, spellSig = splitDice(d.spell).sig;
-  return { dmgSig, dmgDice: rollSig(dmgSig, rand), spellSig, spellDice: rollSig(spellSig, rand) };
+  const dr = dmgSig ? rollFaces(dmgSig, rand) : null, sr = spellSig ? rollFaces(spellSig, rand) : null;
+  return {
+    dmgSig, dmgDice: dr ? dr.total : null, dmgFaces: dr ? dr.faces : null,
+    spellSig, spellDice: sr ? sr.total : null, spellFaces: sr ? sr.faces : null,
+  };
 };
 
 // Rolls one line on the sheet: for each target, the d20, d% too on a natural
@@ -217,7 +234,7 @@ export function scoreRoll(ctx, line, raw) {
     const total = (sig, dice, part) => (!sig ? null : sig === part.sig ? Math.max(dice + part.flat, 0) : undefined);
     const dmgNow = total(e.dmgSig, e.dmgDice, dmg), spellNow = total(e.spellSig, e.spellDice, spell);
     return {
-      ...e, dmgExpr: d.expr,
+      ...e, dmgExpr: d.expr, dmgFlat: dmg.flat, spellFlat: spell.flat,   // with the faces: "1d8+2: 5 + 2"
       dmg: dmgNow === undefined ? null : dmgNow ?? (dmg.sig ? null : dmg.flat || null),
       spell: spellNow === undefined ? null : spellNow,
       dmgStale: dmgNow === undefined || (!e.dmgSig && !!dmg.sig) || spellNow === undefined || (!e.spellSig && !!spell.sig),
