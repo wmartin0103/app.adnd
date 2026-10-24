@@ -53,6 +53,13 @@ export function bundleFor(file) {
   return [bundle(RULES_FILES, { expose: TARGETS[file] }), BORROW].join('\n');
 }
 
+// Pages that need only the sign-in code (src/cloud.js), not the rules: the
+// landing page. Same markers; no spell catalog.
+export const PAGES = {
+  'site/index.html': { Cloud: ['cloud', ['cloudClient', 'cloudSession']] },
+};
+export const bundleForPage = file => bundle(['src/cloud.js'], { expose: PAGES[file] });
+
 // pathToFileURL so the check also matches on Windows (file:///D:/…)
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   for (const file of Object.keys(TARGETS)) {
@@ -70,6 +77,13 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
       out = out.slice(0, tag) + CATALOG_TAG + '\n' + out.slice(tag);
     }
     writeFileSync(file, out);
+    console.log(`Updated ${file}`);
+  }
+  for (const file of Object.keys(PAGES)) {
+    const html = readFileSync(file, 'utf8');
+    const a = html.indexOf(START), b = html.indexOf(END);
+    if (a < 0 || b < a) { console.error(`Markers not found in ${file}`); process.exit(1); }
+    writeFileSync(file, html.slice(0, a + START.length) + '\n' + bundleForPage(file) + '\n' + html.slice(b));
     console.log(`Updated ${file}`);
   }
   writeFileSync(CATALOG_JS, catalogScript());

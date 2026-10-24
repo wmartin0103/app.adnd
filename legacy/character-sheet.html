@@ -5339,12 +5339,12 @@ const cloudSession = async (client = cloudClient()) => {
     const user = data && data.session && data.session.user;
     if (!user) return null;
     const [{ data: prof }, { data: rows }] = await Promise.all([
-      client.from('profiles').select('display_name').eq('id', user.id).maybeSingle(),
+      client.from('profiles').select('display_name, is_admin').eq('id', user.id).maybeSingle(),
       client.from('campaign_members').select('campaign_id, role, campaigns(name)').eq('user_id', user.id),
     ]);
     const m = (rows || [])[0] || null;
     return {
-      user, name: (prof && prof.display_name) || user.email,
+      user, name: (prof && prof.display_name) || user.email, isAdmin: !!(prof && prof.is_admin),
       campaignId: m ? m.campaign_id : null, campaignName: m && m.campaigns ? m.campaigns.name : '', role: m ? m.role : null,
     };
   } catch (e) { return null; }
