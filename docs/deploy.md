@@ -6,6 +6,28 @@ repo's character saves, docs and scripts are never published.
 
 The steps below are done once, by the owner, in their own accounts.
 
+## Chosen: GitHub Pages (public repo)
+
+The repo is public (the owner's choice, 2026-10-23: the group is small; if it
+grows, clone it and start clean). `.github/workflows/pages.yml` runs the
+tests, builds `dist/` and publishes it on every push to
+`claude/vibrant-wozniak-gjkyjd`.
+
+1. **Settings → General → Danger Zone → Change visibility → Public.**
+   (Optional: **github.com/settings/emails → Keep my email addresses
+   private**, for future commits.)
+2. **Settings → Pages → Build and deployment → Source: GitHub Actions.**
+3. **Actions → Pages → Run workflow** (or push anything). The site appears at
+   `https://wmartin0103.github.io/app.adnd/`.
+4. Your own domain: **Settings → Pages → Custom domain**, then add the DNS
+   records GitHub shows at your domain's registrar (a `CNAME` to
+   `wmartin0103.github.io` for a subdomain such as `adnd.example.com`).
+   Tick **Enforce HTTPS** once it's verified.
+5. In Supabase: **Authentication → URL Configuration → Site URL** = the
+   site's address, and add it under **Redirect URLs**.
+
+The Cloudflare route below does the same with the repo kept private.
+
 ## 1. Cloudflare Pages: host the site
 
 1. Sign up at https://dash.cloudflare.com (free plan).
