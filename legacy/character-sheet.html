@@ -770,7 +770,7 @@
     /* One control system: every control 2.1rem tall under a small label;
        situational on/off choices live in a select with checkboxes */
     .round { --ctl-h: 2.1rem; }
-    .round .round-pick .scenario-select, .round .round-btn, .round input.round-typed { height: var(--ctl-h); box-sizing: border-box; }
+    .round .round-pick .scenario-select, .round .round-btn { height: var(--ctl-h); box-sizing: border-box; }
     .round .round-btn { display: inline-flex; align-items: center; padding-top: 0; padding-bottom: 0; }
     .round-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
     /* A select with checkboxes in its list */
@@ -794,7 +794,6 @@
     .round-acton { margin-left: auto; }
     .round-pick { display: inline-flex; flex-direction: column; gap: 0.15rem; }
     .round-pick .scenario-select { width: auto; min-width: 4.5rem; }
-    input.scenario-select.round-typed { width: 4.5rem; }
     .round-btn { font-family: var(--font-display); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; background: var(--accent); color: var(--surface); border: 1px solid var(--accent); border-radius: var(--radius); padding: 0.35rem 0.7rem; cursor: pointer; }
     .round-btn:hover, .round-btn:focus-visible { background: #6e2410; }
     .round-btn:disabled { background: var(--rule); border-color: var(--rule); color: var(--ink-muted); cursor: not-allowed; }
@@ -7569,10 +7568,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       if (rec.init.roll == null) {
         const roll = document.createElement('button'); roll.type = 'button'; roll.className = 'round-btn'; roll.textContent = 'Roll d10';
         roll.addEventListener('click', () => { rec.init.roll = 1 + Math.floor(Math.random() * 10); saveRound(rec); });
-        const typed = document.createElement('input'); typed.type = 'number'; typed.min = 1; typed.max = 10; typed.className = 'scenario-select round-typed';
-        typed.setAttribute('aria-label', 'Or type your initiative roll'); typed.placeholder = 'or type';
-        typed.addEventListener('change', () => { const v = parseInt(typed.value, 10); if (v >= 1 && v <= 10) { rec.init.roll = v; saveRound(rec); } });
-        initRow.append(roll, typed);
+        initRow.append(roll);
       } else {
         const v = document.createElement('b'); v.className = 'round-value'; v.textContent = rec.init.roll; initRow.appendChild(v);
       }

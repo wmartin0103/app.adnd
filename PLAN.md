@@ -64,8 +64,9 @@ with neither (Magic Missile) rolls damage per target. The DM's page judges
 each target against its own AC. No cleave (not a core 2e rule); missiles
 aren't counted, so two on one target is said at the table.
 
-**Later, if players ask for it:** typed-in rolls for physical dice (the d20,
-d% and damage), next to Roll to hit. Initiative already takes a typed roll.
+**Later, if players ask for it:** typed-in rolls for physical dice (initiative,
+the d20, d% and damage). For now initiative is rolled on the sheet only: the
+typed field set the roll to 1 when clicked, so it went (2026-10-24).
 Crits: the sheet and the DM's page say "critical" on a natural 20 that
 would have hit; the damage shown is before the table's crit rule.
 
