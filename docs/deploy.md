@@ -1,4 +1,4 @@
-# Putting the site online (Phase 1)
+# Putting the site online
 
 The site is the landing page (`site/index.html`), the two tools and the
 shared spell catalog. `npm run build` copies just those into `dist/`, so the
@@ -21,10 +21,29 @@ Both steps below are done once, by the owner, in their own accounts.
 4. **Save and Deploy.** The site appears at `https://<project>.pages.dev`.
    Every push to the production branch redeploys it.
 
-Other branches get preview addresses (`<branch>.<project>.pages.dev`); the
-gate in step 2 covers those too.
+Other branches get preview addresses (`<branch>.<project>.pages.dev`); a
+gate (step 3) covers those too if added.
 
-## 2. Cloudflare Access: keep it private until logins exist
+## 2. Your own domain
+
+1. Buy a domain (about $10–15 a year). Simplest: **Domain Registration →
+   Register Domains** in the same Cloudflare account (sold at cost; DNS is set
+   up for you). A domain from another registrar works too: add it to
+   Cloudflare as a site and switch its nameservers to Cloudflare's.
+2. **Workers & Pages → your project → Custom domains → Set up a custom
+   domain**, and enter it (e.g. `adnd.example.com` or the bare domain).
+   HTTPS is automatic.
+3. In Supabase: **Authentication → URL Configuration → Site URL** = your
+   domain (`https://…`), and add it under **Redirect URLs**. Password sign-in
+   works without this; password resets and invite emails need it.
+
+## 3. Optional: Cloudflare Access in front of the whole site
+
+Now that the tools have sign-in, campaign data is already protected (the
+database's rules; see `supabase/`). Without a gate, anyone with the link can
+open the tools, but signed out they only see their own browser's sheet. Add
+Access only if the tools themselves should stay private; players then get an
+email code before the page loads, as well as signing in.
 
 1. In the dashboard, **Zero Trust** (free for up to 50 people; it asks for a
    team name and may ask for a card for the free plan).
