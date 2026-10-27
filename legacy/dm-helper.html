@@ -492,12 +492,21 @@
   #lightBody > tr.act:has(+ tr.lightdetail-row) > td{border-bottom:0}
   #lightBody > tr.lightdetail-row > td{padding:0 14px .6rem 2.25rem; border-bottom:1px solid var(--edge)}
   #lightBody > tr:last-child > td{border-bottom:0}
-  /* An Enemy: the card's own box goes; the row carries it */
-  #lightBody > tr.baddycard-row > td{padding:0 !important; border:none !important; border-bottom:1px solid var(--edge) !important}
+  /* An Enemy: its row in the columns, its card's details below; both tinted, red edge */
+  #lightBody > tr.baddy-row > td, #lightBody > tr.baddycard-row > td{background:#fbf6f3}
+  #lightBody > tr.baddy-row > td:first-child, #lightBody > tr.baddycard-row > td{box-shadow:inset 3px 0 0 var(--brass)}
+  #lightBody > tr.baddy-row > td{border-bottom:0}
+  #lightBody > tr.baddy-row .nameline{display:flex; align-items:center; gap:.5rem; flex-wrap:wrap}
+  #lightBody > tr.baddy-row .bname{flex:0 1 11rem; width:11rem}
+  /* What moved into the columns leaves no empty labels behind */
+  #lightBody [hidden]{display:none !important}
+  /* The details: AC and THAC0 side by side, then the attacks */
+  #lightBody .char.inlight .namecol{display:flex; flex-direction:row; flex-wrap:wrap; align-items:center; gap:.25rem 1.5rem; padding:.35rem 0}
+  #lightBody .char.inlight .namecol > *{margin:0}
+  #lightBody > tr.baddy-row .nameline .reroll{margin-left:0}
+  #lightBody > tr.baddycard-row > td{padding:0 14px .6rem 2.25rem !important; border:none !important; border-bottom:1px solid var(--edge) !important}
   #lightBody > tr.baddycard-row:last-child > td{border-bottom:0 !important}
-  #lightBody > tr.baddycard-row .char, #lightBody > tr.baddycard-row .char.first{
-    border:0; border-radius:0; background:#fbf6f3; box-shadow:inset 3px 0 0 var(--brass);
-  }
+  #lightBody > tr.baddycard-row .char, #lightBody > tr.baddycard-row .char.first{border:0; border-radius:0; background:transparent; box-shadow:none}
   #lightBody > tr.baddycard-row .char table.batk thead th{background:transparent}
 </style>
 </head>
@@ -5533,19 +5542,33 @@ function renderLight(){
   document.getElementById('newRoundLight').style.display = full ? 'none' : '';  // the simple view's own New round
   document.getElementById('lightCritBox').style.display = full ? 'none' : '';
   if(full){                                                  // back to the full view: the Enemy cards go home
-    Object.keys(blocks).forEach(n=>{ const b=blocks[n]; if(b.placeholder && b.lightCardTd && b.el.parentNode===b.lightCardTd){ b.el.classList.remove('inlight'); tracker.appendChild(b.el); b.lightCardTr.remove(); } });
+    Object.keys(blocks).forEach(n=>{ const b=blocks[n]; if(b.placeholder && b.lightCardTd && b.el.parentNode===b.lightCardTd){
+      // the pieces moved into the columns go back into the card, in reverse order
+      (b.lightMoves||[]).slice().reverse().forEach(m=>{ m.parent.insertBefore(m.n, m.next && m.next.parentNode===m.parent ? m.next : null); m.parent.hidden=false; });
+      b.el.classList.remove('inlight'); tracker.appendChild(b.el); b.lightCardTr.remove(); if(b.lightCardDetail) b.lightCardDetail.remove();
+    } });
     return;
   }
   const body=document.getElementById('lightBody');
   const entries=[];
   Object.keys(blocks).forEach(name=>{
     const b=blocks[name]; if(!isActive(name)) return;
-    if(b.placeholder){                                       // an Enemy is its full card, placed in order with everyone else
-      if(!b.lightCardTr){ b.lightCardTr=document.createElement('tr'); b.lightCardTr.className='baddycard-row'; b.lightCardTd=document.createElement('td'); b.lightCardTd.colSpan=4; b.lightCardTr.appendChild(b.lightCardTd); }
+    if(b.placeholder){                                       // an Enemy: a row in the table's columns, its card's details below
+      if(!b.lightCardTr){
+        b.lightCardTr=document.createElement('tr'); b.lightCardTr.className='act baddy-row';
+        const cells=['name','num','num','num'].map(c=>{ const td=document.createElement('td'); td.className=c; return td; });
+        b.lightCardTr.append(...cells);
+        b.lightCardDetail=document.createElement('tr'); b.lightCardDetail.className='baddycard-row';
+        b.lightCardTd=document.createElement('td'); b.lightCardTd.colSpan=4; b.lightCardDetail.appendChild(b.lightCardTd);
+        // The name line, Speed, Init roll and Act On move into the columns; remember their places in the card
+        const pieces=[b.el.querySelector('.nameline'), b.speed, b.initRoll, b.actson];
+        b.lightMoves=pieces.map((n, i)=>({n, cell:cells[i], parent:n.parentNode, next:n.nextSibling, hideParent: i>0}));
+      }
+      b.lightMoves.forEach(m=>{ if(m.n.parentNode!==m.cell){ m.cell.appendChild(m.n); if(m.hideParent) m.parent.hidden=true; } });
       if(b.el.parentNode!==b.lightCardTd) b.lightCardTd.appendChild(b.el);
       b.el.classList.add('inlight');
       const v=parseFloat(b.actson.textContent);                // the card's own Act On (waiting Enemies sink to the bottom)
-      entries.push({name, act: isNaN(v) ? 1e9 : v, trs:[b.lightCardTr]});
+      entries.push({name, act: isNaN(v) ? 1e9 : v, trs:[b.lightCardTr, b.lightCardDetail]});
       return;
     }
     const lr=lightRowFor(name);
