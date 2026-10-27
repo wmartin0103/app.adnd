@@ -197,7 +197,7 @@ Every PC is typed in by hand in a config block at the top of the file:
 | `THIEF` | Thief skill percentages | Yes, the sheet calculates these |
 | `SAVES` | Save targets, plus modifiers like dwarf +4 vs poison | Yes, the sheet calculates these |
 | `CRIT_TYPES` | Damage type per weapon | Yes, the sheet stores damage type per weapon |
-| `SETUP_ORDER`, `LIGHT_SPEED`, `legacy` flags | Table order, default speed, retired PCs | No. These are DM settings, not character data. |
+| `SETUP_ORDER`, `legacy` flags | Table order, retired PCs | No. These are DM settings, not character data. |
 | `parry`, `armorSpell`, `virtue`, `quickness` | Kit/class combat abilities that change AC, to-hit, or initiative | Not as numbers. The sheet has them only as text ability cards. |
 
 The hand-copied data has **already drifted** from the sheet:
