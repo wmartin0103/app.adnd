@@ -61,8 +61,19 @@ export function unqueueAttack(rec, qid) {
 
 // The attack's speed in the order: the weapon's, a spell's casting time, or a
 // Spellarrow's bow + casting time
+// A plain attack: what an Enemy has on the DM's page, with no sheet behind it:
+//   { plain: true, name, thac0, dice: '1d6', bonus: 0, speed: 3 }
+// Everything else (targets, conditions, rolls, natural 20s and 1s) works the
+// same as a sheet's attack.
+export const plainAttack = (name, thac0, dice, bonus = 0, speed = 0) => ({ plain: true, name, thac0, dice, bonus, speed });
+const plainExpr = sc => {
+  const b = modNum(sc.bonus);
+  return `${sc.dice || '1d6'}${b ? (b > 0 ? `+${b}` : String(b)) : ''}`;
+};
+
 export function attackSpeed(ctx, sc) {
   if (!sc) return 0;
+  if (sc.plain) return modNum(sc.speed);
   const type = scenarioType(sc);
   if (type === 'spellarrow') return (spellArrow(ctx, sc) || {}).speed || 0;
   if (type === 'spell') { const sp = scenarioSpell(ctx, sc); return (sp && castSpeed(sp.castTimeNow)) ?? 1; }
@@ -133,10 +144,11 @@ export function rollDice(expr, rand = Math.random) {
 // best AC the roll hits ("hits AC 2 or worse", as players announce it); the
 // DM's page, which has the AC, decides. Null: no attack roll.
 export function lineTHAC0(ctx, line) {
+  if (line.sc.plain) return (modNum(line.sc.thac0) || 20) - lineToHit(line.set);
   const bd = scenarioBreakdown(ctx, line.sc);
   return bd ? bd.thac0 - lineToHit(line.set) : null;
 }
-const noAttackRoll = (ctx, sc) => scenarioType(sc) === 'spell' && !scenarioBreakdown(ctx, sc);
+const noAttackRoll = (ctx, sc) => !sc.plain && scenarioType(sc) === 'spell' && !scenarioBreakdown(ctx, sc);
 
 // A damage expression's dice and its flat part: '1d8+2' → { sig: '1d8', flat: 2 }
 export function splitDice(expr) {
@@ -150,6 +162,7 @@ export function splitDice(expr) {
 }
 // The damage dice against one target (its size picks S/M or L)
 const lineDamage = (ctx, sc, target) => {
+  if (sc.plain) return { expr: plainExpr(sc), spell: '' };   // the same against any size
   const dmg = scenarioDamage(ctx, sc);
   const big = target && target.size === 'l';
   return { expr: dmg ? (big ? dmg.l : dmg.sm) : '', spell: dmg && dmg.spell ? dmg.spell : '' };
@@ -158,9 +171,9 @@ const lineDamage = (ctx, sc, target) => {
 // (one damage roll, each target saves) or 'split' (damage for each target)
 // Is there anything for the player to roll? A spell with no attack roll and
 // no dice (Charm Person, Sleep, Bless) is only declared: the DM resolves it.
-export const hasRoll = (ctx, sc) => !noAttackRoll(ctx, sc) || !!scenarioDamage(ctx, sc);
+export const hasRoll = (ctx, sc) => !!sc.plain || !noAttackRoll(ctx, sc) || !!scenarioDamage(ctx, sc);
 // Healing dice (Cure Light Wounds) rather than damage
-export const isHealing = (ctx, sc) => !!(scenarioDamage(ctx, sc) || {}).heal;
+export const isHealing = (ctx, sc) => !sc.plain && !!(scenarioDamage(ctx, sc) || {}).heal;
 export function lineKind(ctx, sc) {
   if (!noAttackRoll(ctx, sc)) return 'attack';
   const sp = scenarioSpell(ctx, sc);

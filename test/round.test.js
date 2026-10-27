@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { scenarioContext } from '../src/rules/scenarios.js';
-import { newRound, roundLines, lineTHAC0, judgeRoll, actOn, rollLine, rollDice, lineToHit, roundACPenalty, queueAttack, unqueueAttack, roundQueue, rerollDamage, lineSay, lineKind, hasRoll, isHealing } from '../src/rules/round.js';
+import { newRound, roundLines, lineTHAC0, judgeRoll, actOn, rollLine, rollDice, lineToHit, roundACPenalty, queueAttack, unqueueAttack, roundQueue, rerollDamage, lineSay, lineKind, hasRoll, isHealing, plainAttack } from '../src/rules/round.js';
 import { createRoundSync } from '../src/round-sync.js';
 
 const load = f => JSON.parse(readFileSync(new URL(`../samples/${f}`, import.meta.url)));
@@ -150,6 +150,20 @@ test('several targets: a d20 each, one area roll for all, or damage each', () =>
   const area = rollLine(ctxR, areaLine, fixed(0.99, 0));
   assert.deepEqual(area.each.map(e => e.dmg), [4, 4]);
   assert.match(lineSay({ ...areaLine, roll: area }), /target saves/);
+});
+
+test('an Enemy\'s plain attack: THAC0, dice and bonus, with everything else the same', () => {
+  // An Enemy: THAC0 18, 1d6+1, speed 4; two attacks queued, no sheet behind it
+  const claw = { ...plainAttack('Claw', 18, '1d6', 1, 4), id: 'e1-a1' };
+  const jaqueT = { id: 'pc:Jaque', label: 'Jaque', size: 'sm' }, rifT = { id: 'pc:Rifiyr', label: 'Rifiyr', size: 'sm' };
+  const rec = { ...withAttacks(newRound('E1'), 'e1-a1'), lines: { q1: { targets: [jaqueT, rifT], flanking: true } }, init: { roll: 3 } };
+  const [line] = roundLines(null, rec, [claw]);
+  assert.deepEqual([lineKind(null, claw), hasRoll(null, claw), isHealing(null, claw), lineTHAC0(null, line)], ['attack', true, false, 16]);   // flanking +2
+  assert.equal(actOn(null, rec, [claw]), 3 + 4);
+  const roll = rollLine(null, line, fixed(0.5, 0.99, 0.1, 0));                 // Jaque: d20 11, 1d6 → 6 (+1 = 7) · Rifiyr: d20 3, 1d6 → 1 (+1 = 2)
+  assert.deepEqual(roll.each.map(e => [e.target.label, e.d20, e.hitsAC, e.dmg, e.dmgExpr, e.dmgFaces]), [['Jaque', 11, 5, 7, '1d6+1', [6]], ['Rifiyr', 3, 13, 2, '1d6+1', [1]]]);
+  // The DM judges each against that character's AC: THAC0 16 vs AC 4 needs 12 (11 misses); vs AC 5 needs 11 (hits)
+  assert.deepEqual([judgeRoll(roll.each[0], 4).hit, judgeRoll(roll.each[0], 5).hit], [false, true]);
 });
 
 test('a spell with no dice has nothing to roll; healing dice are healing', () => {

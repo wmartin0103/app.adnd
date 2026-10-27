@@ -16,7 +16,7 @@ const END = '/* ── end sheet converter ── */';
 export const TARGETS = {
   'legacy/dm-helper.html': {
     SheetConverter: ['adapters/dm-helper', ['toDMHelper']],
-    SheetRound: ['rules/round', ['ROUND_MODS', 'MOVE_MULTS', 'newRound', 'roundQueue', 'queueAttack', 'unqueueAttack', 'roundLines', 'lineToHit', 'roundACPenalty', 'lineTHAC0', 'judgeRoll', 'actOn', 'attackSpeed', 'rollLine', 'scoreRoll', 'rerollDamage', 'lineKind', 'hasRoll', 'isHealing', 'lineSay']],
+    SheetRound: ['rules/round', ['ROUND_MODS', 'MOVE_MULTS', 'newRound', 'roundQueue', 'queueAttack', 'unqueueAttack', 'roundLines', 'lineToHit', 'roundACPenalty', 'lineTHAC0', 'judgeRoll', 'actOn', 'attackSpeed', 'rollLine', 'scoreRoll', 'rerollDamage', 'lineKind', 'hasRoll', 'isHealing', 'lineSay', 'plainAttack']],
     RoundSync: ['round-sync', ['createRoundSync']],
     RoundUI: ['ui/round-ui', ['STYLES', 'ensureStyles', 'multi', 'readField', 'hitRoll', 'D20_SVG']],
     Cloud: ['cloud', ['cloudClient', 'cloudSession', 'createCloudRoundSync', 'mountCloud']],
