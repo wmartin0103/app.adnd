@@ -479,6 +479,26 @@
   .surmods .gclabel select{min-width:7.5rem}
   .lock{height:var(--ctl-h); font-family:var(--serif); font-size:.65rem; letter-spacing:.1em; text-transform:uppercase}
   .roundctl b{font-family:var(--serif); font-size:1.15rem; line-height:var(--ctl-h); color:var(--brass)}
+
+  /* ── The round: one list, one set of dividers ──────────────────────
+     Players and Enemies are rows of the same list; an Enemy is marked by a
+     warm tint and a red edge, not a box of its own. A player's actions sit
+     under their row, indented and quieter. */
+  #lightTracker table.acts thead th{
+    font-family:var(--serif); font-size:.6rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--muted); padding:.55rem 14px; border-bottom:1px solid var(--edge);
+  }
+  #lightBody > tr.act > td{padding-top:.55rem; padding-bottom:.55rem; border-bottom:1px solid var(--edge)}
+  #lightBody > tr.act:has(+ tr.lightdetail-row) > td{border-bottom:0}
+  #lightBody > tr.lightdetail-row > td{padding:0 14px .6rem 2.25rem; border-bottom:1px solid var(--edge)}
+  #lightBody > tr:last-child > td{border-bottom:0}
+  /* An Enemy: the card's own box goes; the row carries it */
+  #lightBody > tr.baddycard-row > td{padding:0 !important; border:none !important; border-bottom:1px solid var(--edge) !important}
+  #lightBody > tr.baddycard-row:last-child > td{border-bottom:0 !important}
+  #lightBody > tr.baddycard-row .char, #lightBody > tr.baddycard-row .char.first{
+    border:0; border-radius:0; background:#fbf6f3; box-shadow:inset 3px 0 0 var(--brass);
+  }
+  #lightBody > tr.baddycard-row .char table.batk thead th{background:transparent}
 </style>
 </head>
 <body>
