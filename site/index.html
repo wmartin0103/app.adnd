@@ -5,62 +5,139 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AD&amp;D Campaign</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Crimson+Pro:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:wght@400;600&display=swap" rel="stylesheet">
   <style>
     /* Tokens follow the character sheet: Cinzel display, Crimson Pro body, oxblood accent */
     :root {
-      --bg: #f5f5f5; --surface: #ffffff; --ink: #1a1714; --ink-muted: #5a534e;
+      --bg: #f5f5f5; --surface: #ffffff; --ink: #1a1714; --ink-muted: #5a534e; --ink-faint: #9a9390;
       --rule: #d8d0c8; --accent: #8b2e12; --accent-hover: #6e2410; --bad: #9b2a1f;
+      --radius: 4px; --ctl-h: 2.4rem;
       --font-display: 'Cinzel', Georgia, serif; --font-body: 'Crimson Pro', Georgia, serif;
       color-scheme: light;
     }
     /* Light only for now, like the tools; light and dark come to all of them together */
     * { box-sizing: border-box; }
     [hidden] { display: none !important; }
-    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 1.125rem; line-height: 1.45; padding: 24px 16px; }
-    main { width: 100%; max-width: 24rem; display: grid; gap: 20px; }
-    h1 { font-family: var(--font-display); font-weight: 600; letter-spacing: 0.04em; font-size: clamp(1.5rem, 5vw, 2rem); margin: 0; padding-bottom: 10px; border-bottom: 2px solid var(--accent); text-align: center; }
-    .card { background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: 22px 20px; display: grid; gap: 14px; }
-    label { display: grid; gap: 4px; font-family: var(--font-display); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-muted); }
-    input { font: 1.05rem var(--font-body); color: var(--ink); background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; padding: 9px 10px; text-transform: none; letter-spacing: 0; }
-    input:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
-    .btn { font-family: var(--font-display); font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; background: var(--accent); color: var(--surface); border: 1px solid var(--accent); border-radius: 4px; padding: 11px 14px; cursor: pointer; text-decoration: none; text-align: center; display: block; }
+    body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 1.1rem; line-height: 1.45; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .btn { font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      min-height: var(--ctl-h); padding: 0 14px; border-radius: var(--radius); border: 1px solid var(--accent); background: var(--accent); color: var(--surface); cursor: pointer; text-decoration: none; white-space: nowrap; }
     .btn:hover, .btn:focus-visible { background: var(--accent-hover); border-color: var(--accent-hover); }
     .btn:disabled { opacity: 0.6; cursor: wait; }
-    .btn.quiet { background: none; color: var(--ink-muted); border-color: var(--rule); }
-    .btn.quiet:hover, .btn.quiet:focus-visible { color: var(--accent); border-color: var(--accent); background: none; }
+    .btn.quiet { background: var(--surface); color: var(--ink-muted); border-color: var(--rule); }
+    .btn.quiet:hover, .btn.quiet:focus-visible { color: var(--accent); border-color: var(--accent); background: var(--surface); }
+    .btn.small { min-height: 1.9rem; padding: 0 10px; font-size: 0.62rem; }
+    .hint { margin: 0; color: var(--ink-muted); font-size: 0.98rem; }
     .error { color: var(--bad); font-size: 0.95rem; margin: 0; min-height: 1.2em; }
-    .who { margin: 0; text-align: center; color: var(--ink-muted); }
-    .who b { color: var(--ink); font-weight: 600; }
-    .hint { margin: 0; font-size: 0.95rem; color: var(--ink-muted); text-align: center; }
+
+    /* Signed out: the sign-in card, centred */
+    .gate { min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; }
+    .gate main { width: 100%; max-width: 24rem; display: grid; gap: 20px; }
+    .gate h1 { font-family: var(--font-display); font-weight: 600; letter-spacing: 0.04em; font-size: clamp(1.5rem, 5vw, 2rem); margin: 0; padding-bottom: 10px; border-bottom: 2px solid var(--accent); text-align: center; }
+    .card-form { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: 22px 20px; display: grid; gap: 14px; }
+    .card-form label { display: grid; gap: 4px; font-family: var(--font-display); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-muted); }
+    .card-form input { font: 1.05rem var(--font-body); color: var(--ink); background: var(--bg); border: 1px solid var(--rule); border-radius: var(--radius); padding: 9px 10px; }
+    .card-form input:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+
+    /* Signed in: your characters */
+    .page { max-width: 60rem; margin: 0 auto; padding: 20px 16px 56px; display: grid; gap: 24px; }
+    .top { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding-bottom: 12px; border-bottom: 2px solid var(--accent); }
+    .top h1 { font-family: var(--font-display); font-weight: 600; letter-spacing: 0.04em; font-size: clamp(1.3rem, 4vw, 1.7rem); margin: 0; }
+    .top .who { margin-left: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--ink-muted); font-size: 0.95rem; }
+    .top .who b { color: var(--ink); font-weight: 600; }
+    h2 { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-muted); margin: 0; }
+    h2 .count { font-family: var(--font-body); letter-spacing: 0; text-transform: none; font-weight: 400; color: var(--ink-faint); margin-left: 6px; }
+    section { display: grid; gap: 10px; }
+    .section-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: 12px; }
+    .card { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: 14px 16px; display: grid; gap: 8px; align-content: start; position: relative; }
+    .card.play { border-color: var(--accent); box-shadow: inset 4px 0 0 var(--accent); padding-left: 20px; }
+    .card.dead { background: #f1eeec; }
+    .card.dead .name { color: var(--ink-muted); }
+    .name { font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; letter-spacing: 0.03em; margin: 0; overflow-wrap: anywhere; }
+    .what { margin: 0; }
+    .what.blank { color: var(--ink-faint); font-style: italic; }
+    .meta { margin: 0; font-size: 0.9rem; color: var(--ink-faint); }
+    .card .actions { margin-top: 4px; }
+    .card .more { margin-left: auto; min-width: 2.2rem; padding: 0 8px; font-size: 1.1rem; letter-spacing: 0; font-family: var(--font-body); }
+    .badge { font-family: var(--font-display); font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; justify-self: start; }
+    .badge.play { background: var(--accent); color: var(--surface); }
+    .badge.dead { background: #3b3431; color: var(--surface); }
+    .badge.given { border: 1px solid var(--rule); color: var(--ink-muted); }
+    .menu { position: absolute; right: 12px; top: calc(100% - 8px); z-index: 5; background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); box-shadow: 0 8px 22px rgba(26,23,20,.14); padding: 4px; min-width: 13rem; display: grid; }
+    .menu button { font: inherit; font-size: 1rem; text-align: left; background: none; border: 0; border-radius: var(--radius); padding: 8px 10px; cursor: pointer; color: var(--ink); }
+    .menu button:hover, .menu button:focus-visible { background: var(--bg); outline: none; }
+    .menu hr { border: 0; border-top: 1px solid var(--rule); margin: 4px 0; }
+    .slot { border: 1px dashed var(--rule); border-radius: var(--radius); padding: 16px; color: var(--ink-muted); display: grid; gap: 4px; }
+    /* First visit: two ways in */
+    .welcome { display: grid; gap: 6px; text-align: center; }
+    .choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 14px; }
+    .choice { font: inherit; text-align: left; background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: 22px 20px; cursor: pointer; display: grid; gap: 6px; color: var(--ink); }
+    .choice:hover, .choice:focus-visible { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+    .choice .t { font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; color: var(--accent); }
+    .choice .d { color: var(--ink-muted); font-size: 0.98rem; }
+    .found { background: #fbf6ef; border: 1px solid #e6d3b4; border-radius: var(--radius); padding: 14px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+    .found p { margin: 0; flex: 1 1 18rem; }
+    /* Bringing a character into play while another is */
+    dialog { border: 1px solid var(--rule); border-radius: var(--radius); padding: 22px 22px 18px; max-width: 27rem; width: calc(100% - 32px); box-shadow: 0 12px 40px rgba(26,23,20,.25); }
+    dialog::backdrop { background: rgba(26,23,20,.35); }
+    dialog h3 { font-family: var(--font-display); font-size: 1.05rem; margin: 0 0 8px; }
+    dialog p { margin: 0 0 12px; }
+    dialog fieldset { border: 0; padding: 0; margin: 0 0 16px; display: grid; gap: 8px; }
+    dialog legend { font-family: var(--font-display); font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-muted); margin-bottom: 6px; }
+    dialog label { display: flex; gap: 8px; align-items: flex-start; cursor: pointer; }
+    dialog input { accent-color: var(--accent); margin-top: 0.3rem; }
+    dialog .row { display: flex; justify-content: flex-end; gap: 8px; }
+    .toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--ink); color: var(--surface); padding: 10px 16px; border-radius: var(--radius); font-size: 0.98rem; max-width: calc(100% - 32px); }
+    .toast:empty { display: none; }
   </style>
 </head>
 <body>
-  <main>
-    <h1>AD&amp;D Campaign</h1>
+  <!-- Signed out: sign in (accounts are made by the DM or an admin) -->
+  <div class="gate" id="gate" hidden>
+    <main>
+      <h1>AD&amp;D Campaign</h1>
+      <form class="card-form" id="signin" hidden>
+        <label>Email<input type="email" name="email" autocomplete="username" required></label>
+        <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
+        <p class="error" id="error" role="alert"></p>
+        <button class="btn" type="submit">Sign in</button>
+      </form>
+      <p class="hint" id="offline" hidden>Sign-in isn't available right now.</p>
+    </main>
+  </div>
 
-    <!-- Signed out: sign in (accounts are made by the DM or an admin) -->
-    <form class="card" id="signin" hidden>
-      <label>Email<input type="email" name="email" autocomplete="username" required></label>
-      <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
-      <p class="error" id="error" role="alert"></p>
-      <button class="btn" type="submit">Sign in</button>
+  <!-- Signed in: your characters -->
+  <div class="page" id="home" hidden>
+    <header class="top">
+      <h1>AD&amp;D Campaign</h1>
+      <div class="who">
+        <span id="who"></span>
+        <a class="btn quiet small" href="legacy/dm-helper.html" id="dm-link" hidden>DM Helper</a>
+        <a class="btn quiet small" href="account.html">Account</a>
+        <button class="btn quiet small" type="button" id="signout">Sign out</button>
+      </div>
+    </header>
+    <main id="main"></main>
+  </div>
+
+  <input type="file" id="import-file" accept=".json,application/json" hidden>
+  <dialog id="swap" aria-labelledby="swap-title">
+    <form method="dialog">
+      <h3 id="swap-title"></h3>
+      <p id="swap-text"></p>
+      <fieldset>
+        <legend id="swap-legend"></legend>
+        <label><input type="radio" name="to" value="dead" checked> <span>Dead</span></label>
+        <label><input type="radio" name="to" value="backup"> <span>Backups</span></label>
+      </fieldset>
+      <div class="row"><button class="btn quiet" value="cancel">Cancel</button><button class="btn" value="ok">Bring into play</button></div>
     </form>
+  </dialog>
+  <div class="toast" id="toast" role="status"></div>
 
-    <!-- Signed in: who, and the way in -->
-    <section class="card" id="home" hidden aria-live="polite">
-      <p class="who" id="who"></p>
-      <a class="btn" href="legacy/character-sheet.html">Character Sheet</a>
-      <a class="btn" href="legacy/dm-helper.html" id="dm-link" hidden>DM Helper</a>
-      <p class="hint" id="no-campaign" hidden>You're not in a campaign yet. Ask your DM to add you.</p>
-      <a class="btn quiet" href="account.html">Account</a>
-      <button class="btn quiet" type="button" id="signout">Sign out</button>
-    </section>
-
-    <p class="hint" id="offline" hidden>Sign-in isn't available right now.</p>
-  </main>
-
-  <!-- Supabase: signing in (src/cloud.js) -->
+  <!-- Supabase: signing in and your characters (src/cloud.js, src/characters.js) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
   <script>
 /* ── sheet converter: generated by scripts/build-legacy.mjs from src/ — do not edit by hand ── */
@@ -123,12 +200,13 @@ const cloudSession = async (client = cloudClient()) => {
 // (round_records). A record from an earlier round is left out of the state.
 // Changes show here at once and go to the database behind the scenes;
 // everyone else hears about them through realtime.
-function createCloudRoundSync({ client, campaignId, userId }) {
+// characterIds: names already known (the sheet opened from the account knows its own)
+function createCloudRoundSync({ client, campaignId, userId, characterIds = {} }) {
   const listeners = [];
   let base = { round: 1, encounter: 1, foes: [], timing: 'end', dmAt: 0, at: 0 };
   let hasEncounter = false;   // the database has round_state.encounter (a migration)
   const rows = {};          // character name → { round, record }
-  const ids = {};           // character name → character id
+  const ids = { ...characterIds };   // character name → character id
   const local = new Set();  // records written here before the first load
   const writes = {};        // character name → this page's saves, in order
   const state = () => {
@@ -245,8 +323,9 @@ function createCloudRoundSync({ client, campaignId, userId }) {
 // password: only a link to choose one, and the tool stays offline (onChange
 // gets null). onChange gets the session (or null) on load and whenever it changes.
 // The Account page sits beside the landing page, one folder up from the tools.
-const ACCOUNT_URL = '../account.html';
-function mountCloud(el, onChange) {
+const ACCOUNT_URL = '../account.html', HOME_URL = '../index.html';
+// opts.home: a link back to the landing page with this label (the sheet: "Your characters")
+function mountCloud(el, onChange, opts = {}) {
   const client = cloudClient();
   if (!el || !client) { if (onChange) onChange(null); return; }
   const doc = el.ownerDocument;
@@ -282,7 +361,7 @@ function mountCloud(el, onChange) {
     if (got && got.newPassword) {
       el.innerHTML = `<a class="cloud-btn" href="${ACCOUNT_URL}">Choose your password</a>`;
     } else if (s) {
-      el.innerHTML = `<span class="cloud-who">${esc(s.name)}${s.campaignName ? ` · ${esc(s.campaignName)}` : ' · no campaign yet'}</span> <a class="cloud-btn" href="${ACCOUNT_URL}">Account</a> <button type="button" class="cloud-btn">Sign out</button>`;
+      el.innerHTML = `<span class="cloud-who">${esc(s.name)}${s.campaignName ? ` · ${esc(s.campaignName)}` : ' · no campaign yet'}</span> ${opts.home ? `<a class="cloud-btn" href="${HOME_URL}">${esc(opts.home)}</a> ` : ''}<a class="cloud-btn" href="${ACCOUNT_URL}">Account</a> <button type="button" class="cloud-btn">Sign out</button>`;
       el.querySelector('button').addEventListener('click', () => client.auth.signOut());
     } else {
       el.innerHTML = '<button type="button" class="cloud-btn">Sign in</button>';
@@ -296,30 +375,315 @@ function mountCloud(el, onChange) {
 
 return { CLOUD_URL, CLOUD_KEY, cloudClient, needsNewPassword, cloudSession, createCloudRoundSync, mountCloud };
 })();
+// ── characters ──
+__m["characters"] = (() => {
+
+// ── CHARACTERS IN THE CLOUD ─────────────────────────────────────
+// A player's characters, saved to their account: the list on the landing page
+// ("Your characters": In play, Backups, Dead) and the sheet's own load and
+// save. A character's data is exactly what the sheet saves and exports. Each
+// call takes the Supabase client; the database's rules decide what's allowed.
+
+const STATUSES = ['play', 'backup', 'dead'];
+const STATUS_LABEL = { play: 'In play', backup: 'Backups', dead: 'Dead' };
+
+const RACES = { human: 'Human', dwarf: 'Dwarf', gnome: 'Gnome', halfling: 'Halfling', 'half-elf': 'Half-Elf', elf: 'Elf', 'half-orc': 'Half-Orc' };
+// "Elf · Blade Bard 5", from a sheet's data ('' when there's nothing yet)
+function summary(data) {
+  if (!data) return '';
+  const race = RACES[data['race-group']] || '';
+  const classes = (Array.isArray(data.__classes) ? data.__classes : [])
+    .filter(c => c && c.name).map(c => `${c.name}${c.level ? ` ${c.level}` : ''}`).join(' / ');
+  return [isBlank(data) ? '' : race, classes].filter(Boolean).join(' · ');
+}
+// A row made before its sheet was saved (by add-player.sql, or a round sent
+// from a sheet that wasn't saved yet): only a name
+const isBlank = data => !data || Object.keys(data).every(k => k === 'name');
+
+// The file name the sheet exports: "jaque_10-26.json"
+function fileName(data, now = new Date()) {
+  const name = String((data && data.name) || 'character').trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || 'character';
+  return `${name}_${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}.json`;
+}
+
+const COLS = 'id, name, owner_id, status, data, updated_at';
+const card = (r, owners = {}) => ({
+  id: r.id, name: r.name, ownerId: r.owner_id, ownerName: owners[r.owner_id] || '', status: r.status || 'backup',
+  summary: summary(r.data), blank: isBlank(r.data), data: r.data, updatedAt: r.updated_at,
+});
+// Yours (newest save first), and the ones others have given you
+async function listCharacters(client, session) {
+  if (!session || !session.campaignId) return { mine: [], given: [] };
+  const me = session.user.id;
+  const [own, eds] = await Promise.all([
+    client.from('characters').select(COLS).eq('campaign_id', session.campaignId).eq('owner_id', me),
+    client.from('character_editors').select('character_id').eq('user_id', me),
+  ]);
+  if (own.error) throw own.error;
+  if (eds.error) throw eds.error;
+  const ids = (eds.data || []).map(e => e.character_id);
+  let given = [];
+  if (ids.length) {
+    const g = await client.from('characters').select(COLS).in('id', ids);
+    if (g.error) throw g.error;
+    const others = (g.data || []).filter(r => r.owner_id !== me);
+    const owners = {};
+    if (others.length) {
+      const p = await client.from('profiles').select('id, display_name').in('id', [...new Set(others.map(r => r.owner_id))]);
+      (p.data || []).forEach(x => { owners[x.id] = x.display_name; });
+    }
+    given = others.map(r => card(r, owners)).sort((a, b) => a.name.localeCompare(b.name));
+  }
+  const byNewest = (a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || ''));
+  return { mine: (own.data || []).map(r => card(r)).sort(byNewest), given };
+}
+
+// A new character in the campaign, yours; In play if you have none, else a backup
+async function createCharacter(client, session, data, { mine = [], status } = {}) {
+  const st = status || (mine.some(c => c.status === 'play') ? 'backup' : 'play');
+  const name = String((data && data.name) || '').trim() || 'New character';
+  const { data: row, error } = await client.from('characters')
+    .insert({ campaign_id: session.campaignId, owner_id: session.user.id, name, data: data || { name: '' }, status: st })
+    .select('id').single();
+  if (error) throw error;
+  return { id: row.id, status: st };
+}
+
+// Moves a character; into play, the one in play now goes to `others` (dead
+// or backup) first, as only one may be in play
+async function setStatus(client, mine, id, status, others = 'backup') {
+  if (status === 'play') {
+    const cur = mine.find(c => c.status === 'play' && c.id !== id);
+    if (cur) {
+      const r = await client.from('characters').update({ status: others }).eq('id', cur.id);
+      if (r.error) throw r.error;
+    }
+  }
+  const { error } = await client.from('characters').update({ status }).eq('id', id);
+  if (error) throw error;
+}
+
+// The sheet: one character's saved data, and saving it
+async function loadCharacter(client, id) {
+  const { data, error } = await client.from('characters').select('id, name, owner_id, status, data').eq('id', id).maybeSingle();
+  if (error) throw error;
+  return data;
+}
+async function saveSheet(client, id, data) {
+  const { error } = await client.from('characters').update({ data }).eq('id', id);
+  if (error) throw error;
+}
+
+return { STATUSES, STATUS_LABEL, summary, isBlank, fileName, listCharacters, createCharacter, setStatus, loadCharacter, saveSheet };
+})();
 window.Cloud = { cloudClient: __m["cloud"].cloudClient, cloudSession: __m["cloud"].cloudSession };
+window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m["characters"].summary, isBlank: __m["characters"].isBlank, fileName: __m["characters"].fileName, listCharacters: __m["characters"].listCharacters, createCharacter: __m["characters"].createCharacter, setStatus: __m["characters"].setStatus, saveSheet: __m["characters"].saveSheet };
 })();
 /* ── end sheet converter ── */
 
   (function () {
     const client = window.Cloud && Cloud.cloudClient();
     const $ = id => document.getElementById(id);
-    if (!client) { $('offline').hidden = false; return; }
     const form = $('signin');
+    if (!client) { $('gate').hidden = false; $('offline').hidden = false; return; }
+
+    // The sheet a browser kept before accounts (the sheet's own storage), and
+    // whether it has been saved to an account since
+    const LOCAL = 'adnd-sheet', MOVED = 'adnd-sheet-moved';
+    const localSheet = () => { try { const d = JSON.parse(localStorage.getItem(LOCAL) || 'null'); return d && typeof d === 'object' ? d : null; } catch (e) { return null; } };
+    const moved = () => { try { return !!localStorage.getItem(MOVED); } catch (e) { return true; } };
+    const placeText = st => (st === 'play' ? 'in play' : st === 'dead' ? 'with the dead' : 'in Backups');
+    const sheetUrl = id => `legacy/character-sheet.html?id=${encodeURIComponent(id)}`;
+
+    let session = null, list = { mine: [], given: [] }, openMenu = null, loadError = '';
+    const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+    let toastT = 0;
+    const say = t => { $('toast').textContent = t; clearTimeout(toastT); toastT = setTimeout(() => { $('toast').textContent = ''; }, 3500); };
+    const problem = e => (e && e.message) || 'That didn’t work. Try again.';
+    const when = iso => {
+      if (!iso) return '';
+      const d = new Date(iso), days = Math.floor((Date.now() - d) / 864e5);
+      return days < 1 ? 'Saved today' : days < 2 ? 'Saved yesterday' : days < 14 ? `Saved ${days} days ago` : `Saved ${d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`;
+    };
 
     async function show() {
-      const s = await Cloud.cloudSession(client);
-      form.hidden = !!s;
-      $('home').hidden = !s;
-      if (!s) { form.email.focus(); return; }
+      session = await Cloud.cloudSession(client);
+      $('gate').hidden = !!session; form.hidden = !!session; $('home').hidden = !session;
+      if (!session) { form.email.focus(); return; }
       // Still on the temporary password an admin gave them: choose one first
-      if (s.newPassword) { location.replace('account.html'); return; }
+      if (session.newPassword) { location.replace('account.html'); return; }
       $('who').innerHTML = '';
-      const name = document.createElement('b'); name.textContent = s.name;
-      $('who').append('Signed in as ', name, s.campaignName ? ` · ${s.campaignName}` : '');
-      // The DM Helper is for the campaign's DM (and admins)
-      $('dm-link').hidden = !(s.role === 'dm' || s.isAdmin);
-      $('no-campaign').hidden = !!s.campaignId || s.isAdmin;
+      const name = el('b', '', session.name);
+      $('who').append('Signed in as ', name, session.campaignName ? ` · ${session.campaignName}` : '');
+      $('dm-link').hidden = !(session.role === 'dm' || session.isAdmin);
+      await reload();
     }
+    async function reload() {
+      loadError = '';
+      try { list = await Characters.listCharacters(client, session); } catch (e) { loadError = problem(e); }
+      render();
+    }
+
+    // ── Doing things ──
+    async function newCharacter() {
+      try { const r = await Characters.createCharacter(client, session, { name: '' }, { mine: list.mine }); location.href = sheetUrl(r.id); }
+      catch (e) { say(problem(e)); }
+    }
+    function importFile() { $('import-file').value = ''; $('import-file').click(); }
+    $('import-file').addEventListener('change', async e => {
+      const file = e.target.files[0]; if (!file) return;
+      let data;
+      try { data = JSON.parse(await file.text()); if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error(); }
+      catch (err) { say('That file isn’t a character sheet. Use a .json file exported from the sheet.'); return; }
+      try {
+        const r = await Characters.createCharacter(client, session, data, { mine: list.mine });
+        await reload(); say(`${data.name || 'The character'} is saved to your account, ${placeText(r.status)}.`);
+      } catch (err) { say(problem(err)); }
+    });
+    // The sheet from before accounts: into the row with its name (made for it
+    // by the DM), or a new one
+    async function saveLocal(data) {
+      const blank = list.mine.find(c => c.blank && c.name === data.name);
+      try {
+        let id, status;
+        if (blank) {
+          id = blank.id; status = blank.status;
+          await Characters.saveSheet(client, id, data);
+          if (status !== 'play' && !list.mine.some(c => c.status === 'play')) { await Characters.setStatus(client, list.mine, id, 'play'); status = 'play'; }
+        } else ({ id, status } = await Characters.createCharacter(client, session, data, { mine: list.mine }));
+        try { localStorage.setItem(MOVED, id); } catch (e) { /* storage blocked */ }
+        await reload(); say(`${data.name} is saved to your account, ${placeText(status)}.`);
+      } catch (e) { say(problem(e)); }
+    }
+    async function move(c, status, others) {
+      try { await Characters.setStatus(client, list.mine, c.id, status, others); await reload(); }
+      catch (e) { say(problem(e)); return false; }
+      return true;
+    }
+    // Into play: one each. If another is in play, ask where it goes.
+    function bringIn(c) {
+      const cur = list.mine.find(x => x.status === 'play' && x.id !== c.id);
+      if (!cur) { move(c, 'play').then(ok => ok && say(`${c.name} is in play.`)); return; }
+      const d = $('swap');
+      $('swap-title').textContent = `Bring ${c.name} into play?`;
+      $('swap-text').textContent = `${cur.name} is in play now. One character each in the party.`;
+      $('swap-legend').textContent = `Move ${cur.name} to`;
+      d.querySelector('input[value="dead"]').checked = true;
+      d.onclose = async () => {
+        if (d.returnValue !== 'ok') return;
+        const to = d.querySelector('input[name="to"]:checked').value;
+        if (await move(c, 'play', to)) say(`${c.name} is in play; ${cur.name} moved to ${Characters.STATUS_LABEL[to]}.`);
+      };
+      d.returnValue = ''; d.showModal();
+    }
+    async function copyOf(c) {
+      const data = { ...(c.data || {}), name: `${c.name} (copy)` };
+      try { await Characters.createCharacter(client, session, data, { mine: list.mine, status: 'backup' }); await reload(); say(`A copy of ${c.name} is in Backups.`); }
+      catch (e) { say(problem(e)); }
+    }
+    function exportFile(c) {
+      const url = URL.createObjectURL(new Blob([JSON.stringify(c.data || { name: c.name }, null, 2)], { type: 'application/json' }));
+      const a = document.createElement('a'); a.href = url; a.download = Characters.fileName(c.data || { name: c.name }); a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // ── Drawing ──
+    function card(c, given) {
+      const k = el('article', 'card' + (c.status === 'play' && !given ? ' play' : c.status === 'dead' ? ' dead' : ''));
+      const nid = 'n-' + c.id; k.setAttribute('aria-labelledby', nid);
+      if (given) k.appendChild(el('span', 'badge given', `${c.ownerName || 'Someone'}’s · you can play`));
+      else if (c.status === 'play') k.appendChild(el('span', 'badge play', 'In play'));
+      else if (c.status === 'dead') k.appendChild(el('span', 'badge dead', 'Dead'));
+      const n = el('h3', 'name', c.name); n.id = nid; k.appendChild(n);
+      k.appendChild(el('p', 'what' + (c.summary ? '' : ' blank'), c.summary || (c.blank ? 'Not filled in yet' : '')));
+      if (c.updatedAt) k.appendChild(el('p', 'meta', when(c.updatedAt)));
+      const a = el('div', 'actions');
+      const open = el('a', 'btn small', 'Open sheet'); open.href = sheetUrl(c.id); open.setAttribute('aria-label', `Open ${c.name}’s sheet`);
+      a.appendChild(open);
+      if (!given && c.status !== 'play') {
+        const b = el('button', 'btn quiet small', c.status === 'dead' ? 'Return to play' : 'Bring into play'); b.type = 'button';
+        b.addEventListener('click', () => bringIn(c)); a.appendChild(b);
+      }
+      if (!given) {
+        const m = el('button', 'btn quiet small more', '⋯'); m.type = 'button';
+        m.setAttribute('aria-label', `More for ${c.name}`); m.setAttribute('aria-haspopup', 'true'); m.setAttribute('aria-expanded', String(openMenu === c.id));
+        m.addEventListener('click', e => { e.stopPropagation(); openMenu = openMenu === c.id ? null : c.id; render(); if (openMenu) document.querySelector('.menu button')?.focus(); });
+        a.appendChild(m);
+      }
+      k.appendChild(a);
+      if (openMenu === c.id) {
+        const menu = el('div', 'menu'); menu.setAttribute('role', 'menu');
+        const item = (t, fn) => { const b = el('button', '', t); b.type = 'button'; b.setAttribute('role', 'menuitem'); b.addEventListener('click', () => { openMenu = null; fn(); }); menu.appendChild(b); };
+        if (c.status !== 'play') item('Bring into play', () => bringIn(c));
+        if (c.status !== 'backup') item('Move to Backups', () => move(c, 'backup').then(ok => ok && say(`${c.name} moved to Backups.`)));
+        if (c.status !== 'dead') item('Mark as dead', () => move(c, 'dead').then(ok => ok && say(`${c.name} is marked as dead.`)));
+        menu.appendChild(el('hr'));
+        item('Make a copy', () => copyOf(c));
+        item('Export file', () => exportFile(c));
+        k.appendChild(menu);
+      }
+      return k;
+    }
+    function section(title, n, extra, hint) {
+      const s = el('section'), head = el('div', 'section-head'), h = el('h2', '', title);
+      if (n > 1) h.appendChild(el('span', 'count', `(${n})`));
+      head.appendChild(h); if (extra) head.appendChild(extra);
+      s.appendChild(head); if (hint) s.appendChild(el('p', 'hint', hint));
+      return s;
+    }
+    function render() {
+      const main = $('main'); main.textContent = '';
+      const wrap = el('div'); wrap.style.display = 'grid'; wrap.style.gap = '26px';
+      if (!session.campaignId) { main.appendChild(el('p', 'hint', 'You’re not in a campaign yet. Ask your DM to add you.')); return; }
+      if (loadError) wrap.appendChild(el('p', 'error', `Your characters couldn’t load: ${loadError}`));
+      // A sheet from before accounts in this browser, not saved to the account yet
+      const local = localSheet();
+      if (local && local.name && !moved() && !list.mine.some(c => !c.blank && c.name === local.name)) {
+        const f = el('div', 'found'), p = el('p');
+        p.append('This browser has a sheet from before accounts: ', el('b', '', local.name), Characters.summary(local) ? `, ${Characters.summary(local)}.` : '.');
+        const b = el('button', 'btn', 'Save it to your account'); b.type = 'button';
+        b.addEventListener('click', () => { b.disabled = true; saveLocal(local); });
+        f.append(p, b); wrap.appendChild(f);
+      }
+      const mine = list.mine;
+      if (!mine.length) {
+        const w = el('div', 'welcome');
+        w.append(el('h2', '', 'Your characters'), el('p', 'hint', 'You don’t have a character yet. Start one, or bring in a sheet you’ve already made.'));
+        const ch = el('div', 'choices');
+        const choice = (t, d, fn) => { const b = el('button', 'choice'); b.type = 'button'; b.append(el('span', 't', t), el('span', 'd', d)); b.addEventListener('click', fn); return b; };
+        ch.append(
+          choice('Create a new character', 'A blank sheet, saved to your account as you fill it in.', newCharacter),
+          choice('Import a character file', 'A .json file exported from the character sheet.', importFile));
+        wrap.append(w, ch);
+      } else {
+        const add = el('div', 'actions');
+        const nb = el('button', 'btn quiet small', 'New character'); nb.type = 'button'; nb.addEventListener('click', newCharacter);
+        const ib = el('button', 'btn quiet small', 'Import file'); ib.type = 'button'; ib.addEventListener('click', importFile);
+        add.append(nb, ib);
+        const play = mine.filter(c => c.status === 'play');
+        const s1 = section('In play', 0, add), c1 = el('div', 'cards');
+        if (play.length) c1.appendChild(card(play[0]));
+        else { const slot = el('div', 'slot'); slot.append(el('b', '', 'No character in play'), el('span', '', 'Bring in a backup, or start a new character.')); c1.appendChild(slot); }
+        s1.appendChild(c1); wrap.appendChild(s1);
+        const back = mine.filter(c => c.status === 'backup');
+        const s2 = section('Backups', back.length, null, back.length ? 'Ready for the next session, if your character in play falls.' : 'None yet. A backup is ready for the next session, if your character in play falls.');
+        if (back.length) { const c2 = el('div', 'cards'); back.forEach(c => c2.appendChild(card(c))); s2.appendChild(c2); }
+        wrap.appendChild(s2);
+        const dead = mine.filter(c => c.status === 'dead');
+        if (dead.length) { const s3 = section('Dead', dead.length, null, 'Still yours to edit. They could come back.'); const c3 = el('div', 'cards'); dead.forEach(c => c3.appendChild(card(c))); s3.appendChild(c3); wrap.appendChild(s3); }
+      }
+      if (list.given.length) {
+        const s4 = section('Characters you can play', list.given.length, null, 'Given to you by their owner, until they take it away.');
+        const c4 = el('div', 'cards'); list.given.forEach(c => c4.appendChild(card(c, true))); s4.appendChild(c4); wrap.appendChild(s4);
+      }
+      main.appendChild(wrap);
+    }
+    document.addEventListener('click', e => { if (openMenu && !e.target.closest('.menu')) { openMenu = null; render(); } });
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Escape' || !openMenu) return;
+      const c = list.mine.find(x => x.id === openMenu); openMenu = null; render();
+      if (c) document.querySelector(`[aria-label="More for ${CSS.escape(c.name)}"]`)?.focus();
+    });
 
     form.addEventListener('submit', async e => {
       e.preventDefault();

@@ -52,12 +52,13 @@ export const cloudSession = async (client = cloudClient()) => {
 // (round_records). A record from an earlier round is left out of the state.
 // Changes show here at once and go to the database behind the scenes;
 // everyone else hears about them through realtime.
-export function createCloudRoundSync({ client, campaignId, userId }) {
+// characterIds: names already known (the sheet opened from the account knows its own)
+export function createCloudRoundSync({ client, campaignId, userId, characterIds = {} }) {
   const listeners = [];
   let base = { round: 1, encounter: 1, foes: [], timing: 'end', dmAt: 0, at: 0 };
   let hasEncounter = false;   // the database has round_state.encounter (a migration)
   const rows = {};          // character name → { round, record }
-  const ids = {};           // character name → character id
+  const ids = { ...characterIds };   // character name → character id
   const local = new Set();  // records written here before the first load
   const writes = {};        // character name → this page's saves, in order
   const state = () => {
@@ -174,8 +175,9 @@ export function createCloudRoundSync({ client, campaignId, userId }) {
 // password: only a link to choose one, and the tool stays offline (onChange
 // gets null). onChange gets the session (or null) on load and whenever it changes.
 // The Account page sits beside the landing page, one folder up from the tools.
-const ACCOUNT_URL = '../account.html';
-export function mountCloud(el, onChange) {
+const ACCOUNT_URL = '../account.html', HOME_URL = '../index.html';
+// opts.home: a link back to the landing page with this label (the sheet: "Your characters")
+export function mountCloud(el, onChange, opts = {}) {
   const client = cloudClient();
   if (!el || !client) { if (onChange) onChange(null); return; }
   const doc = el.ownerDocument;
@@ -211,7 +213,7 @@ export function mountCloud(el, onChange) {
     if (got && got.newPassword) {
       el.innerHTML = `<a class="cloud-btn" href="${ACCOUNT_URL}">Choose your password</a>`;
     } else if (s) {
-      el.innerHTML = `<span class="cloud-who">${esc(s.name)}${s.campaignName ? ` · ${esc(s.campaignName)}` : ' · no campaign yet'}</span> <a class="cloud-btn" href="${ACCOUNT_URL}">Account</a> <button type="button" class="cloud-btn">Sign out</button>`;
+      el.innerHTML = `<span class="cloud-who">${esc(s.name)}${s.campaignName ? ` · ${esc(s.campaignName)}` : ' · no campaign yet'}</span> ${opts.home ? `<a class="cloud-btn" href="${HOME_URL}">${esc(opts.home)}</a> ` : ''}<a class="cloud-btn" href="${ACCOUNT_URL}">Account</a> <button type="button" class="cloud-btn">Sign out</button>`;
       el.querySelector('button').addEventListener('click', () => client.auth.signOut());
     } else {
       el.innerHTML = '<button type="button" class="cloud-btn">Sign in</button>';

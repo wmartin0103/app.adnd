@@ -53,4 +53,5 @@ export const RULES_FILES = [
   'src/round-sync.js',
   'src/cloud.js',
   'src/account.js',
+  'src/characters.js',
 ];

@@ -33,6 +33,7 @@ export const TARGETS = {
     Cloud: ['cloud', ['cloudClient', 'cloudSession', 'createCloudRoundSync', 'mountCloud']],
     SheetRules: ['rules/weapons', ['PHB_WEAPONS']],
     SheetGuess: ['rules/migrate', ['guessCategory']],
+    Characters: ['characters', ['loadCharacter', 'saveSheet', 'isBlank']],
   },
 };
 // The campaign spell catalog lives in one file, data/spell-catalog.js, made
@@ -58,7 +59,10 @@ export function bundleFor(file) {
 // Pages that need only the sign-in code (src/cloud.js, src/account.js), not
 // the rules: the landing page and Account. Same markers; no spell catalog.
 export const PAGES = {
-  'site/index.html': { Cloud: ['cloud', ['cloudClient', 'cloudSession']] },
+  'site/index.html': {
+    Cloud: ['cloud', ['cloudClient', 'cloudSession']],
+    Characters: ['characters', ['STATUS_LABEL', 'summary', 'isBlank', 'fileName', 'listCharacters', 'createCharacter', 'setStatus', 'saveSheet']],
+  },
   'site/account.html': {
     Cloud: ['cloud', ['cloudClient', 'cloudSession']],
     Account: ['account', ['MIN_PASSWORD', 'passwordProblem', 'setPassword', 'setEmail', 'setDisplayName', 'characterAccess', 'grantAccess', 'revokeAccess']],

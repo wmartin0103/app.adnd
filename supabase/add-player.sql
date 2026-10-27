@@ -11,7 +11,8 @@
 --
 -- What it does: names them, adds them to the campaign as a player, makes them
 -- the owner of their characters (the character's row if the campaign has one
--- by that name, else a new one), and marks the password as temporary.
+-- by that name, else a new one), puts the first one in play if they have
+-- none in play (the rest are backups), and marks the password as temporary.
 -- A character's name must match the name on its sheet exactly; the list of
 -- names already in the campaign is at the bottom of this file.
 -- ════════════════════════════════════════════════════════════════════════
@@ -52,11 +53,15 @@ begin
         values (v_camp, v_user, ch, jsonb_build_object('name', ch));
     end if;
   end loop;
+  -- One character in play each: the first, unless they already have one
+  if not exists (select 1 from public.characters where campaign_id = v_camp and owner_id = v_user and status = 'play') then
+    update public.characters set status = 'play' where campaign_id = v_camp and owner_id = v_user and name = v_characters[1];
+  end if;
 end $$;
 
 -- Check: everyone in the campaign, and whose each character is
 select p.display_name, m.role, c.name as campaign,
-       (select string_agg(ch.name, ', ' order by ch.name) from public.characters ch
+       (select string_agg(ch.name || ' (' || ch.status || ')', ', ' order by ch.name) from public.characters ch
           where ch.campaign_id = c.id and ch.owner_id = p.id) as characters
 from public.campaign_members m
 join public.profiles p on p.id = m.user_id
