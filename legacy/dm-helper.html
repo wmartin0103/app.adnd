@@ -5188,7 +5188,7 @@ function nextFreeName(base){   // "Gnoll" → "Gnoll 3" if Gnoll 1 and Gnoll 2 e
 function addBaddy(){
   baddyCount++; const name='Enemy '+baddyCount;          // internal key; the display name may differ
   const display=nextFreeName('Enemy');
-  CHARACTERS[name]={placeholder:true, defaultRoll:50, bdId:'BD'+baddyCount};      // BD# is fixed; the editable name is the DM's own
+  CHARACTERS[name]={placeholder:true, defaultRoll:50, bdId:'E'+baddyCount};      // E# is fixed (what players see); the editable name is the DM's own
   baddies.push(name);
   buildChar(name);
   blocks[name].bdId=CHARACTERS[name].bdId;
