@@ -393,7 +393,7 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
   Actions"; "Deploy from a branch" shows the README). See `docs/deploy.md`.
 - [x] The landing page is a sign-in page; signed in it offers the Character
   Sheet, and the DM Helper to the campaign's DM or an admin.
-- [ ] Custom domain: none yet (the owner tried a CNAME and removed it).
+- [x] No custom domain: the owner is happy on GitHub Pages' address (2026-10-26).
 - [ ] Saves move between browsers by Export / Import JSON; cloud saves of
   whole sheets are the next big piece. Jaque's current save is
   `samples/jaque_10-09.json` (the owner has loaded it on the live site).
