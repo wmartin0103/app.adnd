@@ -674,6 +674,7 @@
       min-width: 0;
     }
 
+    .ac-sub-note { display: block; font-size: 0.75rem; color: var(--ink-muted); text-align: center; min-height: 1em; }
     .ac-sub-label {
       font-family: var(--font-display);
       font-size: 0.65rem;
@@ -2623,7 +2624,8 @@
               <span class="ac-sub-label" id="effective-ac-label">Effective</span>
               <output id="effective-ac" class="combat-value ac-value"
                 aria-labelledby="effective-ac-label"
-                aria-describedby="effective-ac-desc" style="display:block;">—</o>
+                aria-describedby="effective-ac-desc" style="display:block;">—</output>
+              <span class="ac-sub-note" id="effective-ac-desc"></span>
             </div>
           </div>
         </div>
@@ -6061,16 +6063,20 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       // DEX defense adj. is stored as a signed integer where negative
       // values LOWER AC (improve it) and positive values RAISE it.
       // e.g. DEX 17 gives defense: -3, so Base AC 8 becomes AC 5.
+      // Effects that are on (Bladesong, a Ring of Protection) improve it too;
+      // what it would be without them shows underneath.
       const baseAC       = parseInt(document.getElementById('armor-class').value);
       const effectiveEl  = document.getElementById('effective-ac');
-      if (!isNaN(baseAC) && dexRow) {
-        const effectiveAC  = baseAC + dexRow.defense;
-        effectiveEl.textContent = effectiveAC;
-      } else if (!isNaN(baseAC)) {
-        // No DEX score entered — show base AC as-is
-        effectiveEl.textContent = baseAC;
+      const effectsEl    = document.getElementById('effective-ac-desc');
+      let acEffects = 0;
+      try { acEffects = stances.filter(st => st.on).reduce((t, st) => t + modNum(stanceEffect(st).ac), 0); } catch (e) { /* effects not loaded yet */ }
+      if (!isNaN(baseAC)) {
+        const withoutEffects = baseAC + (dexRow ? dexRow.defense : 0);   // no DEX entered: base AC as-is
+        effectiveEl.textContent = withoutEffects - acEffects;
+        if (effectsEl) effectsEl.textContent = acEffects ? `${withoutEffects} without effects` : '';
       } else {
         effectiveEl.textContent = '—';
+        if (effectsEl) effectsEl.textContent = '';
       }
     }
 
@@ -7112,6 +7118,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       return parts.join(' · ') || o.note || '';
     }
     function refreshAfterStances(focusSel) {
+      updateCombatFields();   // Effective AC counts the effects that are on
       renderStances();
       renderScenarios();
       saveToItems();
@@ -7125,7 +7132,8 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       const acEl = document.getElementById('stances-ac');
       const eff = parseInt(document.getElementById('effective-ac')?.textContent, 10);
       const acBonus = stances.filter(st => st.on).reduce((t, st) => t + modNum(stanceEffect(st).ac), 0);
-      if (acEl) acEl.textContent = acBonus && !Number.isNaN(eff) ? `AC ${eff - acBonus} (${eff} without)` : '';
+      // Effective AC already counts the effects that are on
+      if (acEl) acEl.textContent = acBonus && !Number.isNaN(eff) ? `AC ${eff} (${eff + acBonus} without)` : '';
       const onEl = document.getElementById('stances-on');
       if (onEl) {
         const on = stances.filter(st => st.on).map(st => stanceEffect(st).name || 'Unnamed');
