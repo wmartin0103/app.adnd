@@ -3608,6 +3608,15 @@ async function setStatus(client, mine, id, status, others = 'backup') {
   if (error) throw error;
 }
 
+// Deletes one of yours from Backups or Dead, for good (versions and all).
+// The database's rules decide; a delete they refuse removes nothing, so ask
+// for the row back to know it went.
+async function deleteCharacter(client, id) {
+  const { data, error } = await client.from('characters').delete().eq('id', id).select('id');
+  if (error) throw error;
+  if (!data || !data.length) throw new Error('That character couldn’t be deleted.');
+}
+
 // The sheet: one character's saved data, and saving it
 async function loadCharacter(client, id) {
   const { data, error } = await client.from('characters').select('id, name, owner_id, status, data').eq('id', id).maybeSingle();
@@ -3619,7 +3628,7 @@ async function saveSheet(client, id, data) {
   if (error) throw error;
 }
 
-return { STATUSES, STATUS_LABEL, summary, isBlank, fileName, listCharacters, createCharacter, setStatus, loadCharacter, saveSheet };
+return { STATUSES, STATUS_LABEL, summary, isBlank, fileName, listCharacters, createCharacter, setStatus, deleteCharacter, loadCharacter, saveSheet };
 })();
 window.SheetConverter = { toDMHelper: __m["adapters/dm-helper"].toDMHelper };
 window.SheetRound = { ROUND_MODS: __m["rules/round"].ROUND_MODS, MOVE_MULTS: __m["rules/round"].MOVE_MULTS, newRound: __m["rules/round"].newRound, roundQueue: __m["rules/round"].roundQueue, queueAttack: __m["rules/round"].queueAttack, unqueueAttack: __m["rules/round"].unqueueAttack, roundLines: __m["rules/round"].roundLines, lineToHit: __m["rules/round"].lineToHit, roundACPenalty: __m["rules/round"].roundACPenalty, lineTHAC0: __m["rules/round"].lineTHAC0, judgeRoll: __m["rules/round"].judgeRoll, actOn: __m["rules/round"].actOn, attackSpeed: __m["rules/round"].attackSpeed, rollLine: __m["rules/round"].rollLine, scoreRoll: __m["rules/round"].scoreRoll, rerollDamage: __m["rules/round"].rerollDamage, lineKind: __m["rules/round"].lineKind, hasRoll: __m["rules/round"].hasRoll, isHealing: __m["rules/round"].isHealing, lineSay: __m["rules/round"].lineSay, plainAttack: __m["rules/round"].plainAttack };

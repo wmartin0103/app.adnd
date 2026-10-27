@@ -61,7 +61,7 @@ export function bundleFor(file) {
 export const PAGES = {
   'site/index.html': {
     Cloud: ['cloud', ['cloudClient', 'cloudSession']],
-    Characters: ['characters', ['STATUS_LABEL', 'summary', 'isBlank', 'fileName', 'listCharacters', 'createCharacter', 'setStatus', 'saveSheet']],
+    Characters: ['characters', ['STATUS_LABEL', 'summary', 'isBlank', 'fileName', 'listCharacters', 'createCharacter', 'setStatus', 'saveSheet', 'deleteCharacter']],
   },
   'site/account.html': {
     Cloud: ['cloud', ['cloudClient', 'cloudSession']],

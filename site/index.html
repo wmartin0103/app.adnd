@@ -69,6 +69,9 @@
     .menu button { font: inherit; font-size: 1rem; text-align: left; background: none; border: 0; border-radius: var(--radius); padding: 8px 10px; cursor: pointer; color: var(--ink); }
     .menu button:hover, .menu button:focus-visible { background: var(--bg); outline: none; }
     .menu hr { border: 0; border-top: 1px solid var(--rule); margin: 4px 0; }
+    .menu button.danger { color: var(--bad); }
+    .btn.danger { background: var(--bad); border-color: var(--bad); }
+    .btn.danger:hover, .btn.danger:focus-visible { background: #7a1f16; border-color: #7a1f16; }
     .slot { border: 1px dashed var(--rule); border-radius: var(--radius); padding: 16px; color: var(--ink-muted); display: grid; gap: 4px; }
     /* First visit: two ways in */
     .welcome { display: grid; gap: 6px; text-align: center; }
@@ -133,6 +136,13 @@
         <label><input type="radio" name="to" value="backup"> <span>Backups</span></label>
       </fieldset>
       <div class="row"><button class="btn quiet" value="cancel">Cancel</button><button class="btn" value="ok">Bring into play</button></div>
+    </form>
+  </dialog>
+  <dialog id="del" aria-labelledby="del-title" aria-describedby="del-text">
+    <form method="dialog">
+      <h3 id="del-title"></h3>
+      <p id="del-text"></p>
+      <div class="row"><button class="btn quiet" value="cancel" autofocus>Cancel</button><button class="btn danger" value="ok" id="del-ok">Delete</button></div>
     </form>
   </dialog>
   <div class="toast" id="toast" role="status"></div>
@@ -463,6 +473,15 @@ async function setStatus(client, mine, id, status, others = 'backup') {
   if (error) throw error;
 }
 
+// Deletes one of yours from Backups or Dead, for good (versions and all).
+// The database's rules decide; a delete they refuse removes nothing, so ask
+// for the row back to know it went.
+async function deleteCharacter(client, id) {
+  const { data, error } = await client.from('characters').delete().eq('id', id).select('id');
+  if (error) throw error;
+  if (!data || !data.length) throw new Error('That character couldn’t be deleted.');
+}
+
 // The sheet: one character's saved data, and saving it
 async function loadCharacter(client, id) {
   const { data, error } = await client.from('characters').select('id, name, owner_id, status, data').eq('id', id).maybeSingle();
@@ -474,10 +493,10 @@ async function saveSheet(client, id, data) {
   if (error) throw error;
 }
 
-return { STATUSES, STATUS_LABEL, summary, isBlank, fileName, listCharacters, createCharacter, setStatus, loadCharacter, saveSheet };
+return { STATUSES, STATUS_LABEL, summary, isBlank, fileName, listCharacters, createCharacter, setStatus, deleteCharacter, loadCharacter, saveSheet };
 })();
 window.Cloud = { cloudClient: __m["cloud"].cloudClient, cloudSession: __m["cloud"].cloudSession };
-window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m["characters"].summary, isBlank: __m["characters"].isBlank, fileName: __m["characters"].fileName, listCharacters: __m["characters"].listCharacters, createCharacter: __m["characters"].createCharacter, setStatus: __m["characters"].setStatus, saveSheet: __m["characters"].saveSheet };
+window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m["characters"].summary, isBlank: __m["characters"].isBlank, fileName: __m["characters"].fileName, listCharacters: __m["characters"].listCharacters, createCharacter: __m["characters"].createCharacter, setStatus: __m["characters"].setStatus, saveSheet: __m["characters"].saveSheet, deleteCharacter: __m["characters"].deleteCharacter };
 })();
 /* ── end sheet converter ── */
 
@@ -576,6 +595,22 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
       };
       d.returnValue = ''; d.showModal();
     }
+    // Delete, for good: Backups and Dead only, after a confirmation (Cancel first)
+    function remove(c) {
+      const d = $('del');
+      $('del-title').textContent = `Delete ${c.name}?`;
+      $('del-text').textContent = `${c.name} and every saved version of the sheet will be gone for good. To keep a copy, choose Export file first.`;
+      $('del-ok').textContent = `Delete ${c.name}`;
+      d.onclose = async () => {
+        if (d.returnValue !== 'ok') return;
+        try {
+          await Characters.deleteCharacter(client, c.id);
+          try { localStorage.removeItem(`adnd-sheet:${c.id}`); } catch (e) { /* storage blocked */ }
+          await reload(); say(`${c.name} is deleted.`);
+        } catch (e) { say(problem(e)); }
+      };
+      d.returnValue = ''; d.showModal();
+    }
     async function copyOf(c) {
       const data = { ...(c.data || {}), name: `${c.name} (copy)` };
       try { await Characters.createCharacter(client, session, data, { mine: list.mine, status: 'backup' }); await reload(); say(`A copy of ${c.name} is in Backups.`); }
@@ -613,13 +648,14 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
       k.appendChild(a);
       if (openMenu === c.id) {
         const menu = el('div', 'menu'); menu.setAttribute('role', 'menu');
-        const item = (t, fn) => { const b = el('button', '', t); b.type = 'button'; b.setAttribute('role', 'menuitem'); b.addEventListener('click', () => { openMenu = null; fn(); }); menu.appendChild(b); };
+        const item = (t, fn) => { const b = el('button', '', t); b.type = 'button'; b.setAttribute('role', 'menuitem'); b.addEventListener('click', () => { openMenu = null; render(); fn(); }); menu.appendChild(b); };
         if (c.status !== 'play') item('Bring into play', () => bringIn(c));
         if (c.status !== 'backup') item('Move to Backups', () => move(c, 'backup').then(ok => ok && say(`${c.name} moved to Backups.`)));
         if (c.status !== 'dead') item('Mark as dead', () => move(c, 'dead').then(ok => ok && say(`${c.name} is marked as dead.`)));
         menu.appendChild(el('hr'));
         item('Make a copy', () => copyOf(c));
         item('Export file', () => exportFile(c));
+        if (c.status !== 'play') { menu.appendChild(el('hr')); item('Delete\u2026', () => remove(c)); menu.lastChild.classList.add('danger'); }
         k.appendChild(menu);
       }
       return k;

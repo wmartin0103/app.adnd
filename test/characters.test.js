@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { summary, isBlank, fileName, listCharacters, createCharacter, setStatus, loadCharacter, saveSheet } from '../src/characters.js';
+import { summary, isBlank, fileName, listCharacters, createCharacter, setStatus, loadCharacter, saveSheet, deleteCharacter } from '../src/characters.js';
 
 // A stand-in for the Supabase client: the tables and calls used here, with
 // the database's one-in-play rule
@@ -30,13 +30,19 @@ function fakeClient(tables) {
         if (onePlay()) { tables[table] = before; return { data: null, error: { message: 'one in play' } }; }
         return { data: null, error: null };
       }
+      if (op === 'delete') {
+        // the database's rule: never the one in play
+        const gone = rows.filter(r => hit(r) && r.status !== 'play');
+        tables[table] = rows.filter(r => !gone.includes(r));
+        return { data: gone.map(r => ({ id: r.id })), error: null };
+      }
       const found = rows.filter(hit);
       return { data: one ? found[0] || null : found, error: null };
     };
     const b = {
       select() { return b; }, eq(c, v) { where.push([c, v]); return b; }, in(c, v) { where.push([c, v, true]); return b; },
       single() { one = true; return b; }, maybeSingle() { one = true; return b; },
-      insert(p) { op = 'insert'; payload = p; return b; }, update(p) { op = 'update'; payload = p; return b; },
+      insert(p) { op = 'insert'; payload = p; return b; }, update(p) { op = 'update'; payload = p; return b; }, delete() { op = 'delete'; return b; },
       then(res, rej) { return Promise.resolve().then(run).then(res, rej); },
     };
     return b;
@@ -101,4 +107,16 @@ test('characters: the sheet loads and saves one character', async () => {
   await saveSheet(c, 'a', sheet('Jaque', { 'hp-current': '12' }));
   assert.equal(t.characters[0].data['hp-current'], '12');
   assert.equal(await loadCharacter(c, 'zzz'), null);
+});
+
+test('characters: delete a backup or a dead one; the one in play stays', async () => {
+  const t = { characters: [
+    { id: 'a', campaign_id: 'k', owner_id: 'u-me', status: 'play' },
+    { id: 'b', campaign_id: 'k', owner_id: 'u-me', status: 'dead' },
+  ] };
+  const c = fakeClient(t);
+  await deleteCharacter(c, 'b');
+  assert.deepEqual(t.characters.map(r => r.id), ['a']);
+  await assert.rejects(deleteCharacter(c, 'a'), /couldn.t be deleted/);
+  assert.deepEqual(t.characters.map(r => r.id), ['a']);
 });

@@ -5843,6 +5843,15 @@ async function setStatus(client, mine, id, status, others = 'backup') {
   if (error) throw error;
 }
 
+// Deletes one of yours from Backups or Dead, for good (versions and all).
+// The database's rules decide; a delete they refuse removes nothing, so ask
+// for the row back to know it went.
+async function deleteCharacter(client, id) {
+  const { data, error } = await client.from('characters').delete().eq('id', id).select('id');
+  if (error) throw error;
+  if (!data || !data.length) throw new Error('That character couldn’t be deleted.');
+}
+
 // The sheet: one character's saved data, and saving it
 async function loadCharacter(client, id) {
   const { data, error } = await client.from('characters').select('id, name, owner_id, status, data').eq('id', id).maybeSingle();
@@ -5854,7 +5863,7 @@ async function saveSheet(client, id, data) {
   if (error) throw error;
 }
 
-return { STATUSES, STATUS_LABEL, summary, isBlank, fileName, listCharacters, createCharacter, setStatus, loadCharacter, saveSheet };
+return { STATUSES, STATUS_LABEL, summary, isBlank, fileName, listCharacters, createCharacter, setStatus, deleteCharacter, loadCharacter, saveSheet };
 })();
 window.SheetSpells = { findSpell: __m["rules/spells"].findSpell };
 window.SheetScenarios = { modNum: __m["rules/scenarios"].modNum, signed: __m["rules/scenarios"].signed, ATTACK_TYPES: __m["rules/scenarios"].ATTACK_TYPES, RATE_OPTIONS: __m["rules/scenarios"].RATE_OPTIONS, scenarioRate: __m["rules/scenarios"].scenarioRate, scenarioType: __m["rules/scenarios"].scenarioType, scenarioSpell: __m["rules/scenarios"].scenarioSpell, scenarioAbility: __m["rules/scenarios"].scenarioAbility, activeEffectsFor: __m["rules/scenarios"].activeEffectsFor, scenarioDamage: __m["rules/scenarios"].scenarioDamage, scenarioBreakdown: __m["rules/scenarios"].scenarioBreakdown, normalizeEffects: __m["rules/scenarios"].normalizeEffects, effectOption: __m["rules/scenarios"].effectOption, isBowcaster: __m["rules/scenarios"].isBowcaster, spellArrow: __m["rules/scenarios"].spellArrow, usesAmmo: __m["rules/scenarios"].usesAmmo, weaponAmmoType: __m["rules/scenarios"].weaponAmmoType, ammoType: __m["rules/scenarios"].ammoType, ammoFor: __m["rules/scenarios"].ammoFor, scenarioAmmo: __m["rules/scenarios"].scenarioAmmo, AMMO_TYPES: __m["rules/scenarios"].AMMO_TYPES };

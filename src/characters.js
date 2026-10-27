@@ -83,6 +83,15 @@ export async function setStatus(client, mine, id, status, others = 'backup') {
   if (error) throw error;
 }
 
+// Deletes one of yours from Backups or Dead, for good (versions and all).
+// The database's rules decide; a delete they refuse removes nothing, so ask
+// for the row back to know it went.
+export async function deleteCharacter(client, id) {
+  const { data, error } = await client.from('characters').delete().eq('id', id).select('id');
+  if (error) throw error;
+  if (!data || !data.length) throw new Error('That character couldn’t be deleted.');
+}
+
 // The sheet: one character's saved data, and saving it
 export async function loadCharacter(client, id) {
   const { data, error } = await client.from('characters').select('id, name, owner_id, status, data').eq('id', id).maybeSingle();
