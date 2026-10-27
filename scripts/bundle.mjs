@@ -22,7 +22,7 @@ export function bundle(files, { expose = {} } = {}) {
       imports.push(`const {${names.trim()}} = __m[${JSON.stringify(target)}];`);
       return '';
     });
-    const exported = [...body.matchAll(/^export\s+(?:function|const|let)\s+([A-Za-z_$][\w$]*)/gm)].map(m => m[1]);
+    const exported = [...body.matchAll(/^export\s+(?:async\s+)?(?:function|const|let)\s+([A-Za-z_$][\w$]*)/gm)].map(m => m[1]);
     const code = body.replace(/^export\s+/gm, '');
     parts.push(`// ── ${key(file)} ──`);
     parts.push(`__m[${JSON.stringify(key(file))}] = (() => {\n${imports.join('\n')}\n${code}\nreturn { ${exported.join(', ')} };\n})();`);

@@ -26,3 +26,17 @@ test('the shared spell catalog file is current, and both tools load it', () => {
     assert.ok(!html.includes('window.SheetSpellCatalog = {'), `${file} still has its own copy of the catalog`);
   }
 });
+
+// Every name a page or tool hands out must exist in the bundle (an
+// `export async function` once went missing and the Account page broke)
+test('every exposed name is exported by its module', () => {
+  const pages = [...Object.keys(TARGETS).map(f => [f, TARGETS[f], bundleFor(f)]), ...Object.keys(PAGES).map(f => [f, PAGES[f], bundleForPage(f)])];
+  for (const [file, expose, code] of pages) {
+    for (const [mod, names] of Object.values(expose)) {
+      const block = code.split(`__m[${JSON.stringify(mod)}] = (() => {`)[1] || '';
+      const ret = (block.match(/\nreturn \{ ([^}]*) \};\n\}\)\(\);/) || [])[1] || '';
+      const have = ret.split(',').map(s => s.trim());
+      for (const n of names) assert.ok(have.includes(n), `${file}: ${mod}.${n} isn't exported in the bundle`);
+    }
+  }
+});

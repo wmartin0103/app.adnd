@@ -424,7 +424,7 @@ async function revokeAccess(client, characterId, userId) {
   if (error) throw error;
 }
 
-return { MIN_PASSWORD, passwordProblem };
+return { MIN_PASSWORD, passwordProblem, setPassword, setEmail, setDisplayName, characterAccess, grantAccess, revokeAccess };
 })();
 window.Cloud = { cloudClient: __m["cloud"].cloudClient, cloudSession: __m["cloud"].cloudSession };
 window.Account = { MIN_PASSWORD: __m["account"].MIN_PASSWORD, passwordProblem: __m["account"].passwordProblem, setPassword: __m["account"].setPassword, setEmail: __m["account"].setEmail, setDisplayName: __m["account"].setDisplayName, characterAccess: __m["account"].characterAccess, grantAccess: __m["account"].grantAccess, revokeAccess: __m["account"].revokeAccess };

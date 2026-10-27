@@ -3078,7 +3078,7 @@ async function revokeAccess(client, characterId, userId) {
   if (error) throw error;
 }
 
-return { MIN_PASSWORD, passwordProblem };
+return { MIN_PASSWORD, passwordProblem, setPassword, setEmail, setDisplayName, characterAccess, grantAccess, revokeAccess };
 })();
 window.Rules = { computeAttack: __m["rules/attacks"].computeAttack, listAttacks: __m["rules/attacks"].listAttacks, weaponAttacks: __m["rules/attacks"].weaponAttacks, planRound: __m["rules/attacks"].planRound, attacksThisRound: __m["rules/attacks"].attacksThisRound, attacksInRound: __m["rules/attacks"].attacksInRound, hasBonusRounds: __m["rules/attacks"].hasBonusRounds, formatRate: __m["rules/attacks"].formatRate, offHandAttacks: __m["rules/attacks"].offHandAttacks, effectiveLevel: __m["rules/attacks"].effectiveLevel, SITUATIONS: __m["rules/attacks"].SITUATIONS };
 window.Weapons = { resolveWeapon: __m["rules/weapons"].resolveWeapon, PHB_WEAPONS: __m["rules/weapons"].PHB_WEAPONS };

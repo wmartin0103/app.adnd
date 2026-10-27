@@ -5751,7 +5751,7 @@ async function revokeAccess(client, characterId, userId) {
   if (error) throw error;
 }
 
-return { MIN_PASSWORD, passwordProblem };
+return { MIN_PASSWORD, passwordProblem, setPassword, setEmail, setDisplayName, characterAccess, grantAccess, revokeAccess };
 })();
 window.SheetSpells = { findSpell: __m["rules/spells"].findSpell };
 window.SheetScenarios = { modNum: __m["rules/scenarios"].modNum, signed: __m["rules/scenarios"].signed, ATTACK_TYPES: __m["rules/scenarios"].ATTACK_TYPES, RATE_OPTIONS: __m["rules/scenarios"].RATE_OPTIONS, scenarioRate: __m["rules/scenarios"].scenarioRate, scenarioType: __m["rules/scenarios"].scenarioType, scenarioSpell: __m["rules/scenarios"].scenarioSpell, scenarioAbility: __m["rules/scenarios"].scenarioAbility, activeEffectsFor: __m["rules/scenarios"].activeEffectsFor, scenarioDamage: __m["rules/scenarios"].scenarioDamage, scenarioBreakdown: __m["rules/scenarios"].scenarioBreakdown, normalizeEffects: __m["rules/scenarios"].normalizeEffects, effectOption: __m["rules/scenarios"].effectOption, isBowcaster: __m["rules/scenarios"].isBowcaster, spellArrow: __m["rules/scenarios"].spellArrow, usesAmmo: __m["rules/scenarios"].usesAmmo, weaponAmmoType: __m["rules/scenarios"].weaponAmmoType, ammoType: __m["rules/scenarios"].ammoType, ammoFor: __m["rules/scenarios"].ammoFor, scenarioAmmo: __m["rules/scenarios"].scenarioAmmo, AMMO_TYPES: __m["rules/scenarios"].AMMO_TYPES };
