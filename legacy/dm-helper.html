@@ -5760,7 +5760,6 @@ document.getElementById('lcClear').addEventListener('click', ()=>{ const o=docum
 
 /* ---------------- Light tracker ---------------- */
 /* default Speed in the light tracker: the weapon each usually leads with */
-const LIGHT_SPEED={ Jaque:2, Goroth:6 /* Maul */, Borsun:6 /* Lucern hammer */, Rifiyr:8 /* Long bow */, Hanspeter:4, Atteroak:4, Nebish:4, Tig:5 /* Bastard sword, 1H */ };
 const DEX_REACT = dex => dex<=3 ? 3 : dex===4 ? 2 : dex===5 ? 1 : dex<=15 ? 0 : dex===16 ? -1 : dex<=18 ? -2 : dex<=20 ? -3 : dex<=23 ? -4 : -5;   // Dex reaction adjustment (surprise only)
 function isFull(){ return false; }                          // the simple view is the only Initiative view now
 function lightRowFor(name){
@@ -5786,7 +5785,7 @@ function lightRowFor(name){
     rmBtn.addEventListener('click', ()=>{ removeBaddy(name); update(); });
     nameTd.appendChild(rmBtn);
   }
-  const spTd=document.createElement('td'); spTd.className='num'; const spSel=document.createElement('select'); spSel.className='stat'; for(let n=-5;n<=20;n++) spSel.appendChild(opt(n, n<0?'−'+Math.abs(n):String(n))); spSel.value = b.placeholder ? b.speed.value : String(LIGHT_SPEED[name] ?? 5); spTd.appendChild(spSel); spSel.addEventListener('input', update);
+  const spTd=document.createElement('td'); spTd.className='num'; const spSel=document.createElement('select'); spSel.className='stat'; if(!b.placeholder) spSel.appendChild(opt('', '—')); for(let n=-5;n<=20;n++) spSel.appendChild(opt(n, n<0?'−'+Math.abs(n):String(n))); spSel.value = b.placeholder ? b.speed.value : ''; spTd.appendChild(spSel); spSel.addEventListener('input', update);
   const irTd=document.createElement('td'); irTd.className='num'; const irSel=document.createElement('select'); irSel.className='stat';
   [...b.initRoll.options].forEach(o=> irSel.appendChild(opt(o.value,o.textContent))); irTd.appendChild(irSel);
   irSel.addEventListener('input', ()=>{ b.initRoll.value=irSel.value; update(); });
@@ -5842,7 +5841,7 @@ function renderLight(){
     if(sv){
       lr.nameLabel.textContent=name;
       if(sv.initRoll!=null) lr.irSel.value=String(sv.initRoll);
-      if(sv.speed!=null && [...lr.spSel.options].some(o=>o.value===String(sv.speed))) lr.spSel.value=String(sv.speed);
+      lr.spSel.value = sv.speed!=null && [...lr.spSel.options].some(o=>o.value===String(sv.speed)) ? String(sv.speed) : '';   // blank until an attack is added
       lr.actSpan.textContent = sv.actOn==null ? '—' : String(sv.actOn); lr.actSpan.title='from the sheet';
       const timing=(syncState&&syncState.timing)||'end', ac=baddyACs();
       const acts=(sv.lines||[]).filter(l=>timing==='turn'||!l.extra).flatMap(l=>judgeLine(l, ac).map(j=>({t:`${l.label} vs ${j.who}${l.tags&&l.tags.length?' · '+l.tags.join(', '):''}: ${j.text.replace(/<[^>]+>/g,' ')}`, cls:j.cls})));
@@ -5862,8 +5861,10 @@ function renderLight(){
     lr.irSel.value=b.initRoll.value;
     const roll=parseInt(b.initRoll.value,10), sp=parseInt(lr.spSel.value,10)||0;
     const held = b.placeholder && b.initRoll.value==='50';
-    const act = held ? 50 : roll+sp+quick;
-    lr.actSpan.textContent=String(act); lr.actSpan.title = held ? 'held at 50' : `${roll} + speed ${sp}${quick?' '+fmt(quick)+' Quickness':''}`;
+    const noSpeed = !held && lr.spSel.value==='';              // no attack picked yet: no place in the order
+    const act = held ? 50 : noSpeed ? 1e9 : roll+sp+quick;
+    lr.actSpan.textContent = noSpeed ? '—' : String(act);
+    lr.actSpan.title = held ? 'held at 50' : noSpeed ? 'pick a speed once they say what they\'re doing' : `${roll} + speed ${sp}${quick?' '+fmt(quick)+' Quickness':''}`;
     const trs=[lr.tr];
     if(paintLightDetail(lr, describeChoices(name))) trs.push(lr.detailTr); else if(lr.detailTr.parentNode) lr.detailTr.remove();
     if(lr.turnTr){
@@ -6392,7 +6393,7 @@ function resetPartyCombat(){
   Object.keys(CHARACTERS).forEach(name=>{
     const b=blocks[name];
     if(!b || b.placeholder) return;
-    if(b.lightRow) b.lightRow.spSel.value=String(LIGHT_SPEED[name] ?? 5);
+    if(b.lightRow) b.lightRow.spSel.value='';                   // speed comes with the attack they pick
     b.initRoll.value='10'; b.initRolled=false; b.tsize.value='sm'; b.lightQuick=null; if(b.lightRow && b.lightRow.quickBtn) b.lightRow.quickBtn.hidden=true; b.lightTurn=null; if(b.virtueSel) b.virtueSel.value=''; b.resetTargets();
     b.moving.checked=false; b.moveAfter.checked=false; b.moveMult.value='1'; b.flanking.checked=false; b.ground.value='even';
     b.charging.checked=false; b.set4.checked=false; b.other.value='0'; if(b.armorBox) b.armorBox.checked=false; if(b.parryBox) b.parryBox.checked=false; if(b.parrySel) b.parrySel.value=''; if(b.acModSel) b.acModSel.value='0'; if(b.shlBox) b.shlBox.checked=false; if(b.surBox) b.surBox.checked=false;
