@@ -10,6 +10,7 @@ import { pathToFileURL } from 'node:url';
 
 export const SITE_FILES = {
   'index.html': 'site/index.html',
+  'account.html': 'site/account.html',
   'legacy/character-sheet.html': 'legacy/character-sheet.html',
   'legacy/dm-helper.html': 'legacy/dm-helper.html',
   'data/spell-catalog.js': 'data/spell-catalog.js',

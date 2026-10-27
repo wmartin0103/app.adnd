@@ -52,4 +52,5 @@ export const RULES_FILES = [
   'src/adapters/dm-helper.js',
   'src/round-sync.js',
   'src/cloud.js',
+  'src/account.js',
 ];

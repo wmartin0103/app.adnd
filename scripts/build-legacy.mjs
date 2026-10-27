@@ -55,12 +55,17 @@ export function bundleFor(file) {
   return [bundle(RULES_FILES, { expose: TARGETS[file] }), BORROW].join('\n');
 }
 
-// Pages that need only the sign-in code (src/cloud.js), not the rules: the
-// landing page. Same markers; no spell catalog.
+// Pages that need only the sign-in code (src/cloud.js, src/account.js), not
+// the rules: the landing page and Account. Same markers; no spell catalog.
 export const PAGES = {
   'site/index.html': { Cloud: ['cloud', ['cloudClient', 'cloudSession']] },
+  'site/account.html': {
+    Cloud: ['cloud', ['cloudClient', 'cloudSession']],
+    Account: ['account', ['MIN_PASSWORD', 'passwordProblem', 'setPassword', 'setEmail', 'setDisplayName', 'characterAccess', 'grantAccess', 'revokeAccess']],
+  },
 };
-export const bundleForPage = file => bundle(['src/cloud.js'], { expose: PAGES[file] });
+// Each page's modules, from what it exposes
+export const bundleForPage = file => bundle([...new Set(Object.values(PAGES[file]).map(([m]) => `src/${m}.js`))],{ expose: PAGES[file] });
 
 // pathToFileURL so the check also matches on Windows (file:///D:/…)
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {

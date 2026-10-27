@@ -20,7 +20,12 @@ export function cloudClient() {
   return clientCache;
 }
 
+// An account an admin made with a temporary password (supabase/add-player.sql):
+// the player chooses their own, on the Account page, before anything else
+export const needsNewPassword = user => !!(user && user.user_metadata && user.user_metadata.temp_password);
+
 // Who's signed in, and their campaign (the first one they're in, for now).
+// newPassword: still on a temporary password.
 // Null when signed out or the cloud can't be reached.
 export const cloudSession = async (client = cloudClient()) => {
   if (!client) return null;
@@ -34,7 +39,7 @@ export const cloudSession = async (client = cloudClient()) => {
     ]);
     const m = (rows || [])[0] || null;
     return {
-      user, name: (prof && prof.display_name) || user.email, isAdmin: !!(prof && prof.is_admin),
+      user, name: (prof && prof.display_name) || user.email, isAdmin: !!(prof && prof.is_admin), newPassword: needsNewPassword(user),
       campaignId: m ? m.campaign_id : null, campaignName: m && m.campaigns ? m.campaigns.name : '', role: m ? m.role : null,
     };
   } catch (e) { return null; }
@@ -165,8 +170,11 @@ export function createCloudRoundSync({ client, campaignId, userId }) {
 // ── Sign in ──
 // A small control for a tool's header: "Sign in" when signed out (opens a
 // dialog: email and password; accounts are made by an admin), the name and
-// campaign with "Sign out" when signed in. onChange gets the session (or null)
-// on load and whenever it changes.
+// campaign with Account and "Sign out" when signed in. Still on a temporary
+// password: only a link to choose one, and the tool stays offline (onChange
+// gets null). onChange gets the session (or null) on load and whenever it changes.
+// The Account page sits beside the landing page, one folder up from the tools.
+const ACCOUNT_URL = '../account.html';
 export function mountCloud(el, onChange) {
   const client = cloudClient();
   if (!el || !client) { if (onChange) onChange(null); return; }
@@ -197,10 +205,13 @@ export function mountCloud(el, onChange) {
 
   let last = null;
   const paint = async () => {
-    const s = await cloudSession(client);
-    const key = s ? `${s.user.id}|${s.campaignId}|${s.name}` : '';
-    if (s) {
-      el.innerHTML = `<span class="cloud-who">${esc(s.name)}${s.campaignName ? ` · ${esc(s.campaignName)}` : ' · no campaign yet'}</span> <button type="button" class="cloud-btn">Sign out</button>`;
+    const got = await cloudSession(client);
+    const s = got && got.newPassword ? null : got;
+    const key = got ? `${got.user.id}|${got.campaignId}|${got.name}|${got.newPassword}` : '';
+    if (got && got.newPassword) {
+      el.innerHTML = `<a class="cloud-btn" href="${ACCOUNT_URL}">Choose your password</a>`;
+    } else if (s) {
+      el.innerHTML = `<span class="cloud-who">${esc(s.name)}${s.campaignName ? ` · ${esc(s.campaignName)}` : ' · no campaign yet'}</span> <a class="cloud-btn" href="${ACCOUNT_URL}">Account</a> <button type="button" class="cloud-btn">Sign out</button>`;
       el.querySelector('button').addEventListener('click', () => client.auth.signOut());
     } else {
       el.innerHTML = '<button type="button" class="cloud-btn">Sign in</button>';

@@ -10,6 +10,18 @@ The database behind sign-in and the live round (and, later, cloud saves).
   integration is connected but didn't deploy on push (as of 2026-10-23).
 - **`setup-first-admin.sql`** — data, not structure: makes the owner an admin
   and DM of the first campaign. Run by hand in the SQL Editor, once.
+- **`add-player.sql`** — data: adds a player to the campaign, gives them
+  their characters, and marks their password as temporary (they choose their
+  own at first sign-in). Also for a forgotten password: set a new one on the
+  user in Authentication → Users, then run it again. Steps are in the file.
+
+## Settings made in the dashboard (not in the repo)
+
+- **Authentication → Sign In / Providers → Email → "Confirm email": off.**
+  Accounts are made by an admin, and the free email sender only reaches the
+  project team's own addresses, so a confirmation link would never arrive.
+  With it off, a player's email change on the Account page takes effect at
+  once (decided 2026-10-26).
 
 ## Changing the database
 

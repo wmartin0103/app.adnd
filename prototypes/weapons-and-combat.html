@@ -2799,7 +2799,12 @@ function cloudClient() {
   return clientCache;
 }
 
+// An account an admin made with a temporary password (supabase/add-player.sql):
+// the player chooses their own, on the Account page, before anything else
+const needsNewPassword = user => !!(user && user.user_metadata && user.user_metadata.temp_password);
+
 // Who's signed in, and their campaign (the first one they're in, for now).
+// newPassword: still on a temporary password.
 // Null when signed out or the cloud can't be reached.
 const cloudSession = async (client = cloudClient()) => {
   if (!client) return null;
@@ -2813,7 +2818,7 @@ const cloudSession = async (client = cloudClient()) => {
     ]);
     const m = (rows || [])[0] || null;
     return {
-      user, name: (prof && prof.display_name) || user.email, isAdmin: !!(prof && prof.is_admin),
+      user, name: (prof && prof.display_name) || user.email, isAdmin: !!(prof && prof.is_admin), newPassword: needsNewPassword(user),
       campaignId: m ? m.campaign_id : null, campaignName: m && m.campaigns ? m.campaigns.name : '', role: m ? m.role : null,
     };
   } catch (e) { return null; }
@@ -2944,8 +2949,11 @@ function createCloudRoundSync({ client, campaignId, userId }) {
 // ── Sign in ──
 // A small control for a tool's header: "Sign in" when signed out (opens a
 // dialog: email and password; accounts are made by an admin), the name and
-// campaign with "Sign out" when signed in. onChange gets the session (or null)
-// on load and whenever it changes.
+// campaign with Account and "Sign out" when signed in. Still on a temporary
+// password: only a link to choose one, and the tool stays offline (onChange
+// gets null). onChange gets the session (or null) on load and whenever it changes.
+// The Account page sits beside the landing page, one folder up from the tools.
+const ACCOUNT_URL = '../account.html';
 function mountCloud(el, onChange) {
   const client = cloudClient();
   if (!el || !client) { if (onChange) onChange(null); return; }
@@ -2976,10 +2984,13 @@ function mountCloud(el, onChange) {
 
   let last = null;
   const paint = async () => {
-    const s = await cloudSession(client);
-    const key = s ? `${s.user.id}|${s.campaignId}|${s.name}` : '';
-    if (s) {
-      el.innerHTML = `<span class="cloud-who">${esc(s.name)}${s.campaignName ? ` · ${esc(s.campaignName)}` : ' · no campaign yet'}</span> <button type="button" class="cloud-btn">Sign out</button>`;
+    const got = await cloudSession(client);
+    const s = got && got.newPassword ? null : got;
+    const key = got ? `${got.user.id}|${got.campaignId}|${got.name}|${got.newPassword}` : '';
+    if (got && got.newPassword) {
+      el.innerHTML = `<a class="cloud-btn" href="${ACCOUNT_URL}">Choose your password</a>`;
+    } else if (s) {
+      el.innerHTML = `<span class="cloud-who">${esc(s.name)}${s.campaignName ? ` · ${esc(s.campaignName)}` : ' · no campaign yet'}</span> <a class="cloud-btn" href="${ACCOUNT_URL}">Account</a> <button type="button" class="cloud-btn">Sign out</button>`;
       el.querySelector('button').addEventListener('click', () => client.auth.signOut());
     } else {
       el.innerHTML = '<button type="button" class="cloud-btn">Sign in</button>';
@@ -2991,7 +3002,83 @@ function mountCloud(el, onChange) {
   paint();
 }
 
-return { CLOUD_URL, CLOUD_KEY, cloudClient, cloudSession, createCloudRoundSync, mountCloud };
+return { CLOUD_URL, CLOUD_KEY, cloudClient, needsNewPassword, cloudSession, createCloudRoundSync, mountCloud };
+})();
+// ── account ──
+__m["account"] = (() => {
+
+// ── ACCOUNT ─────────────────────────────────────────────────────
+// A player's own account (name, email, password) and who else may play their
+// characters. Each call takes the Supabase client; the database's rules
+// (supabase/migrations/) decide what's allowed, these only ask.
+
+const MIN_PASSWORD = 8;
+// What's wrong with a new password, or '' when it will do
+function passwordProblem(pw, again) {
+  if (!pw || pw.length < MIN_PASSWORD) return `Use at least ${MIN_PASSWORD} characters.`;
+  if (pw !== again) return 'The two passwords don’t match.';
+  return '';
+}
+// The new password, which also ends a temporary one (supabase/add-player.sql)
+async function setPassword(client, pw) {
+  const { error } = await client.auth.updateUser({ password: pw, data: { temp_password: false } });
+  if (error) throw error;
+}
+// With "Confirm email" off in the project, the change is immediate; with it
+// on, it waits for the confirmation link (changed: false)
+async function setEmail(client, email) {
+  const { data, error } = await client.auth.updateUser({ email });
+  if (error) throw error;
+  const now = data && data.user && data.user.email;
+  return { changed: !!now && now.toLowerCase() === email.toLowerCase() };
+}
+async function setDisplayName(client, userId, name) {
+  const { error } = await client.from('profiles').update({ display_name: name }).eq('id', userId);
+  if (error) throw error;
+}
+
+// The campaign's characters and who may play them, for the session's person:
+//   { members: [{ userId, name, role }],
+//     characters: [{ id, name, ownerId, ownerName, mine, canManage, editors: [{ userId, name }] }],
+//     grantedToMe: [{ id, name, ownerName }] }
+// canManage: the owner, the DM or an admin, who grant and take away access.
+async function characterAccess(client, session) {
+  if (!session || !session.campaignId) return { members: [], characters: [], grantedToMe: [] };
+  const me = session.user.id;
+  const [chars, mems, eds] = await Promise.all([
+    client.from('characters').select('id, name, owner_id').eq('campaign_id', session.campaignId),
+    client.from('campaign_members').select('user_id, role, profiles(display_name)').eq('campaign_id', session.campaignId),
+    client.from('character_editors').select('character_id, user_id'),
+  ]);
+  const failed = [chars, mems, eds].find(r => r.error);
+  if (failed) throw failed.error;
+  const members = (mems.data || []).map(m => ({ userId: m.user_id, role: m.role, name: (m.profiles && m.profiles.display_name) || 'Someone' }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+  const nameOf = id => (members.find(m => m.userId === id) || {}).name || 'Someone';
+  const manager = session.role === 'dm' || session.isAdmin;
+  const all = (chars.data || []).map(c => ({
+    id: c.id, name: c.name, ownerId: c.owner_id, ownerName: nameOf(c.owner_id), mine: c.owner_id === me,
+    canManage: c.owner_id === me || manager,
+    editors: (eds.data || []).filter(e => e.character_id === c.id).map(e => ({ userId: e.user_id, name: nameOf(e.user_id) }))
+      .sort((a, b) => a.name.localeCompare(b.name)),
+  })).sort((a, b) => (b.mine - a.mine) || a.name.localeCompare(b.name));
+  return {
+    members,
+    characters: all.filter(c => c.canManage),
+    grantedToMe: all.filter(c => !c.mine && c.editors.some(e => e.userId === me)).map(c => ({ id: c.id, name: c.name, ownerName: c.ownerName })),
+  };
+}
+// Lets someone in the campaign play (and later edit) a character, until taken away
+async function grantAccess(client, session, characterId, userId) {
+  const { error } = await client.from('character_editors').insert({ character_id: characterId, user_id: userId, granted_by: session.user.id });
+  if (error) throw error;
+}
+async function revokeAccess(client, characterId, userId) {
+  const { error } = await client.from('character_editors').delete().eq('character_id', characterId).eq('user_id', userId);
+  if (error) throw error;
+}
+
+return { MIN_PASSWORD, passwordProblem };
 })();
 window.Rules = { computeAttack: __m["rules/attacks"].computeAttack, listAttacks: __m["rules/attacks"].listAttacks, weaponAttacks: __m["rules/attacks"].weaponAttacks, planRound: __m["rules/attacks"].planRound, attacksThisRound: __m["rules/attacks"].attacksThisRound, attacksInRound: __m["rules/attacks"].attacksInRound, hasBonusRounds: __m["rules/attacks"].hasBonusRounds, formatRate: __m["rules/attacks"].formatRate, offHandAttacks: __m["rules/attacks"].offHandAttacks, effectiveLevel: __m["rules/attacks"].effectiveLevel, SITUATIONS: __m["rules/attacks"].SITUATIONS };
 window.Weapons = { resolveWeapon: __m["rules/weapons"].resolveWeapon, PHB_WEAPONS: __m["rules/weapons"].PHB_WEAPONS };

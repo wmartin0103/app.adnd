@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Account · AD&amp;D Campaign</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Crimson+Pro:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    /* The landing page's tokens and pieces (site/index.html) */
+    :root {
+      --bg: #f5f5f5; --surface: #ffffff; --ink: #1a1714; --ink-muted: #5a534e;
+      --rule: #d8d0c8; --accent: #8b2e12; --accent-hover: #6e2410; --bad: #9b2a1f; --good: #2f6b3a;
+      --font-display: 'Cinzel', Georgia, serif; --font-body: 'Crimson Pro', Georgia, serif;
+      color-scheme: light;
+    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 1.125rem; line-height: 1.45; padding: 24px 16px 48px; }
+    main { width: 100%; max-width: 34rem; margin: 0 auto; display: grid; gap: 20px; }
+    h1 { font-family: var(--font-display); font-weight: 600; letter-spacing: 0.04em; font-size: clamp(1.5rem, 5vw, 2rem); margin: 0; padding-bottom: 10px; border-bottom: 2px solid var(--accent); text-align: center; }
+    h2 { font-family: var(--font-display); font-weight: 600; font-size: 0.95rem; letter-spacing: 0.08em; text-transform: uppercase; margin: 0; }
+    .back { margin: -8px 0 0; font-size: 0.95rem; }
+    .back a { color: var(--ink-muted); }
+    .back a:hover, .back a:focus-visible { color: var(--accent); }
+    .card { background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: 22px 20px; display: grid; gap: 14px; }
+    label { display: grid; gap: 4px; font-family: var(--font-display); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-muted); }
+    input, select { font: 1.05rem var(--font-body); color: var(--ink); background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; padding: 9px 10px; text-transform: none; letter-spacing: 0; min-width: 0; }
+    input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+    .btn { font-family: var(--font-display); font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; background: var(--accent); color: var(--surface); border: 1px solid var(--accent); border-radius: 4px; padding: 11px 14px; cursor: pointer; text-decoration: none; text-align: center; }
+    .btn:hover, .btn:focus-visible { background: var(--accent-hover); border-color: var(--accent-hover); }
+    .btn:disabled { opacity: 0.6; cursor: wait; }
+    .btn.quiet { background: none; color: var(--ink-muted); border-color: var(--rule); }
+    .btn.quiet:hover, .btn.quiet:focus-visible { color: var(--accent); border-color: var(--accent); background: none; }
+    .btn.small { padding: 6px 10px; font-size: 0.65rem; }
+    .row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+    .row > label { flex: 1 1 12rem; }
+    .hint { margin: 0; font-size: 0.95rem; color: var(--ink-muted); }
+    .status { margin: 0; font-size: 0.95rem; min-height: 1.2em; }
+    .status.bad { color: var(--bad); }
+    .status.good { color: var(--good); }
+    .current { margin: 0; }
+    .stack { display: grid; gap: 20px; }
+    /* Who can play each character */
+    .chars { display: grid; gap: 14px; }
+    .char { border-top: 1px solid var(--rule); padding-top: 14px; display: grid; gap: 8px; }
+    .char:first-child { border-top: 0; padding-top: 0; }
+    .char-name { font-family: var(--font-display); font-weight: 600; font-size: 1rem; margin: 0; }
+    .char-name small { font-family: var(--font-body); font-weight: 400; font-size: 0.95rem; color: var(--ink-muted); }
+    .editors { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+    .editors li { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Account</h1>
+    <p class="back" id="back"><a href="index.html">&larr; Back</a></p>
+
+    <p class="hint" id="offline" hidden>Sign-in isn't available right now.</p>
+    <p class="hint" id="signed-out" hidden>You're signed out. <a href="index.html">Sign in</a> first.</p>
+
+    <!-- First sign-in with a temporary password: choose your own before anything else -->
+    <form class="card" id="choose" hidden novalidate>
+      <h2>Choose your password</h2>
+      <p class="hint">You signed in with a temporary password. Choose your own to go on.</p>
+      <label>New password<input type="password" name="pw" autocomplete="new-password" required></label>
+      <label>New password again<input type="password" name="again" autocomplete="new-password" required></label>
+      <p class="status" role="status"></p>
+      <button class="btn" type="submit">Save password</button>
+    </form>
+
+    <div id="account" hidden>
+      <div class="stack">
+        <form class="card" id="name-form" novalidate>
+          <h2>Name</h2>
+          <p class="hint">What the party sees.</p>
+          <div class="row">
+            <label>Name<input type="text" name="name" autocomplete="nickname" required maxlength="40"></label>
+            <button class="btn" type="submit">Save</button>
+          </div>
+          <p class="status" role="status"></p>
+        </form>
+
+        <form class="card" id="email-form" novalidate>
+          <h2>Email</h2>
+          <p class="current">You sign in with <b id="email-now"></b>.</p>
+          <div class="row">
+            <label>New email<input type="email" name="email" autocomplete="email" required></label>
+            <button class="btn" type="submit">Change</button>
+          </div>
+          <p class="status" role="status"></p>
+        </form>
+
+        <form class="card" id="pw-form" novalidate>
+          <h2>Password</h2>
+          <label>New password<input type="password" name="pw" autocomplete="new-password" required></label>
+          <label>New password again<input type="password" name="again" autocomplete="new-password" required></label>
+          <p class="status" role="status"></p>
+          <button class="btn" type="submit">Change password</button>
+        </form>
+
+        <section class="card" id="access" aria-labelledby="access-title">
+          <h2 id="access-title">Who can play your characters</h2>
+          <p class="hint">Give someone in the party edit access to run a character for a session. It lasts until you take it away.</p>
+          <div class="chars" id="chars"></div>
+          <p class="status" id="access-status" role="status"></p>
+        </section>
+
+        <section class="card" id="mine-to-play" hidden aria-labelledby="mine-to-play-title">
+          <h2 id="mine-to-play-title">Characters you can play</h2>
+          <ul class="editors" id="granted"></ul>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <!-- Supabase: signing in and the account (src/cloud.js, src/account.js) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script>
+/* ── sheet converter: generated by scripts/build-legacy.mjs from src/ — do not edit by hand ── */
+(() => {
+const __m = {};
+// ── cloud ──
+__m["cloud"] = (() => {
+
+// ── CLOUD (Supabase) ────────────────────────────────────────────
+// Signing in, and the live round across devices. The database and its
+// permission rules are in supabase/migrations/. The URL and publishable key
+// below are public by design: the rules in the database decide what anyone
+// can see or change. (The secret key never goes in the app.)
+//
+// The Supabase library comes from its CDN as window.supabase. Without it, or
+// signed out, the tools work as before: the round syncs within one browser.
+
+const CLOUD_URL = 'https://fslhlebezckjzpycrava.supabase.co';
+const CLOUD_KEY = 'sb_publishable_qDPlezMIAsuQYfFuNDMcwg_f9iMsXA0';
+
+let clientCache = null;
+function cloudClient() {
+  if (clientCache) return clientCache;
+  try {
+    const lib = globalThis.supabase;
+    if (lib && lib.createClient) clientCache = lib.createClient(CLOUD_URL, CLOUD_KEY);
+  } catch (e) { clientCache = null; }
+  return clientCache;
+}
+
+// An account an admin made with a temporary password (supabase/add-player.sql):
+// the player chooses their own, on the Account page, before anything else
+const needsNewPassword = user => !!(user && user.user_metadata && user.user_metadata.temp_password);
+
+// Who's signed in, and their campaign (the first one they're in, for now).
+// newPassword: still on a temporary password.
+// Null when signed out or the cloud can't be reached.
+const cloudSession = async (client = cloudClient()) => {
+  if (!client) return null;
+  try {
+    const { data } = await client.auth.getSession();
+    const user = data && data.session && data.session.user;
+    if (!user) return null;
+    const [{ data: prof }, { data: rows }] = await Promise.all([
+      client.from('profiles').select('display_name, is_admin').eq('id', user.id).maybeSingle(),
+      client.from('campaign_members').select('campaign_id, role, campaigns(name)').eq('user_id', user.id),
+    ]);
+    const m = (rows || [])[0] || null;
+    return {
+      user, name: (prof && prof.display_name) || user.email, isAdmin: !!(prof && prof.is_admin), newPassword: needsNewPassword(user),
+      campaignId: m ? m.campaign_id : null, campaignName: m && m.campaigns ? m.campaigns.name : '', role: m ? m.role : null,
+    };
+  } catch (e) { return null; }
+};
+
+// ── The live round through the database ──
+// The same calls as createRoundSync (round-sync.js), so the sheet and the DM
+// Helper don't care which one they have. The DM's side is one row per
+// campaign (round_state); each character's round record is one row
+// (round_records). A record from an earlier round is left out of the state.
+// Changes show here at once and go to the database behind the scenes;
+// everyone else hears about them through realtime.
+function createCloudRoundSync({ client, campaignId, userId }) {
+  const listeners = [];
+  let base = { round: 1, encounter: 1, foes: [], timing: 'end', dmAt: 0, at: 0 };
+  let hasEncounter = false;   // the database has round_state.encounter (a migration)
+  const rows = {};          // character name → { round, record }
+  const ids = {};           // character name → character id
+  const local = new Set();  // records written here before the first load
+  const writes = {};        // character name → this page's saves, in order
+  const state = () => {
+    const records = {};
+    Object.entries(rows).forEach(([name, r]) => { if (r.round === base.round) records[name] = { ...r.record, round: r.round }; });
+    return { ...base, records };
+  };
+  const tell = () => { const s = state(); listeners.forEach(fn => { try { fn(s); } catch (e) { /* a listener's problem */ } }); };
+  // Every round change reads the records again (a reset deletes them)
+  const reload = () => client.from('round_records').select('*').eq('campaign_id', campaignId)
+    .then(({ data }) => { Object.keys(rows).forEach(k => delete rows[k]); (data || []).forEach(fromRecord); tell(); }, () => {});
+  const fromState = r => {
+    if ('encounter' in r) hasEncounter = true;
+    base = { round: r.round, encounter: r.encounter || 1, foes: r.foes || [], timing: r.timing || 'end', dmAt: Date.parse(r.updated_at) || Date.now(), at: Date.now() };
+  };
+  const fromRecord = r => {
+    const name = r.record && r.record.character;
+    if (!name) return;
+    rows[name] = { round: r.round, record: r.record };
+    ids[name] = r.character_id;
+  };
+
+  let dmChanges = null;     // the DM's changes made before the first load
+  const ready = (async () => {
+    const [{ data: st }, { data: recs }] = await Promise.all([
+      client.from('round_state').select('*').eq('campaign_id', campaignId).maybeSingle(),
+      client.from('round_records').select('*').eq('campaign_id', campaignId),
+    ]);
+    if (st) fromState(st);
+    (recs || []).forEach(r => { if (!local.has(r.record && r.record.character)) fromRecord(r); });
+    if (dmChanges) { applyDM(dmChanges); if (dmChanges.dm !== false) writeDM(); }
+    tell();
+  })().catch(() => {});
+
+  const channel = client.channel(`round-${campaignId}`)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'round_state', filter: `campaign_id=eq.${campaignId}` },
+      p => { if (p.new && p.new.campaign_id) { const was = base.round; fromState(p.new); tell(); if (p.new.round !== was || p.new.round === 1) reload(); } })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'round_records', filter: `campaign_id=eq.${campaignId}` },
+      p => {
+        if (!p.new || !p.new.record) return;
+        // An echo older than this page's last save of that character: stale
+        const w = writes[p.new.record.character];
+        if (w && w.sentAt && p.new.updated_at && Date.parse(p.new.updated_at) < Date.parse(w.sentAt)) return;
+        fromRecord(p.new); tell();
+      })
+    .subscribe();
+
+  // The character's row in the campaign, found by name (made if it's new)
+  async function characterId(name) {
+    if (ids[name]) return ids[name];
+    const { data } = await client.from('characters').select('id').eq('campaign_id', campaignId).eq('name', name).limit(1);
+    if (data && data[0]) return (ids[name] = data[0].id);
+    const { data: made, error } = await client.from('characters')
+      .insert({ campaign_id: campaignId, owner_id: userId, name, data: { name } }).select('id').single();
+    if (error) throw error;
+    return (ids[name] = made.id);
+  }
+  function applyDM({ round, foes, timing, dm = true, reset = false, resetInit = false }) {
+    if (reset || resetInit) base.encounter = (base.encounter || 1) + 1;
+    if (reset) { base.round = round ?? 1; Object.keys(rows).forEach(k => delete rows[k]); }
+    else if (round != null) base.round = round;
+    if (foes) base.foes = foes;
+    if (timing) base.timing = timing;
+    if (dm) base.dmAt = Date.now();
+  }
+  const writeDM = () => client.from('round_state').upsert({
+    campaign_id: campaignId, round: base.round, foes: base.foes, timing: base.timing, updated_at: new Date().toISOString(),
+    ...(hasEncounter ? { encounter: base.encounter } : {}),
+  }).then(() => {}, () => {});
+
+  let loaded = false;
+  ready.then(() => { loaded = true; });
+  return {
+    live: true,
+    cloud: true,
+    state,
+    sendRecord(rec) {
+      const round = base.round;
+      rows[rec.character] = { round, record: { ...rec, round } };
+      if (!loaded) local.add(rec.character);
+      // One save at a time per character, always the latest: quick changes
+      // can't land out of order and undo each other
+      const name = rec.character;
+      const w = writes[name] || (writes[name] = { chain: Promise.resolve(), next: null });
+      w.next = { round, record: rows[name].record, at: new Date().toISOString() };
+      w.sentAt = w.next.at;
+      w.chain = w.chain.then(() => {
+        const job = w.next;
+        if (!job) return null;
+        w.next = null;
+        return ready.then(() => characterId(name))
+          .then(id => client.from('round_records').upsert({ character_id: id, campaign_id: campaignId, round: job.round, record: job.record, updated_at: job.at }));
+      }).then(() => {}, () => {});
+      return state();
+    },
+    sendDM(change) {
+      // Before the first load, the database's round wins and these apply on top
+      if (!loaded) { dmChanges = { ...(dmChanges || {}), ...change }; applyDM(change); return state(); }
+      applyDM(change);
+      // A reset deletes the campaign's records first, so pages that reload them find none
+      if (change.reset) client.from('round_records').delete().eq('campaign_id', campaignId).then(writeDM, writeDM);
+      else if (change.dm !== false) writeDM();
+      return state();
+    },
+    onChange(fn) { listeners.push(fn); },
+    close() { try { client.removeChannel(channel); } catch (e) { /* already gone */ } },
+  };
+}
+
+// ── Sign in ──
+// A small control for a tool's header: "Sign in" when signed out (opens a
+// dialog: email and password; accounts are made by an admin), the name and
+// campaign with Account and "Sign out" when signed in. Still on a temporary
+// password: only a link to choose one, and the tool stays offline (onChange
+// gets null). onChange gets the session (or null) on load and whenever it changes.
+// The Account page sits beside the landing page, one folder up from the tools.
+const ACCOUNT_URL = '../account.html';
+function mountCloud(el, onChange) {
+  const client = cloudClient();
+  if (!el || !client) { if (onChange) onChange(null); return; }
+  const doc = el.ownerDocument;
+  const esc = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const dialog = doc.createElement('dialog');
+  dialog.className = 'cloud-dialog';
+  dialog.innerHTML = `<form method="dialog" class="cloud-form">
+      <h2 class="cloud-title">Sign in</h2>
+      <label class="cloud-field">Email<input type="email" name="email" autocomplete="username" required></label>
+      <label class="cloud-field">Password<input type="password" name="password" autocomplete="current-password" required></label>
+      <p class="cloud-error" role="alert"></p>
+      <div class="cloud-actions"><button type="button" class="cloud-cancel">Cancel</button><button type="submit" class="cloud-submit">Sign in</button></div>
+    </form>`;
+  doc.body.appendChild(dialog);
+  const form = dialog.querySelector('form'), err = dialog.querySelector('.cloud-error');
+  dialog.querySelector('.cloud-cancel').addEventListener('click', () => dialog.close());
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    err.textContent = '';
+    const btn = form.querySelector('.cloud-submit'); btn.disabled = true;
+    const { error } = await client.auth.signInWithPassword({ email: form.email.value.trim(), password: form.password.value });
+    btn.disabled = false;
+    if (error) { err.textContent = error.message || 'Could not sign in.'; return; }
+    form.password.value = '';
+    dialog.close();
+  });
+
+  let last = null;
+  const paint = async () => {
+    const got = await cloudSession(client);
+    const s = got && got.newPassword ? null : got;
+    const key = got ? `${got.user.id}|${got.campaignId}|${got.name}|${got.newPassword}` : '';
+    if (got && got.newPassword) {
+      el.innerHTML = `<a class="cloud-btn" href="${ACCOUNT_URL}">Choose your password</a>`;
+    } else if (s) {
+      el.innerHTML = `<span class="cloud-who">${esc(s.name)}${s.campaignName ? ` · ${esc(s.campaignName)}` : ' · no campaign yet'}</span> <a class="cloud-btn" href="${ACCOUNT_URL}">Account</a> <button type="button" class="cloud-btn">Sign out</button>`;
+      el.querySelector('button').addEventListener('click', () => client.auth.signOut());
+    } else {
+      el.innerHTML = '<button type="button" class="cloud-btn">Sign in</button>';
+      el.querySelector('button').addEventListener('click', () => { err.textContent = ''; dialog.showModal(); form.email.focus(); });
+    }
+    if (key !== last) { last = key; if (onChange) onChange(s); }
+  };
+  client.auth.onAuthStateChange(() => { setTimeout(paint, 0); });
+  paint();
+}
+
+return { CLOUD_URL, CLOUD_KEY, cloudClient, needsNewPassword, cloudSession, createCloudRoundSync, mountCloud };
+})();
+// ── account ──
+__m["account"] = (() => {
+
+// ── ACCOUNT ─────────────────────────────────────────────────────
+// A player's own account (name, email, password) and who else may play their
+// characters. Each call takes the Supabase client; the database's rules
+// (supabase/migrations/) decide what's allowed, these only ask.
+
+const MIN_PASSWORD = 8;
+// What's wrong with a new password, or '' when it will do
+function passwordProblem(pw, again) {
+  if (!pw || pw.length < MIN_PASSWORD) return `Use at least ${MIN_PASSWORD} characters.`;
+  if (pw !== again) return 'The two passwords don’t match.';
+  return '';
+}
+// The new password, which also ends a temporary one (supabase/add-player.sql)
+async function setPassword(client, pw) {
+  const { error } = await client.auth.updateUser({ password: pw, data: { temp_password: false } });
+  if (error) throw error;
+}
+// With "Confirm email" off in the project, the change is immediate; with it
+// on, it waits for the confirmation link (changed: false)
+async function setEmail(client, email) {
+  const { data, error } = await client.auth.updateUser({ email });
+  if (error) throw error;
+  const now = data && data.user && data.user.email;
+  return { changed: !!now && now.toLowerCase() === email.toLowerCase() };
+}
+async function setDisplayName(client, userId, name) {
+  const { error } = await client.from('profiles').update({ display_name: name }).eq('id', userId);
+  if (error) throw error;
+}
+
+// The campaign's characters and who may play them, for the session's person:
+//   { members: [{ userId, name, role }],
+//     characters: [{ id, name, ownerId, ownerName, mine, canManage, editors: [{ userId, name }] }],
+//     grantedToMe: [{ id, name, ownerName }] }
+// canManage: the owner, the DM or an admin, who grant and take away access.
+async function characterAccess(client, session) {
+  if (!session || !session.campaignId) return { members: [], characters: [], grantedToMe: [] };
+  const me = session.user.id;
+  const [chars, mems, eds] = await Promise.all([
+    client.from('characters').select('id, name, owner_id').eq('campaign_id', session.campaignId),
+    client.from('campaign_members').select('user_id, role, profiles(display_name)').eq('campaign_id', session.campaignId),
+    client.from('character_editors').select('character_id, user_id'),
+  ]);
+  const failed = [chars, mems, eds].find(r => r.error);
+  if (failed) throw failed.error;
+  const members = (mems.data || []).map(m => ({ userId: m.user_id, role: m.role, name: (m.profiles && m.profiles.display_name) || 'Someone' }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+  const nameOf = id => (members.find(m => m.userId === id) || {}).name || 'Someone';
+  const manager = session.role === 'dm' || session.isAdmin;
+  const all = (chars.data || []).map(c => ({
+    id: c.id, name: c.name, ownerId: c.owner_id, ownerName: nameOf(c.owner_id), mine: c.owner_id === me,
+    canManage: c.owner_id === me || manager,
+    editors: (eds.data || []).filter(e => e.character_id === c.id).map(e => ({ userId: e.user_id, name: nameOf(e.user_id) }))
+      .sort((a, b) => a.name.localeCompare(b.name)),
+  })).sort((a, b) => (b.mine - a.mine) || a.name.localeCompare(b.name));
+  return {
+    members,
+    characters: all.filter(c => c.canManage),
+    grantedToMe: all.filter(c => !c.mine && c.editors.some(e => e.userId === me)).map(c => ({ id: c.id, name: c.name, ownerName: c.ownerName })),
+  };
+}
+// Lets someone in the campaign play (and later edit) a character, until taken away
+async function grantAccess(client, session, characterId, userId) {
+  const { error } = await client.from('character_editors').insert({ character_id: characterId, user_id: userId, granted_by: session.user.id });
+  if (error) throw error;
+}
+async function revokeAccess(client, characterId, userId) {
+  const { error } = await client.from('character_editors').delete().eq('character_id', characterId).eq('user_id', userId);
+  if (error) throw error;
+}
+
+return { MIN_PASSWORD, passwordProblem };
+})();
+window.Cloud = { cloudClient: __m["cloud"].cloudClient, cloudSession: __m["cloud"].cloudSession };
+window.Account = { MIN_PASSWORD: __m["account"].MIN_PASSWORD, passwordProblem: __m["account"].passwordProblem, setPassword: __m["account"].setPassword, setEmail: __m["account"].setEmail, setDisplayName: __m["account"].setDisplayName, characterAccess: __m["account"].characterAccess, grantAccess: __m["account"].grantAccess, revokeAccess: __m["account"].revokeAccess };
+})();
+/* ── end sheet converter ── */
+
+  (function () {
+    const client = window.Cloud && Cloud.cloudClient();
+    const $ = id => document.getElementById(id);
+    if (!client) { $('offline').hidden = false; return; }
+    let session = null;
+
+    // A form's status line: what happened, in words
+    const say = (form, text, kind) => { const p = form.querySelector('.status'); p.textContent = text; p.className = 'status' + (kind ? ' ' + kind : ''); };
+    const busy = (form, on) => form.querySelectorAll('button').forEach(b => { b.disabled = on; });
+    const problem = e => (e && e.message) || 'That didn’t work. Try again.';
+
+    async function show() {
+      session = await Cloud.cloudSession(client);
+      $('signed-out').hidden = !!session;
+      $('choose').hidden = !(session && session.newPassword);
+      $('account').hidden = !(session && !session.newPassword);
+      $('back').hidden = !!(session && session.newPassword);
+      if (!session) return;
+      if (session.newPassword) { $('choose').pw.focus(); return; }
+      $('name-form').name.value = session.name;
+      $('email-now').textContent = session.user.email;
+      await showAccess();
+    }
+
+    // ── Who can play each character ──
+    async function showAccess() {
+      const box = $('chars'), status = $('access-status');
+      let a;
+      try { a = await Account.characterAccess(client, session); } catch (e) { status.textContent = problem(e); status.className = 'status bad'; return; }
+      box.textContent = '';
+      if (!session.campaignId) { box.innerHTML = '<p class="hint">You’re not in a campaign yet. Ask your DM to add you.</p>'; }
+      else if (!a.characters.length) { box.innerHTML = '<p class="hint">You don’t have a character in the campaign yet. Ask your DM to link yours to your account.</p>'; }
+      a.characters.forEach(c => {
+        const el = document.createElement('div'); el.className = 'char';
+        const h = document.createElement('h3'); h.className = 'char-name'; h.textContent = c.name;
+        if (!c.mine) { const o = document.createElement('small'); o.textContent = ` · ${c.ownerName}’s`; h.appendChild(o); }
+        el.appendChild(h);
+        if (c.editors.length) {
+          const ul = document.createElement('ul'); ul.className = 'editors';
+          c.editors.forEach(ed => {
+            const li = document.createElement('li');
+            const who = document.createElement('span'); who.textContent = `${ed.name} can play ${c.name}`;
+            const rm = document.createElement('button'); rm.type = 'button'; rm.className = 'btn quiet small'; rm.textContent = 'Take away';
+            rm.setAttribute('aria-label', `Take away ${ed.name}’s access to ${c.name}`);
+            rm.addEventListener('click', async () => {
+              rm.disabled = true;
+              try { await Account.revokeAccess(client, c.id, ed.userId); status.textContent = `${ed.name} can no longer play ${c.name}.`; status.className = 'status good'; }
+              catch (e) { status.textContent = problem(e); status.className = 'status bad'; }
+              showAccess();
+            });
+            li.append(who, rm); ul.appendChild(li);
+          });
+          el.appendChild(ul);
+        } else {
+          const p = document.createElement('p'); p.className = 'hint'; p.textContent = c.mine ? 'Only you.' : `Only ${c.ownerName}.`; el.appendChild(p);
+        }
+        // The other players: not the owner, not already given access (the DM can edit every character already)
+        const others = a.members.filter(m => m.role !== 'dm' && m.userId !== c.ownerId && !c.editors.some(e => e.userId === m.userId));
+        if (others.length) {
+          const f = document.createElement('form'); f.className = 'row'; f.noValidate = true;
+          const lab = document.createElement('label'); lab.textContent = 'Give edit access to';
+          const sel = document.createElement('select'); sel.name = 'who';
+          others.forEach(m => { const o = document.createElement('option'); o.value = m.userId; o.textContent = m.name; sel.appendChild(o); });
+          lab.appendChild(sel);
+          const go = document.createElement('button'); go.type = 'submit'; go.className = 'btn'; go.textContent = 'Give access';
+          f.append(lab, go);
+          f.addEventListener('submit', async e => {
+            e.preventDefault(); go.disabled = true;
+            const m = others.find(x => x.userId === sel.value);
+            try { await Account.grantAccess(client, session, c.id, sel.value); status.textContent = `${m.name} can now play ${c.name}.`; status.className = 'status good'; }
+            catch (err) { status.textContent = problem(err); status.className = 'status bad'; }
+            showAccess();
+          });
+          el.appendChild(f);
+        }
+        box.appendChild(el);
+      });
+      // Characters someone has let you play
+      $('mine-to-play').hidden = !a.grantedToMe.length;
+      $('granted').textContent = '';
+      a.grantedToMe.forEach(c => { const li = document.createElement('li'); li.textContent = `${c.name}, ${c.ownerName}’s, until they take it away`; $('granted').appendChild(li); });
+    }
+
+    // ── A password: the first one (then on to the landing page) or a new one ──
+    async function savePassword(form, done) {
+      const why = Account.passwordProblem(form.pw.value, form.again.value);
+      if (why) { say(form, why, 'bad'); form.pw.focus(); return; }
+      busy(form, true); say(form, 'Saving…');
+      try { await Account.setPassword(client, form.pw.value); form.reset(); say(form, 'Password changed.', 'good'); if (done) done(); }
+      catch (e) { say(form, problem(e), 'bad'); }
+      busy(form, false);
+    }
+    $('choose').addEventListener('submit', e => { e.preventDefault(); savePassword(e.target, () => { location.href = 'index.html'; }); });
+    $('pw-form').addEventListener('submit', e => { e.preventDefault(); savePassword(e.target); });
+
+    $('name-form').addEventListener('submit', async e => {
+      e.preventDefault(); const form = e.target, name = form.name.value.trim();
+      if (!name) { say(form, 'Enter a name.', 'bad'); form.name.focus(); return; }
+      busy(form, true);
+      try { await Account.setDisplayName(client, session.user.id, name); say(form, 'Saved.', 'good'); session.name = name; }
+      catch (err) { say(form, problem(err), 'bad'); }
+      busy(form, false);
+    });
+
+    $('email-form').addEventListener('submit', async e => {
+      e.preventDefault(); const form = e.target, email = form.email.value.trim();
+      if (!form.email.checkValidity() || !email) { say(form, 'Enter an email address.', 'bad'); form.email.focus(); return; }
+      busy(form, true);
+      try {
+        const r = await Account.setEmail(client, email);
+        form.reset();
+        if (r.changed) { $('email-now').textContent = email; say(form, 'Changed. Sign in with the new email from now on.', 'good'); }
+        else say(form, 'Check both inboxes for a link to confirm the change.', 'good');
+      } catch (err) { say(form, problem(err), 'bad'); }
+      busy(form, false);
+    });
+
+    client.auth.onAuthStateChange(ev => { if (ev === 'SIGNED_OUT') show(); });
+    show();
+  })();
+  </script>
+</body>
+</html>
