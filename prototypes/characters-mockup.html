@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your Characters (mockup)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<!-- A clickable mockup of the page a player lands on after signing in: their
+     characters by status (In play, Backups, Dead), a new player's first
+     visit, and moving a character between statuses. Sample characters, made
+     up. Not wired to anything: nothing is saved. -->
+<style>
+  :root {
+    --bg: #f5f5f5; --surface: #ffffff; --ink: #1a1714; --ink-muted: #5a534e; --ink-faint: #9a9390;
+    --rule: #d8d0c8; --accent: #8b2e12; --accent-hover: #6e2410; --gold: #b8873a; --good: #2f6b3a;
+    --radius: 4px; --ctl-h: 2.4rem;
+    --font-display: 'Cinzel', Georgia, serif; --font-body: 'Crimson Pro', Georgia, serif;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 1.1rem; line-height: 1.45; }
+  .page { max-width: 60rem; margin: 0 auto; padding: 20px 16px 56px; display: grid; gap: 22px; }
+
+  /* Mockup only: which state to look at */
+  .mock { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 12px; border: 1px dashed var(--ink-faint); border-radius: var(--radius); font-size: 0.95rem; color: var(--ink-muted); }
+  .mock b { font-family: var(--font-display); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; margin-right: 4px; }
+  .mock button { font: inherit; font-size: 0.9rem; padding: 4px 10px; border: 1px solid var(--rule); background: var(--surface); border-radius: var(--radius); cursor: pointer; }
+  .mock button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+
+  /* Header: the campaign, who's signed in */
+  .top { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding-bottom: 12px; border-bottom: 2px solid var(--accent); }
+  .top h1 { font-family: var(--font-display); font-weight: 600; letter-spacing: 0.04em; font-size: clamp(1.3rem, 4vw, 1.7rem); margin: 0; }
+  .top .who { margin-left: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--ink-muted); font-size: 0.95rem; }
+  .top .who b { color: var(--ink); font-weight: 600; }
+
+  .btn { font-family: var(--font-display); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    min-height: var(--ctl-h); padding: 0 14px; border-radius: var(--radius); border: 1px solid var(--accent); background: var(--accent); color: var(--surface); cursor: pointer; text-decoration: none; white-space: nowrap; }
+  .btn:hover, .btn:focus-visible { background: var(--accent-hover); border-color: var(--accent-hover); }
+  .btn.quiet { background: var(--surface); color: var(--ink-muted); border-color: var(--rule); }
+  .btn.quiet:hover, .btn.quiet:focus-visible { color: var(--accent); border-color: var(--accent); background: var(--surface); }
+  .btn.small { min-height: 1.9rem; padding: 0 10px; font-size: 0.62rem; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  h2 { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-muted); margin: 0; display: flex; align-items: baseline; gap: 8px; }
+  h2 .count { font-family: var(--font-body); letter-spacing: 0; text-transform: none; font-weight: 400; color: var(--ink-faint); }
+  .hint { margin: 0; color: var(--ink-muted); font-size: 0.98rem; }
+  section { display: grid; gap: 10px; }
+  .section-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+
+  /* A character card */
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: 12px; }
+  .card { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: 14px 16px; display: grid; gap: 10px; align-content: start; position: relative; }
+  .card.in-play { border-color: var(--accent); box-shadow: inset 4px 0 0 var(--accent); padding-left: 20px; }
+  .card.dead { background: #f1eeec; }
+  .card.dead .name { color: var(--ink-muted); }
+  .name { font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; letter-spacing: 0.03em; margin: 0; }
+  .what { margin: 0; color: var(--ink); }
+  .meta { margin: 0; font-size: 0.9rem; color: var(--ink-faint); }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .actions .more { margin-left: auto; min-width: 2.2rem; padding: 0 8px; font-size: 1.1rem; letter-spacing: 0; font-family: var(--font-body); }
+  .badge { font-family: var(--font-display); font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; justify-self: start; }
+  .badge.in-play { background: var(--accent); color: var(--surface); }
+  .badge.dead { background: #3b3431; color: var(--surface); }
+  .badge.given { background: transparent; border: 1px solid var(--rule); color: var(--ink-muted); }
+
+  /* "More" menu on a card */
+  .menu { position: absolute; right: 12px; top: calc(100% - 8px); z-index: 5; background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); box-shadow: 0 8px 22px rgba(26,23,20,.14); padding: 4px; min-width: 13rem; display: grid; }
+  .menu button { font: inherit; font-size: 1rem; text-align: left; background: none; border: 0; border-radius: var(--radius); padding: 8px 10px; cursor: pointer; color: var(--ink); }
+  .menu button:hover, .menu button:focus-visible { background: var(--bg); outline: none; }
+  .menu hr { border: 0; border-top: 1px solid var(--rule); margin: 4px 0; }
+
+  /* An empty In play slot */
+  .slot { border: 1px dashed var(--rule); border-radius: var(--radius); padding: 16px; color: var(--ink-muted); background: transparent; display: grid; gap: 6px; }
+
+  /* First visit: two ways in */
+  .welcome { display: grid; gap: 6px; text-align: center; padding: 8px 0 4px; }
+  .welcome p { margin: 0; color: var(--ink-muted); }
+  .choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 14px; }
+  .choice { font: inherit; text-align: left; background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: 22px 20px; cursor: pointer; display: grid; gap: 6px; color: var(--ink); }
+  .choice:hover, .choice:focus-visible { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+  .choice .t { font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; color: var(--accent); }
+  .choice .d { color: var(--ink-muted); font-size: 0.98rem; }
+  .found { background: #fbf6ef; border: 1px solid #e6d3b4; border-radius: var(--radius); padding: 14px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+  .found p { margin: 0; flex: 1 1 18rem; }
+
+  /* Confirm: bringing a backup into play */
+  dialog { border: 1px solid var(--rule); border-radius: var(--radius); padding: 22px 22px 18px; max-width: 27rem; width: calc(100% - 32px); box-shadow: 0 12px 40px rgba(26,23,20,.25); }
+  dialog::backdrop { background: rgba(26,23,20,.35); }
+  dialog h3 { font-family: var(--font-display); font-size: 1.05rem; margin: 0 0 8px; }
+  dialog p { margin: 0 0 12px; }
+  dialog fieldset { border: 0; padding: 0; margin: 0 0 16px; display: grid; gap: 8px; }
+  dialog legend { font-family: var(--font-display); font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-muted); margin-bottom: 6px; }
+  dialog label { display: flex; gap: 8px; align-items: flex-start; cursor: pointer; }
+  dialog input { accent-color: var(--accent); margin-top: 0.3rem; }
+  dialog .row { display: flex; justify-content: flex-end; gap: 8px; }
+
+  .toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--ink); color: var(--surface); padding: 10px 16px; border-radius: var(--radius); font-size: 0.98rem; max-width: calc(100% - 32px); }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="mock" role="group" aria-label="Mockup state">
+    <b>Mockup</b>
+    <button type="button" data-state="returning" aria-pressed="true">Returning player</button>
+    <button type="button" data-state="first">First visit</button>
+    <button type="button" data-state="found">First visit, sheet in this browser</button>
+  </div>
+
+  <header class="top">
+    <h1>AD&amp;D Campaign</h1>
+    <div class="who"><span>Signed in as <b>Sam</b> · The Sample Campaign</span> <a class="btn quiet small" href="#">Account</a> <a class="btn quiet small" href="#">Sign out</a></div>
+  </header>
+
+  <main id="main"></main>
+</div>
+
+<dialog id="swap" aria-labelledby="swap-title">
+  <form method="dialog">
+    <h3 id="swap-title"></h3>
+    <p id="swap-text"></p>
+    <fieldset>
+      <legend id="swap-legend"></legend>
+      <label><input type="radio" name="to" value="dead" checked> <span>Dead</span></label>
+      <label><input type="radio" name="to" value="backup"> <span>Backups</span></label>
+    </fieldset>
+    <div class="row"><button class="btn quiet" value="cancel">Cancel</button><button class="btn" value="ok" id="swap-ok">Bring into play</button></div>
+  </form>
+</dialog>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+// Sample characters (made up)
+const SAMPLE = () => [
+  { id: 'a', name: 'Brannoc Thale', what: 'Human Fighter 6', saved: 'Saved 2 days ago', status: 'play' },
+  { id: 'b', name: 'Ysolde Fenn', what: 'Half-elf Cleric 1', saved: 'Saved last week', status: 'backup' },
+  { id: 'c', name: 'Marrow', what: 'Halfling Thief 1', saved: 'Saved 3 weeks ago', status: 'backup' },
+  { id: 'd', name: 'Old Corvin', what: 'Human Mage 4', saved: 'Saved in March', status: 'dead', note: 'Died in round 3, Barrow of Ash' },
+];
+const GIVEN = [{ id: 'g', name: 'Edda Ironwake', what: 'Dwarf Fighter 5', owner: 'Riley' }];
+let state = 'returning', chars = SAMPLE(), openMenu = null;
+const $ = id => document.getElementById(id);
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const toast = t => { const x = $('toast'); x.textContent = t; x.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => { x.hidden = true; }, 2600); };
+
+function card(c, given) {
+  const k = el('article', 'card' + (c.status === 'play' ? ' in-play' : c.status === 'dead' ? ' dead' : ''));
+  k.setAttribute('aria-labelledby', 'n-' + c.id);
+  if (c.status === 'play') k.appendChild(el('span', 'badge in-play', 'In play'));
+  if (c.status === 'dead') k.appendChild(el('span', 'badge dead', 'Dead'));
+  if (given) k.appendChild(el('span', 'badge given', `${given}’s · you can play`));
+  const n = el('h3', 'name', c.name); n.id = 'n-' + c.id; k.appendChild(n);
+  k.appendChild(el('p', 'what', c.what));
+  k.appendChild(el('p', 'meta', c.note ? `${c.note} · ${c.saved}` : c.saved || ''));
+  const a = el('div', 'actions');
+  const open = el('a', 'btn small', 'Open sheet'); open.href = '#'; open.setAttribute('aria-label', `Open ${c.name}’s sheet`);
+  open.addEventListener('click', e => { e.preventDefault(); toast(`Opens ${c.name}’s sheet`); });
+  a.appendChild(open);
+  if (c.status === 'backup') {
+    const b = el('button', 'btn quiet small', 'Bring into play'); b.type = 'button';
+    b.addEventListener('click', () => bringIn(c)); a.appendChild(b);
+  }
+  if (c.status === 'dead') {
+    const b = el('button', 'btn quiet small', 'Return to play'); b.type = 'button';
+    b.addEventListener('click', () => bringIn(c)); a.appendChild(b);
+  }
+  if (!given) {
+    const m = el('button', 'btn quiet small more', '⋯'); m.type = 'button';
+    m.setAttribute('aria-haspopup', 'true'); m.setAttribute('aria-expanded', openMenu === c.id ? 'true' : 'false');
+    m.setAttribute('aria-label', `More for ${c.name}`);
+    m.addEventListener('click', e => { e.stopPropagation(); openMenu = openMenu === c.id ? null : c.id; render(); if (openMenu) document.querySelector('.menu button')?.focus(); });
+    a.appendChild(m);
+  }
+  k.appendChild(a);
+  if (openMenu === c.id) {
+    const menu = el('div', 'menu'); menu.setAttribute('role', 'menu');
+    const item = (t, fn) => { const b = el('button', '', t); b.type = 'button'; b.setAttribute('role', 'menuitem'); b.addEventListener('click', () => { openMenu = null; fn(); }); menu.appendChild(b); };
+    if (c.status !== 'play') item('Bring into play', () => bringIn(c));
+    if (c.status !== 'backup') item('Move to Backups', () => { const was = c.status; c.status = 'backup'; render(); toast(`${c.name} moved to Backups${was === 'play' ? '. You have no character in play.' : ''}`); });
+    if (c.status !== 'dead') item('Mark as dead', () => { c.status = 'dead'; c.note = 'Died this session'; render(); toast(`${c.name} is marked as dead`); });
+    menu.appendChild(el('hr'));
+    item('Make a copy', () => { chars.push({ ...c, id: 'x' + Date.now(), name: c.name + ' (copy)', status: 'backup', saved: 'Saved just now', note: '' }); render(); toast('Copy added to Backups'); });
+    item('Export file', () => toast(`Downloads ${c.name}.json`));
+    k.appendChild(menu);
+  }
+  return k;
+}
+
+// Into play: one per player. If someone is in play, ask where they go.
+function bringIn(c) {
+  const cur = chars.find(x => x.status === 'play');
+  if (!cur) { c.status = 'play'; c.note = ''; render(); toast(`${c.name} is in play`); return; }
+  $('swap-title').textContent = `Bring ${c.name} into play?`;
+  $('swap-text').textContent = `${cur.name} is in play now. One character each in the party.`;
+  $('swap-legend').textContent = `Move ${cur.name} to`;
+  const d = $('swap');
+  d.querySelector('input[value="dead"]').checked = true;
+  d.onclose = () => {
+    if (d.returnValue !== 'ok') return;
+    const to = d.querySelector('input[name="to"]:checked').value;
+    cur.status = to; if (to === 'dead') cur.note = 'Died this session';
+    c.status = 'play'; c.note = '';
+    render(); toast(`${c.name} is in play; ${cur.name} moved to ${to === 'dead' ? 'Dead' : 'Backups'}`);
+  };
+  d.showModal();
+}
+
+function section(title, list, extra, hint) {
+  const s = el('section'); const head = el('div', 'section-head');
+  const h = el('h2', '', title); if (list && list.length > 1) h.appendChild(el('span', 'count', `(${list.length})`)); head.appendChild(h);
+  if (extra) head.appendChild(extra);
+  s.appendChild(head);
+  if (hint) s.appendChild(el('p', 'hint', hint));
+  return s;
+}
+
+function render() {
+  const main = $('main'); main.textContent = '';
+  const wrap = el('div'); wrap.style.display = 'grid'; wrap.style.gap = '26px';
+  if (state !== 'returning') {
+    // First visit: two ways in (and the sheet already in this browser, if there is one)
+    const w = el('div', 'welcome');
+    w.appendChild(el('h2', '', 'Your characters')); w.firstChild.style.justifyContent = 'center';
+    w.appendChild(el('p', '', 'You don’t have a character yet. Start one, or bring in a sheet you’ve already made.'));
+    wrap.appendChild(w);
+    if (state === 'found') {
+      const f = el('div', 'found');
+      const p = el('p'); p.innerHTML = 'This browser has a sheet from before accounts: <b>Brannoc Thale</b>, Human Fighter 6.';
+      const b = el('button', 'btn', 'Save it to your account'); b.type = 'button';
+      b.addEventListener('click', () => { state = 'returning'; chars = [SAMPLE()[0]]; render(); toast('Brannoc Thale saved to your account, in play'); });
+      f.append(p, b); wrap.appendChild(f);
+    }
+    const ch = el('div', 'choices');
+    const choice = (t, d, fn) => { const b = el('button', 'choice'); b.type = 'button'; b.append(el('span', 't', t), el('span', 'd', d)); b.addEventListener('click', fn); return b; };
+    ch.append(
+      choice('Create a new character', 'A blank sheet, saved to your account as you fill it in.', () => toast('Opens a blank sheet')),
+      choice('Import a character file', 'A .json file exported from the character sheet.', () => toast('Opens the file picker')));
+    wrap.appendChild(ch);
+    main.appendChild(wrap); return;
+  }
+
+  // Returning: In play (one), Backups, Dead, then characters you've been given
+  const add = el('div', 'actions');
+  const nb = el('button', 'btn quiet small', 'New character'); nb.type = 'button'; nb.addEventListener('click', () => toast('Opens a blank sheet, in Backups'));
+  const ib = el('button', 'btn quiet small', 'Import file'); ib.type = 'button'; ib.addEventListener('click', () => toast('Opens the file picker; the character goes to Backups'));
+  add.append(nb, ib);
+
+  const play = chars.filter(c => c.status === 'play');
+  const s1 = section('In play', play, add); const c1 = el('div', 'cards');
+  if (play.length) c1.appendChild(card(play[0]));
+  else { const slot = el('div', 'slot'); slot.append(el('b', '', 'No character in play'), el('span', '', 'Bring in a backup, or start a new character.')); c1.appendChild(slot); }
+  s1.appendChild(c1); wrap.appendChild(s1);
+
+  const back = chars.filter(c => c.status === 'backup');
+  const s2 = section('Backups', back, null, back.length ? 'Ready for the next session, if your character in play falls.' : 'None yet. A backup is ready for the next session, if your character in play falls.');
+  if (back.length) { const c2 = el('div', 'cards'); back.forEach(c => c2.appendChild(card(c))); s2.appendChild(c2); }
+  wrap.appendChild(s2);
+
+  const dead = chars.filter(c => c.status === 'dead');
+  if (dead.length) { const s3 = section('Dead', dead, null, 'Still yours to edit. Who knows: they could come back.'); const c3 = el('div', 'cards'); dead.forEach(c => c3.appendChild(card(c))); s3.appendChild(c3); wrap.appendChild(s3); }
+
+  const s4 = section('Characters you can play', GIVEN, null, 'Given to you by their owner, until they take it away.');
+  const c4 = el('div', 'cards'); GIVEN.forEach(c => c4.appendChild(card(c, c.owner))); s4.appendChild(c4); wrap.appendChild(s4);
+
+  main.appendChild(wrap);
+}
+
+document.querySelectorAll('.mock button').forEach(b => b.addEventListener('click', () => {
+  state = b.dataset.state; chars = SAMPLE(); openMenu = null;
+  document.querySelectorAll('.mock button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  render();
+}));
+document.addEventListener('click', e => { if (openMenu && !e.target.closest('.menu')) { openMenu = null; render(); } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && openMenu) { const c = chars.find(x => x.id === openMenu); openMenu = null; render(); document.querySelector(`[aria-label="More for ${c.name}"]`)?.focus(); } });
+render();
+</script>
+</body>
+</html>
