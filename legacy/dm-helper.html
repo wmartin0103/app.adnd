@@ -544,6 +544,7 @@
   .bd-attacks select.ui-control{height:var(--ui-ctl-h); font-size:.95rem; padding:0 .5rem}   /* full height, like Targets and Conditions beside them */
   .bd-attacks .roll-hit-btn:disabled{opacity:.45; cursor:not-allowed; box-shadow:none}
   .bd-crit{flex-basis:100%; font-size:.9rem; line-height:1.4}
+  #newRoundLight.armed{outline:2px solid var(--rust); outline-offset:2px}   /* waiting for the second click */
   .char.placeholder, #lightTracker{overflow:visible}          /* the Targets and Conditions lists open past the card */
 </style>
 </head>
@@ -581,14 +582,14 @@
     <div class="toolbar between">
       <span class="lockwrap"><button class="reroll" id="rollInit" title="roll initiative for the Enemies in this round; players roll their own">⚄ Roll initiative for Enemies</button><label class="lock" title="locked: players can no longer roll their own initiative"><input type="checkbox" id="lockInit"> Lock</label></span>
       <span class="lockwrap roundctl" title="players' sheets play this round and show here"><b id="roundNo">Round 1</b> <button class="reroll" id="nextRoundSync" title="start the next round: every player's sheet clears its round (initiative rolls stay for the encounter)">Next round ▸</button> <button class="reroll" id="resetInitSync" title="a new encounter: every player rolls initiative again">Reset initiative</button> <label class="gclabel">Extra attacks <select id="extraTiming" class="sursel"><option value="end">End of the order</option><option value="turn">At their turn</option></select></label></span>
-      <span class="lockwrap"><button class="reroll" id="newRoundLight" title="clear the players' attack rolls and roll the Enemies' attacks again; picked actions and conditions stay">↻ New round</button></span>
+      <span class="lockwrap"><button class="reroll" id="newRoundLight" title="start the encounter over: round 1, everyone rolls initiative again, every attack roll cleared (Enemies stay)">↺ Reset encounter</button></span>
     </div>
     <div class="tracker" id="tracker"></div>
     <div class="char" id="lightTracker" style="display:none">
       <table class="acts light"><thead><tr><th class="l">Name</th><th>Speed</th><th>Init roll</th><th>Act On</th></tr></thead><tbody id="lightBody"></tbody></table>
     </div>
     <div class="addrow"><button class="reroll" id="addBaddy">+ Add Enemy</button></div>
-    <footer>Order is by chosen action (roll + speed + init bonus/mods); lower acts first. THAC0: lower is better. An Enemy's attack rolls only when you press Roll to hit; it hits on a d20 of THAC0 − AC or more. New round clears the rolls and keeps targets and conditions.</footer>
+    <footer>Order is by chosen action (roll + speed + init bonus/mods); lower acts first. THAC0: lower is better. An Enemy's attack rolls only when you press Roll to hit; it hits on a d20 of THAC0 − AC or more. Next round clears the rolls and keeps targets and conditions; Reset encounter starts over at round 1.</footer>
     <div class="char" id="lightCritBox" style="display:none">
       <div class="lightcrit">
         <label class="gclabel">Weapon <select id="lcType"><option value="B">Blunt</option><option value="P">Piercing</option><option value="S">Slashing</option><option value="A">Animal</option></select></label>
@@ -5801,7 +5802,7 @@ function renderLight(){
   const full=isFull();
   document.getElementById('tracker').style.display = full ? '' : 'none';
   document.getElementById('lightTracker').style.display = full ? 'none' : '';
-  document.getElementById('newRoundLight').style.display = full ? 'none' : '';  // the simple view's own New round
+  document.getElementById('newRoundLight').style.display = full ? 'none' : '';  // the simple view's own Reset encounter
   document.getElementById('lightCritBox').style.display = full ? 'none' : '';
   if(full){                                                  // back to the full view: the Enemy cards go home
     Object.keys(blocks).forEach(n=>{ const b=blocks[n]; if(b.placeholder && b.lightCardTd && b.el.parentNode===b.lightCardTd){
@@ -6350,7 +6351,7 @@ function setTab(p){
 }
 tabs.forEach(t=>t.addEventListener('click',()=>setTab(t.dataset.panel)));
 document.getElementById('rollInit').addEventListener('click', rollInitiative);
-function clearPlayerActions(){                                // New round: only the players' attack rolls reset
+function clearPlayerActions(){                                // the attack rolls reset (Reset encounter)
   Object.keys(blocks).forEach(name=>{
     const b=blocks[name];
     if(b.placeholder){ clearEnemyRolls(b); return; }   // an Enemy's attacks roll again on their own
@@ -6363,7 +6364,29 @@ function clearPlayerActions(){                                // New round: only
   });
   update();
 }
-document.getElementById('newRoundLight').addEventListener('click', clearPlayerActions);
+// Reset encounter: round 1, a new encounter on every sheet (initiative and
+// attacks cleared), initiative back to the start here, every roll cleared.
+// The Enemies stay, unrolled, for the DM to keep or remove.
+function resetEncounter(){
+  Object.keys(blocks).forEach(n=>{ const b=blocks[n];
+    if(b.placeholder){ b.initRoll.value='50'; return; }                     // parked at 50 until rolled
+    b.initRoll.value='10'; b.initRolled=false; if(b.surBox) b.surBox.checked=false;
+  });
+  const lock=document.getElementById('lockInit'); lock.checked=false; applyLock();
+  document.getElementById('surpriseBar').style.display='none';
+  if(ROUND){ syncState = ROUND.sendDM({round:1, reset:true}); showRound(); }
+  reorderPending=true;
+  clearPlayerActions();                                        // the attack rolls (players' rows and Enemies'); calls update()
+}
+(()=>{   // two clicks, as with Reset: it clears every player's round
+  const btn=document.getElementById('newRoundLight'); let armed=null;
+  const disarm=()=>{ btn.classList.remove('armed'); btn.textContent='↺ Reset encounter'; armed=null; };
+  btn.addEventListener('click', ()=>{
+    if(armed){ clearTimeout(armed); disarm(); resetEncounter(); return; }
+    btn.classList.add('armed'); btn.textContent='Confirm reset';
+    armed=setTimeout(disarm, 4000);
+  });
+})();
 function resetAll(){
   Object.keys(CHARACTERS).forEach(name=>{
     const b=blocks[name], c=CHARACTERS[name];
