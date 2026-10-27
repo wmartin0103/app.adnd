@@ -504,6 +504,20 @@
   #lightBody .char.inlight .namecol{display:flex; flex-direction:row; flex-wrap:wrap; align-items:center; gap:.25rem 1.5rem; padding:.35rem 0}
   #lightBody .char.inlight .namecol > *{margin:0}
   #lightBody > tr.baddy-row .nameline .reroll{margin-left:0}
+  /* AC and THAC0 on the row, a small label before each; the details keep only the attacks */
+  #lightBody > tr.baddy-row .nameline .acw, #lightBody > tr.baddy-row .nameline .statw{display:inline-flex; align-items:center; gap:.3rem;
+    font-family:var(--serif); font-size:.6rem; letter-spacing:.12em; text-transform:uppercase; color:var(--muted)}
+  #lightBody > tr.baddy-row .nameline .acw select, #lightBody > tr.baddy-row .nameline .statw select{margin:0}
+  #lightBody > tr.baddy-row .nameline .acw b{margin-left:0}
+  #lightBody > tr.baddy-row .nameline .acw + .statw{margin-right:.25rem}
+  #lightBody .char.inlight .chead{display:none !important}
+  #lightBody > tr.baddycard-row .bd-attacks{padding-top:0}
+  /* Icon buttons */
+  .iconbtn{display:inline-flex; align-items:center; justify-content:center; box-sizing:border-box; width:var(--ctl-h-sm); height:var(--ctl-h-sm); padding:0;
+    background:transparent; border:1px solid var(--edge); border-radius:4px; color:var(--muted); cursor:pointer}
+  .iconbtn svg{width:15px; height:15px}
+  .iconbtn:hover, .iconbtn:focus-visible{border-color:var(--brass); color:var(--brass)}
+  .iconbtn.rm:hover, .iconbtn.rm:focus-visible{border-color:var(--rust); color:var(--rust)}
   #lightBody > tr.baddycard-row > td{padding:0 14px .6rem 2.25rem !important; border:none !important; border-bottom:1px solid var(--edge) !important}
   #lightBody > tr.baddycard-row:last-child > td{border-bottom:0 !important}
   #lightBody > tr.baddycard-row .char, #lightBody > tr.baddycard-row .char.first{border:0; border-radius:0; background:transparent; box-shadow:none}
@@ -4128,8 +4142,12 @@ function buildChar(name){
     const nameLine=document.createElement('div'); nameLine.className='nameline';
     const inRound=document.createElement('input'); inRound.type='checkbox'; inRound.className='hold'; inRound.checked=true; inRound.title='in this round — uncheck for an Enemy that arrives later';
     const nameInput=document.createElement('input'); nameInput.type='text'; nameInput.className='bname'; nameInput.value=name; nameInput.title='rename this creature';
-    const dupBtn=document.createElement('button'); dupBtn.className='reroll small'; dupBtn.textContent='Duplicate'; dupBtn.title='another Enemy with the same stats';
-    const rmBtn=document.createElement('button'); rmBtn.className='reroll small rm'; rmBtn.textContent='Remove'; rmBtn.title='remove this Enemy';
+    // Icons, to leave room on the row for AC and THAC0
+    const iconBtn=(cls, tip, svg)=>{ const x=document.createElement('button'); x.type='button'; x.className='iconbtn '+cls; x.title=tip; x.setAttribute('aria-label', tip); x.innerHTML=svg; return x; };
+    const dupBtn=iconBtn('bdup', 'Duplicate: another Enemy with the same stats',
+      '<svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><rect x="5.5" y="5.5" width="8" height="8" rx="1.2"/><path d="M3.5 10.5h-.8a1.2 1.2 0 0 1-1.2-1.2V2.7a1.2 1.2 0 0 1 1.2-1.2h6.6a1.2 1.2 0 0 1 1.2 1.2v.8"/></svg>');
+    const rmBtn=iconBtn('rm', 'Remove this Enemy',
+      '<svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 4h11M6.5 4V2.5h3V4M4 4l.7 9.2a1 1 0 0 0 1 .8h4.6a1 1 0 0 0 1-.8L12 4M6.8 6.5v5M9.2 6.5v5"/></svg>');
     const bdBadge=document.createElement('span'); bdBadge.className='bdid'; bdBadge.textContent=c.bdId||''; bdBadge.title='fixed ID: the only name players ever see';
     nameInput.title='your name for this creature: players never see it';
     nameLine.append(inRound, bdBadge, nameInput, dupBtn, rmBtn); namecol.appendChild(nameLine);
@@ -5805,10 +5823,12 @@ function renderLight(){
         b.lightCardDetail=document.createElement('tr'); b.lightCardDetail.className='baddycard-row';
         b.lightCardTd=document.createElement('td'); b.lightCardTd.colSpan=4; b.lightCardDetail.appendChild(b.lightCardTd);
         // The name line, Speed, Init roll and Act On move into the columns; remember their places in the card
-        const pieces=[b.el.querySelector('.nameline'), b.speed, b.initRoll, b.actson];
-        b.lightMoves=pieces.map((n, i)=>({n, cell:cells[i], parent:n.parentNode, next:n.nextSibling, hideParent: i>0}));
+        const nl=b.el.querySelector('.nameline'), nlIcons=nl.querySelector('.iconbtn');
+        const pieces=[[nl, cells[0]], [b.speed, cells[1], true], [b.initRoll, cells[2], true], [b.actson, cells[3], true],
+                      [b.ac.parentNode, nl, false, nlIcons], [b.thac0.parentNode, nl, false, nlIcons]];
+        b.lightMoves=pieces.map(([n, cell, hideParent, before])=>({n, cell, before, parent:n.parentNode, next:n.nextSibling, hideParent:!!hideParent}));
       }
-      b.lightMoves.forEach(m=>{ if(m.n.parentNode!==m.cell){ m.cell.appendChild(m.n); if(m.hideParent) m.parent.hidden=true; } });
+      b.lightMoves.forEach(m=>{ if(m.n.parentNode!==m.cell){ m.cell.insertBefore(m.n, m.before||null); if(m.hideParent) m.parent.hidden=true; } });
       if(b.el.parentNode!==b.lightCardTd) b.lightCardTd.appendChild(b.el);
       b.el.classList.add('inlight');
       const v=parseFloat(b.actson.textContent);                // the card's own Act On (waiting Enemies sink to the bottom)
