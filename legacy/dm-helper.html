@@ -582,7 +582,7 @@
     <div class="toolbar between">
       <span class="lockwrap"><button class="reroll" id="rollInit" title="roll initiative for the Enemies in this round; players roll their own">⚄ Roll initiative for Enemies</button><label class="lock" title="locked: players can no longer roll their own initiative"><input type="checkbox" id="lockInit"> Lock</label></span>
       <span class="lockwrap roundctl" title="players' sheets play this round and show here"><b id="roundNo">Round 1</b> <button class="reroll" id="nextRoundSync" title="start the next round: every player's sheet clears its round (initiative rolls stay for the encounter)">Next round ▸</button> <button class="reroll" id="resetInitSync" title="a new encounter: every player rolls initiative again">Reset initiative</button> <label class="gclabel">Extra attacks <select id="extraTiming" class="sursel"><option value="end">End of the order</option><option value="turn">At their turn</option></select></label></span>
-      <span class="lockwrap"><button class="reroll" id="newRoundLight" title="start the encounter over: round 1, everyone rolls initiative again, every attack roll cleared (Enemies stay)">↺ Reset encounter</button></span>
+      <span class="lockwrap"><button class="reroll" id="newRoundLight" title="start the encounter over: round 1, everyone rolls initiative again, the party's speed, actions and conditions cleared, the Enemies removed">↺ Reset encounter</button></span>
     </div>
     <div class="tracker" id="tracker"></div>
     <div class="char" id="lightTracker" style="display:none">
@@ -6365,18 +6365,17 @@ function clearPlayerActions(){                                // the attack roll
   update();
 }
 // Reset encounter: round 1, a new encounter on every sheet (initiative and
-// attacks cleared), initiative back to the start here, every roll cleared.
-// The Enemies stay, unrolled, for the DM to keep or remove.
+// attacks cleared), and here everything entered for the fight: the party's
+// initiative, speed, actions and conditions, and the Enemies (back to one
+// new Enemy). Skills, saves and the like stay.
 function resetEncounter(){
-  Object.keys(blocks).forEach(n=>{ const b=blocks[n];
-    if(b.placeholder){ b.initRoll.value='50'; return; }                     // parked at 50 until rolled
-    b.initRoll.value='10'; b.initRolled=false; if(b.surBox) b.surBox.checked=false;
-  });
+  resetPartyCombat();
+  resetBaddies();
   const lock=document.getElementById('lockInit'); lock.checked=false; applyLock();
   document.getElementById('surpriseBar').style.display='none';
-  if(ROUND){ syncState = ROUND.sendDM({round:1, reset:true}); showRound(); }
-  reorderPending=true;
-  clearPlayerActions();                                        // the attack rolls (players' rows and Enemies'); calls update()
+  if(ROUND){ lastFoes=''; syncState = ROUND.sendDM({round:1, reset:true}); showRound(); }
+  displayOrder=[]; reorderPending=false;
+  update();
 }
 (()=>{   // two clicks, as with Reset: it clears every player's round
   const btn=document.getElementById('newRoundLight'); let armed=null;
@@ -6387,14 +6386,16 @@ function resetEncounter(){
     armed=setTimeout(disarm, 4000);
   });
 })();
-function resetAll(){
+// What the DM entered for each player in the fight: initiative, speed,
+// actions and their rolls, movement, conditions, AC toggles
+function resetPartyCombat(){
   Object.keys(CHARACTERS).forEach(name=>{
-    const b=blocks[name], c=CHARACTERS[name];
-    if(b.placeholder) return;   // Enemies are rebuilt below
+    const b=blocks[name];
+    if(!b || b.placeholder) return;
+    if(b.lightRow) b.lightRow.spSel.value=String(LIGHT_SPEED[name] ?? 5);
     b.initRoll.value='10'; b.initRolled=false; b.tsize.value='sm'; b.lightQuick=null; if(b.lightRow && b.lightRow.quickBtn) b.lightRow.quickBtn.hidden=true; b.lightTurn=null; if(b.virtueSel) b.virtueSel.value=''; b.resetTargets();
     b.moving.checked=false; b.moveAfter.checked=false; b.moveMult.value='1'; b.flanking.checked=false; b.ground.value='even';
     b.charging.checked=false; b.set4.checked=false; b.other.value='0'; if(b.armorBox) b.armorBox.checked=false; if(b.parryBox) b.parryBox.checked=false; if(b.parrySel) b.parrySel.value=''; if(b.acModSel) b.acModSel.value='0'; if(b.shlBox) b.shlBox.checked=false; if(b.surBox) b.surBox.checked=false;
-    Object.keys(b.statsSel).forEach(k=> b.statsSel[k].value=b.statsBase[k]);
     b.rows.forEach(r=>{
       if(r.box) r.box.checked=false;
       r.roll=null; r.pct=null; r.sub=null; r.dmg=null; r.animal=false;
@@ -6405,6 +6406,10 @@ function resetAll(){
     if(b.quickRoll!==undefined) b.quickRoll=null;
     if(b.runRoll!==undefined)   b.runRoll=d20();
   });
+}
+function resetAll(){
+  resetPartyCombat();
+  Object.keys(CHARACTERS).forEach(name=>{ const b=blocks[name]; if(b && !b.placeholder) Object.keys(b.statsSel).forEach(k=> b.statsSel[k].value=b.statsBase[k]); });
   const lock=document.getElementById('lockInit'); lock.checked=false; applyLock();
   document.getElementById('gcSkill').value=''; document.getElementById('svCat').value=''; document.getElementById('rxRep').value='0';
   try{ localStorage.removeItem(STORE_KEY); localStorage.removeItem(ORDER_KEY); }catch(e){}
