@@ -437,7 +437,7 @@
 
   /* ── One control system, as on the character sheet ─────────────────
      Every button, dropdown and number field is one height (compact inside
-     tables and Baddy rows); buttons are one style, the main action on each
+     tables and Enemy rows); buttons are one style, the main action on each
      tab filled; toolbar labels sit above their controls. */
   :root{ --ctl-h: 2.1rem; --ctl-h-sm: 1.75rem; }
   .reroll, .reset{
@@ -461,7 +461,7 @@
     box-sizing:border-box; height:var(--ctl-h); padding:0 .5rem; border:1px solid var(--edge); border-radius:4px;
     background:var(--ink); color:var(--parchment); font-size:.95rem; line-height:1;
   }
-  /* Compact inside tables and Baddy rows */
+  /* Compact inside tables and Enemy rows */
   table select, table input[type=number], .char select, .char input[type=number],
   select.bac, select.bspeed, select.bthac0, select.bdice, select.bbonus, select.targetAC, select.stat{
     height:var(--ctl-h-sm); font-size:.9rem; padding:0 .35rem;
@@ -513,15 +513,15 @@
     </div>
     <div class="char" id="surpriseBar" style="display:none"><div id="surpriseWrap"></div></div>
     <div class="toolbar between">
-      <span class="lockwrap"><button class="reroll" id="rollInit" title="roll initiative for the Baddies in this round; players roll their own">⚄ Roll initiative for Baddies</button><label class="lock" title="locked: players can no longer roll their own initiative"><input type="checkbox" id="lockInit"> Lock</label></span>
+      <span class="lockwrap"><button class="reroll" id="rollInit" title="roll initiative for the Enemies in this round; players roll their own">⚄ Roll initiative for Enemies</button><label class="lock" title="locked: players can no longer roll their own initiative"><input type="checkbox" id="lockInit"> Lock</label></span>
       <span class="lockwrap roundctl" title="players' sheets play this round and show here"><b id="roundNo">Round 1</b> <button class="reroll" id="nextRoundSync" title="start the next round: every player's sheet clears its round (initiative rolls stay for the encounter)">Next round ▸</button> <button class="reroll" id="resetInitSync" title="a new encounter: every player rolls initiative again">Reset initiative</button> <label class="gclabel">Extra attacks <select id="extraTiming" class="sursel"><option value="end">End of the order</option><option value="turn">At their turn</option></select></label></span>
-      <span class="lockwrap"><button class="reroll" id="newRoundLight" title="clear the players' attack rolls and roll the Baddies' attacks again; picked actions and conditions stay">↻ New round</button></span>
+      <span class="lockwrap"><button class="reroll" id="newRoundLight" title="clear the players' attack rolls and roll the Enemies' attacks again; picked actions and conditions stay">↻ New round</button></span>
     </div>
     <div class="tracker" id="tracker"></div>
     <div class="char" id="lightTracker" style="display:none">
       <table class="acts light"><thead><tr><th class="l">Name</th><th>Speed</th><th>Init roll</th><th>Act On</th></tr></thead><tbody id="lightBody"></tbody></table>
     </div>
-    <div class="addrow"><button class="reroll" id="addBaddy">+ Add Baddy</button></div>
+    <div class="addrow"><button class="reroll" id="addBaddy">+ Add Enemy</button></div>
     <footer>Order is by chosen action (roll + speed + init bonus/mods); lower acts first. THAC0: lower is better. Pick an action to roll its d20; green hits the chosen Target (roll ≥ THAC0 − AC). New Rolls re-rolls the dice for every checked action, keeping picks and conditions.</footer>
     <div class="char" id="lightCritBox" style="display:none">
       <div class="lightcrit">
@@ -3297,7 +3297,7 @@ const CHARACTERS = {
     weapons:{ "Knife":{thac0:21, speed:2} }
   },
 
-  /* Baddies are created on demand at runtime (see addBaddy) — none are listed here. */
+  /* Enemies are created on demand at runtime (see addBaddy) — none are listed here. */
 };
 
 const UNIVERSAL = [
@@ -3436,7 +3436,7 @@ const FUMBLE_TABLE=[[1,19,"Slip; roll DEX or less or fall and stunned for 1-4 rd
  [81,83,"Hit friend; half damage"],[84,85,"Hit friend; normal damage"],[86,86,"Hit friend; double damage"],[87,88,"Critical hit, self"],[89,90,"Critical hit, friend"],
  [91,92,"Twist ankle; half move for 1 turn; DEX or less on d20 or fall"],[93,95,"Helm slips; -4 to hit until fixed; DEX or less on d20 to fix"],[96,97,"Helm slips; no attacks until fixed; DEX or less on d20 to fix"],
  [98,98,"Distracted; opponent +3 to hit on next attack"],[99,99,"Roll twice, ignoring rolls of 99 or 00"],[100,100,"Roll three times, ignoring rolls of 99 or 00"]];
-/* Softened results when the TARGET IS A PC (Baddie crits; a player's fumble crit on self/friend). 00 stays lethal. */
+/* Softened results when the TARGET IS A PC (Enemy crits; a player's fumble crit on self/friend). 00 stays lethal. */
 const CRIT_PC_OVERRIDES={
 S:[[95,95,"Abdominal injuries; death in 2-5 rounds unless healed"],[96,96,"Chest injuries; death in 2-5 rounds unless healed"],
    [97,97,"Throat cut; death in 2-5 rounds unless healed (no effect if helmed)"],[98,98,"Throat cut; death in 2-5 rounds unless healed"],
@@ -3776,7 +3776,7 @@ function fumbleLine(pct, sub, dexVal, critFn, wname){
   if(/^Critical hit, (self|friend)/.test(txt)) txt+=` → d% ${pctLbl(sub.crit)}: ${critFn(sub.crit)}`;
   return txt;
 }
-function fumbleBlock(o, dexVal, critFn, wname){   // o: {pct, sub}; wname: weapon (null = unknown, e.g. a Baddie)
+function fumbleBlock(o, dexVal, critFn, wname){   // o: {pct, sub}; wname: weapon (null = unknown, e.g. an Enemy)
   let html=`d% ${pctLbl(o.pct)}: ${fumbleLine(o.pct, o.sub, dexVal, critFn, wname)}`;
   const n = o.pct===99 ? 2 : o.pct===100 ? 3 : 0;
   for(let i=0;i<n;i++){ const e=o.sub.extra[i]; html+=`<br>&nbsp;&nbsp;↳ d% ${pctLbl(e)}: ${fumbleLine(e, o.sub, dexVal, critFn, wname)}`; }
@@ -3830,7 +3830,7 @@ function actionsFor(name){
   return list;
 }
 
-/* The condition strip, shared by players and Baddies. */
+/* The condition strip, shared by players and Enemies. */
 function buildModsStrip(st){
   const mods=document.createElement('div'); mods.className='mods';
   const moving=document.createElement('input'); moving.type='checkbox'; if(st.moving) moving.checked=true;
@@ -3894,17 +3894,17 @@ function buildChar(name){
     // ---- left column: name + hold, AC line, THAC0/Speed line (mirrors the players' name/AC/stats column) ----
     const namecol=document.createElement('div'); namecol.className='namecol';
     const nameLine=document.createElement('div'); nameLine.className='nameline';
-    const inRound=document.createElement('input'); inRound.type='checkbox'; inRound.className='hold'; inRound.checked=true; inRound.title='in this round — uncheck for a Baddy that arrives later';
+    const inRound=document.createElement('input'); inRound.type='checkbox'; inRound.className='hold'; inRound.checked=true; inRound.title='in this round — uncheck for an Enemy that arrives later';
     const nameInput=document.createElement('input'); nameInput.type='text'; nameInput.className='bname'; nameInput.value=name; nameInput.title='rename this creature';
-    const dupBtn=document.createElement('button'); dupBtn.className='reroll small'; dupBtn.textContent='Duplicate'; dupBtn.title='another Baddy with the same stats';
-    const rmBtn=document.createElement('button'); rmBtn.className='reroll small rm'; rmBtn.textContent='Remove'; rmBtn.title='remove this Baddy';
+    const dupBtn=document.createElement('button'); dupBtn.className='reroll small'; dupBtn.textContent='Duplicate'; dupBtn.title='another Enemy with the same stats';
+    const rmBtn=document.createElement('button'); rmBtn.className='reroll small rm'; rmBtn.textContent='Remove'; rmBtn.title='remove this Enemy';
     const bdBadge=document.createElement('span'); bdBadge.className='bdid'; bdBadge.textContent=c.bdId||''; bdBadge.title='fixed ID: the only name players ever see';
     nameInput.title='your name for this creature: players never see it';
     nameLine.append(inRound, bdBadge, nameInput, dupBtn, rmBtn); namecol.appendChild(nameLine);
     inRound.addEventListener('input', update);
     dupBtn.addEventListener('click', ()=>{ duplicateBaddy(name); update(); });
     rmBtn.addEventListener('click', ()=>{ removeBaddy(name); update(); });
-    initRoll.insertBefore(opt(50,'50'), initRoll.firstChild); initRoll.value='50';     // Baddies start parked at 50
+    initRoll.insertBefore(opt(50,'50'), initRoll.firstChild); initRoll.value='50';     // Enemies start parked at 50
 
     const bac=document.createElement('select'); bac.className='bac';
     for(let n=12;n>=-10;n--) bac.appendChild(opt(n, n<0?('−'+Math.abs(n)):(''+n)));
@@ -4025,17 +4025,17 @@ function buildChar(name){
   }
 
   const rowTargets=[]; let curTarget={bd:null, value:''};
-  const selectTarget=(rt, t)=>{                       // pick by identity: a Baddy entry, or the plain number
+  const selectTarget=(rt, t)=>{                       // pick by identity: an Enemy entry, or the plain number
     if(t.bd && rt.bdOpts[t.bd] && rt.bdOpts[t.bd].parentNode){ rt.bdOpts[t.bd].selected=true; return; }
-    rt.blank.selected=true;                          // no Baddy chosen
+    rt.blank.selected=true;                          // no Enemy chosen
   };
   const readTarget=(sel)=>{ const so=sel.selectedOptions[0]; return {bd: so && so.dataset.bd || null, value: sel.value}; };
   const applyTarget=(t)=>{ curTarget=t; rowTargets.forEach(rt=>{ if(!rt.userSet) selectTarget(rt, t); }); };
   const mkRowTarget=()=>{
     const sel=document.createElement('select'); sel.className='targetAC rowtgt'; const rbd={};
     const blank=opt('','—'); sel.appendChild(blank);
-    const rog=document.createElement('optgroup'); rog.label='Baddies'; sel.appendChild(rog);
-    baddies.forEach(n=>{ const o=opt(5, (CHARACTERS[n]&&CHARACTERS[n].bdId)||n); o.dataset.bd=n; rbd[n]=o; });     // only the Baddies the DM has put in the round get attached (see update)
+    const rog=document.createElement('optgroup'); rog.label='Enemies'; sel.appendChild(rog);
+    baddies.forEach(n=>{ const o=opt(5, (CHARACTERS[n]&&CHARACTERS[n].bdId)||n); o.dataset.bd=n; rbd[n]=o; });     // only the Enemies the DM has put in the round get attached (see update)
     const wrap=document.createElement('span'); wrap.className='rtwrap';
     const tlab=document.createElement('span'); tlab.className='tlab'; tlab.textContent='Target'; wrap.append(tlab, sel);
     const rt={sel, wrap, blank, rog, bdOpts:rbd, userSet:false}; rowTargets.push(rt);
@@ -4050,7 +4050,7 @@ function buildChar(name){
   };
   const tsize=document.createElement('select'); tsize.className='tsize';
   tsize.append(opt('sm','S-M'), opt('l','L')); tsize.value = st.tsize==='l' ? 'l' : 'sm';
-  const sizeLbl=document.createElement('label'); sizeLbl.className='psize'; sizeLbl.textContent='Size'; sizeLbl.appendChild(tsize); sizeLbl.title='target size for damage when attacking a plain AC; a Baddy target uses its own size';
+  const sizeLbl=document.createElement('label'); sizeLbl.className='psize'; sizeLbl.textContent='Size'; sizeLbl.appendChild(tsize); sizeLbl.title='target size for damage when attacking a plain AC; an Enemy target uses its own size';
   fields.append(sizeLbl);
   const initHead=document.createElement('div'); initHead.className='mhead inithead'; initHead.textContent='Init roll';
   fields.prepend(initHead);
@@ -4079,9 +4079,9 @@ function buildChar(name){
       const pl=document.createElement('label'); pl.className='acw chk'; pl.append(parryBox,` Parry +${c.parry}`); pl.title='parrying this round: AC improves (not when surprised)';
       acRow.appendChild(pl);
       parryBox.addEventListener('input', update);
-      if(c.parryTargeted){                                       // parry one chosen Baddy: only that Baddy's attacks meet the better AC
+      if(c.parryTargeted){                                       // parry one chosen Enemy: only that Enemy's attacks meet the better AC
         parrySel=document.createElement('select'); parrySel.className='parrytgt'; parrySel.appendChild(opt('','vs —'));
-        const pw=document.createElement('span'); pw.className='acw chk parrywrap'; pw.appendChild(parrySel); pw.title='the Baddy this parry is against';
+        const pw=document.createElement('span'); pw.className='acw chk parrywrap'; pw.appendChild(parrySel); pw.title='the Enemy this parry is against';
         acRow.appendChild(pw); parrySel.addEventListener('input', update);
       }
     }
@@ -4314,8 +4314,8 @@ function effectiveAC(name){
   const state = (b.surBox&&b.surBox.checked) ? 'surprised' : (b.shlBox&&b.shlBox.checked) ? 'shieldless' : 'ac';
   let bonus=(b.armorBox&&b.armorBox.checked)?(c.armorSpell||0):0;
   const parryAll=(b.parryBox&&b.parryBox.checked && state!=='surprised')?(c.parry||0):0;
-  const parryVs = (c.parryTargeted && b.parrySel) ? (b.parrySel.value||null) : null;    // targeted: only this Baddy sees the parry
-  const parry = c.parryTargeted ? 0 : parryAll;                   // targeted parries are added per attacking Baddy, below
+  const parryVs = (c.parryTargeted && b.parrySel) ? (b.parrySel.value||null) : null;    // targeted: only this Enemy sees the parry
+  const parry = c.parryTargeted ? 0 : parryAll;                   // targeted parries are added per attacking Enemy, below
   const charge=situation(b).ac;                                   // charging: AC one worse
   const virtueAC=(b.virtueSel && b.virtueSel.value==='ac') ? 2 : 0;
   const acMod = b.acModSel ? (parseInt(b.acModSel.value,10)||0) : 0;
@@ -4391,13 +4391,13 @@ function update(){
     if(b.syncPanel){ b.syncPanel.remove(); b.syncPanel=null; }
 
     const sit=situation(b);
-    if(b.parrySel){                                                // targeted parry: list the Baddies in the round
+    if(b.parrySel){                                                // targeted parry: list the Enemies in the round
       const keep=b.parrySel.value; [...b.parrySel.querySelectorAll('option')].slice(1).forEach(o=>o.remove());
       baddies.forEach(n=>{ if(!blocks[n]||!blocks[n].inRound.checked) return; const o=opt(n, b.el.classList.contains('inplayer') ? blocks[n].bdId : `${blocks[n].nameInput.value||n} · ${blocks[n].bdId}`); b.parrySel.appendChild(o); });
       b.parrySel.value = [...b.parrySel.options].some(o=>o.value===keep) ? keep : '';
     }
     b.rowTargets.forEach(rt=>{
-      syncBaddyOptions(rt);                                    // real add/remove, so phones never list a Baddy who is not in the round
+      syncBaddyOptions(rt);                                    // real add/remove, so phones never list an Enemy who is not in the round
       Object.keys(rt.bdOpts).forEach(n=>{ const o=rt.bdOpts[n]; if(bdAC[n]===undefined) return; o.value=bdAC[n]; o.textContent = b.el.classList.contains('inplayer') ? blocks[n].bdId : `${blocks[n].nameInput.value||n} · ${blocks[n].bdId}${blocks[n].initRoll.value==='50'?' (held)':''}`; });
       rt.sel.title='';
     });
@@ -4593,7 +4593,7 @@ function update(){
   });
 
   // The list only re-sorts on demand (⚄ Roll initiative or ↕ Order); otherwise it keeps its last order,
-  // with anything new falling in set-up order (players as listed, then Baddies in creation order).
+  // with anything new falling in set-up order (players as listed, then Enemies in creation order).
   const setupRank = n => { const i=SETUP_ORDER.indexOf(n); return i>=0 ? i : (SETUP_ORDER.length + baddies.indexOf(n)); };
   const lightMode = typeof isFull==='function' && !isFull();
   if(lightMode && reorderPending){ lightSortPending=true; reorderPending=false; }        // the light table sorts by its own Act On
@@ -4618,8 +4618,8 @@ function update(){
 /* ---------------- Players' sheets: this round (round sync) ----------------
    Each player's sheet sends its round: when the character acts, and each
    attack line's target, conditions, THAC0 and roll. Players never see a
-   Baddy's AC; this page judges each roll against it. The page sends the
-   round number and the Baddies in the round, by their fixed ID and size. */
+   Enemy's AC; this page judges each roll against it. The page sends the
+   round number and the Enemies in the round, by their fixed ID and size. */
 // Signed in (with a campaign): the round goes through the cloud, across
 // devices. Signed out: within this browser, as before.
 let ROUND = null;
@@ -4691,7 +4691,7 @@ function renderSynced(b, name, v, bdAC){
     + (timing==='end' && (v.lines||[]).some(l=>l.extra) ? `<div class="sphead">Extra attacks: at the end of the order</div>` : '');
 }
 let extraBlock=null;
-// The Baddies' current ACs (as the order works them out)
+// The Enemies' current ACs (as the order works them out)
 function baddyACs(){ const o={}; Object.keys(blocks).forEach(n=>{ const b=blocks[n]; if(!b.placeholder) return; o[n]=parseInt(b.ac.value,10)+(b.shieldless.checked?1:0)+situation(b).ac; }); return o; }
 let lightExtraTr=null;
 function lightExtrasRow(){
@@ -4763,11 +4763,11 @@ function rollInitFor(name){                                  // one character's 
   if(b.runRoll!==undefined)   b.runRoll=d20();
   update();
 }
-function rollInitiative(){                                    // the DM's button: Baddies only (players roll their own)
+function rollInitiative(){                                    // the DM's button: Enemies only (players roll their own)
   reorderPending=true;
   Object.keys(CHARACTERS).forEach(name=>{
     const b=blocks[name];
-    if(!b || !b.placeholder || !b.inRound.checked) return;     // not a Baddy, or not in this round yet
+    if(!b || !b.placeholder || !b.inRound.checked) return;     // not an Enemy, or not in this round yet
     b.initRoll.value = String(Math.floor(Math.random()*10)+1);
   });
   update();
@@ -5149,7 +5149,7 @@ function updatePlayerRx(){
   el.innerHTML=`<span class="lbl">NPC Reaction:</span> ${body}`;
 }
 
-/* ---------------- Baddies: created on demand ---------------- */
+/* ---------------- Enemies: created on demand ---------------- */
 const baddies=[]; let baddyCount=0;
 function nextFreeName(base){   // "Gnoll" → "Gnoll 3" if Gnoll 1 and Gnoll 2 exist (display names)
   const used=new Set(baddies.map(n=> (blocks[n] ? blocks[n].nameInput.value : n).trim().toLowerCase()));
@@ -5157,8 +5157,8 @@ function nextFreeName(base){   // "Gnoll" → "Gnoll 3" if Gnoll 1 and Gnoll 2 e
   return `${base} ${k}`;
 }
 function addBaddy(){
-  baddyCount++; const name='Baddy '+baddyCount;          // internal key; the display name may differ
-  const display=nextFreeName('Baddy');
+  baddyCount++; const name='Enemy '+baddyCount;          // internal key; the display name may differ
+  const display=nextFreeName('Enemy');
   CHARACTERS[name]={placeholder:true, defaultRoll:50, bdId:'BD'+baddyCount};      // BD# is fixed; the editable name is the DM's own
   baddies.push(name);
   buildChar(name);
@@ -5179,7 +5179,7 @@ function removeBaddy(name){
 }
 function duplicateBaddy(name){
   const src=blocks[name]; if(!src) return;
-  const base=(src.nameInput.value||name).replace(/\s*\d+\s*$/,'').trim() || 'Baddy';
+  const base=(src.nameInput.value||name).replace(/\s*\d+\s*$/,'').trim() || 'Enemy';
   const newName=nextFreeName(base);                      // decide the name before the new row exists
   const nn=addBaddy(); const b=blocks[nn];
   b.nameInput.value = newName;
@@ -5192,7 +5192,7 @@ function duplicateBaddy(name){
   if(tgt.pc && b.attacks[0].pcOpts[tgt.pc]) b.attacks[0].pcOpts[tgt.pc].selected=true; else b.attacks[0].tgtSel.value=tgt.value;
   const d0=src.attacks[0].diceSel.value, b0=src.attacks[0].bonusSel.value; b.attacks[0].diceSel.value=d0; b.attacks[0].bonusSel.value=b0; b.inRound.checked=src.inRound.checked;
   for(let i=1;i<src.attacks.length;i++) b.addAttackRow(tgt, d0, b0);
-  b.attacks.forEach(r=>{ if(r.tgtSel.value!==''){ r.autoDone=true; r.box.checked=true; rollAttack(r); b.rollBdmg(r); } });   // the new Baddy's attacks roll straight away
+  b.attacks.forEach(r=>{ if(r.tgtSel.value!==''){ r.autoDone=true; r.box.checked=true; rollAttack(r); b.rollBdmg(r); } });   // the new Enemy's attacks roll straight away
   return nn;
 }
 function resetBaddies(){
@@ -5384,7 +5384,7 @@ function outTip(o){
   if(!o) return '';
   return `To hit = THAC0 ${o.thac0} − target AC ${o.ac}${o.mods?` − ${o.mods} in bonuses`:''} = ${o.need}. Roll ${o.need} or higher on the d20 to hit; a natural 20 always hits and a natural 1 always misses. The d20 came up ${o.roll}.${o.dmg!=null?` Damage rolled: ${o.dmg}.`:''}`;
 }
-function syncBaddyOptions(rt){                                 // the picker lists exactly the Baddies the DM has put in the round
+function syncBaddyOptions(rt){                                 // the picker lists exactly the Enemies the DM has put in the round
   const want=baddies.filter(n=>blocks[n] && blocks[n].inRound.checked && rt.bdOpts[n]);
   const have=[...rt.rog.children].map(o=>o.dataset.bd);
   if(want.length===have.length && want.every((n,i)=>n===have[i])) return;
@@ -5421,7 +5421,7 @@ function describeChoices(name){
     if(b.moveAfter.checked) acts.push('Move after');
     if(b.surBox && b.surBox.checked) conds.push('Surprised');
     if(b.shlBox && b.shlBox.checked) conds.push('Shieldless');
-    if(b.parryBox && b.parryBox.checked) conds.push('Parry'+(b.parrySel ? (b.parrySel.value ? ' vs '+(blocks[b.parrySel.value]?blocks[b.parrySel.value].bdId:b.parrySel.value) : ' (no Baddy chosen)') : ''));
+    if(b.parryBox && b.parryBox.checked) conds.push('Parry'+(b.parrySel ? (b.parrySel.value ? ' vs '+(blocks[b.parrySel.value]?blocks[b.parrySel.value].bdId:b.parrySel.value) : ' (no Enemy chosen)') : ''));
     if(b.acModSel && b.acModSel.value!=='0') conds.push('AC mod '+fmt(parseInt(b.acModSel.value,10)));
     if(b.armorBox && b.armorBox.checked) conds.push('Armor Spell');
     if(b.virtueSel && b.virtueSel.value) conds.push('Virtue: '+({ac:'AC',hit:'To-Hit',dmg:'Damage',saves:'Saves'}[b.virtueSel.value]));
@@ -5480,17 +5480,17 @@ function lightRowFor(name){
     quickBtn=document.createElement('span'); quickBtn.className='reroll small quick ok'; quickBtn.textContent='⚄ Quickness'; quickBtn.hidden=true;   // indicator only: shown when the player's Quickness roll succeeded
   }
   let nameLabel;
-  if(b.placeholder){                                               // Baddies: editable, shared with the full view
+  if(b.placeholder){                                               // Enemies: editable, shared with the full view
     nameLabel=document.createElement('input'); nameLabel.type='text'; nameLabel.className='bname'; nameLabel.value=b.nameInput.value; nameLabel.title='rename this creature';
     nameLabel.addEventListener('input', ()=>{ b.nameInput.value=nameLabel.value; update(); });
   }else nameLabel=document.createElement('span');
   nameTd.appendChild(nameLabel);
   if(quickBtn) nameTd.appendChild(quickBtn);                      // after the name, so names line up
   if(b.placeholder){
-    const dupBtn=document.createElement('button'); dupBtn.className='reroll small quick'; dupBtn.textContent='Duplicate'; dupBtn.title='another Baddy with the same stats';
+    const dupBtn=document.createElement('button'); dupBtn.className='reroll small quick'; dupBtn.textContent='Duplicate'; dupBtn.title='another Enemy with the same stats';
     dupBtn.addEventListener('click', ()=>{ duplicateBaddy(name); update(); });
     nameTd.appendChild(dupBtn);
-    const rmBtn=document.createElement('button'); rmBtn.className='reroll small quick rm'; rmBtn.textContent='Remove'; rmBtn.title='remove this Baddy from the line-up';
+    const rmBtn=document.createElement('button'); rmBtn.className='reroll small quick rm'; rmBtn.textContent='Remove'; rmBtn.title='remove this Enemy from the line-up';
     rmBtn.addEventListener('click', ()=>{ removeBaddy(name); update(); });
     nameTd.appendChild(rmBtn);
   }
@@ -5512,7 +5512,7 @@ function renderLight(){
   document.getElementById('lightTracker').style.display = full ? 'none' : '';
   document.getElementById('newRoundLight').style.display = full ? 'none' : '';  // the simple view's own New round
   document.getElementById('lightCritBox').style.display = full ? 'none' : '';
-  if(full){                                                  // back to the full view: the Baddy cards go home
+  if(full){                                                  // back to the full view: the Enemy cards go home
     Object.keys(blocks).forEach(n=>{ const b=blocks[n]; if(b.placeholder && b.lightCardTd && b.el.parentNode===b.lightCardTd){ b.el.classList.remove('inlight'); tracker.appendChild(b.el); b.lightCardTr.remove(); } });
     return;
   }
@@ -5520,11 +5520,11 @@ function renderLight(){
   const entries=[];
   Object.keys(blocks).forEach(name=>{
     const b=blocks[name]; if(!isActive(name)) return;
-    if(b.placeholder){                                       // a Baddy is its full card, placed in order with everyone else
+    if(b.placeholder){                                       // an Enemy is its full card, placed in order with everyone else
       if(!b.lightCardTr){ b.lightCardTr=document.createElement('tr'); b.lightCardTr.className='baddycard-row'; b.lightCardTd=document.createElement('td'); b.lightCardTd.colSpan=4; b.lightCardTr.appendChild(b.lightCardTd); }
       if(b.el.parentNode!==b.lightCardTd) b.lightCardTd.appendChild(b.el);
       b.el.classList.add('inlight');
-      const v=parseFloat(b.actson.textContent);                // the card's own Act On (waiting Baddies sink to the bottom)
+      const v=parseFloat(b.actson.textContent);                // the card's own Act On (waiting Enemies sink to the bottom)
       entries.push({name, act: isNaN(v) ? 1e9 : v, trs:[b.lightCardTr]});
       return;
     }
@@ -6046,7 +6046,7 @@ document.getElementById('rollInit').addEventListener('click', rollInitiative);
 function clearPlayerActions(){                                // New round: only the players' attack rolls reset
   Object.keys(blocks).forEach(name=>{
     const b=blocks[name];
-    if(b.placeholder){ b.attacks.forEach(r=>{ if(r.tgtSel.value===''){ r.box.checked=false; return; } r.autoDone=true; r.box.checked=true; rollAttack(r); b.rollBdmg(r); }); return; }   // a Baddy's attacks roll again on their own
+    if(b.placeholder){ b.attacks.forEach(r=>{ if(r.tgtSel.value===''){ r.box.checked=false; return; } r.autoDone=true; r.box.checked=true; rollAttack(r); b.rollBdmg(r); }); return; }   // an Enemy's attacks roll again on their own
     if(!b.rows) return;
     if(b.quickRoll!==undefined) b.quickRoll=null;                 // Quickness is rolled fresh each round
     b.rows.forEach(r=>{                                          // picks, movement and conditions all stay as they are
@@ -6060,7 +6060,7 @@ document.getElementById('newRoundLight').addEventListener('click', clearPlayerAc
 function resetAll(){
   Object.keys(CHARACTERS).forEach(name=>{
     const b=blocks[name], c=CHARACTERS[name];
-    if(b.placeholder) return;   // Baddies are rebuilt below
+    if(b.placeholder) return;   // Enemies are rebuilt below
     b.initRoll.value='10'; b.initRolled=false; b.tsize.value='sm'; b.lightQuick=null; if(b.lightRow && b.lightRow.quickBtn) b.lightRow.quickBtn.hidden=true; b.lightTurn=null; if(b.virtueSel) b.virtueSel.value=''; b.resetTargets();
     b.moving.checked=false; b.moveAfter.checked=false; b.moveMult.value='1'; b.flanking.checked=false; b.ground.value='even';
     b.charging.checked=false; b.set4.checked=false; b.other.value='0'; if(b.armorBox) b.armorBox.checked=false; if(b.parryBox) b.parryBox.checked=false; if(b.parrySel) b.parrySel.value=''; if(b.acModSel) b.acModSel.value='0'; if(b.shlBox) b.shlBox.checked=false; if(b.surBox) b.surBox.checked=false;
