@@ -422,6 +422,10 @@ so their DM Helper rows come from their sheets the way Jaque's now do.
   Combat & Tactics is thought to give flank +1, rear +2 (unverified). Also open: whether a rear
   attack ignores the target's shield. Change both numbers in `ROUND_MODS`; the dropdown notes
   ("+2 to hit") are in the sheet's Conditions options.
+  The DM Helper's Enemy lines already judge a Rear attack against the target's shieldless AC.
+- [ ] Critical hits against PCs (asked 2026-10-26). Core 2e has no critical-hit table; the DM Helper
+  uses the table's Good Hits / Bad Misses rules for Enemies too (a natural 20 that would have hit is a
+  critical, read on the vs-PC column; a natural 1 that would have missed is a fumble).
 
 **Product questions** (PLAN decisions 2, 3, 6; decided 2026-10-09)
 
