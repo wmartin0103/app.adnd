@@ -3170,6 +3170,15 @@ async function setStatus(client, mine, id, status, others = 'backup') {
   if (error) throw error;
 }
 
+// Deletes one of yours from Backups or Dead, for good (versions and all).
+// The database's rules decide; a delete they refuse removes nothing, so ask
+// for the row back to know it went.
+async function deleteCharacter(client, id) {
+  const { data, error } = await client.from('characters').delete().eq('id', id).select('id');
+  if (error) throw error;
+  if (!data || !data.length) throw new Error('That character couldn’t be deleted.');
+}
+
 // The sheet: one character's saved data, and saving it
 async function loadCharacter(client, id) {
   const { data, error } = await client.from('characters').select('id, name, owner_id, status, data').eq('id', id).maybeSingle();
@@ -3181,7 +3190,7 @@ async function saveSheet(client, id, data) {
   if (error) throw error;
 }
 
-return { STATUSES, STATUS_LABEL, summary, isBlank, fileName, listCharacters, createCharacter, setStatus, loadCharacter, saveSheet };
+return { STATUSES, STATUS_LABEL, summary, isBlank, fileName, listCharacters, createCharacter, setStatus, deleteCharacter, loadCharacter, saveSheet };
 })();
 window.Rules = { computeAttack: __m["rules/attacks"].computeAttack, listAttacks: __m["rules/attacks"].listAttacks, weaponAttacks: __m["rules/attacks"].weaponAttacks, planRound: __m["rules/attacks"].planRound, attacksThisRound: __m["rules/attacks"].attacksThisRound, attacksInRound: __m["rules/attacks"].attacksInRound, hasBonusRounds: __m["rules/attacks"].hasBonusRounds, formatRate: __m["rules/attacks"].formatRate, offHandAttacks: __m["rules/attacks"].offHandAttacks, effectiveLevel: __m["rules/attacks"].effectiveLevel, SITUATIONS: __m["rules/attacks"].SITUATIONS };
 window.Weapons = { resolveWeapon: __m["rules/weapons"].resolveWeapon, PHB_WEAPONS: __m["rules/weapons"].PHB_WEAPONS };
