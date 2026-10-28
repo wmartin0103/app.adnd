@@ -92,3 +92,60 @@ export const TAGS_CSS = `/* Tags (docs/design-system.md, Tags) */
 .tag-priest { --tag-bg: var(--tag-priest-bg); --tag-text: var(--tag-priest-text); --tag-edge: var(--tag-priest-edge); }
 .tag-magic { --tag-bg: var(--tag-magic-bg); --tag-text: var(--tag-magic-text); --tag-edge: var(--tag-magic-edge); }
 .tag-roll { --tag-bg: var(--tag-roll-bg); --tag-text: var(--tag-roll-text); --tag-edge: var(--tag-roll-edge); }`;
+
+// ── Buttons ──
+// class="ui-button" with a style: is-primary (filled, the action colour) or
+// is-secondary (outlined). is-danger turns either destructive (red fill, or
+// red text on the standard outline). is-icon makes it square; is-bare is an
+// icon button with no box until hover or focus (small icons in rows and
+// cards). The S/M/L size comes from the same --field-* values as fields, so a
+// button and a field of a size line up. :not(#\#) lifts these rules over a
+// page's older button styles; a page that needs something different says why.
+const BTN = ':is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\\#)';
+export const BUTTONS_CSS = `/* Buttons (docs/design-system.md: Buttons, States) */
+${BTN} {
+  box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; gap: 0.4em; vertical-align: middle;
+  height: var(--field-h); min-height: 0; min-width: 0; padding: 0 var(--field-px);
+  font-family: var(--font-sans); font-size: var(--field-fs); font-weight: 600; font-style: normal; line-height: 1;
+  letter-spacing: normal; text-transform: none; text-decoration: none; white-space: nowrap;
+  border: 1px solid transparent; border-radius: var(--radius-ctl); background-image: none; box-shadow: none; opacity: 1;
+  cursor: pointer; transition: background-color .12s, border-color .12s, color .12s;
+}
+${BTN} svg { width: 1.1em; height: 1.1em; flex: none; }
+${BTN}.is-icon { width: var(--field-h); padding: 0; }
+${BTN}.is-primary { background-color: var(--color-accent); border-color: var(--color-accent-edge); color: var(--color-on-accent); }
+${BTN}.is-primary:hover:not(:disabled) { background-color: var(--color-accent-strong); border-color: var(--color-accent-strong); }
+${BTN}.is-primary:active:not(:disabled) { background-color: color-mix(in oklab, var(--color-accent-strong) 85%, var(--toward)); border-color: color-mix(in oklab, var(--color-accent-strong) 85%, var(--toward)); }
+${BTN}.is-secondary { background-color: var(--color-surface); border-color: var(--color-border); color: var(--color-accent-text); }
+${BTN}.is-secondary:hover:not(:disabled) { border-color: var(--color-accent-text); background-color: color-mix(in oklab, var(--color-accent-text) 9%, var(--color-surface)); }
+${BTN}.is-secondary:active:not(:disabled) { border-color: var(--color-accent-text); background-color: color-mix(in oklab, var(--color-accent-text) 18%, var(--color-surface)); }
+${BTN}.is-primary.is-danger { background-color: var(--color-danger); border-color: var(--color-danger); color: var(--color-on-danger); }
+${BTN}.is-primary.is-danger:hover:not(:disabled) { background-color: color-mix(in oklab, var(--color-danger) 86%, var(--toward)); border-color: color-mix(in oklab, var(--color-danger) 86%, var(--toward)); }
+${BTN}.is-primary.is-danger:active:not(:disabled) { background-color: color-mix(in oklab, var(--color-danger) 74%, var(--toward)); border-color: color-mix(in oklab, var(--color-danger) 74%, var(--toward)); }
+${BTN}.is-secondary.is-danger { color: var(--color-danger-text); }
+${BTN}.is-secondary.is-danger:hover:not(:disabled) { border-color: var(--color-danger-text); background-color: color-mix(in oklab, var(--color-danger-text) 9%, var(--color-surface)); }
+${BTN}.is-secondary.is-danger:active:not(:disabled) { border-color: var(--color-danger-text); background-color: color-mix(in oklab, var(--color-danger-text) 18%, var(--color-surface)); }
+${BTN}.is-bare { background-color: transparent; border-color: transparent; color: var(--color-text-muted); }
+${BTN}.is-bare:is(:hover, :focus-visible):not(:disabled) { border-color: var(--color-border); color: var(--color-accent-text); background-color: color-mix(in oklab, var(--color-accent-text) 9%, transparent); }
+${BTN}.is-bare.is-danger:is(:hover, :focus-visible):not(:disabled) { color: var(--color-danger-text); background-color: color-mix(in oklab, var(--color-danger-text) 9%, transparent); }
+${BTN}.is-bare:is([aria-pressed="true"], .is-active) { color: var(--color-accent2-text); background-color: color-mix(in oklab, var(--color-accent2) 16%, transparent); }
+${BTN}:active:not(:disabled) { transform: translateY(1px); }
+${BTN}:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+${BTN}:is(:disabled, [aria-disabled="true"]) { opacity: .45; cursor: not-allowed; }
+
+/* Tab buttons: joined buttons for picking one of three or more (class="ui-tabs" on the group) */
+:is(div, span, fieldset, [role=group]).ui-tabs:not(#\\#) {
+  display: inline-flex; flex-wrap: nowrap; box-sizing: border-box; height: var(--field-h); padding: 0; gap: 0;
+  border: 1px solid var(--color-border); border-radius: var(--radius-ctl); overflow: hidden; background: var(--color-surface);
+}
+:is(div, span, fieldset, [role=group]).ui-tabs:not(#\\#) > button {
+  box-sizing: border-box; height: 100%; margin: 0; padding: 0 var(--field-px); border: 0; border-left: 1px solid var(--color-border); border-radius: 0;
+  background: transparent; color: var(--color-text-muted); font: 600 var(--field-fs)/1 var(--font-sans); letter-spacing: normal; text-transform: none;
+  white-space: nowrap; cursor: pointer; box-shadow: none; transition: background-color .12s, color .12s;
+}
+:is(div, span, fieldset, [role=group]).ui-tabs:not(#\\#) > button:first-child { border-left: 0; }
+:is(div, span, fieldset, [role=group]).ui-tabs:not(#\\#) > button:hover:not(:is([aria-pressed="true"], .is-active)) { background: color-mix(in oklab, var(--color-text-muted) 10%, var(--color-surface)); color: var(--color-text); }
+:is(div, span, fieldset, [role=group]).ui-tabs:not(#\\#) > button:is([aria-pressed="true"], .is-active) { background: var(--color-accent2); color: var(--color-on-accent2); }
+:is(div, span, fieldset, [role=group]).ui-tabs:not(#\\#) > button:is([aria-pressed="true"], .is-active):hover { background: color-mix(in oklab, var(--color-accent2) 88%, var(--toward)); }
+:is(div, span, fieldset, [role=group]).ui-tabs:not(#\\#) > button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -3px; }
+`;

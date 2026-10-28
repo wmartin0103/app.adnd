@@ -153,7 +153,7 @@ export function hitRoll(line, fresh, onReroll, judge) {
     roll.each.forEach((r, i) => wrap.appendChild(panel(r, i, many ? `vs ${who(r.target)}` : '')));
   }
   if (roll.dmgStale && onReroll) {
-    const b = document.createElement('button'); b.type = 'button'; b.className = 'round-btn ui-btn'; b.textContent = 'Roll damage';
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'round-btn ui-btn ui-button is-primary'; b.textContent = 'Roll damage';
     b.addEventListener('click', onReroll);
     wrap.appendChild(b);
   }

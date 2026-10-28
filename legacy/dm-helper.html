@@ -262,11 +262,7 @@
   --tag-roll-edge: #245240;
   color-scheme: dark;
 }
-.theme-toggle { box-sizing: border-box; width: var(--ctl-sm); height: var(--ctl-sm); padding: 0; display: inline-flex; align-items: center; justify-content: center;
-  background: var(--color-surface); color: var(--color-text-muted); border: 1px solid var(--color-border); border-radius: var(--radius-ctl); cursor: pointer; vertical-align: middle; }
-.theme-toggle svg { width: var(--ctl-ico-sm); height: var(--ctl-ico-sm); }
-.theme-toggle:hover { color: var(--color-accent-text); border-color: var(--color-accent-text); }
-.theme-toggle:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
 /* Fields (docs/design-system.md: Sizes, States) */
 :root { --field-h: var(--ctl-md); --field-fs: var(--ctl-fs-md); --field-px: var(--ctl-pad-md); }
 .size-sm { --field-h: var(--ctl-sm); --field-fs: var(--ctl-fs-sm); --field-px: var(--ctl-pad-sm); }
@@ -338,6 +334,53 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
 .tag-priest { --tag-bg: var(--tag-priest-bg); --tag-text: var(--tag-priest-text); --tag-edge: var(--tag-priest-edge); }
 .tag-magic { --tag-bg: var(--tag-magic-bg); --tag-text: var(--tag-magic-text); --tag-edge: var(--tag-magic-edge); }
 .tag-roll { --tag-bg: var(--tag-roll-bg); --tag-text: var(--tag-roll-text); --tag-edge: var(--tag-roll-edge); }
+/* Buttons (docs/design-system.md: Buttons, States) */
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#) {
+  box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; gap: 0.4em; vertical-align: middle;
+  height: var(--field-h); min-height: 0; min-width: 0; padding: 0 var(--field-px);
+  font-family: var(--font-sans); font-size: var(--field-fs); font-weight: 600; font-style: normal; line-height: 1;
+  letter-spacing: normal; text-transform: none; text-decoration: none; white-space: nowrap;
+  border: 1px solid transparent; border-radius: var(--radius-ctl); background-image: none; box-shadow: none; opacity: 1;
+  cursor: pointer; transition: background-color .12s, border-color .12s, color .12s;
+}
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#) svg { width: 1.1em; height: 1.1em; flex: none; }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-icon { width: var(--field-h); padding: 0; }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-primary { background-color: var(--color-accent); border-color: var(--color-accent-edge); color: var(--color-on-accent); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-primary:hover:not(:disabled) { background-color: var(--color-accent-strong); border-color: var(--color-accent-strong); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-primary:active:not(:disabled) { background-color: color-mix(in oklab, var(--color-accent-strong) 85%, var(--toward)); border-color: color-mix(in oklab, var(--color-accent-strong) 85%, var(--toward)); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-secondary { background-color: var(--color-surface); border-color: var(--color-border); color: var(--color-accent-text); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-secondary:hover:not(:disabled) { border-color: var(--color-accent-text); background-color: color-mix(in oklab, var(--color-accent-text) 9%, var(--color-surface)); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-secondary:active:not(:disabled) { border-color: var(--color-accent-text); background-color: color-mix(in oklab, var(--color-accent-text) 18%, var(--color-surface)); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-primary.is-danger { background-color: var(--color-danger); border-color: var(--color-danger); color: var(--color-on-danger); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-primary.is-danger:hover:not(:disabled) { background-color: color-mix(in oklab, var(--color-danger) 86%, var(--toward)); border-color: color-mix(in oklab, var(--color-danger) 86%, var(--toward)); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-primary.is-danger:active:not(:disabled) { background-color: color-mix(in oklab, var(--color-danger) 74%, var(--toward)); border-color: color-mix(in oklab, var(--color-danger) 74%, var(--toward)); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-secondary.is-danger { color: var(--color-danger-text); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-secondary.is-danger:hover:not(:disabled) { border-color: var(--color-danger-text); background-color: color-mix(in oklab, var(--color-danger-text) 9%, var(--color-surface)); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-secondary.is-danger:active:not(:disabled) { border-color: var(--color-danger-text); background-color: color-mix(in oklab, var(--color-danger-text) 18%, var(--color-surface)); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-bare { background-color: transparent; border-color: transparent; color: var(--color-text-muted); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-bare:is(:hover, :focus-visible):not(:disabled) { border-color: var(--color-border); color: var(--color-accent-text); background-color: color-mix(in oklab, var(--color-accent-text) 9%, transparent); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-bare.is-danger:is(:hover, :focus-visible):not(:disabled) { color: var(--color-danger-text); background-color: color-mix(in oklab, var(--color-danger-text) 9%, transparent); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-bare:is([aria-pressed="true"], .is-active) { color: var(--color-accent2-text); background-color: color-mix(in oklab, var(--color-accent2) 16%, transparent); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#):active:not(:disabled) { transform: translateY(1px); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#):focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#):is(:disabled, [aria-disabled="true"]) { opacity: .45; cursor: not-allowed; }
+
+/* Tab buttons: joined buttons for picking one of three or more (class="ui-tabs" on the group) */
+:is(div, span, fieldset, [role=group]).ui-tabs:not(#\#) {
+  display: inline-flex; flex-wrap: nowrap; box-sizing: border-box; height: var(--field-h); padding: 0; gap: 0;
+  border: 1px solid var(--color-border); border-radius: var(--radius-ctl); overflow: hidden; background: var(--color-surface);
+}
+:is(div, span, fieldset, [role=group]).ui-tabs:not(#\#) > button {
+  box-sizing: border-box; height: 100%; margin: 0; padding: 0 var(--field-px); border: 0; border-left: 1px solid var(--color-border); border-radius: 0;
+  background: transparent; color: var(--color-text-muted); font: 600 var(--field-fs)/1 var(--font-sans); letter-spacing: normal; text-transform: none;
+  white-space: nowrap; cursor: pointer; box-shadow: none; transition: background-color .12s, color .12s;
+}
+:is(div, span, fieldset, [role=group]).ui-tabs:not(#\#) > button:first-child { border-left: 0; }
+:is(div, span, fieldset, [role=group]).ui-tabs:not(#\#) > button:hover:not(:is([aria-pressed="true"], .is-active)) { background: color-mix(in oklab, var(--color-text-muted) 10%, var(--color-surface)); color: var(--color-text); }
+:is(div, span, fieldset, [role=group]).ui-tabs:not(#\#) > button:is([aria-pressed="true"], .is-active) { background: var(--color-accent2); color: var(--color-on-accent2); }
+:is(div, span, fieldset, [role=group]).ui-tabs:not(#\#) > button:is([aria-pressed="true"], .is-active):hover { background: color-mix(in oklab, var(--color-accent2) 88%, var(--toward)); }
+:is(div, span, fieldset, [role=group]).ui-tabs:not(#\#) > button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -3px; }
+
 </style>
 <script>try { var t = localStorage.getItem('adnd-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) { /* storage blocked: follow the system */ }</script>
 <!-- end design tokens -->
@@ -900,7 +943,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
     <span class="sub">AD&amp;D 2E</span>
     <span class="cloud-bar" id="cloudBar"></span>
     <span class="theme-slot" id="themeSlot"></span>
-    <button class="reset" id="resetAll" title="Reset everything to the starting state">↺ Reset</button>
+    <button class="reset ui-button is-secondary is-danger size-sm" id="resetAll" title="Reset everything to the starting state">↺ Reset</button>
   </header>
 
   <nav class="toptabs" id="topTabs"></nav>
@@ -916,32 +959,32 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
 
   <div class="panel" id="panel-combat">
     <div class="toolbar left">
-      <span class="lockwrap surmods"><button class="reroll" id="surpriseBtn" title="d10 per character: 1–3 surprised; Dex reaction adjustment, Alertness and the situation modifiers apply">Surprise!</button>
+      <span class="lockwrap surmods"><button class="reroll ui-button is-primary" id="surpriseBtn" title="d10 per character: 1–3 surprised; Dex reaction adjustment, Alertness and the situation modifiers apply">Surprise!</button>
         <label class="gclabel">Party <select id="surParty" class="sursel"><option value="0" selected>Casual 0</option><option value="-1">Inattentive −1</option><option value="-2">Fleeing −2</option><option value="-2">Panicked −2</option><option value="1">Suspicious +1</option><option value="2">Anticipating attack +2</option></select></label>
         <label class="gclabel">Light <select id="surLight" class="sursel"><option value="0">Normal</option><option value="-1">Poor light −1</option><option value="-4">Darkness −4</option></select></label>
         <label class="gclabel">Weather <select id="surCond" class="sursel"><option value="0" selected>Clear 0</option><option value="-1">Rainy −1</option><option value="-2">Foggy −2</option><option value="-1">Extremely loud −1</option><option value="-3">Rainy and foggy −3</option><option value="-2">Rainy and loud −2</option><option value="-3">Foggy and loud −3</option><option value="-4">Rainy, foggy, and loud −4</option></select></label>
         <label class="gclabel">Foe <select id="surEnc" class="sursel"><option value="0" selected>—</option><option value="-1">Quiet −1</option><option value="-2">Silent −2</option><option value="-1">Camouflaged −1</option><option value="-2">Invisible −2</option><option value="-2">Quiet and camouflaged −2</option><option value="-3">Quiet and invisible −3</option><option value="-3">Silent and camouflaged −3</option><option value="-4">Silent and invisible −4</option></select></label>
         <label class="gclabel">Mod <select id="surMod" class="sursel"></select></label>
-        <button class="reroll" id="surpriseClear">Clear</button></span>
+        <button class="reroll ui-button is-secondary" id="surpriseClear">Clear</button></span>
     </div>
     <div class="char" id="surpriseBar" style="display:none"><div id="surpriseWrap"></div></div>
     <div class="toolbar between">
-      <span class="lockwrap"><button class="reroll" id="rollInit" title="roll initiative for the Enemies in this round; players roll their own">⚄ Roll initiative for Enemies</button><label class="lock" title="locked: players can no longer roll their own initiative"><input type="checkbox" id="lockInit"> Lock</label></span>
-      <span class="lockwrap roundctl" title="players' sheets play this round and show here"><b id="roundNo">Round 1</b> <button class="reroll" id="nextRoundSync" title="start the next round: every player's sheet clears its round (initiative rolls stay for the encounter)">Next round ▸</button> <button class="reroll" id="resetInitSync" title="a new encounter: every player rolls initiative again">Reset initiative</button> <label class="gclabel">Extra attacks <select id="extraTiming" class="sursel"><option value="end">End of the order</option><option value="turn">At their turn</option></select></label></span>
-      <span class="lockwrap"><button class="reroll" id="newRoundLight" title="start the encounter over: round 1, everyone rolls initiative again, the party's speed, actions and conditions cleared, the Enemies removed">↺ Reset encounter</button></span>
+      <span class="lockwrap"><button class="reroll ui-button is-primary" id="rollInit" title="roll initiative for the Enemies in this round; players roll their own">⚄ Roll initiative for Enemies</button><label class="lock" title="locked: players can no longer roll their own initiative"><input type="checkbox" id="lockInit"> Lock</label></span>
+      <span class="lockwrap roundctl" title="players' sheets play this round and show here"><b id="roundNo">Round 1</b> <button class="reroll ui-button is-primary" id="nextRoundSync" title="start the next round: every player's sheet clears its round (initiative rolls stay for the encounter)">Next round ▸</button> <button class="reroll ui-button is-secondary" id="resetInitSync" title="a new encounter: every player rolls initiative again">Reset initiative</button> <label class="gclabel">Extra attacks <select id="extraTiming" class="sursel"><option value="end">End of the order</option><option value="turn">At their turn</option></select></label></span>
+      <span class="lockwrap"><button class="reroll ui-button is-secondary is-danger" id="newRoundLight" title="start the encounter over: round 1, everyone rolls initiative again, the party's speed, actions and conditions cleared, the Enemies removed">↺ Reset encounter</button></span>
     </div>
     <div class="tracker" id="tracker"></div>
     <div class="char" id="lightTracker" style="display:none">
       <table class="acts light"><thead><tr><th class="l">Name</th><th>Speed</th><th>Init roll</th><th>Act On</th></tr></thead><tbody id="lightBody"></tbody></table>
     </div>
-    <div class="addrow"><button class="reroll" id="addBaddy">+ Add Enemy</button></div>
+    <div class="addrow"><button class="reroll ui-button is-primary" id="addBaddy">+ Add Enemy</button></div>
     <footer>Order is by chosen action (roll + speed + init bonus/mods); lower acts first. THAC0: lower is better. An Enemy's attack rolls only when you press Roll to hit; it hits on a d20 of THAC0 − AC or more. Next round clears the rolls and keeps targets and conditions; Reset encounter starts over at round 1.</footer>
     <div class="char" id="lightCritBox" style="display:none">
       <div class="lightcrit">
         <label class="gclabel">Weapon <select id="lcType"><option value="B">Blunt</option><option value="P">Piercing</option><option value="S">Slashing</option><option value="A">Animal</option></select></label>
-        <button class="reroll" id="lcCrit">Crit</button>
-        <button class="reroll" id="lcFumble">Fumble</button>
-        <button class="reroll" id="lcClear">Clear</button>
+        <button class="reroll ui-button is-secondary" id="lcCrit">Crit</button>
+        <button class="reroll ui-button is-secondary" id="lcFumble">Fumble</button>
+        <button class="reroll ui-button is-secondary" id="lcClear">Clear</button>
       </div>
       <div class="critwrap" id="lcOut" style="display:none"></div>
     </div>
@@ -952,8 +995,8 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
       <label class="gclabel">Group check
         <select id="gcSkill"></select>
       </label>
-      <button class="reroll" id="gcClear">Clear</button>
-      <button class="reroll" id="rollProfs" title="re-roll every character's ability and proficiency d20s">⟳ Roll all profs</button>
+      <button class="reroll ui-button is-secondary" id="gcClear">Clear</button>
+      <button class="reroll ui-button is-primary" id="rollProfs" title="re-roll every character's ability and proficiency d20s">⟳ Roll all profs</button>
     </div>
     <div id="gcResults" class="gcresults hidden"></div>
     <div id="skills"></div>
@@ -965,8 +1008,8 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
       <label class="gclabel">Group save
         <select id="svCat"></select>
       </label>
-      <button class="reroll" id="svClear">Clear</button>
-      <button class="reroll" id="rollSavesAll" title="re-roll every character's saving throw d20s">⟳ Roll all saves</button>
+      <button class="reroll ui-button is-secondary" id="svClear">Clear</button>
+      <button class="reroll ui-button is-primary" id="rollSavesAll" title="re-roll every character's saving throw d20s">⟳ Roll all saves</button>
     </div>
     <div id="svResults" class="gcresults hidden"></div>
     <div id="svBlocks"></div>
@@ -995,8 +1038,8 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
       </label>
     </div>
     <div class="groupcheck">
-      <button class="reroll" id="rxRoll">⟳ Roll for all</button>
-      <button class="reroll" id="rxClear">Clear</button>
+      <button class="reroll ui-button is-primary" id="rxRoll">⟳ Roll for all</button>
+      <button class="reroll ui-button is-secondary" id="rxClear">Clear</button>
     </div>
     <div id="rxResults" class="gcresults hidden"></div>
     <h2 class="sechead enc">Encounter</h2>
@@ -1006,9 +1049,9 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
         <label class="gclabel">Time <select id="encTime"><option value="day">Day</option><option value="night">Night</option></select></label>
         <label class="gclabel" title="mix creatures into the rolls"><input type="checkbox" id="encCreatures" checked> Creatures</label>
         <label class="gclabel" title="chance of an encounter per check; resets to the setting's default when the setting or time changes">Chance <select id="encChance"></select></label>
-        <button class="reroll" id="encCheck" title="roll d6 against the chance; on a hit, roll the encounter too">Check for encounter</button>
-        <button class="reroll" id="encRoll" title="roll the encounter straight away, no check">Roll encounter</button>
-        <button class="reroll" id="encClear">Clear</button>
+        <button class="reroll ui-button is-primary" id="encCheck" title="roll d6 against the chance; on a hit, roll the encounter too">Check for encounter</button>
+        <button class="reroll ui-button is-primary" id="encRoll" title="roll the encounter straight away, no check">Roll encounter</button>
+        <button class="reroll ui-button is-secondary" id="encClear">Clear</button>
       </div>
       <div id="encOut" style="display:none"><div id="encWrap"></div></div>
     </div>
@@ -1019,7 +1062,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
     <div class="char" id="sheetImport" style="margin-bottom:12px">
       <div class="chead"><span class="cname">Character sheets</span><span class="svnote">Import players' exported character sheet saves (.json). Their stats replace the hand-typed ones below and stay in this browser until removed. Your own settings (parry, armor spell, virtue, hidden by default, init bonus, turning) are kept.</span></div>
       <div class="sheetimp">
-        <div><button class="reroll" type="button" id="sheetImportBtn">Import sheets…</button><input type="file" id="sheetFiles" accept=".json,application/json" multiple hidden></div>
+        <div><button class="reroll ui-button is-secondary" type="button" id="sheetImportBtn">Import sheets…</button><input type="file" id="sheetFiles" accept=".json,application/json" multiple hidden></div>
         <div id="sheetStatus" class="sheetimp-status" role="status"></div>
         <div id="sheetList"></div>
       </div>
@@ -2668,7 +2711,7 @@ function hitRoll(line, fresh, onReroll, judge) {
     roll.each.forEach((r, i) => wrap.appendChild(panel(r, i, many ? `vs ${who(r.target)}` : '')));
   }
   if (roll.dmgStale && onReroll) {
-    const b = document.createElement('button'); b.type = 'button'; b.className = 'round-btn ui-btn'; b.textContent = 'Roll damage';
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'round-btn ui-btn ui-button is-primary'; b.textContent = 'Roll damage';
     b.addEventListener('click', onReroll);
     wrap.appendChild(b);
   }
@@ -2825,7 +2868,7 @@ function mountThemeToggle(el) {
   if (!el) return null;
   const doc = el.ownerDocument;
   const btn = doc.createElement('button');
-  btn.type = 'button'; btn.className = 'theme-toggle';
+  btn.type = 'button'; btn.className = 'theme-toggle ui-button is-secondary is-icon size-sm';
   const paint = () => {
     const dark = currentTheme(doc) === 'dark';
     btn.innerHTML = dark ? SUN : MOON;
@@ -2841,12 +2884,8 @@ function mountThemeToggle(el) {
   return btn;
 }
 
-// The toggle's look (it rides along with the tokens in <head>)
-const THEME_TOGGLE_CSS = `.theme-toggle { box-sizing: border-box; width: var(--ctl-sm); height: var(--ctl-sm); padding: 0; display: inline-flex; align-items: center; justify-content: center;
-  background: var(--color-surface); color: var(--color-text-muted); border: 1px solid var(--color-border); border-radius: var(--radius-ctl); cursor: pointer; vertical-align: middle; }
-.theme-toggle svg { width: var(--ctl-ico-sm); height: var(--ctl-ico-sm); }
-.theme-toggle:hover { color: var(--color-accent-text); border-color: var(--color-accent-text); }
-.theme-toggle:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }`;
+// The toggle is a secondary icon button (src/ui/components.js); nothing of its own
+const THEME_TOGGLE_CSS = '';
 
 return { currentTheme, setTheme, mountThemeToggle, THEME_TOGGLE_CSS };
 })();
@@ -3962,7 +4001,7 @@ function mountCloud(el, onChange, opts = {}) {
       <label class="cloud-field">Email<input type="email" name="email" autocomplete="username" required></label>
       <label class="cloud-field">Password<input type="password" name="password" autocomplete="current-password" required></label>
       <p class="cloud-error" role="alert"></p>
-      <div class="cloud-actions"><button type="button" class="cloud-cancel">Cancel</button><button type="submit" class="cloud-submit">Sign in</button></div>
+      <div class="cloud-actions"><button type="button" class="cloud-cancel ui-button is-secondary size-sm">Cancel</button><button type="submit" class="cloud-submit ui-button is-primary">Sign in</button></div>
     </form>`;
   doc.body.appendChild(dialog);
   const form = dialog.querySelector('form'), err = dialog.querySelector('.cloud-error');
@@ -3984,12 +4023,12 @@ function mountCloud(el, onChange, opts = {}) {
     const s = got && got.newPassword ? null : got;
     const key = got ? `${got.user.id}|${got.campaignId}|${got.name}|${got.newPassword}` : '';
     if (got && got.newPassword) {
-      el.innerHTML = `<a class="cloud-btn" href="${ACCOUNT_URL}">Choose your password</a>`;
+      el.innerHTML = `<a class="cloud-btn ui-button is-secondary size-sm" href="${ACCOUNT_URL}">Choose your password</a>`;
     } else if (s) {
-      el.innerHTML = `<span class="cloud-who">${esc(s.name)}${s.campaignName ? ` · ${esc(s.campaignName)}` : ' · no campaign yet'}</span> ${opts.home ? `<a class="cloud-btn" href="${HOME_URL}">${esc(opts.home)}</a> ` : ''}<a class="cloud-btn" href="${ACCOUNT_URL}">Account</a> <button type="button" class="cloud-btn">Sign out</button>`;
+      el.innerHTML = `<span class="cloud-who">${esc(s.name)}${s.campaignName ? ` · ${esc(s.campaignName)}` : ' · no campaign yet'}</span> ${opts.home ? `<a class="cloud-btn ui-button is-secondary size-sm" href="${HOME_URL}">${esc(opts.home)}</a> ` : ''}<a class="cloud-btn ui-button is-secondary size-sm" href="${ACCOUNT_URL}">Account</a> <button type="button" class="cloud-btn ui-button is-secondary size-sm">Sign out</button>`;
       el.querySelector('button').addEventListener('click', () => client.auth.signOut());
     } else {
-      el.innerHTML = '<button type="button" class="cloud-btn">Sign in</button>';
+      el.innerHTML = '<button type="button" class="cloud-btn ui-button is-secondary size-sm">Sign in</button>';
       el.querySelector('button').addEventListener('click', () => { err.textContent = ''; dialog.showModal(); form.email.focus(); });
     }
     if (key !== last) { last = key; if (onChange) onChange(s); }
@@ -4901,10 +4940,10 @@ function buildChar(name){
     const inRound=document.createElement('input'); inRound.type='checkbox'; inRound.className='hold'; inRound.checked=true; inRound.title='in this round — uncheck for an Enemy that arrives later';
     const nameInput=document.createElement('input'); nameInput.type='text'; nameInput.className='bname open-field'; nameInput.value=name; nameInput.title='rename this creature';
     // Icons, to leave room on the row for AC and THAC0
-    const iconBtn=(cls, tip, svg)=>{ const x=document.createElement('button'); x.type='button'; x.className='iconbtn '+cls; x.title=tip; x.setAttribute('aria-label', tip); x.innerHTML=svg; return x; };
+    const iconBtn=(cls, tip, svg)=>{ const x=document.createElement('button'); x.type='button'; x.className='iconbtn ui-button is-bare is-icon size-sm '+cls; x.title=tip; x.setAttribute('aria-label', tip); x.innerHTML=svg; return x; };
     const dupBtn=iconBtn('bdup', 'Duplicate: another Enemy with the same stats',
       '<svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><rect x="5.5" y="5.5" width="8" height="8" rx="1.2"/><path d="M3.5 10.5h-.8a1.2 1.2 0 0 1-1.2-1.2V2.7a1.2 1.2 0 0 1 1.2-1.2h6.6a1.2 1.2 0 0 1 1.2 1.2v.8"/></svg>');
-    const rmBtn=iconBtn('rm', 'Remove this Enemy',
+    const rmBtn=iconBtn('rm is-danger', 'Remove this Enemy',
       '<svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 4h11M6.5 4V2.5h3V4M4 4l.7 9.2a1 1 0 0 0 1 .8h4.6a1 1 0 0 0 1-.8L12 4M6.8 6.5v5M9.2 6.5v5"/></svg>');
     const bdBadge=document.createElement('span'); bdBadge.className='bdid'; bdBadge.textContent=c.bdId||''; bdBadge.title='fixed ID: the only name players ever see';
     nameInput.title='your name for this creature: players never see it';
@@ -4992,7 +5031,7 @@ function buildChar(name){
   fields.append(sizeLbl);
   const initHead=document.createElement('div'); initHead.className='mhead inithead'; initHead.textContent='Init roll';
   fields.prepend(initHead);
-  const rollBtn=document.createElement('button'); rollBtn.className='reroll small rollbtn'; rollBtn.textContent='Roll'; rollBtn.title='roll this character\'s initiative';
+  const rollBtn=document.createElement('button'); rollBtn.className='reroll small rollbtn ui-button is-primary'; rollBtn.textContent='Roll'; rollBtn.title='roll this character\'s initiative';
   rollBtn.addEventListener('click', ()=> rollInitFor(name));
   fields.insertBefore(rollBtn, initLbl);                  // shown only on a player's own tab
 
@@ -5127,7 +5166,7 @@ function buildChar(name){
     const tgtTd=document.createElement('td'); tgtTd.className='tgtroll num'; tgtTd.innerHTML='<span class="n"></span>';
     const rollTd=document.createElement('td'); rollTd.className='d20 num'; rollTd.innerHTML='<span class="n"></span>';
     let rbtn=null;                                                     // players roll their own d20; they only ever see Hit or Miss
-    if(!a.noAttack){ rbtn=document.createElement('button'); rbtn.type='button'; rbtn.className='reroll rbtn'; rbtn.textContent='Roll'; rollTd.prepend(rbtn); }
+    if(!a.noAttack){ rbtn=document.createElement('button'); rbtn.type='button'; rbtn.className='reroll rbtn ui-button is-primary'; rbtn.textContent='Roll'; rollTd.prepend(rbtn); }
     const resSp=document.createElement('span'); resSp.className='res'; rollTd.appendChild(resSp);
     const dmgTd=document.createElement('td'); dmgTd.className='dmg num na'; dmgTd.innerHTML='<span class="n">—</span>';
     tr.append(pickTd, initTd, nameTd, thTd, rtTd, tgtTd, rollTd, dmgTd);
@@ -5183,7 +5222,7 @@ function buildChar(name){
       const rtTd=document.createElement('td'); rtTd.className='l rtcell'; const rt=mkRowTarget(); rtTd.appendChild(rt.wrap);
       const tgtTd=document.createElement('td'); tgtTd.className='tgtroll num'; tgtTd.innerHTML='<span class="n"></span>';
       const rollTd=document.createElement('td'); rollTd.className='d20 num'; rollTd.innerHTML='<span class="n"></span>';
-      const rbtn=document.createElement('button'); rbtn.type='button'; rbtn.className='reroll rbtn'; rbtn.textContent='Roll'; rollTd.prepend(rbtn);
+      const rbtn=document.createElement('button'); rbtn.type='button'; rbtn.className='reroll rbtn ui-button is-primary'; rbtn.textContent='Roll'; rollTd.prepend(rbtn);
       const resSp=document.createElement('span'); resSp.className='res'; rollTd.appendChild(resSp);
       const dmgTd=document.createElement('td'); dmgTd.className='dmg num na'; dmgTd.innerHTML='<span class="n">—</span>';
       tr.append(pickTd, initTd, nameTd, thTd, rtTd, tgtTd, rollTd, dmgTd);
@@ -5207,7 +5246,7 @@ function buildChar(name){
   const actHead=document.createElement('div'); actHead.className='mhead acthead'; actHead.textContent='Actions';
   let quickBtn=null;
   if(c.quickness){                                              // manual: click to roll, click again to clear
-    quickBtn=document.createElement('button'); quickBtn.type='button'; quickBtn.className='reroll small quick'; quickBtn.textContent='⚄ Quickness';
+    quickBtn=document.createElement('button'); quickBtn.type='button'; quickBtn.className='reroll small quick ui-button is-secondary size-sm'; quickBtn.textContent='⚄ Quickness';
     const qw=document.createElement('span'); qw.className='item m-quick'; qw.appendChild(quickBtn);
     mods.insertBefore(qw, mods.children[2]);
     quickBtn.addEventListener('click', ()=>{ const b=blocks[name]; b.quickRoll = (b.quickRoll==null) ? d20() : null; update(); });
@@ -5289,7 +5328,7 @@ function renderEnemyAttacks(name){
   const act=document.activeElement, focusId = act && wrap.contains(act) ? act.id : null;
   wrap.textContent='';
   const party=Object.keys(CHARACTERS).filter(n=>!CHARACTERS[n].placeholder && CHARACTERS[n].armor && isActive(n));
-  const btn=(txt, tip, fn)=>{ const x=document.createElement('button'); x.type='button'; x.className='reroll small'; x.textContent=txt; x.title=tip; x.addEventListener('click', fn); return x; };
+  const btn=(txt, tip, fn)=>{ const x=document.createElement('button'); x.type='button'; x.className='reroll small ui-button is-secondary size-sm'; x.textContent=txt; x.title=tip; x.addEventListener('click', fn); return x; };
   b.attacks.forEach((a, i)=>{
     const line=enemyLine(name, a, i), id=line.key;
     const item=document.createElement('div'); item.className='bd-atk';
@@ -5350,7 +5389,7 @@ function renderEnemyAttacks(name){
         ], (key, v)=>{ st[key]=v; update(); }),
         uiPick(`${id}-other`, 'Other', BD_OTHER_OPTS, String(st.other), v=>{ st.other=parseInt(v,10)||0; update(); }),
         RoundUI.readField('THAC0', String(thac0), 'is-key'));
-      const rb=document.createElement('button'); rb.type='button'; rb.className='ui-btn round-btn roll-hit-btn';
+      const rb=document.createElement('button'); rb.type='button'; rb.className='ui-btn round-btn roll-hit-btn ui-button is-primary';
       rb.innerHTML=`${RoundUI.D20_SVG}<span>Roll to hit</span>`;
       if(!st.targets.length){ rb.disabled=true; rb.title='Pick a target first'; }
       rb.addEventListener('click', ()=>{ rollEnemyAttack(name, a, i); update(); });
@@ -5360,7 +5399,7 @@ function renderEnemyAttacks(name){
     wrap.appendChild(item);
   });
   const add=btn('+ Add attack', 'another attack: same dice, no targets yet', ()=>{ const last=b.attacks[b.attacks.length-1]; const na=newEnemyAttack(); if(last){ na.dice=last.dice; na.bonus=last.bonus; } b.attacks.push(na); update(); });
-  add.classList.add('bd-add'); wrap.appendChild(add);
+  add.classList.add('bd-add'); add.classList.replace('is-secondary', 'is-primary'); wrap.appendChild(add);
   if(focusId){ const x=document.getElementById(focusId); if(x) x.focus(); }
 }
 
@@ -5508,7 +5547,7 @@ function update(){
       b.initRoll.classList.toggle('quick-on', on);
       b.initRoll.title = rolled ? (`Quickness: d20 ${b.quickRoll} vs Dex ${dex}` + (applies ? (success?` → at/under, ${fmt(q.bonus)} init`:' → over, no bonus') : ' → not moving/attacking, no roll applies')) : 'Quickness not rolled';
       if(b.quickBtn){
-        b.quickBtn.className='reroll small quick'+(rolled?(success?' ok':' bad'):'');
+        b.quickBtn.className='reroll small quick ui-button is-secondary size-sm'+(rolled?(success?' ok':' bad'):'');
         b.quickBtn.textContent = rolled ? `⚄ Quickness ${b.quickRoll}` : '⚄ Quickness';
         b.quickBtn.title = rolled ? `Quickness: d20 ${b.quickRoll} vs Dex ${dex} → ${success?`success, ${fmt(q.bonus)} initiative`:'no effect'}` : 'roll d20 at or under Dex';
       }
@@ -5857,7 +5896,7 @@ function buildSkills(){
     skillBlocks[name]=block;
     const head=document.createElement('div'); head.className='chead';
     const cn=nameEl(name);
-    const btn=document.createElement('button'); btn.className='reroll small'; btn.textContent='⟳ d20';
+    const btn=document.createElement('button'); btn.className='reroll small ui-button is-secondary size-sm'; btn.textContent='⟳ d20';
     btn.addEventListener('click', ()=>rollSkillsFor(name));
     head.append(cn, btn); block.appendChild(head);
 
@@ -6081,7 +6120,7 @@ function renderSaves(){
     const cn=nameEl(name);
     head.appendChild(cn);
     if(sv.note){ const nt=document.createElement('span'); nt.className='svnote'; nt.textContent=sv.note; head.appendChild(nt); }
-    const btn=document.createElement('button'); btn.className='reroll small'; btn.textContent='⟳ d20';
+    const btn=document.createElement('button'); btn.className='reroll small ui-button is-secondary size-sm'; btn.textContent='⟳ d20';
     btn.addEventListener('click', ()=>{ rollSavesFor(name); renderSaves(); });
     head.appendChild(btn); block.appendChild(head);
     let html='<table class="acts svtable"><thead><tr><th class="l">Save vs</th><th>Base</th><th>Mod</th><th>Target</th><th>d20</th></tr></thead><tbody>';
@@ -6162,7 +6201,7 @@ function renderReaction(){
         const r=rxResult(name, v.extra, v.key); if(!r) return;
         const tip=[...rxEntries(name).map(e=>`${fmt(e.mod)} ${e.why}`), ...(r.shift?[`Romantic Appeal: ${r.base} → ${r.res}`]:[])].join(' · ');
         if(!m.split || v===variants[0]) partyRows.push(r);                // Party average counts each character once (Tig's base row)
-        const apTxt = (REACTION_MODS[name]||{}).appeal ? ` <button class="reroll small quick appealbtn ${r.appeal?(r.appeal.ok?'ok':'bad'):''}" data-appeal data-name="${name}" data-key="${v.key}" title="${r.appeal?`Romantic Appeal: needs ${r.appeal.need} to save, d20 ${r.appeal.roll} → ${r.appeal.ok?'the response shifts one step (click to clear)':'no effect (click to roll again)'}`:'Romantic Appeal: roll this group\'s Paralysis save'}">${r.appeal?`⚄ ${r.appeal.roll} · ${r.appeal.ok?(r.appeal.when==='save'?'Saved ↓':'Appeal ✓'):(r.appeal.when==='save'?'Failed':'Saved ✗')}`:'⚄ Appeal'}</button> <select class="apsave" data-apsave data-key="${v.key}" title="the Paralysis save this group needs (1 HD humanoids)">${Array.from({length:20},(_,n)=>n+1).map(n=>`<option value="${n}"${n===appealNeed(name,v.key)?' selected':''}>${n}${n===REACTION_MODS[name].appeal.need[v.key]?' · 1 HD':''}</option>`).join('')}</select>` : '';
+        const apTxt = (REACTION_MODS[name]||{}).appeal ? ` <button class="reroll small quick appealbtn ui-button is-secondary size-sm ${r.appeal?(r.appeal.ok?'ok':'bad'):''}" data-appeal data-name="${name}" data-key="${v.key}" title="${r.appeal?`Romantic Appeal: needs ${r.appeal.need} to save, d20 ${r.appeal.roll} → ${r.appeal.ok?'the response shifts one step (click to clear)':'no effect (click to roll again)'}`:'Romantic Appeal: roll this group\'s Paralysis save'}">${r.appeal?`⚄ ${r.appeal.roll} · ${r.appeal.ok?(r.appeal.when==='save'?'Saved ↓':'Appeal ✓'):(r.appeal.when==='save'?'Failed':'Saved ✗')}`:'⚄ Appeal'}</button> <select class="apsave" data-apsave data-key="${v.key}" title="the Paralysis save this group needs (1 HD humanoids)">${Array.from({length:20},(_,n)=>n+1).map(n=>`<option value="${n}"${n===appealNeed(name,v.key)?' selected':''}>${n}${n===REACTION_MODS[name].appeal.need[v.key]?' · 1 HD':''}</option>`).join('')}</select>` : '';
         html+=`<tr><td class="name">${v.label}</td><td class="num modcell">${r.chaAdj?fmt(r.chaAdj):'—'}</td><td class="num modcell" title="${tip}">${r.mod?fmt(r.mod):'—'}</td><td class="stgt num" title="${r.d} − CHA ${fmt(r.chaAdj)} − mods ${fmt(r.mod)}${r.rep?` − rep ${fmt(r.rep)}`:''} = ${r.modRoll}">${r.modRoll}</td>`
             +`<td class="rxres ${RX_CLASS[r.res]}">${r.res}${apTxt}</td></tr>`;
       });
@@ -6526,7 +6565,7 @@ function lightRowFor(name){
   const nameTd=document.createElement('td'); nameTd.className='name';
   let quickBtn=null;
   if(!b.placeholder && CHARACTERS[name].quickness){
-    quickBtn=document.createElement('span'); quickBtn.className='reroll small quick ok'; quickBtn.textContent='⚄ Quickness'; quickBtn.hidden=true;   // indicator only: shown when the player's Quickness roll succeeded
+    quickBtn=document.createElement('span'); quickBtn.className='reroll small quick ok ui-button is-secondary size-sm'; quickBtn.textContent='⚄ Quickness'; quickBtn.hidden=true;   // indicator only: shown when the player's Quickness roll succeeded
   }
   let nameLabel;
   if(b.placeholder){                                               // Enemies: editable, shared with the full view
@@ -6536,10 +6575,10 @@ function lightRowFor(name){
   nameTd.appendChild(nameLabel);
   if(quickBtn) nameTd.appendChild(quickBtn);                      // after the name, so names line up
   if(b.placeholder){
-    const dupBtn=document.createElement('button'); dupBtn.className='reroll small quick'; dupBtn.textContent='Duplicate'; dupBtn.title='another Enemy with the same stats';
+    const dupBtn=document.createElement('button'); dupBtn.className='reroll small quick ui-button is-secondary size-sm'; dupBtn.textContent='Duplicate'; dupBtn.title='another Enemy with the same stats';
     dupBtn.addEventListener('click', ()=>{ duplicateBaddy(name); update(); });
     nameTd.appendChild(dupBtn);
-    const rmBtn=document.createElement('button'); rmBtn.className='reroll small quick rm'; rmBtn.textContent='Remove'; rmBtn.title='remove this Enemy from the line-up';
+    const rmBtn=document.createElement('button'); rmBtn.className='reroll small quick rm ui-button is-secondary is-danger size-sm'; rmBtn.textContent='Remove'; rmBtn.title='remove this Enemy from the line-up';
     rmBtn.addEventListener('click', ()=>{ removeBaddy(name); update(); });
     nameTd.appendChild(rmBtn);
   }
@@ -6632,7 +6671,7 @@ function renderLight(){
       const troll = pickedRoll;
       if(troll!=null){
         const roll=troll, wrap=lr.turnTr.querySelector('.turnwrap');
-        wrap.innerHTML = `<span class="lbl"><b>Turn Undead</b> d20 ${roll}</span>` + turnResultHTML(CHARACTERS[name].turn.level, roll) + `<button class="reroll small turnclear">Clear</button>`;
+        wrap.innerHTML = `<span class="lbl"><b>Turn Undead</b> d20 ${roll}</span>` + turnResultHTML(CHARACTERS[name].turn.level, roll) + `<button class="reroll small turnclear ui-button is-secondary size-sm">Clear</button>`;
         wrap.querySelector('.turnclear').addEventListener('click', ()=>{
           if(tRow && tRow.box.checked){ tRow.box.checked=false; tRow.roll=null; }              // clearing also drops the pick on his card
           update();

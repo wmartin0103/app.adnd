@@ -25,7 +25,7 @@ export function mountThemeToggle(el) {
   if (!el) return null;
   const doc = el.ownerDocument;
   const btn = doc.createElement('button');
-  btn.type = 'button'; btn.className = 'theme-toggle';
+  btn.type = 'button'; btn.className = 'theme-toggle ui-button is-secondary is-icon size-sm';
   const paint = () => {
     const dark = currentTheme(doc) === 'dark';
     btn.innerHTML = dark ? SUN : MOON;
@@ -41,9 +41,5 @@ export function mountThemeToggle(el) {
   return btn;
 }
 
-// The toggle's look (it rides along with the tokens in <head>)
-export const THEME_TOGGLE_CSS = `.theme-toggle { box-sizing: border-box; width: var(--ctl-sm); height: var(--ctl-sm); padding: 0; display: inline-flex; align-items: center; justify-content: center;
-  background: var(--color-surface); color: var(--color-text-muted); border: 1px solid var(--color-border); border-radius: var(--radius-ctl); cursor: pointer; vertical-align: middle; }
-.theme-toggle svg { width: var(--ctl-ico-sm); height: var(--ctl-ico-sm); }
-.theme-toggle:hover { color: var(--color-accent-text); border-color: var(--color-accent-text); }
-.theme-toggle:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }`;
+// The toggle is a secondary icon button (src/ui/components.js); nothing of its own
+export const THEME_TOGGLE_CSS = '';

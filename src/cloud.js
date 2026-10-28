@@ -189,7 +189,7 @@ export function mountCloud(el, onChange, opts = {}) {
       <label class="cloud-field">Email<input type="email" name="email" autocomplete="username" required></label>
       <label class="cloud-field">Password<input type="password" name="password" autocomplete="current-password" required></label>
       <p class="cloud-error" role="alert"></p>
-      <div class="cloud-actions"><button type="button" class="cloud-cancel">Cancel</button><button type="submit" class="cloud-submit">Sign in</button></div>
+      <div class="cloud-actions"><button type="button" class="cloud-cancel ui-button is-secondary size-sm">Cancel</button><button type="submit" class="cloud-submit ui-button is-primary">Sign in</button></div>
     </form>`;
   doc.body.appendChild(dialog);
   const form = dialog.querySelector('form'), err = dialog.querySelector('.cloud-error');
@@ -211,12 +211,12 @@ export function mountCloud(el, onChange, opts = {}) {
     const s = got && got.newPassword ? null : got;
     const key = got ? `${got.user.id}|${got.campaignId}|${got.name}|${got.newPassword}` : '';
     if (got && got.newPassword) {
-      el.innerHTML = `<a class="cloud-btn" href="${ACCOUNT_URL}">Choose your password</a>`;
+      el.innerHTML = `<a class="cloud-btn ui-button is-secondary size-sm" href="${ACCOUNT_URL}">Choose your password</a>`;
     } else if (s) {
-      el.innerHTML = `<span class="cloud-who">${esc(s.name)}${s.campaignName ? ` · ${esc(s.campaignName)}` : ' · no campaign yet'}</span> ${opts.home ? `<a class="cloud-btn" href="${HOME_URL}">${esc(opts.home)}</a> ` : ''}<a class="cloud-btn" href="${ACCOUNT_URL}">Account</a> <button type="button" class="cloud-btn">Sign out</button>`;
+      el.innerHTML = `<span class="cloud-who">${esc(s.name)}${s.campaignName ? ` · ${esc(s.campaignName)}` : ' · no campaign yet'}</span> ${opts.home ? `<a class="cloud-btn ui-button is-secondary size-sm" href="${HOME_URL}">${esc(opts.home)}</a> ` : ''}<a class="cloud-btn ui-button is-secondary size-sm" href="${ACCOUNT_URL}">Account</a> <button type="button" class="cloud-btn ui-button is-secondary size-sm">Sign out</button>`;
       el.querySelector('button').addEventListener('click', () => client.auth.signOut());
     } else {
-      el.innerHTML = '<button type="button" class="cloud-btn">Sign in</button>';
+      el.innerHTML = '<button type="button" class="cloud-btn ui-button is-secondary size-sm">Sign in</button>';
       el.querySelector('button').addEventListener('click', () => { err.textContent = ''; dialog.showModal(); form.email.focus(); });
     }
     if (key !== last) { last = key; if (onChange) onChange(s); }

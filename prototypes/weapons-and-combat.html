@@ -1885,7 +1885,7 @@ function hitRoll(line, fresh, onReroll, judge) {
     roll.each.forEach((r, i) => wrap.appendChild(panel(r, i, many ? `vs ${who(r.target)}` : '')));
   }
   if (roll.dmgStale && onReroll) {
-    const b = document.createElement('button'); b.type = 'button'; b.className = 'round-btn ui-btn'; b.textContent = 'Roll damage';
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'round-btn ui-btn ui-button is-primary'; b.textContent = 'Roll damage';
     b.addEventListener('click', onReroll);
     wrap.appendChild(b);
   }
@@ -2042,7 +2042,7 @@ function mountThemeToggle(el) {
   if (!el) return null;
   const doc = el.ownerDocument;
   const btn = doc.createElement('button');
-  btn.type = 'button'; btn.className = 'theme-toggle';
+  btn.type = 'button'; btn.className = 'theme-toggle ui-button is-secondary is-icon size-sm';
   const paint = () => {
     const dark = currentTheme(doc) === 'dark';
     btn.innerHTML = dark ? SUN : MOON;
@@ -2058,12 +2058,8 @@ function mountThemeToggle(el) {
   return btn;
 }
 
-// The toggle's look (it rides along with the tokens in <head>)
-const THEME_TOGGLE_CSS = `.theme-toggle { box-sizing: border-box; width: var(--ctl-sm); height: var(--ctl-sm); padding: 0; display: inline-flex; align-items: center; justify-content: center;
-  background: var(--color-surface); color: var(--color-text-muted); border: 1px solid var(--color-border); border-radius: var(--radius-ctl); cursor: pointer; vertical-align: middle; }
-.theme-toggle svg { width: var(--ctl-ico-sm); height: var(--ctl-ico-sm); }
-.theme-toggle:hover { color: var(--color-accent-text); border-color: var(--color-accent-text); }
-.theme-toggle:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }`;
+// The toggle is a secondary icon button (src/ui/components.js); nothing of its own
+const THEME_TOGGLE_CSS = '';
 
 return { currentTheme, setTheme, mountThemeToggle, THEME_TOGGLE_CSS };
 })();
@@ -3179,7 +3175,7 @@ function mountCloud(el, onChange, opts = {}) {
       <label class="cloud-field">Email<input type="email" name="email" autocomplete="username" required></label>
       <label class="cloud-field">Password<input type="password" name="password" autocomplete="current-password" required></label>
       <p class="cloud-error" role="alert"></p>
-      <div class="cloud-actions"><button type="button" class="cloud-cancel">Cancel</button><button type="submit" class="cloud-submit">Sign in</button></div>
+      <div class="cloud-actions"><button type="button" class="cloud-cancel ui-button is-secondary size-sm">Cancel</button><button type="submit" class="cloud-submit ui-button is-primary">Sign in</button></div>
     </form>`;
   doc.body.appendChild(dialog);
   const form = dialog.querySelector('form'), err = dialog.querySelector('.cloud-error');
@@ -3201,12 +3197,12 @@ function mountCloud(el, onChange, opts = {}) {
     const s = got && got.newPassword ? null : got;
     const key = got ? `${got.user.id}|${got.campaignId}|${got.name}|${got.newPassword}` : '';
     if (got && got.newPassword) {
-      el.innerHTML = `<a class="cloud-btn" href="${ACCOUNT_URL}">Choose your password</a>`;
+      el.innerHTML = `<a class="cloud-btn ui-button is-secondary size-sm" href="${ACCOUNT_URL}">Choose your password</a>`;
     } else if (s) {
-      el.innerHTML = `<span class="cloud-who">${esc(s.name)}${s.campaignName ? ` · ${esc(s.campaignName)}` : ' · no campaign yet'}</span> ${opts.home ? `<a class="cloud-btn" href="${HOME_URL}">${esc(opts.home)}</a> ` : ''}<a class="cloud-btn" href="${ACCOUNT_URL}">Account</a> <button type="button" class="cloud-btn">Sign out</button>`;
+      el.innerHTML = `<span class="cloud-who">${esc(s.name)}${s.campaignName ? ` · ${esc(s.campaignName)}` : ' · no campaign yet'}</span> ${opts.home ? `<a class="cloud-btn ui-button is-secondary size-sm" href="${HOME_URL}">${esc(opts.home)}</a> ` : ''}<a class="cloud-btn ui-button is-secondary size-sm" href="${ACCOUNT_URL}">Account</a> <button type="button" class="cloud-btn ui-button is-secondary size-sm">Sign out</button>`;
       el.querySelector('button').addEventListener('click', () => client.auth.signOut());
     } else {
-      el.innerHTML = '<button type="button" class="cloud-btn">Sign in</button>';
+      el.innerHTML = '<button type="button" class="cloud-btn ui-button is-secondary size-sm">Sign in</button>';
       el.querySelector('button').addEventListener('click', () => { err.textContent = ''; dialog.showModal(); form.email.focus(); });
     }
     if (key !== last) { last = key; if (onChange) onChange(s); }

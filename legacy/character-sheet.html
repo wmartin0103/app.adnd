@@ -262,11 +262,7 @@
   --tag-roll-edge: #245240;
   color-scheme: dark;
 }
-.theme-toggle { box-sizing: border-box; width: var(--ctl-sm); height: var(--ctl-sm); padding: 0; display: inline-flex; align-items: center; justify-content: center;
-  background: var(--color-surface); color: var(--color-text-muted); border: 1px solid var(--color-border); border-radius: var(--radius-ctl); cursor: pointer; vertical-align: middle; }
-.theme-toggle svg { width: var(--ctl-ico-sm); height: var(--ctl-ico-sm); }
-.theme-toggle:hover { color: var(--color-accent-text); border-color: var(--color-accent-text); }
-.theme-toggle:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
 /* Fields (docs/design-system.md: Sizes, States) */
 :root { --field-h: var(--ctl-md); --field-fs: var(--ctl-fs-md); --field-px: var(--ctl-pad-md); }
 .size-sm { --field-h: var(--ctl-sm); --field-fs: var(--ctl-fs-sm); --field-px: var(--ctl-pad-sm); }
@@ -338,6 +334,53 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
 .tag-priest { --tag-bg: var(--tag-priest-bg); --tag-text: var(--tag-priest-text); --tag-edge: var(--tag-priest-edge); }
 .tag-magic { --tag-bg: var(--tag-magic-bg); --tag-text: var(--tag-magic-text); --tag-edge: var(--tag-magic-edge); }
 .tag-roll { --tag-bg: var(--tag-roll-bg); --tag-text: var(--tag-roll-text); --tag-edge: var(--tag-roll-edge); }
+/* Buttons (docs/design-system.md: Buttons, States) */
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#) {
+  box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; gap: 0.4em; vertical-align: middle;
+  height: var(--field-h); min-height: 0; min-width: 0; padding: 0 var(--field-px);
+  font-family: var(--font-sans); font-size: var(--field-fs); font-weight: 600; font-style: normal; line-height: 1;
+  letter-spacing: normal; text-transform: none; text-decoration: none; white-space: nowrap;
+  border: 1px solid transparent; border-radius: var(--radius-ctl); background-image: none; box-shadow: none; opacity: 1;
+  cursor: pointer; transition: background-color .12s, border-color .12s, color .12s;
+}
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#) svg { width: 1.1em; height: 1.1em; flex: none; }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-icon { width: var(--field-h); padding: 0; }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-primary { background-color: var(--color-accent); border-color: var(--color-accent-edge); color: var(--color-on-accent); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-primary:hover:not(:disabled) { background-color: var(--color-accent-strong); border-color: var(--color-accent-strong); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-primary:active:not(:disabled) { background-color: color-mix(in oklab, var(--color-accent-strong) 85%, var(--toward)); border-color: color-mix(in oklab, var(--color-accent-strong) 85%, var(--toward)); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-secondary { background-color: var(--color-surface); border-color: var(--color-border); color: var(--color-accent-text); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-secondary:hover:not(:disabled) { border-color: var(--color-accent-text); background-color: color-mix(in oklab, var(--color-accent-text) 9%, var(--color-surface)); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-secondary:active:not(:disabled) { border-color: var(--color-accent-text); background-color: color-mix(in oklab, var(--color-accent-text) 18%, var(--color-surface)); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-primary.is-danger { background-color: var(--color-danger); border-color: var(--color-danger); color: var(--color-on-danger); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-primary.is-danger:hover:not(:disabled) { background-color: color-mix(in oklab, var(--color-danger) 86%, var(--toward)); border-color: color-mix(in oklab, var(--color-danger) 86%, var(--toward)); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-primary.is-danger:active:not(:disabled) { background-color: color-mix(in oklab, var(--color-danger) 74%, var(--toward)); border-color: color-mix(in oklab, var(--color-danger) 74%, var(--toward)); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-secondary.is-danger { color: var(--color-danger-text); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-secondary.is-danger:hover:not(:disabled) { border-color: var(--color-danger-text); background-color: color-mix(in oklab, var(--color-danger-text) 9%, var(--color-surface)); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-secondary.is-danger:active:not(:disabled) { border-color: var(--color-danger-text); background-color: color-mix(in oklab, var(--color-danger-text) 18%, var(--color-surface)); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-bare { background-color: transparent; border-color: transparent; color: var(--color-text-muted); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-bare:is(:hover, :focus-visible):not(:disabled) { border-color: var(--color-border); color: var(--color-accent-text); background-color: color-mix(in oklab, var(--color-accent-text) 9%, transparent); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-bare.is-danger:is(:hover, :focus-visible):not(:disabled) { color: var(--color-danger-text); background-color: color-mix(in oklab, var(--color-danger-text) 9%, transparent); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-bare:is([aria-pressed="true"], .is-active) { color: var(--color-accent2-text); background-color: color-mix(in oklab, var(--color-accent2) 16%, transparent); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#):active:not(:disabled) { transform: translateY(1px); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#):focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#):is(:disabled, [aria-disabled="true"]) { opacity: .45; cursor: not-allowed; }
+
+/* Tab buttons: joined buttons for picking one of three or more (class="ui-tabs" on the group) */
+:is(div, span, fieldset, [role=group]).ui-tabs:not(#\#) {
+  display: inline-flex; flex-wrap: nowrap; box-sizing: border-box; height: var(--field-h); padding: 0; gap: 0;
+  border: 1px solid var(--color-border); border-radius: var(--radius-ctl); overflow: hidden; background: var(--color-surface);
+}
+:is(div, span, fieldset, [role=group]).ui-tabs:not(#\#) > button {
+  box-sizing: border-box; height: 100%; margin: 0; padding: 0 var(--field-px); border: 0; border-left: 1px solid var(--color-border); border-radius: 0;
+  background: transparent; color: var(--color-text-muted); font: 600 var(--field-fs)/1 var(--font-sans); letter-spacing: normal; text-transform: none;
+  white-space: nowrap; cursor: pointer; box-shadow: none; transition: background-color .12s, color .12s;
+}
+:is(div, span, fieldset, [role=group]).ui-tabs:not(#\#) > button:first-child { border-left: 0; }
+:is(div, span, fieldset, [role=group]).ui-tabs:not(#\#) > button:hover:not(:is([aria-pressed="true"], .is-active)) { background: color-mix(in oklab, var(--color-text-muted) 10%, var(--color-surface)); color: var(--color-text); }
+:is(div, span, fieldset, [role=group]).ui-tabs:not(#\#) > button:is([aria-pressed="true"], .is-active) { background: var(--color-accent2); color: var(--color-on-accent2); }
+:is(div, span, fieldset, [role=group]).ui-tabs:not(#\#) > button:is([aria-pressed="true"], .is-active):hover { background: color-mix(in oklab, var(--color-accent2) 88%, var(--toward)); }
+:is(div, span, fieldset, [role=group]).ui-tabs:not(#\#) > button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -3px; }
+
 </style>
 <script>try { var t = localStorage.getItem('adnd-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) { /* storage blocked: follow the system */ }</script>
 <!-- end design tokens -->
@@ -2830,12 +2873,12 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
       </div>
       <div class="header-actions">
         <span class="theme-slot" id="theme-slot"></span>
-        <button class="btn btn-primary" id="btn-export" type="button">Export JSON</button>
-        <label class="btn btn-ghost" style="cursor:pointer;">
+        <button class="btn btn-primary ui-button is-secondary" id="btn-export" type="button">Export JSON</button>
+        <label class="btn btn-ghost ui-button is-secondary" style="cursor:pointer;">
           Import JSON
           <input id="btn-import" type="file" accept=".json" class="sr-only" />
         </label>
-        <button class="btn btn-danger" id="btn-clear" type="button">Clear All</button>
+        <button class="btn btn-danger ui-button is-secondary is-danger" id="btn-clear" type="button">Clear All</button>
       </div>
     </header>
 
@@ -2852,7 +2895,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
         <div id="classes-list" role="list" aria-label="Class entries">
           <!-- populated by JS -->
         </div>
-        <button class="add-class-btn" id="add-class-btn" type="button" aria-label="Add a second class">
+        <button class="add-class-btn ui-button is-primary" id="add-class-btn" type="button" aria-label="Add a second class">
           <span aria-hidden="true">＋</span> Add Class
         </button>
       </section>
@@ -3007,8 +3050,8 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
           <p class="stances-hint">Anything permanent or temporary that can have an impact in combat.</p>
           <div id="stances-list" role="list"></div>
           <div class="stances-actions">
-            <button class="add-class-btn" id="add-stance-btn" type="button"><span aria-hidden="true">＋</span> Add Effect</button>
-            <button class="add-class-btn" id="next-round-btn" type="button">Next round</button>
+            <button class="add-class-btn ui-button is-primary" id="add-stance-btn" type="button"><span aria-hidden="true">＋</span> Add Effect</button>
+            <button class="add-class-btn ui-button is-primary" id="next-round-btn" type="button">Next round</button>
           </div>
         </div>
       </div>
@@ -3025,7 +3068,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
       <div class="scenarios-list" id="scenarios-list" role="list">
         <!-- Injected by JS -->
       </div>
-      <button class="add-scenario-btn" id="add-scenario-btn" type="button" aria-label="Add combat scenario">
+      <button class="add-scenario-btn ui-button is-primary" id="add-scenario-btn" type="button" aria-label="Add combat scenario">
         <span aria-hidden="true">＋</span> Add Scenario
       </button>
 
@@ -3052,7 +3095,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
         <div id="weapons-list" aria-label="Weapons list">
           <!-- populated by renderWeapons() -->
         </div>
-        <button class="add-class-btn" id="add-weapon-btn" type="button">
+        <button class="add-class-btn ui-button is-primary" id="add-weapon-btn" type="button">
           <span aria-hidden="true">＋</span> Add Weapon
         </button>
         <!-- Ammunition: only when a weapon uses it (its settings gear) -->
@@ -3062,7 +3105,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
           <!-- Closed until needed: magic or silvered ammo turns up now and then -->
           <div id="ammo-body" hidden>
             <div id="ammo-list" aria-labelledby="ammo-heading"></div>
-            <button class="add-class-btn" id="add-ammo-btn" type="button">
+            <button class="add-class-btn ui-button is-primary" id="add-ammo-btn" type="button">
               <span aria-hidden="true">＋</span> Add Special Ammunition
             </button>
           </div>
@@ -3083,7 +3126,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
       </h2>
       <div id="wpn-prof-panel">
         <div id="wpn-prof-list" aria-label="Weapon proficiencies list"></div>
-        <button class="add-class-btn" id="add-wpn-prof-btn" type="button">
+        <button class="add-class-btn ui-button is-primary" id="add-wpn-prof-btn" type="button">
           <span aria-hidden="true">＋</span> Add Proficiency
         </button>
       </div>
@@ -3113,7 +3156,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
         <div id="spells-list" aria-label="Spells list">
           <!-- populated by renderSpells() -->
         </div>
-        <button class="add-class-btn" id="add-spell-btn" type="button">
+        <button class="add-class-btn ui-button is-primary" id="add-spell-btn" type="button">
           <span aria-hidden="true">＋</span> Add Spell
         </button>
       </div>
@@ -3127,7 +3170,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
       <h2 class="section-heading racial-traits-heading" id="thieving-heading"
         role="button" tabindex="0" aria-expanded="true" aria-controls="thieving-panel">
         Thieving Abilities
-        <button class="thief-settings-btn" id="thief-settings-btn" type="button"
+        <button class="thief-settings-btn ui-button is-bare is-icon size-sm" id="thief-settings-btn" type="button"
           aria-label="Thieving abilities settings" title="Settings">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -3183,7 +3226,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
         <div id="nwp-list" aria-label="Non-weapon proficiencies list">
           <!-- populated by renderNWPs() -->
         </div>
-        <button class="add-class-btn" id="add-nwp-btn" type="button">
+        <button class="add-class-btn ui-button is-primary" id="add-nwp-btn" type="button">
           <span aria-hidden="true">＋</span> Add Proficiency
         </button>
       </div>
@@ -3200,7 +3243,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
       </h2>
       <div id="abilities-cards-panel">
         <div id="abilities-cards-list" aria-label="Abilities list"></div>
-        <button class="add-class-btn" id="add-ability-card-btn" type="button">
+        <button class="add-class-btn ui-button is-primary" id="add-ability-card-btn" type="button">
           <span aria-hidden="true">＋</span> Add Ability
         </button>
       </div>
@@ -3221,7 +3264,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
         <div id="equipment-list" aria-label="Equipment list">
           <!-- populated by renderEquipment() -->
         </div>
-        <button class="add-class-btn" id="add-equipment-btn" type="button">
+        <button class="add-class-btn ui-button is-primary" id="add-equipment-btn" type="button">
           <span aria-hidden="true">＋</span> Add Item
         </button>
       </div>
@@ -3244,7 +3287,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
         <div id="items-list" aria-label="Items list">
           <!-- populated by renderItems() -->
         </div>
-        <button class="add-class-btn" id="add-items-btn" type="button">
+        <button class="add-class-btn ui-button is-primary" id="add-items-btn" type="button">
           <span aria-hidden="true">＋</span> Add Item
         </button>
       </div>
@@ -4897,7 +4940,7 @@ function hitRoll(line, fresh, onReroll, judge) {
     roll.each.forEach((r, i) => wrap.appendChild(panel(r, i, many ? `vs ${who(r.target)}` : '')));
   }
   if (roll.dmgStale && onReroll) {
-    const b = document.createElement('button'); b.type = 'button'; b.className = 'round-btn ui-btn'; b.textContent = 'Roll damage';
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'round-btn ui-btn ui-button is-primary'; b.textContent = 'Roll damage';
     b.addEventListener('click', onReroll);
     wrap.appendChild(b);
   }
@@ -5054,7 +5097,7 @@ function mountThemeToggle(el) {
   if (!el) return null;
   const doc = el.ownerDocument;
   const btn = doc.createElement('button');
-  btn.type = 'button'; btn.className = 'theme-toggle';
+  btn.type = 'button'; btn.className = 'theme-toggle ui-button is-secondary is-icon size-sm';
   const paint = () => {
     const dark = currentTheme(doc) === 'dark';
     btn.innerHTML = dark ? SUN : MOON;
@@ -5070,12 +5113,8 @@ function mountThemeToggle(el) {
   return btn;
 }
 
-// The toggle's look (it rides along with the tokens in <head>)
-const THEME_TOGGLE_CSS = `.theme-toggle { box-sizing: border-box; width: var(--ctl-sm); height: var(--ctl-sm); padding: 0; display: inline-flex; align-items: center; justify-content: center;
-  background: var(--color-surface); color: var(--color-text-muted); border: 1px solid var(--color-border); border-radius: var(--radius-ctl); cursor: pointer; vertical-align: middle; }
-.theme-toggle svg { width: var(--ctl-ico-sm); height: var(--ctl-ico-sm); }
-.theme-toggle:hover { color: var(--color-accent-text); border-color: var(--color-accent-text); }
-.theme-toggle:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }`;
+// The toggle is a secondary icon button (src/ui/components.js); nothing of its own
+const THEME_TOGGLE_CSS = '';
 
 return { currentTheme, setTheme, mountThemeToggle, THEME_TOGGLE_CSS };
 })();
@@ -6191,7 +6230,7 @@ function mountCloud(el, onChange, opts = {}) {
       <label class="cloud-field">Email<input type="email" name="email" autocomplete="username" required></label>
       <label class="cloud-field">Password<input type="password" name="password" autocomplete="current-password" required></label>
       <p class="cloud-error" role="alert"></p>
-      <div class="cloud-actions"><button type="button" class="cloud-cancel">Cancel</button><button type="submit" class="cloud-submit">Sign in</button></div>
+      <div class="cloud-actions"><button type="button" class="cloud-cancel ui-button is-secondary size-sm">Cancel</button><button type="submit" class="cloud-submit ui-button is-primary">Sign in</button></div>
     </form>`;
   doc.body.appendChild(dialog);
   const form = dialog.querySelector('form'), err = dialog.querySelector('.cloud-error');
@@ -6213,12 +6252,12 @@ function mountCloud(el, onChange, opts = {}) {
     const s = got && got.newPassword ? null : got;
     const key = got ? `${got.user.id}|${got.campaignId}|${got.name}|${got.newPassword}` : '';
     if (got && got.newPassword) {
-      el.innerHTML = `<a class="cloud-btn" href="${ACCOUNT_URL}">Choose your password</a>`;
+      el.innerHTML = `<a class="cloud-btn ui-button is-secondary size-sm" href="${ACCOUNT_URL}">Choose your password</a>`;
     } else if (s) {
-      el.innerHTML = `<span class="cloud-who">${esc(s.name)}${s.campaignName ? ` · ${esc(s.campaignName)}` : ' · no campaign yet'}</span> ${opts.home ? `<a class="cloud-btn" href="${HOME_URL}">${esc(opts.home)}</a> ` : ''}<a class="cloud-btn" href="${ACCOUNT_URL}">Account</a> <button type="button" class="cloud-btn">Sign out</button>`;
+      el.innerHTML = `<span class="cloud-who">${esc(s.name)}${s.campaignName ? ` · ${esc(s.campaignName)}` : ' · no campaign yet'}</span> ${opts.home ? `<a class="cloud-btn ui-button is-secondary size-sm" href="${HOME_URL}">${esc(opts.home)}</a> ` : ''}<a class="cloud-btn ui-button is-secondary size-sm" href="${ACCOUNT_URL}">Account</a> <button type="button" class="cloud-btn ui-button is-secondary size-sm">Sign out</button>`;
       el.querySelector('button').addEventListener('click', () => client.auth.signOut());
     } else {
-      el.innerHTML = '<button type="button" class="cloud-btn">Sign in</button>';
+      el.innerHTML = '<button type="button" class="cloud-btn ui-button is-secondary size-sm">Sign in</button>';
       el.querySelector('button').addEventListener('click', () => { err.textContent = ''; dialog.showModal(); form.email.focus(); });
     }
     if (key !== last) { last = key; if (onChange) onChange(s); }
@@ -7198,7 +7237,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         labelRow.className = 'class-label-row';
         const gear = document.createElement('button');
         gear.type = 'button';
-        gear.className = 'thief-settings-btn class-settings-btn' + (kit ? ' is-active' : '');
+        gear.className = 'thief-settings-btn class-settings-btn ui-button is-bare is-icon size-sm' + (kit ? ' is-active' : '');
         gear.setAttribute('aria-label', `${index === 0 ? 'Primary' : 'Secondary'} class settings`);
         gear.setAttribute('aria-expanded', 'false');
         gear.setAttribute('aria-controls', kitPanelId);
@@ -7574,7 +7613,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         // Delete button
         const deleteBtn = document.createElement('button');
         deleteBtn.type = 'button';
-        deleteBtn.className = 'scenario-delete-btn';
+        deleteBtn.className = 'scenario-delete-btn ui-button is-bare is-icon is-danger size-sm';
         deleteBtn.setAttribute('aria-label', `Delete scenario "${scenario.name || 'Scenario ' + (index + 1)}"`);
         deleteBtn.innerHTML = '&#x2715;'; // × symbol
         deleteBtn.addEventListener('click', (e) => {
@@ -7594,7 +7633,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         // Hand toggle — only shown when a weapon is linked (not for a bow's Spellarrow)
         if (scenario.weaponId && !isSpell && !isArrow) {
           const headerHandToggle = document.createElement('div');
-          headerHandToggle.className = 'hand-toggle';
+          headerHandToggle.className = 'hand-toggle ui-tabs size-sm';
           ['main', 'off'].forEach(hand => {
             const btn = document.createElement('button');
             btn.type = 'button';
@@ -7616,7 +7655,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         if (window.SheetRound) {
           const addBtn = document.createElement('button');
           addBtn.type = 'button';
-          addBtn.className = 'round-add-btn';
+          addBtn.className = 'round-add-btn ui-button is-secondary size-sm';
           addBtn.textContent = 'Add to round';
           addBtn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -8038,14 +8077,14 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         if (st.temporary) tag([st.from && `from ${st.from}`, st.rounds !== '' && `${st.rounds} rounds left`].filter(Boolean).join(' · ') || 'Temporary');
         const edit = document.createElement('button');
         edit.type = 'button';
-        edit.className = 'stance-btn';
+        edit.className = 'stance-btn ui-button is-secondary size-sm';
         edit.textContent = editingStance === st.id ? 'Done' : 'Edit';
         edit.setAttribute('aria-expanded', editingStance === st.id ? 'true' : 'false');
         edit.setAttribute('aria-label', `${editingStance === st.id ? 'Done editing' : 'Edit'} ${label}`);
         edit.addEventListener('click', () => { editingStance = editingStance === st.id ? null : st.id; renderStances(); document.querySelector(`[data-stance-id="${st.id}"] .stance-btn`)?.focus(); });
         const del = document.createElement('button');
         del.type = 'button';
-        del.className = 'stance-btn stance-del';
+        del.className = 'stance-btn stance-del ui-button is-secondary is-danger size-sm';
         del.textContent = 'Delete';
         del.setAttribute('aria-label', `Delete ${label}`);
         del.addEventListener('click', () => {
@@ -8060,7 +8099,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         ctl.className = 'stance-ctl';
         if (st.options.length > 1) {
           const seg = document.createElement('div');
-          seg.className = 'stance-seg';
+          seg.className = 'stance-seg ui-tabs size-sm';
           seg.setAttribute('role', 'group');
           seg.setAttribute('aria-label', label);
           [['off', 'Off', ''], ...st.options.map((o, i) => [String(i), o.label || `Option ${i + 1}`, optionSummary(o)])].forEach(([k, t, sub]) => {
@@ -8143,7 +8182,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         const td = document.createElement('td');
         if (several) {
           const rm = document.createElement('button');
-          rm.type = 'button'; rm.className = 'stance-btn'; rm.textContent = 'Remove';
+          rm.type = 'button'; rm.className = 'stance-btn ui-button is-secondary size-sm'; rm.textContent = 'Remove';
           rm.setAttribute('aria-label', `Remove option ${n}`);
           rm.addEventListener('click', () => { st.options.splice(i, 1); if (st.choice >= st.options.length) st.choice = 0; refreshAfterStances(); });
           td.appendChild(rm);
@@ -8157,7 +8196,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       optsWrap.appendChild(opts);
       box.appendChild(optsWrap);
       const addOpt = document.createElement('button');
-      addOpt.type = 'button'; addOpt.className = 'stance-btn';
+      addOpt.type = 'button'; addOpt.className = 'stance-btn ui-button is-secondary size-sm';
       addOpt.textContent = '＋ Add option';
       addOpt.title = 'More than one option makes this a pick-one: choose one at a time';
       addOpt.addEventListener('click', () => { st.options.push(makeOption()); refreshAfterStances(`[data-stance-id="${st.id}"] .stance-opts tbody tr:last-child input`); });
@@ -8406,7 +8445,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       init.appendChild(il);
       const initRow = document.createElement('div'); initRow.className = 'round-chips';
       if (rec.init.roll == null) {
-        const roll = document.createElement('button'); roll.type = 'button'; roll.className = 'round-btn'; roll.textContent = 'Roll d10';
+        const roll = document.createElement('button'); roll.type = 'button'; roll.className = 'round-btn ui-button is-primary'; roll.textContent = 'Roll d10';
         roll.addEventListener('click', () => { rec.init.roll = 1 + Math.floor(Math.random() * 10); saveRound(rec); });
         initRow.append(roll);
       } else {
@@ -8437,7 +8476,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       body.appendChild(renderQueue(rec, ctx, st.foes || []));
       const queued = SheetRound.roundQueue(rec).map(q => scenarios.find(s => s.id === q.scenarioId)).filter(Boolean);
       const send = document.createElement('div'); send.className = 'round-send';
-      const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'round-btn'; btn.id = 'round-send-btn';
+      const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'round-btn ui-button is-primary'; btn.id = 'round-send-btn';
       const changed = roundChanged(rec);
       btn.textContent = rec.sent && changed ? 'Send changes' : rec.sent ? 'Sent ✓' : 'Send to DM';
       btn.disabled = !queued.length || rec.init.roll == null || !changed;
@@ -8479,7 +8518,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           kv('Speed', SheetRound.attackSpeed(ctx, sc)),
         ].filter(Boolean).join('');
         head.innerHTML = `<span class="play-name">${escR(sc.name || 'Unnamed attack')}</span><span class="play-meta">${meta}</span>`;
-        const rm = document.createElement('button'); rm.type = 'button'; rm.className = 'round-add-btn round-remove-btn'; rm.textContent = 'Remove';
+        const rm = document.createElement('button'); rm.type = 'button'; rm.className = 'round-add-btn round-remove-btn ui-button is-secondary is-danger size-sm'; rm.textContent = 'Remove';
         rm.setAttribute('aria-label', `Take ${sc.name || 'this attack'} out of this round`);
         rm.addEventListener('click', () => saveRound(SheetRound.unqueueAttack(rec, q.qid)));
         const ex = document.createElement('label'); ex.className = 'round-item-extra';
@@ -8568,7 +8607,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           summary.appendChild(s);
         } else row.appendChild(n);
         if (!line.roll && canRoll) {
-          const b = document.createElement('button'); b.type = 'button'; b.className = 'round-btn roll-hit-btn';
+          const b = document.createElement('button'); b.type = 'button'; b.className = 'round-btn roll-hit-btn ui-button is-primary';
           b.innerHTML = `${D20_SVG}<span>${thac0 != null ? 'Roll to hit' : 'Roll'}</span>`;
           b.addEventListener('click', () => {
             // The card keeps what it was rolled with (no longer "same as above")
@@ -9043,7 +9082,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         const settingsId = `${wpn.id}-settings`;
         const gear = document.createElement('button');
         gear.type = 'button';
-        gear.className = 'thief-settings-btn class-settings-btn' + (SheetScenarios.usesAmmo(wpn) ? ' is-active' : '');
+        gear.className = 'thief-settings-btn class-settings-btn ui-button is-bare is-icon size-sm' + (SheetScenarios.usesAmmo(wpn) ? ' is-active' : '');
         gear.setAttribute('aria-label', `${wpn.name || 'Weapon'} settings`);
         gear.setAttribute('aria-expanded', 'false');
         gear.setAttribute('aria-controls', settingsId);
@@ -9099,7 +9138,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         const delCell = mkCell('wpn-center');
         const delBtn  = document.createElement('button');
         delBtn.type      = 'button';
-        delBtn.className = 'wpn-del-btn';
+        delBtn.className = 'wpn-del-btn ui-button is-bare is-icon is-danger size-sm';
         delBtn.setAttribute('aria-label', 'Remove weapon');
         delBtn.innerHTML = '&times;';
         delBtn.addEventListener('click', () => {
@@ -9203,7 +9242,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         const c4 = cell(); c4.appendChild(text('notes', 'Notes')); row.appendChild(c4);
         const c5 = cell('wpn-center');
         const del = document.createElement('button');
-        del.type = 'button'; del.className = 'wpn-del-btn'; del.innerHTML = '&times;';
+        del.type = 'button'; del.className = 'wpn-del-btn ui-button is-bare is-icon is-danger size-sm'; del.innerHTML = '&times;';
         del.setAttribute('aria-label', `Remove ${n}`);
         del.addEventListener('click', () => { ammo = ammo.filter(x => x.id !== a.id); renderAmmo(); changed(); });
         c5.appendChild(del); row.appendChild(c5);
@@ -9544,7 +9583,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
           const decBtn = document.createElement('button');
           decBtn.type = 'button';
-          decBtn.className = 'spell-charges-btn';
+          decBtn.className = 'spell-charges-btn ui-button is-secondary is-icon size-sm';
           decBtn.textContent = '−';
           decBtn.setAttribute('aria-label', 'Use charge');
 
@@ -9555,7 +9594,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
           const incBtn = document.createElement('button');
           incBtn.type = 'button';
-          incBtn.className = 'spell-charges-btn';
+          incBtn.className = 'spell-charges-btn ui-button is-secondary is-icon size-sm';
           incBtn.textContent = '+';
           incBtn.setAttribute('aria-label', 'Add charge');
 
@@ -9590,7 +9629,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         // Delete btn
         const delBtn = document.createElement('button');
         delBtn.type = 'button';
-        delBtn.className = 'spell-del-btn';
+        delBtn.className = 'spell-del-btn ui-button is-bare is-icon is-danger size-sm';
         delBtn.setAttribute('aria-label', 'Remove spell');
         delBtn.innerHTML = '&times;';
         delBtn.addEventListener('click', () => {
@@ -10928,7 +10967,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
         const delBtn = document.createElement('button');
         delBtn.type = 'button';
-        delBtn.className = 'nwp-del-btn';
+        delBtn.className = 'nwp-del-btn ui-button is-bare is-icon is-danger size-sm';
         delBtn.innerHTML = '&times;';
         delBtn.setAttribute('aria-label', 'Remove proficiency');
         delBtn.addEventListener('click', () => {
@@ -11102,7 +11141,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
         const delBtn = document.createElement('button');
         delBtn.type = 'button';
-        delBtn.className = 'nwp-del-btn';
+        delBtn.className = 'nwp-del-btn ui-button is-bare is-icon is-danger size-sm';
         delBtn.innerHTML = '&times;';
         delBtn.setAttribute('aria-label', 'Remove ability');
         delBtn.addEventListener('click', () => {
@@ -11204,7 +11243,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
         const delBtn = document.createElement('button');
         delBtn.type = 'button';
-        delBtn.className = 'nwp-del-btn';
+        delBtn.className = 'nwp-del-btn ui-button is-bare is-icon is-danger size-sm';
         delBtn.innerHTML = '&times;';
         delBtn.setAttribute('aria-label', 'Remove weapon proficiency');
         delBtn.addEventListener('click', () => {
@@ -11394,7 +11433,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         const delCell = mkCell();
         const delBtn = document.createElement('button');
         delBtn.type = 'button';
-        delBtn.className = 'wpn-del-btn';
+        delBtn.className = 'wpn-del-btn ui-button is-bare is-icon is-danger size-sm';
         delBtn.innerHTML = '&times;';
         delBtn.setAttribute('aria-label', 'Remove item');
         delBtn.addEventListener('click', () => { onDelete(itm.id); });

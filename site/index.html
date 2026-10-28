@@ -262,11 +262,7 @@
   --tag-roll-edge: #245240;
   color-scheme: dark;
 }
-.theme-toggle { box-sizing: border-box; width: var(--ctl-sm); height: var(--ctl-sm); padding: 0; display: inline-flex; align-items: center; justify-content: center;
-  background: var(--color-surface); color: var(--color-text-muted); border: 1px solid var(--color-border); border-radius: var(--radius-ctl); cursor: pointer; vertical-align: middle; }
-.theme-toggle svg { width: var(--ctl-ico-sm); height: var(--ctl-ico-sm); }
-.theme-toggle:hover { color: var(--color-accent-text); border-color: var(--color-accent-text); }
-.theme-toggle:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
 /* Fields (docs/design-system.md: Sizes, States) */
 :root { --field-h: var(--ctl-md); --field-fs: var(--ctl-fs-md); --field-px: var(--ctl-pad-md); }
 .size-sm { --field-h: var(--ctl-sm); --field-fs: var(--ctl-fs-sm); --field-px: var(--ctl-pad-sm); }
@@ -338,6 +334,53 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
 .tag-priest { --tag-bg: var(--tag-priest-bg); --tag-text: var(--tag-priest-text); --tag-edge: var(--tag-priest-edge); }
 .tag-magic { --tag-bg: var(--tag-magic-bg); --tag-text: var(--tag-magic-text); --tag-edge: var(--tag-magic-edge); }
 .tag-roll { --tag-bg: var(--tag-roll-bg); --tag-text: var(--tag-roll-text); --tag-edge: var(--tag-roll-edge); }
+/* Buttons (docs/design-system.md: Buttons, States) */
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#) {
+  box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; gap: 0.4em; vertical-align: middle;
+  height: var(--field-h); min-height: 0; min-width: 0; padding: 0 var(--field-px);
+  font-family: var(--font-sans); font-size: var(--field-fs); font-weight: 600; font-style: normal; line-height: 1;
+  letter-spacing: normal; text-transform: none; text-decoration: none; white-space: nowrap;
+  border: 1px solid transparent; border-radius: var(--radius-ctl); background-image: none; box-shadow: none; opacity: 1;
+  cursor: pointer; transition: background-color .12s, border-color .12s, color .12s;
+}
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#) svg { width: 1.1em; height: 1.1em; flex: none; }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-icon { width: var(--field-h); padding: 0; }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-primary { background-color: var(--color-accent); border-color: var(--color-accent-edge); color: var(--color-on-accent); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-primary:hover:not(:disabled) { background-color: var(--color-accent-strong); border-color: var(--color-accent-strong); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-primary:active:not(:disabled) { background-color: color-mix(in oklab, var(--color-accent-strong) 85%, var(--toward)); border-color: color-mix(in oklab, var(--color-accent-strong) 85%, var(--toward)); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-secondary { background-color: var(--color-surface); border-color: var(--color-border); color: var(--color-accent-text); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-secondary:hover:not(:disabled) { border-color: var(--color-accent-text); background-color: color-mix(in oklab, var(--color-accent-text) 9%, var(--color-surface)); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-secondary:active:not(:disabled) { border-color: var(--color-accent-text); background-color: color-mix(in oklab, var(--color-accent-text) 18%, var(--color-surface)); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-primary.is-danger { background-color: var(--color-danger); border-color: var(--color-danger); color: var(--color-on-danger); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-primary.is-danger:hover:not(:disabled) { background-color: color-mix(in oklab, var(--color-danger) 86%, var(--toward)); border-color: color-mix(in oklab, var(--color-danger) 86%, var(--toward)); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-primary.is-danger:active:not(:disabled) { background-color: color-mix(in oklab, var(--color-danger) 74%, var(--toward)); border-color: color-mix(in oklab, var(--color-danger) 74%, var(--toward)); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-secondary.is-danger { color: var(--color-danger-text); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-secondary.is-danger:hover:not(:disabled) { border-color: var(--color-danger-text); background-color: color-mix(in oklab, var(--color-danger-text) 9%, var(--color-surface)); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-secondary.is-danger:active:not(:disabled) { border-color: var(--color-danger-text); background-color: color-mix(in oklab, var(--color-danger-text) 18%, var(--color-surface)); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-bare { background-color: transparent; border-color: transparent; color: var(--color-text-muted); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-bare:is(:hover, :focus-visible):not(:disabled) { border-color: var(--color-border); color: var(--color-accent-text); background-color: color-mix(in oklab, var(--color-accent-text) 9%, transparent); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-bare.is-danger:is(:hover, :focus-visible):not(:disabled) { color: var(--color-danger-text); background-color: color-mix(in oklab, var(--color-danger-text) 9%, transparent); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-bare:is([aria-pressed="true"], .is-active) { color: var(--color-accent2-text); background-color: color-mix(in oklab, var(--color-accent2) 16%, transparent); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#):active:not(:disabled) { transform: translateY(1px); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#):focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#):is(:disabled, [aria-disabled="true"]) { opacity: .45; cursor: not-allowed; }
+
+/* Tab buttons: joined buttons for picking one of three or more (class="ui-tabs" on the group) */
+:is(div, span, fieldset, [role=group]).ui-tabs:not(#\#) {
+  display: inline-flex; flex-wrap: nowrap; box-sizing: border-box; height: var(--field-h); padding: 0; gap: 0;
+  border: 1px solid var(--color-border); border-radius: var(--radius-ctl); overflow: hidden; background: var(--color-surface);
+}
+:is(div, span, fieldset, [role=group]).ui-tabs:not(#\#) > button {
+  box-sizing: border-box; height: 100%; margin: 0; padding: 0 var(--field-px); border: 0; border-left: 1px solid var(--color-border); border-radius: 0;
+  background: transparent; color: var(--color-text-muted); font: 600 var(--field-fs)/1 var(--font-sans); letter-spacing: normal; text-transform: none;
+  white-space: nowrap; cursor: pointer; box-shadow: none; transition: background-color .12s, color .12s;
+}
+:is(div, span, fieldset, [role=group]).ui-tabs:not(#\#) > button:first-child { border-left: 0; }
+:is(div, span, fieldset, [role=group]).ui-tabs:not(#\#) > button:hover:not(:is([aria-pressed="true"], .is-active)) { background: color-mix(in oklab, var(--color-text-muted) 10%, var(--color-surface)); color: var(--color-text); }
+:is(div, span, fieldset, [role=group]).ui-tabs:not(#\#) > button:is([aria-pressed="true"], .is-active) { background: var(--color-accent2); color: var(--color-on-accent2); }
+:is(div, span, fieldset, [role=group]).ui-tabs:not(#\#) > button:is([aria-pressed="true"], .is-active):hover { background: color-mix(in oklab, var(--color-accent2) 88%, var(--toward)); }
+:is(div, span, fieldset, [role=group]).ui-tabs:not(#\#) > button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -3px; }
+
 </style>
 <script>try { var t = localStorage.getItem('adnd-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) { /* storage blocked: follow the system */ }</script>
 <!-- end design tokens -->
@@ -444,7 +487,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
         <label>Email<input type="email" name="email" autocomplete="username" required></label>
         <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
         <p class="error" id="error" role="alert"></p>
-        <button class="btn" type="submit">Sign in</button>
+        <button class="btn ui-button is-primary" type="submit">Sign in</button>
       </form>
       <p class="hint" id="offline" hidden>Sign-in isn't available right now.</p>
     </main>
@@ -456,9 +499,9 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
       <h1>AD&amp;D Campaign</h1>
       <div class="who">
         <span id="who"></span>
-        <a class="btn quiet small" href="legacy/dm-helper.html" id="dm-link" hidden>DM Helper</a>
-        <a class="btn quiet small" href="account.html">Account</a>
-        <button class="btn quiet small" type="button" id="signout">Sign out</button>
+        <a class="btn quiet small ui-button is-secondary size-sm" href="legacy/dm-helper.html" id="dm-link" hidden>DM Helper</a>
+        <a class="btn quiet small ui-button is-secondary size-sm" href="account.html">Account</a>
+        <button class="btn quiet small ui-button is-secondary size-sm" type="button" id="signout">Sign out</button>
       </div>
     </header>
     <main id="main"></main>
@@ -474,14 +517,14 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
         <label><input type="radio" name="to" value="dead" checked> <span>Dead</span></label>
         <label><input type="radio" name="to" value="backup"> <span>Backups</span></label>
       </fieldset>
-      <div class="row"><button class="btn quiet" value="cancel">Cancel</button><button class="btn" value="ok">Bring into play</button></div>
+      <div class="row"><button class="btn quiet ui-button is-secondary" value="cancel">Cancel</button><button class="btn ui-button is-primary" value="ok">Bring into play</button></div>
     </form>
   </dialog>
   <dialog id="del" aria-labelledby="del-title" aria-describedby="del-text">
     <form method="dialog">
       <h3 id="del-title"></h3>
       <p id="del-text"></p>
-      <div class="row"><button class="btn quiet" value="cancel" autofocus>Cancel</button><button class="btn danger" value="ok" id="del-ok">Delete</button></div>
+      <div class="row"><button class="btn quiet ui-button is-secondary" value="cancel" autofocus>Cancel</button><button class="btn danger ui-button is-primary is-danger" value="ok" id="del-ok">Delete</button></div>
     </form>
   </dialog>
   <div class="toast" id="toast" role="status"></div>
@@ -640,7 +683,7 @@ function mountThemeToggle(el) {
   if (!el) return null;
   const doc = el.ownerDocument;
   const btn = doc.createElement('button');
-  btn.type = 'button'; btn.className = 'theme-toggle';
+  btn.type = 'button'; btn.className = 'theme-toggle ui-button is-secondary is-icon size-sm';
   const paint = () => {
     const dark = currentTheme(doc) === 'dark';
     btn.innerHTML = dark ? SUN : MOON;
@@ -656,12 +699,8 @@ function mountThemeToggle(el) {
   return btn;
 }
 
-// The toggle's look (it rides along with the tokens in <head>)
-const THEME_TOGGLE_CSS = `.theme-toggle { box-sizing: border-box; width: var(--ctl-sm); height: var(--ctl-sm); padding: 0; display: inline-flex; align-items: center; justify-content: center;
-  background: var(--color-surface); color: var(--color-text-muted); border: 1px solid var(--color-border); border-radius: var(--radius-ctl); cursor: pointer; vertical-align: middle; }
-.theme-toggle svg { width: var(--ctl-ico-sm); height: var(--ctl-ico-sm); }
-.theme-toggle:hover { color: var(--color-accent-text); border-color: var(--color-accent-text); }
-.theme-toggle:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }`;
+// The toggle is a secondary icon button (src/ui/components.js); nothing of its own
+const THEME_TOGGLE_CSS = '';
 
 return { currentTheme, setTheme, mountThemeToggle, THEME_TOGGLE_CSS };
 })();
@@ -859,7 +898,7 @@ function mountCloud(el, onChange, opts = {}) {
       <label class="cloud-field">Email<input type="email" name="email" autocomplete="username" required></label>
       <label class="cloud-field">Password<input type="password" name="password" autocomplete="current-password" required></label>
       <p class="cloud-error" role="alert"></p>
-      <div class="cloud-actions"><button type="button" class="cloud-cancel">Cancel</button><button type="submit" class="cloud-submit">Sign in</button></div>
+      <div class="cloud-actions"><button type="button" class="cloud-cancel ui-button is-secondary size-sm">Cancel</button><button type="submit" class="cloud-submit ui-button is-primary">Sign in</button></div>
     </form>`;
   doc.body.appendChild(dialog);
   const form = dialog.querySelector('form'), err = dialog.querySelector('.cloud-error');
@@ -881,12 +920,12 @@ function mountCloud(el, onChange, opts = {}) {
     const s = got && got.newPassword ? null : got;
     const key = got ? `${got.user.id}|${got.campaignId}|${got.name}|${got.newPassword}` : '';
     if (got && got.newPassword) {
-      el.innerHTML = `<a class="cloud-btn" href="${ACCOUNT_URL}">Choose your password</a>`;
+      el.innerHTML = `<a class="cloud-btn ui-button is-secondary size-sm" href="${ACCOUNT_URL}">Choose your password</a>`;
     } else if (s) {
-      el.innerHTML = `<span class="cloud-who">${esc(s.name)}${s.campaignName ? ` · ${esc(s.campaignName)}` : ' · no campaign yet'}</span> ${opts.home ? `<a class="cloud-btn" href="${HOME_URL}">${esc(opts.home)}</a> ` : ''}<a class="cloud-btn" href="${ACCOUNT_URL}">Account</a> <button type="button" class="cloud-btn">Sign out</button>`;
+      el.innerHTML = `<span class="cloud-who">${esc(s.name)}${s.campaignName ? ` · ${esc(s.campaignName)}` : ' · no campaign yet'}</span> ${opts.home ? `<a class="cloud-btn ui-button is-secondary size-sm" href="${HOME_URL}">${esc(opts.home)}</a> ` : ''}<a class="cloud-btn ui-button is-secondary size-sm" href="${ACCOUNT_URL}">Account</a> <button type="button" class="cloud-btn ui-button is-secondary size-sm">Sign out</button>`;
       el.querySelector('button').addEventListener('click', () => client.auth.signOut());
     } else {
-      el.innerHTML = '<button type="button" class="cloud-btn">Sign in</button>';
+      el.innerHTML = '<button type="button" class="cloud-btn ui-button is-secondary size-sm">Sign in</button>';
       el.querySelector('button').addEventListener('click', () => { err.textContent = ''; dialog.showModal(); form.email.focus(); });
     }
     if (key !== last) { last = key; if (onChange) onChange(s); }
@@ -1147,14 +1186,14 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
       k.appendChild(el('p', 'what' + (c.summary ? '' : ' blank'), c.summary || (c.blank ? 'Not filled in yet' : '')));
       if (c.updatedAt) k.appendChild(el('p', 'meta', when(c.updatedAt)));
       const a = el('div', 'actions');
-      const open = el('a', 'btn small', 'Open sheet'); open.href = sheetUrl(c.id); open.setAttribute('aria-label', `Open ${c.name}’s sheet`);
+      const open = el('a', 'btn small ui-button is-primary size-sm', 'Open sheet'); open.href = sheetUrl(c.id); open.setAttribute('aria-label', `Open ${c.name}’s sheet`);
       a.appendChild(open);
       if (!given && c.status !== 'play') {
-        const b = el('button', 'btn quiet small', c.status === 'dead' ? 'Return to play' : 'Bring into play'); b.type = 'button';
+        const b = el('button', 'btn quiet small ui-button is-secondary size-sm', c.status === 'dead' ? 'Return to play' : 'Bring into play'); b.type = 'button';
         b.addEventListener('click', () => bringIn(c)); a.appendChild(b);
       }
       if (!given) {
-        const m = el('button', 'btn quiet small more', '⋯'); m.type = 'button';
+        const m = el('button', 'btn quiet small more ui-button is-secondary is-icon size-sm', '⋯'); m.type = 'button';
         m.setAttribute('aria-label', `More for ${c.name}`); m.setAttribute('aria-haspopup', 'true'); m.setAttribute('aria-expanded', String(openMenu === c.id));
         m.addEventListener('click', e => { e.stopPropagation(); openMenu = openMenu === c.id ? null : c.id; render(); if (openMenu) document.querySelector('.menu button')?.focus(); });
         a.appendChild(m);
@@ -1191,7 +1230,7 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
       if (local && local.name && !moved() && !list.mine.some(c => !c.blank && c.name === local.name)) {
         const f = el('div', 'found'), p = el('p');
         p.append('This browser has a sheet from before accounts: ', el('b', '', local.name), Characters.summary(local) ? `, ${Characters.summary(local)}.` : '.');
-        const b = el('button', 'btn', 'Save it to your account'); b.type = 'button';
+        const b = el('button', 'btn ui-button is-primary', 'Save it to your account'); b.type = 'button';
         b.addEventListener('click', () => { b.disabled = true; saveLocal(local); });
         f.append(p, b); wrap.appendChild(f);
       }
@@ -1207,8 +1246,8 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
         wrap.append(w, ch);
       } else {
         const add = el('div', 'actions');
-        const nb = el('button', 'btn quiet small', 'New character'); nb.type = 'button'; nb.addEventListener('click', newCharacter);
-        const ib = el('button', 'btn quiet small', 'Import file'); ib.type = 'button'; ib.addEventListener('click', importFile);
+        const nb = el('button', 'btn quiet small ui-button is-secondary size-sm', 'New character'); nb.type = 'button'; nb.addEventListener('click', newCharacter);
+        const ib = el('button', 'btn quiet small ui-button is-secondary size-sm', 'Import file'); ib.type = 'button'; ib.addEventListener('click', importFile);
         add.append(nb, ib);
         const play = mine.filter(c => c.status === 'play');
         const s1 = section('In play', 0, add), c1 = el('div', 'cards');

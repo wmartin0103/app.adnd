@@ -14,7 +14,7 @@ the owner on 2026-10-27, ahead of a dark theme.
 - Every page passes the contrast check in both themes
   (`scripts/contrast-scan.js`, run in the browser on a page served from the
   repo).
-- Fields (boxed and open) are applied (stage 4a). Not yet: buttons, the
+- Fields (4a) and buttons (4b) are applied. Not yet: the
   surfaces, and moving non-interactive text off the action colour (section
   titles, the round number and such are still brass). Until then, new work
   should follow this document, and anything that looks different from it
@@ -208,6 +208,29 @@ action colour. Every tag's text passes 4.5:1 on its fill in both themes.
   (Ground: Lower / Level / Higher). The selected one is filled with the
   second accent. Page navigation has its own tab style (the header's
   underlined tabs), not this one.
+- **Bare icon buttons** (`is-bare`): the small icons in rows and cards (× to
+  delete a weapon, spell or proficiency; ⚙ settings; the Enemy row's copy
+  and trash). No box at rest, so dense rows stay calm; on hover and focus
+  they show the secondary button's border and tint (red for a delete). A
+  pressed one (a settings panel open) takes a second-accent tint.
+
+In code (`src/ui/components.js`): `class="ui-button"` with `is-primary` or
+`is-secondary`, plus `is-danger`, `is-icon`, `is-bare`; `class="ui-tabs"` on
+a group of tab buttons. Sizes come from the same `--field-*` values as
+fields (`size-sm` / `size-lg`, or a dense container), so a button and a
+field of a size line up.
+
+Decided 2026-10-28:
+
+- The **"+ Add …"** buttons (Add Weapon, Add Spell, Add Class, Add Effect,
+  Add Enemy, Add attack…) are **primary**.
+- The sheet's header file actions (Export JSON, Import JSON) are
+  **secondary**, Clear All is destructive outlined: saving is automatic, so
+  neither file action is the main one.
+- On the DM Helper, the rolls and round actions (Roll initiative, Surprise!,
+  Next round, Roll to hit, the Roll-for-all buttons) are primary; Clear,
+  Reset initiative, Duplicate, Crit / Fumble and Import sheets are secondary;
+  Reset and Reset encounter are destructive outlined.
 
 ## States
 
