@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Type Specimen (proposal)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Public+Sans:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=Cinzel:wght@500;600;700&family=Marcellus&family=Cormorant+Garamond:wght@500;600;700&family=Spectral:wght@500;600;700&display=swap" rel="stylesheet">
+<!-- A proposal, not wired to the app: sans candidates for controls and body
+     text (measured: x-height, cap height, natural line height, width), serif
+     candidates for the stylistic parts, and a pairing preview in Midnight &
+     Brass. -->
+<style>
+  :root {
+    --ctl-sm: 1.75rem; --ctl-md: 2.25rem; --ctl-lg: 2.75rem;
+    --fs-sm: 0.8125rem; --fs-md: 0.9375rem; --fs-lg: 1.0625rem;
+    --pad-sm: 0.5rem; --pad-md: 0.75rem; --pad-lg: 1rem;
+    --radius-ctl: 6px; --radius-card: 10px;
+    --sans: 'Source Sans 3'; --serif: 'Cinzel';
+  }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.45 var(--sans), system-ui, sans-serif; }
+  .page { max-width: 76rem; margin: 0 auto; padding: 20px 16px 56px; display: grid; gap: 22px; }
+  h1 { font: 700 1.6rem var(--serif), serif; letter-spacing: .04em; margin: 0; }
+  h2 { font: 700 .75rem var(--sans), sans-serif; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 0; }
+  .note { margin: 0; color: var(--muted); max-width: 62rem; }
+  .card { background: var(--surface); border: 1px solid var(--divider); border-radius: var(--radius-card); padding: 16px; display: grid; gap: 12px; box-shadow: 0 1px 2px rgb(20 16 12 / .06), 0 1px 3px rgb(20 16 12 / .10); }
+  table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+  th { text-align: left; font: 600 .7rem var(--sans), sans-serif; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); padding: 6px 8px; border-bottom: 1px solid var(--divider); }
+  td { padding: 8px; border-bottom: 1px solid var(--divider); vertical-align: middle; }
+  td.num { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+  .pickrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .pickrow b { margin-right: 4px; }
+  .pick { font: 500 .9rem var(--sans), sans-serif; height: var(--ctl-sm); padding: 0 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: var(--radius-ctl); cursor: pointer; }
+  .pick[aria-pressed="true"] { background: var(--accent2); color: var(--onAccent2); border-color: var(--accent2); }
+  /* Controls, as proposed */
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; }
+  .ctl { box-sizing: border-box; height: var(--h); font-size: var(--fs); font-family: inherit; border-radius: var(--radius-ctl); padding: 0 var(--px); }
+  .sm { --h: var(--ctl-sm); --fs: var(--fs-sm); --px: var(--pad-sm); }
+  .md { --h: var(--ctl-md); --fs: var(--fs-md); --px: var(--pad-md); }
+  .lg { --h: var(--ctl-lg); --fs: var(--fs-lg); --px: var(--pad-lg); }
+  input.ctl, select.ctl { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+  input.ctl.n { width: 3.6em; text-align: center; font-variant-numeric: tabular-nums; }
+  select.ctl { appearance: none; padding-right: calc(var(--px) + 1.1em); background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - var(--px) - .45em) 55%, calc(100% - var(--px) - .1em) 55%; background-size: .35em .35em; background-repeat: no-repeat; }
+  .btn { border: 1px solid var(--accentEdge); background: var(--accent); color: var(--onAccent); font-weight: 600; cursor: pointer; }
+  .lbl { display: grid; gap: 4px; font: 600 .68rem var(--sans), sans-serif; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .sample { font-family: var(--f); }
+  .sample .lbl { font-family: var(--f); }
+  .faces { font-size: .8rem; color: var(--muted); }
+  /* Serif in its stylistic roles */
+  .display-name { font: 700 1.6rem var(--f); letter-spacing: .02em; margin: 0; }
+  .display-section { font: 600 .95rem var(--f); letter-spacing: .12em; text-transform: uppercase; margin: 0; color: var(--muted); }
+  .display-num { font: 700 2.2rem var(--f); color: var(--successText); line-height: 1; }
+  .display-die { width: 2.8rem; height: 2.8rem; display: grid; place-items: center; border: 2px solid var(--accent2Text); border-radius: 8px; font: 700 1.3rem var(--f); color: var(--accent2Text); }
+  .serifs { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 12px; }
+  /* The pairing preview */
+  .preview { font-family: var(--sans), system-ui, sans-serif; }
+  .preview .name { font: 700 1.45rem var(--serif), serif; letter-spacing: .03em; margin: 0; }
+  .preview .sect { font: 600 .9rem var(--serif), serif; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0; }
+  .preview .big { font: 700 2rem var(--serif), serif; color: var(--successText); line-height: 1; }
+  .preview .die { width: 2.6rem; height: 2.6rem; display: grid; place-items: center; border: 2px solid var(--accent2Text); border-radius: 8px; font: 700 1.2rem var(--serif), serif; color: var(--accent2Text); }
+  .preview p { margin: 0; }
+  .muted { color: var(--muted); }
+  .well { background: var(--sunken); border-radius: 8px; padding: 12px; display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Type specimen</h1>
+  <p class="note">Sans for controls and body text, serif for the stylistic parts. Each sans is measured in the browser: x-height and cap height as a share of the font size (bigger x-height reads larger at the same size), its natural line height (what makes rows and inputs tall), and how wide a typical sheet line runs at 15px. Controls are 28 / 36 / 44px whatever the font. Nothing here is wired to the app.</p>
+
+  <section class="card">
+    <h2>Sans: controls and body text</h2>
+    <table><thead><tr><th>Font</th><th style="text-align:right">x-height</th><th style="text-align:right">Cap height</th><th style="text-align:right">Line height</th><th style="text-align:right">Width at 15px</th><th>In controls (small, medium, large)</th></tr></thead><tbody id="sans"></tbody></table>
+  </section>
+
+  <section class="card">
+    <h2>Serif: stylistic parts (names, section titles, big numbers)</h2>
+    <div class="serifs" id="serif"></div>
+  </section>
+
+  <section class="card">
+    <h2>Pairing preview</h2>
+    <div class="pickrow"><b>Sans</b><span id="pick-sans"></span></div>
+    <div class="pickrow"><b>Serif</b><span id="pick-serif"></span></div>
+    <div class="pickrow"><b>Theme</b><button class="pick" type="button" data-theme="light" aria-pressed="true">Light</button><button class="pick" type="button" data-theme="dark" aria-pressed="false">Dark</button></div>
+    <div class="preview card" id="preview">
+      <p class="sect">This round</p>
+      <h3 class="name">Brannoc Thale</h3>
+      <p class="muted">Human Fighter 6 · Long sword +1 · THAC0 15 · AC 3 (4 without effects)</p>
+      <div class="row">
+        <label class="lbl">Targets<select class="ctl md"><option>Goblin E1, Goblin E2</option></select></label>
+        <label class="lbl">Ground<select class="ctl md"><option>Level</option></select></label>
+        <label class="lbl">Other<input class="ctl md n" value="+2"></label>
+        <label class="lbl">Notes<input class="ctl md" placeholder="e.g. flanking from the left" style="width:14rem"></label>
+        <button class="ctl md btn" type="button">Roll to hit</button>
+      </div>
+      <div class="well"><span class="die">17</span><span><span class="lbl">Result</span><span class="big">Hit</span></span><span><span class="lbl">Damage</span><b style="font-size:1.35rem">9</b> <span class="muted">1d8+1: 8 + 1</span></span></div>
+      <p>The ogre swings its club wide; the blow glances off your shield. Body text runs in the sans at 15px with a 1.45 line height, which is what notes, spell text and descriptions would use.</p>
+    </div>
+  </section>
+</div>
+<script>
+const THEMES = {"light":{"danger":"#a03f3c","onDanger":"#fefbfb","dangerText":"#983b38","successText":"#286648","highlightFill":"#96ddb6","onHighlight":"#0e271b","text":"#0f1923","muted":"#414f5d","faint":"#596571","border":"#687686","bg":"#eef2f6","surface":"#fdfeff","raised":"#fdfeff","sunken":"#e3e8ee","divider":"#d8dde3","accent":"#dcaf6c","accentStrong":"#ce9e58","onAccent":"#261a09","accentText":"#754f19","focus":"#835a20","accentEdge":"#966b2e","accent2":"#334a62","onAccent2":"#f6f9fb","accent2Text":"#334a62","bar":"#1b222a","barText":"#f0f2f4","barMuted":"#b0b8c1","barTitle":"#e8bc7d","barActive":"#e3b572"},"dark":{"bg":"#0a0f14","surface":"#12181e","raised":"#1b2129","sunken":"#06080d","divider":"#242b33","text":"#ebeff4","muted":"#b2bbc8","faint":"#969fab","border":"#5f6a77","accent":"#dcaf61","accentStrong":"#edc47d","accentText":"#e0b771","onAccent":"#201300","focus":"#e0b771","accent2":"#9bbeff","onAccent2":"#0d1a32","accent2Text":"#a5c5fe","danger":"#f07f77","onDanger":"#290b0a","dangerText":"#f4928a","successText":"#6ccea6","bar":"#04080d","barText":"#ebeff4","barMuted":"#a3acb8","barTitle":"#e6bd77","barActive":"#e3b667","highlightFill":"#5ed8a9","onHighlight":"#002115","accentEdge":"#dcaf61"}};
+const SANS = ['Source Sans 3', 'Barlow', 'IBM Plex Sans', 'Public Sans', 'Inter'];
+const SERIF = ['Cinzel', 'Marcellus', 'Cormorant Garamond', 'Spectral'];
+const SAMPLE = 'Brannoc Thale · Long sword +1 · 1d8+1 · AC 3';
+function setTheme(name) { Object.entries(THEMES[name]).forEach(([k, v]) => document.documentElement.style.setProperty(`--${k}`, v)); }
+// Measured in the browser: x-height, cap height, natural line height, width
+function metrics(f) {
+  const c = document.createElement('canvas').getContext('2d'); c.font = `400 100px '${f}'`;
+  const x = c.measureText('x'), H = c.measureText('H'), m = c.measureText('Hg');
+  c.font = `400 15px '${f}'`;
+  return { x: x.actualBoundingBoxAscent / 100, cap: H.actualBoundingBoxAscent / 100,
+    line: (m.fontBoundingBoxAscent + m.fontBoundingBoxDescent) / 100, width: c.measureText(SAMPLE).width };
+}
+const pct = n => `${Math.round(n * 100)}%`;
+function controls(f) {
+  return ['sm', 'md', 'lg'].map(s => `<div class="row" style="margin:3px 0"><input class="ctl ${s}" value="Brannoc Thale" style="width:9em"><select class="ctl ${s}"><option>Long sword</option></select><input class="ctl ${s} n" value="16"><button class="ctl ${s} btn" type="button">Roll</button></div>`).join('');
+}
+function drawSans() {
+  document.getElementById('sans').innerHTML = SANS.map(f => {
+    const m = metrics(f);
+    return `<tr class="sample" style="--f:'${f}'"><td><b>${f}</b><div class="faces">${SAMPLE}</div></td><td class="num">${pct(m.x)}</td><td class="num">${pct(m.cap)}</td><td class="num">${m.line.toFixed(2)}</td><td class="num">${Math.round(m.width)}px</td><td>${controls(f)}</td></tr>`;
+  }).join('');
+}
+function drawSerif() {
+  document.getElementById('serif').innerHTML = SERIF.map(f => `<div class="card sample" style="--f:'${f}'"><span class="faces">${f}</span>
+    <p class="display-section">Weapon proficiencies</p><h3 class="display-name">Brannoc Thale</h3>
+    <div class="well"><span class="display-die">20</span><span class="display-num">Hit</span><span class="display-num" style="color:var(--text)">17</span></div></div>`).join('');
+}
+function pickers(id, list, cssVar, start) {
+  const el = document.getElementById(id);
+  el.innerHTML = list.map(f => `<button class="pick" type="button" data-f="${f}" aria-pressed="${f === start}" style="font-family:'${f}'">${f}</button>`).join(' ');
+  el.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return;
+    document.getElementById('preview').style.setProperty(cssVar, `'${b.dataset.f}'`);
+    el.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); });
+}
+setTheme('light');
+document.querySelectorAll('[data-theme]').forEach(b => b.addEventListener('click', () => {
+  setTheme(b.dataset.theme); document.querySelectorAll('[data-theme]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+}));
+pickers('pick-sans', SANS, '--sans', 'Source Sans 3');
+pickers('pick-serif', SERIF, '--serif', 'Cinzel');
+drawSerif();
+document.fonts.ready.then(drawSans);
+</script>
+</body>
+</html>
