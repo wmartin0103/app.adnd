@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UI Preview (proposal)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Spectral:wght@600;700&display=swap" rel="stylesheet">
+<!-- A proposal, not wired to the app: a sheet-like screen in the proposed
+     system (Midnight & Brass, Barlow and Spectral, S/M/L controls), so the
+     type scale can be judged in context. "Show type roles" labels each piece
+     of text with its role and size. Sample content, made up. -->
+<style>
+  :root {
+    /* Sizes: one height per size for every bordered control */
+    --ctl-sm: 28px; --ctl-md: 36px; --ctl-lg: 44px;
+    --pad-sm: 8px; --pad-md: 12px; --pad-lg: 16px;
+    --radius-ctl: 6px; --radius-card: 10px;
+    /* Type scale */
+    --serif: 'Spectral', Georgia, serif; --sans: 'Barlow', system-ui, sans-serif;
+    --t-page: 700 28px/1.2 var(--serif); --t-name: 700 24px/1.2 var(--serif); --t-card: 600 18px/1.25 var(--serif);
+    --t-section: 600 14px/1.3 var(--serif); --t-big: 700 32px/1 var(--serif); --t-num: 700 22px/1 var(--serif);
+    --t-body: 400 15px/1.45 var(--sans); --t-small: 400 13px/1.4 var(--sans); --t-label: 600 12px/1.2 var(--sans);
+    --t-ctl-sm: 500 13px/1 var(--sans); --t-ctl-md: 500 15px/1 var(--sans); --t-ctl-lg: 500 17px/1 var(--sans);
+  }
+  .light { --e1: 0 1px 2px rgb(20 16 12 / .06), 0 1px 3px rgb(20 16 12 / .10); --e2: 0 12px 30px rgb(20 16 12 / .16), 0 2px 6px rgb(20 16 12 / .08); --edge-hi: transparent; color-scheme: light; }
+  .dark { --e1: 0 1px 2px rgb(0 0 0 / .5); --e2: 0 14px 34px rgb(0 0 0 / .55), 0 2px 6px rgb(0 0 0 / .4); --edge-hi: rgb(255 255 255 / .05); color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: var(--t-body); }
+  p { margin: 0; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  /* Type roles */
+  .t-page { font: var(--t-page); margin: 0; }
+  .t-name { font: var(--t-name); margin: 0; }
+  .t-card { font: var(--t-card); margin: 0; }
+  .t-section { font: var(--t-section); text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin: 0; }
+  .t-big { font: var(--t-big); font-variant-numeric: lining-nums; }
+  .t-num { font: var(--t-num); font-variant-numeric: lining-nums; }
+  .t-small { font: var(--t-small); color: var(--muted); }
+  .t-label { font: var(--t-label); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+  .tab-nums { font-variant-numeric: tabular-nums; }
+
+  /* Header bar and page tabs */
+  .bar { background: var(--bar); color: var(--barText); padding: 10px 24px 0; }
+  .bar-in { max-width: 72rem; margin: 0 auto; display: grid; gap: 4px; }
+  .brand { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .brand .logo { font: 700 18px/1.2 var(--serif); letter-spacing: .06em; color: var(--barTitle); }
+  .brand .who { font: var(--t-small); color: var(--barMuted); }
+  .bar nav { display: flex; gap: 22px; }
+  .bar nav a { font: 600 14px/1 var(--sans); color: var(--barMuted); text-decoration: none; padding: 8px 0 11px; border-bottom: 3px solid transparent; }
+  .bar nav a[aria-current="page"] { color: var(--barText); border-bottom-color: var(--barActive); }
+
+  .page { max-width: 72rem; margin: 0 auto; padding: 22px 24px 60px; display: grid; gap: 18px; }
+  .head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; }
+
+  /* Surfaces */
+  .card { background: var(--surface); border: 1px solid var(--divider); border-radius: var(--radius-card); box-shadow: var(--e1), inset 0 1px 0 var(--edge-hi); padding: 18px; display: grid; gap: 14px; align-content: start; }
+  .card.featured { border-top: 3px solid var(--accent2); }
+  .well { background: var(--sunken); border-radius: 8px; padding: 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px 22px; }
+  .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 18px; align-items: start; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+
+  /* Character header: stats */
+  .stats { display: flex; flex-wrap: wrap; gap: 10px; }
+  .stat { background: var(--sunken); border-radius: 8px; padding: 8px 14px; display: grid; gap: 4px; min-width: 5.5rem; }
+  .stat .t-num { color: var(--text); }
+  .hp { display: flex; align-items: baseline; gap: 4px; }
+
+  /* Controls */
+  .row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 10px; }
+  .field { display: grid; gap: 4px; }
+  .ctl { height: var(--h); font: var(--f); border-radius: var(--radius-ctl); padding: 0 var(--px); }
+  .sm { --h: var(--ctl-sm); --f: var(--t-ctl-sm); --px: var(--pad-sm); --ico: 14px; }
+  .md { --h: var(--ctl-md); --f: var(--t-ctl-md); --px: var(--pad-md); --ico: 16px; }
+  .lg { --h: var(--ctl-lg); --f: var(--t-ctl-lg); --px: var(--pad-lg); --ico: 20px; }
+  input.ctl, select.ctl { background: var(--surface); color: var(--text); border: 1px solid var(--border); min-width: 0; }
+  input.ctl::placeholder { color: var(--faint); }
+  input.num { width: 3.4em; text-align: center; font-variant-numeric: tabular-nums; }
+  select.ctl { appearance: none; padding-right: calc(var(--px) + 1.1em); cursor: pointer; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - var(--px) - .45em) 55%, calc(100% - var(--px) - .1em) 55%; background-size: .35em .35em; background-repeat: no-repeat; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; border: 1px solid transparent; cursor: pointer; font-weight: 600; white-space: nowrap; }
+  .btn svg { width: var(--ico); height: var(--ico); }
+  .btn.icon { width: var(--h); padding: 0; justify-content: center; }
+  .primary { background: var(--accent); color: var(--onAccent); border-color: var(--accentEdge); }
+  .secondary { background: var(--surface); color: var(--accentText); border-color: var(--border); }
+  .primary.danger { background: var(--danger); color: var(--onDanger); border-color: var(--danger); }
+  .secondary.danger { color: var(--dangerText); }
+  .tabs { display: inline-flex; border: 1px solid var(--border); border-radius: var(--radius-ctl); overflow: hidden; height: var(--h); }
+  .tabs button { font: var(--f); font-weight: 600; padding: 0 var(--px); border: 0; border-left: 1px solid var(--border); background: var(--surface); color: var(--muted); cursor: pointer; }
+  .tabs button:first-child { border-left: 0; }
+  .tabs button[aria-pressed="true"] { background: var(--accent2); color: var(--onAccent2); }
+
+  /* An attack in this round */
+  .attack { display: grid; gap: 10px; padding-top: 14px; border-top: 1px solid var(--divider); }
+  .attack:first-of-type { padding-top: 0; border-top: 0; }
+  .attack-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+  .attack-head .meta { display: flex; gap: 14px; }
+  .die { width: 48px; height: 48px; display: grid; place-items: center; border: 2px solid var(--accent2Text); border-radius: 9px; color: var(--accent2Text); font: var(--t-num); font-variant-numeric: lining-nums; background: var(--surface); }
+  .outcome { display: grid; gap: 4px; }
+  .hit { color: var(--successText); }
+  .crit { font: 700 11px/1 var(--sans); letter-spacing: .12em; text-transform: uppercase; padding: 5px 10px; border-radius: 999px; background: var(--highlightFill); color: var(--onHighlight); }
+
+  /* Dense table: weapons */
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font: var(--t-label); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding: 0 6px 8px; border-bottom: 1px solid var(--divider); }
+  td { padding: 6px; border-bottom: 1px solid var(--divider); vertical-align: middle; }
+  tr:last-child td { border-bottom: 0; }
+  td input.ctl, td select.ctl { width: 100%; }
+  td input.ctl.num { width: 3.4em; }
+  td select.ctl { width: auto; }
+
+  /* Your characters */
+  .chars { display: grid; gap: 10px; }
+  .char-card { display: grid; gap: 6px; padding: 12px 14px; border: 1px solid var(--divider); border-radius: 8px; background: var(--surface); }
+  .badge { justify-self: start; font: 700 11px/1 var(--sans); letter-spacing: .1em; text-transform: uppercase; padding: 4px 8px; border-radius: 999px; background: var(--accent2); color: var(--onAccent2); }
+
+  /* The page around the proposal */
+  .controls-bar { position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 8px 24px; background: #26262b; color: #f2f2f5; font: 500 13px/1 system-ui, sans-serif; }
+  .controls-bar button { font: inherit; padding: 6px 10px; border-radius: 6px; border: 1px solid #5c5c66; background: #34343b; color: inherit; cursor: pointer; }
+  .controls-bar button[aria-pressed="true"] { background: #f2f2f5; color: #1c1c1f; }
+
+  /* Show type roles: each sample outlined; hover one for its role and size */
+  .roles [data-role] { outline: 1px dashed rgb(255 0 128 / .55); outline-offset: 2px; position: relative; }
+  .roles [data-role]::after { content: attr(data-role); position: absolute; left: 0; top: -15px; font: 600 10px/1 system-ui, sans-serif; letter-spacing: 0; text-transform: none; color: #fff; background: rgb(214 0 110); padding: 2px 4px; border-radius: 3px; white-space: nowrap; z-index: 5; pointer-events: none; display: none; }
+  .roles [data-role]:hover::after { display: block; }
+</style>
+</head>
+<body class="light">
+<div class="controls-bar" role="group" aria-label="Preview options">
+  <span>Proposal preview ·</span>
+  <button type="button" data-theme="light" aria-pressed="true">Light</button>
+  <button type="button" data-theme="dark" aria-pressed="false">Dark</button>
+  <button type="button" id="roles" aria-pressed="false">Show type roles</button><span id="roles-hint" hidden>Hover an outlined piece of text for its role and size</span>
+</div>
+
+<header class="bar"><div class="bar-in">
+  <div class="brand"><span class="logo">AD&amp;D Campaign</span><span class="who">Signed in as Sam · The Barrow Campaign</span></div>
+  <nav aria-label="Pages"><a href="#" aria-current="page">Sheet</a><a href="#">Spells</a><a href="#">Inventory</a><a href="#">Your characters</a></nav>
+</div></header>
+
+<main class="page">
+  <div class="head">
+    <div>
+      <p class="t-section" data-role="Section title · Spectral 600 14">Character sheet</p>
+      <h1 class="t-name" data-role="Character name · Spectral 700 24">Brannoc Thale</h1>
+      <p class="t-small" data-role="Body small · Barlow 400 13">Human Fighter 6 · Lawful Good · Saved today</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="t-label" data-role="Label · Barlow 600 12">Armor class</span><span class="t-num" data-role="Number · Spectral 700 22">3</span><span class="t-small">4 without effects</span></div>
+      <div class="stat"><span class="t-label">Hit points</span><span class="hp"><span class="t-num">38</span><span class="t-small">/ 44</span></span><span class="t-small">&nbsp;</span></div>
+      <div class="stat"><span class="t-label">THAC0</span><span class="t-num">15</span><span class="t-small">Long sword +1</span></div>
+      <div class="stat"><span class="t-label">Movement</span><span class="t-num">9</span><span class="t-small">Chain mail</span></div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <section class="card featured" aria-labelledby="round-title">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <h2 id="round-title" class="t-card" data-role="Card title · Spectral 600 18">This round · Round 3</h2>
+        <button class="ctl md btn primary" type="button">Send to DM</button>
+      </div>
+      <div class="attack">
+        <div class="attack-head">
+          <span class="t-card">Long sword +1</span>
+          <span class="meta t-small"><span><span class="t-label">THAC0</span> 15</span><span><span class="t-label">Dmg S/M</span> 1d8+1</span><span><span class="t-label">Speed</span> 5</span></span>
+        </div>
+        <div class="row">
+          <label class="field"><span class="t-label">Targets</span><select class="ctl md" data-role="Control, medium · Barlow 500 15"><option>Goblin E1, Goblin E2</option></select></label>
+          <div class="field"><span class="t-label">Ground</span><div class="tabs md" role="group" aria-label="Ground"><button type="button" aria-pressed="false">Lower</button><button type="button" aria-pressed="true">Level</button><button type="button" aria-pressed="false">Higher</button></div></div>
+          <label class="field"><span class="t-label">Conditions</span><select class="ctl md"><option>Flanking</option></select></label>
+          <label class="field"><span class="t-label">Other</span><input class="ctl md num" value="+1"></label>
+        </div>
+        <div class="well">
+          <span class="die" aria-label="d20 rolled 17">17</span>
+          <span class="outcome"><span class="t-label">Result</span><span class="t-big hit" data-role="Big number · Spectral 700 32">Hit</span></span>
+          <span class="outcome"><span class="t-label">Damage</span><span><span class="t-num">9</span> <span class="t-small">1d8+1: 8 + 1</span></span></span>
+          <span class="outcome"><span class="t-label">Against</span><span class="t-small">Goblin E1 · AC 6 · needs 9</span></span>
+        </div>
+      </div>
+      <div class="attack">
+        <div class="attack-head"><span class="t-card">Dagger, thrown</span><span class="meta t-small"><span><span class="t-label">THAC0</span> 17</span><span><span class="t-label">Dmg</span> 1d4</span></span></div>
+        <div class="row">
+          <label class="field"><span class="t-label">Targets</span><select class="ctl md"><option>Goblin E2</option></select></label>
+          <label class="field"><span class="t-label">Other</span><input class="ctl md num" value="0"></label>
+          <button class="ctl md btn primary" type="button"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.5 14 5v6l-6 3.5L2 11V5Z M5 6.5h6L8 12Z"/></svg>Roll to hit</button>
+          <button class="ctl md btn secondary danger icon" type="button" aria-label="Remove the thrown dagger"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4h11M6.5 4V2.5h3V4M4 4l.7 9.2a1 1 0 0 0 1 .8h4.6a1 1 0 0 0 1-.8L12 4"/></svg></button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="card" aria-labelledby="chars-title">
+      <h2 id="chars-title" class="t-section">Your characters</h2>
+      <div class="chars">
+        <div class="char-card"><span class="badge">In play</span><span class="t-card">Brannoc Thale</span><span class="t-small">Human Fighter 6 · Saved today</span></div>
+        <div class="char-card"><span class="t-card">Ysolde Fenn</span><span class="t-small">Half-Elf Cleric 1 · Saved 9 days ago</span>
+          <div class="row"><button class="ctl sm btn secondary" type="button" data-role="Control, small · Barlow 500 13">Bring into play</button><button class="ctl sm btn secondary danger" type="button">Delete</button></div></div>
+      </div>
+      <button class="ctl lg btn secondary" type="button" style="justify-content:center" data-role="Control, large · Barlow 500 17">New character</button>
+    </aside>
+  </div>
+
+  <section class="card" aria-labelledby="wpn-title">
+    <div class="row" style="justify-content:space-between;align-items:center"><h2 id="wpn-title" class="t-section">Weapons</h2><button class="ctl sm btn primary" type="button">Add weapon</button></div>
+    <table>
+      <thead><tr><th>Weapon</th><th>Size</th><th>Type</th><th>Speed</th><th>Hit / Dmg</th><th>Dmg S/M · L</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><input class="ctl sm" value="Long sword +1"></td><td><select class="ctl sm"><option>M</option></select></td><td><select class="ctl sm"><option>Slash</option></select></td><td><input class="ctl sm num" value="5"></td><td><input class="ctl sm num" value="+1"></td><td class="tab-nums t-small" style="color:var(--text)">1d8+1 · 1d12+1</td><td><input class="ctl sm" placeholder="Notes"></td></tr>
+        <tr><td><input class="ctl sm" value="Dagger"></td><td><select class="ctl sm"><option>S</option></select></td><td><select class="ctl sm"><option>Pierce</option></select></td><td><input class="ctl sm num" value="2"></td><td><input class="ctl sm num" value="0"></td><td class="tab-nums t-small" style="color:var(--text)">1d4 · 1d3</td><td><input class="ctl sm" value="Thrown 10/20/30"></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="card" aria-labelledby="notes-title">
+    <h2 id="notes-title" class="t-section">Notes</h2>
+    <p data-role="Body · Barlow 400 15">Brannoc swore an oath to the Barrow Watch after the fall of Greywater. He carries his father's long sword, re-forged by the dwarves of Kell Deep, and owes them a favour not yet named. The party last made camp at the old mill; the ogre's tracks led east toward the marsh.</p>
+    <p class="t-small">Last edited by Sam · 2 sessions ago</p>
+  </section>
+</main>
+<script>
+const THEMES = {"light":{"danger":"#a03f3c","onDanger":"#fefbfb","dangerText":"#983b38","successText":"#286648","highlightFill":"#96ddb6","onHighlight":"#0e271b","text":"#0f1923","muted":"#414f5d","faint":"#596571","border":"#687686","bg":"#eef2f6","surface":"#fdfeff","raised":"#fdfeff","sunken":"#e3e8ee","divider":"#d8dde3","accent":"#dcaf6c","accentStrong":"#ce9e58","onAccent":"#261a09","accentText":"#754f19","focus":"#835a20","accentEdge":"#966b2e","accent2":"#334a62","onAccent2":"#f6f9fb","accent2Text":"#334a62","bar":"#1b222a","barText":"#f0f2f4","barMuted":"#b0b8c1","barTitle":"#e8bc7d","barActive":"#e3b572"},"dark":{"bg":"#0a0f14","surface":"#12181e","raised":"#1b2129","sunken":"#06080d","divider":"#242b33","text":"#ebeff4","muted":"#b2bbc8","faint":"#969fab","border":"#5f6a77","accent":"#dcaf61","accentStrong":"#edc47d","accentText":"#e0b771","onAccent":"#201300","focus":"#e0b771","accent2":"#9bbeff","onAccent2":"#0d1a32","accent2Text":"#a5c5fe","danger":"#f07f77","onDanger":"#290b0a","dangerText":"#f4928a","successText":"#6ccea6","bar":"#04080d","barText":"#ebeff4","barMuted":"#a3acb8","barTitle":"#e6bd77","barActive":"#e3b667","highlightFill":"#5ed8a9","onHighlight":"#002115","accentEdge":"#dcaf61"}};
+function setTheme(name) {
+  Object.entries(THEMES[name]).forEach(([k, v]) => document.documentElement.style.setProperty(`--${k}`, v));
+  document.body.className = name + (document.body.classList.contains('roles') ? ' roles' : '');
+  document.querySelectorAll('[data-theme]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.theme === name)));
+}
+document.querySelectorAll('[data-theme]').forEach(b => b.addEventListener('click', () => setTheme(b.dataset.theme)));
+document.getElementById('roles').addEventListener('click', e => { const on = document.body.classList.toggle('roles'); e.currentTarget.setAttribute('aria-pressed', String(on)); document.getElementById('roles-hint').hidden = !on; });
+document.querySelectorAll('.tabs').forEach(g => g.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; g.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); }));
+setTheme('light');
+</script>
+</body>
+</html>
