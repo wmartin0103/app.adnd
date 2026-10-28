@@ -1107,14 +1107,17 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
       let data;
       try { data = JSON.parse(await file.text()); if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error(); }
       catch (err) { say('That file isn’t a character sheet. Use a .json file exported from the sheet.'); return; }
+      // Into the empty character with its name (made for it by add-player.sql), else a new one
+      if (data.name && list.mine.some(c => c.blank && c.name === data.name)) { saveLocal(data, { keepLocal: true }); return; }
       try {
         const r = await Characters.createCharacter(client, session, data, { mine: list.mine });
         await reload(); say(`${data.name || 'The character'} is saved to your account, ${placeText(r.status)}.`);
       } catch (err) { say(problem(err)); }
     });
-    // The sheet from before accounts: into the row with its name (made for it
-    // by the DM), or a new one
-    async function saveLocal(data) {
+    // The sheet from before accounts (or an imported file): into the row with
+    // its name (made for it by the DM), or a new one. keepLocal: an import, so
+    // the browser's own sheet still counts as not saved yet
+    async function saveLocal(data, { keepLocal = false } = {}) {
       const blank = list.mine.find(c => c.blank && c.name === data.name);
       try {
         let id, status;
@@ -1123,7 +1126,7 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
           await Characters.saveSheet(client, id, data);
           if (status !== 'play' && !list.mine.some(c => c.status === 'play')) { await Characters.setStatus(client, list.mine, id, 'play'); status = 'play'; }
         } else ({ id, status } = await Characters.createCharacter(client, session, data, { mine: list.mine }));
-        try { localStorage.setItem(MOVED, id); } catch (e) { /* storage blocked */ }
+        if (!keepLocal) { try { localStorage.setItem(MOVED, id); } catch (e) { /* storage blocked */ } }
         await reload(); say(`${data.name} is saved to your account, ${placeText(status)}.`);
       } catch (e) { say(problem(e)); }
     }
