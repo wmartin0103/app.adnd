@@ -62,6 +62,7 @@
   --toward: #000;
   --scrim: rgb(15 25 35 / .45);
   --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23414f5d' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --spin: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 16'%3E%3Cpath d='M2 6l3-3 3 3M2 10l3 3 3-3' fill='none' stroke='%23414f5d' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
@@ -101,6 +102,7 @@
     --toward: #fff;
     --scrim: rgb(0 0 0 / .6);
     --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23b2bbc8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    --spin: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 16'%3E%3Cpath d='M2 6l3-3 3 3M2 10l3 3 3-3' fill='none' stroke='%23b2bbc8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     color-scheme: dark;
   }
 }
@@ -140,6 +142,7 @@
   --toward: #fff;
   --scrim: rgb(0 0 0 / .6);
   --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23b2bbc8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --spin: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 16'%3E%3Cpath d='M2 6l3-3 3 3M2 10l3 3 3-3' fill='none' stroke='%23b2bbc8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   color-scheme: dark;
 }
 .theme-toggle { box-sizing: border-box; width: var(--ctl-sm); height: var(--ctl-sm); padding: 0; display: inline-flex; align-items: center; justify-content: center;
@@ -172,6 +175,19 @@
 :is(input:not([type]), input[type=text], input[type=number], input[type=email], input[type=password], input[type=search], input[type=url], input[type=tel], select, textarea):not(.ui-native):not(.open-field)[readonly] { background-color: var(--color-sunken); }
 :is(input:not([type]), input[type=text], input[type=number], input[type=email], input[type=password], input[type=search], input[type=url], input[type=tel], select, textarea):not(.ui-native):not(.open-field):disabled { opacity: .45; cursor: not-allowed; }
 :is(input:not([type]), input[type=text], input[type=number], input[type=email], input[type=password], input[type=search], input[type=url], input[type=tel], select, textarea):not(.ui-native):not(.open-field)[aria-invalid="true"] { border-color: var(--color-danger-text); }
+/* A select's open list follows the theme */
+select option { background-color: var(--color-raised); color: var(--color-text); }
+/* Spin buttons, where a number field keeps them (class="has-spin"): our up/down
+   icon in its right padding, no box behind it (src/ui/spin.js makes it work).
+   The browser's own are hidden. */
+input[type=number].has-spin:not(.ui-native) {
+  -moz-appearance: textfield; appearance: textfield;
+  padding-right: calc(var(--field-px) + 1em);
+  background-image: var(--spin); background-repeat: no-repeat; background-position: right calc(var(--field-px) - 2px) center; background-size: 0.55em auto;
+}
+input[type=number].has-spin.open-field { padding-right: 1.1em; background-position: right 0 center; }
+input[type=number].has-spin::-webkit-inner-spin-button, input[type=number].has-spin::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input[type=number].has-spin.on-spin { cursor: pointer; }
 
 /* The open field */
 :is(input, select, textarea).open-field {
@@ -1071,15 +1087,14 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
       text-overflow: ellipsis;
       min-width: 0;
     }
-    .wpn-split-pick .wpn-inp.wpn-pick { border: none; text-align: center; text-align-last: center; width: 50%; }
+    .wpn-split-pick .wpn-inp.wpn-pick { text-align: center; text-align-last: center; width: 50%; }
 
     /* Split input — two fields sharing one visual container */
+    /* Two standard fields side by side (hit / damage, S/M / L), a light "/" between */
     .wpn-split {
       display: flex;
-      align-items: stretch;
-      border: 1px solid var(--rule);
-      border-radius: var(--radius);
-      overflow: hidden;
+      align-items: center;
+      gap: 3px;
       width: 100%;
     }
     .wpn-split:focus-within { border-color: var(--accent); }
@@ -1088,21 +1103,11 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
     .wpn-split-b {
       flex: 1;
       min-width: 0;
-      border: none !important;
-      border-radius: 0 !important;
       text-align: center;
-      padding: 0.2em 0.25em;
-      outline: none;
     }
-    .wpn-split-a:focus,
-    .wpn-split-b:focus { background: color-mix(in srgb, var(--accent) 6%, transparent); }
 
-    .wpn-split-div {
-      width: 1px;
-      background: var(--rule);
-      flex-shrink: 0;
-      align-self: stretch;
-    }
+    .wpn-split-div { flex-shrink: 0; }
+    .wpn-split-div::before { content: '/'; font-size: 13px; color: var(--color-text-faint); }
 
     .wpn-inp-half { font-size: 0.72rem; }
 
@@ -1298,10 +1303,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
     .nwp-roll-wrap {
       display: flex;
       align-items: center;
-      gap: 0;
-      border: 1px solid var(--rule);
-      border-radius: var(--radius);
-      overflow: hidden;
+      gap: 3px;
     }
     .nwp-roll-wrap .nwp-ability-sel {
       border: none;
@@ -2638,18 +2640,11 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
     .spell-card, .spell-class-sel, #nwp-list, #wpn-prof-list, #abilities-cards-list {
       --field-h: var(--ctl-sm); --field-fs: var(--ctl-fs-sm); --field-px: var(--ctl-pad-sm);
     }
-    /* Exception, fused controls: two fields share one border (a proficiency's
-       ability and its adjustment; a weapon's hit and damage picks), so neither
-       draws its own */
-    .nwp-roll-wrap :is(input, select):is(.nwp-adj-inp, .nwp-ability-sel):not(.ui-native):not(.open-field),
-    .wpn-split-pick :is(input, select).wpn-pick:not(.ui-native):not(.open-field) {
-      border: 0; border-radius: 0; background-color: transparent; height: calc(var(--field-h) - 2px);
-    }
-    .nwp-roll-wrap select.nwp-ability-sel:not(.ui-native):not(.open-field) { border-right: 1px solid var(--color-border); }
-    .nwp-roll-wrap :is(input, select):not(.ui-native):not(.open-field):focus,
-    .wpn-split-pick :is(input, select):not(.ui-native):not(.open-field):focus { outline-offset: -2px; }
     /* Open fields with small text (links, notes, descriptions, small numbers): body small, 13px */
     .open-field:is(.nwp-url-inp, .spell-card-url-inp, .spellbook-pages-inp, .movement-mod-inp, .spell-card-notes, .trait-notes, .money-inp, .nwp-card-desc) { font-family: var(--font-sans); font-size: 13px; }
+    /* Calculated values shown in read-only inputs (Missile, Hit and Damage Adj.) aren't fields:
+       ui-native opts them out of the field styles; they read as plain numbers */
+    input.combat-value.ui-native { border: 0; background: transparent; outline: none; cursor: default; }
 </style>
 </head>
 <body>
@@ -2775,7 +2770,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
             <div class="ac-divider" aria-hidden="true"></div>
             <div class="ac-half">
               <span class="ac-sub-label" id="effective-ac-label">Effective</span>
-              <output id="effective-ac" class="combat-value ac-value open-field"
+              <output id="effective-ac" class="combat-value ac-value"
                 aria-labelledby="effective-ac-label"
                 aria-describedby="effective-ac-desc" style="display:block;">—</output>
               <span class="ac-sub-note" id="effective-ac-desc"></span>
@@ -2828,7 +2823,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
                      data-save="movement-mod" placeholder="±0" />
             </span>
           </label>
-          <span id="movement-total" class="combat-value open-field">12</span>
+          <span id="movement-total" class="combat-value">12</span>
           <span class="combat-sublabel">Yards / Round</span>
         </div>
 
@@ -2837,21 +2832,21 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
         <!-- Missile Attack Adj. — hidden when modifier is zero -->
         <div class="combat-card" id="card-missile-adj">
           <label class="combat-label" for="missile-adj">Missile Adj.</label>
-          <input id="missile-adj" class="combat-value open-field" type="text" readonly />
+          <input id="missile-adj" class="combat-value ui-native" type="text" readonly />
           <span class="combat-sublabel">From Dexterity</span>
         </div>
 
         <!-- Hit Adj. — hidden when modifier is zero -->
         <div class="combat-card" id="card-hit-adj">
           <label class="combat-label" for="hit-adj">Hit Adj.</label>
-          <input id="hit-adj" class="combat-value open-field" type="text" readonly />
+          <input id="hit-adj" class="combat-value ui-native" type="text" readonly />
           <span class="combat-sublabel">From Strength</span>
         </div>
 
         <!-- Damage Adj. — hidden when modifier is zero -->
         <div class="combat-card" id="card-damage-adj">
           <label class="combat-label" for="damage-adj">Damage Adj.</label>
-          <input id="damage-adj" class="combat-value open-field" type="text" readonly />
+          <input id="damage-adj" class="combat-value ui-native" type="text" readonly />
           <span class="combat-sublabel">From Strength</span>
         </div>
 
@@ -4810,18 +4805,21 @@ const COLORS = {
 // The select chevron, in the muted text colour (an image: a data URI can't read a CSS colour)
 const chevron = hex => `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23${hex}' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`;
 
+// A number field's up/down icon, the same strokes
+const spin = hex => `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 16'%3E%3Cpath d='M2 6l3-3 3 3M2 10l3 3 3-3' fill='none' stroke='%23${hex}' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`;
+
 // Shadows and the step direction differ by theme too (depth: shadow in light,
 // a lighter surface in dark; hover and pressing mix toward black or white)
 const DEPTH = {
   light: {
     'shadow-card': '0 1px 2px rgb(20 16 12 / .06), 0 1px 3px rgb(20 16 12 / .10)',
     'shadow-raised': '0 12px 30px rgb(20 16 12 / .16), 0 2px 6px rgb(20 16 12 / .08)',
-    'edge-top': 'transparent', toward: '#000', scrim: 'rgb(15 25 35 / .45)', chevron: chevron('414f5d'),
+    'edge-top': 'transparent', toward: '#000', scrim: 'rgb(15 25 35 / .45)', chevron: chevron('414f5d'), spin: spin('414f5d'),
   },
   dark: {
     'shadow-card': '0 1px 2px rgb(0 0 0 / .5)',
     'shadow-raised': '0 14px 34px rgb(0 0 0 / .55), 0 2px 6px rgb(0 0 0 / .4)',
-    'edge-top': 'rgb(255 255 255 / .05)', toward: '#fff', scrim: 'rgb(0 0 0 / .6)', chevron: chevron('b2bbc8'),
+    'edge-top': 'rgb(255 255 255 / .05)', toward: '#fff', scrim: 'rgb(0 0 0 / .6)', chevron: chevron('b2bbc8'), spin: spin('b2bbc8'),
   },
 };
 
@@ -4912,6 +4910,44 @@ const THEME_TOGGLE_CSS = `.theme-toggle { box-sizing: border-box; width: var(--c
 .theme-toggle:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }`;
 
 return { currentTheme, setTheme, mountThemeToggle, THEME_TOGGLE_CSS };
+})();
+// ── ui/spin ──
+__m["ui/spin"] = (() => {
+
+// ── SPIN BUTTONS ────────────────────────────────────────────────
+// A number field that keeps up/down buttons (class="has-spin") shows our own
+// icon (the --spin token, drawn in its right padding, no box behind it) in
+// place of the browser's. Clicking the top half of that area steps up, the
+// bottom half steps down; the arrow keys work as they always do. One listener
+// for the page, so fields drawn later work too.
+
+const FIELD = 'input[type=number].has-spin';
+// Is the pointer over the icon (the field's right padding)?
+function overSpin(el, e) {
+  const r = el.getBoundingClientRect();
+  const pad = parseFloat(getComputedStyle(el).paddingRight) || 0;
+  return e.clientX >= r.right - pad - 2 && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+}
+
+function mountSpin(doc = document) {
+  doc.addEventListener('mousedown', e => {
+    const el = e.target.closest && e.target.closest(FIELD);
+    if (!el || el.disabled || el.readOnly || !overSpin(el, e)) return;
+    e.preventDefault();
+    el.focus();
+    const r = el.getBoundingClientRect();
+    if (e.clientY < r.top + r.height / 2) el.stepUp(); else el.stepDown();
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  // The pointer cursor over the icon only
+  doc.addEventListener('mousemove', e => {
+    const el = e.target.closest && e.target.closest(FIELD);
+    if (el) el.classList.toggle('on-spin', overSpin(el, e));
+  });
+}
+
+return { mountSpin };
 })();
 // ── rules/character ──
 __m["rules/character"] = (() => {
@@ -6221,6 +6257,7 @@ window.Cloud = { cloudClient: __m["cloud"].cloudClient, cloudSession: __m["cloud
 window.SheetRules = { PHB_WEAPONS: __m["rules/weapons"].PHB_WEAPONS };
 window.SheetGuess = { guessCategory: __m["rules/migrate"].guessCategory };
 window.Characters = { loadCharacter: __m["characters"].loadCharacter, saveSheet: __m["characters"].saveSheet, isBlank: __m["characters"].isBlank };
+window.Spin = { mountSpin: __m["ui/spin"].mountSpin };
 window.Theme = { mountThemeToggle: __m["ui/theme"].mountThemeToggle, currentTheme: __m["ui/theme"].currentTheme, setTheme: __m["ui/theme"].setTheme };
 })();
 if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.SheetSpellCatalog = window.parent.SheetSpellCatalog; } catch (e) { /* not allowed */ } }
@@ -7078,7 +7115,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         const levelInput = document.createElement('input');
         levelInput.type = 'number';
         levelInput.id = `${cls.id}-level`;
-        levelInput.className = 'class-level-input open-field';
+        levelInput.className = 'class-level-input open-field has-spin';
         levelInput.min = 1;
         levelInput.max = 20;
         levelInput.placeholder = '1';
@@ -7582,7 +7619,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           const hitModInp = document.createElement('input');
           hitModInp.type = 'number';
           hitModInp.id = `${scenario.id}-hitmod`;
-          hitModInp.className = 'scenario-select hitmod-inp';
+          hitModInp.className = 'scenario-select hitmod-inp has-spin';
           hitModInp.style.width = '4.5rem';
           hitModInp.style.textAlign = 'center';
           hitModInp.value = scenario.hitMod || '';
@@ -7621,7 +7658,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           const inp = document.createElement('input');
           inp.type = 'number';
           inp.id = `${scenario.id}-dmgmod`;
-          inp.className = 'scenario-select hitmod-inp';
+          inp.className = 'scenario-select hitmod-inp has-spin';
           inp.style.width = '4.5rem';
           inp.style.textAlign = 'center';
           inp.value = scenario.dmgMod || '';
@@ -8045,6 +8082,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       return roundSyncObj;
     }
     if (window.Theme) Theme.mountThemeToggle(document.getElementById('theme-slot'));
+    if (window.Spin) Spin.mountSpin(document);   // the up/down icon on number fields that keep one
     if (window.Cloud) Cloud.mountCloud(document.getElementById('cloud-bar'), s => {
       cloudSess = s;
       if (roundSyncObj) { roundSyncObj.close(); roundSyncObj = null; }
@@ -8708,7 +8746,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       }
 
       // Col: Name | Size | DmgType | Spd | Hit/DmgAdj | Damage | Notes | Del
-      const COL = 'minmax(8rem, 1.6fr) 4.4rem 4.6rem 3rem 7rem 7.4rem minmax(6rem, 1.4fr) 1.4rem';   // Size and Hit/Dmg fit their picks' text and chevrons
+      const COL = 'minmax(8rem, 1.6fr) 4.4rem 4.6rem 3rem 7rem 8.8rem minmax(6rem, 1.4fr) 1.4rem';   // Size and Hit/Dmg fit their picks' text and chevrons
 
       // ── Header ──────────────────────────────────────────────
       const header = document.createElement('div');

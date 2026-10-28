@@ -161,12 +161,16 @@ page's `<head>`:
   comes from what it shows (a name, a big number), so it has no set height;
   small text in an open field is at least body small (13px).
 
-Exceptions, each commented where it's written:
-
-- **Fused controls**: two fields sharing one border (a proficiency's
-  ability and its adjustment; a weapon's hit and damage picks) don't draw
-  their own.
-- `class="ui-native"` opts a field out entirely (none do yet).
+- **Pairs** (a weapon's hit / damage, S/M / L; a proficiency's ability and
+  adjustment) are two standard fields side by side, a light "/" between.
+- **Number fields** hide the browser's spin buttons. One that keeps them
+  (`class="has-spin"`: attack Hit/Dmg Mod, class level) shows our up/down
+  icon in its right padding, no box behind it; clicking its top or bottom
+  half steps the value (`src/ui/spin.js`); the arrow keys work everywhere.
+- A select's open list follows the theme.
+- `class="ui-native"` opts an element out of the field styles: the
+  calculated values shown in read-only inputs (Missile, Hit and Damage Adj.)
+  read as plain numbers, with no box, underline or hover.
 
 ## Buttons
 

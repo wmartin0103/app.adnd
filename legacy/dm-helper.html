@@ -62,6 +62,7 @@
   --toward: #000;
   --scrim: rgb(15 25 35 / .45);
   --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23414f5d' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --spin: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 16'%3E%3Cpath d='M2 6l3-3 3 3M2 10l3 3 3-3' fill='none' stroke='%23414f5d' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
@@ -101,6 +102,7 @@
     --toward: #fff;
     --scrim: rgb(0 0 0 / .6);
     --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23b2bbc8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    --spin: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 16'%3E%3Cpath d='M2 6l3-3 3 3M2 10l3 3 3-3' fill='none' stroke='%23b2bbc8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     color-scheme: dark;
   }
 }
@@ -140,6 +142,7 @@
   --toward: #fff;
   --scrim: rgb(0 0 0 / .6);
   --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23b2bbc8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --spin: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 16'%3E%3Cpath d='M2 6l3-3 3 3M2 10l3 3 3-3' fill='none' stroke='%23b2bbc8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   color-scheme: dark;
 }
 .theme-toggle { box-sizing: border-box; width: var(--ctl-sm); height: var(--ctl-sm); padding: 0; display: inline-flex; align-items: center; justify-content: center;
@@ -172,6 +175,19 @@
 :is(input:not([type]), input[type=text], input[type=number], input[type=email], input[type=password], input[type=search], input[type=url], input[type=tel], select, textarea):not(.ui-native):not(.open-field)[readonly] { background-color: var(--color-sunken); }
 :is(input:not([type]), input[type=text], input[type=number], input[type=email], input[type=password], input[type=search], input[type=url], input[type=tel], select, textarea):not(.ui-native):not(.open-field):disabled { opacity: .45; cursor: not-allowed; }
 :is(input:not([type]), input[type=text], input[type=number], input[type=email], input[type=password], input[type=search], input[type=url], input[type=tel], select, textarea):not(.ui-native):not(.open-field)[aria-invalid="true"] { border-color: var(--color-danger-text); }
+/* A select's open list follows the theme */
+select option { background-color: var(--color-raised); color: var(--color-text); }
+/* Spin buttons, where a number field keeps them (class="has-spin"): our up/down
+   icon in its right padding, no box behind it (src/ui/spin.js makes it work).
+   The browser's own are hidden. */
+input[type=number].has-spin:not(.ui-native) {
+  -moz-appearance: textfield; appearance: textfield;
+  padding-right: calc(var(--field-px) + 1em);
+  background-image: var(--spin); background-repeat: no-repeat; background-position: right calc(var(--field-px) - 2px) center; background-size: 0.55em auto;
+}
+input[type=number].has-spin.open-field { padding-right: 1.1em; background-position: right 0 center; }
+input[type=number].has-spin::-webkit-inner-spin-button, input[type=number].has-spin::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input[type=number].has-spin.on-spin { cursor: pointer; }
 
 /* The open field */
 :is(input, select, textarea).open-field {
@@ -2559,18 +2575,21 @@ const COLORS = {
 // The select chevron, in the muted text colour (an image: a data URI can't read a CSS colour)
 const chevron = hex => `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23${hex}' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`;
 
+// A number field's up/down icon, the same strokes
+const spin = hex => `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 16'%3E%3Cpath d='M2 6l3-3 3 3M2 10l3 3 3-3' fill='none' stroke='%23${hex}' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`;
+
 // Shadows and the step direction differ by theme too (depth: shadow in light,
 // a lighter surface in dark; hover and pressing mix toward black or white)
 const DEPTH = {
   light: {
     'shadow-card': '0 1px 2px rgb(20 16 12 / .06), 0 1px 3px rgb(20 16 12 / .10)',
     'shadow-raised': '0 12px 30px rgb(20 16 12 / .16), 0 2px 6px rgb(20 16 12 / .08)',
-    'edge-top': 'transparent', toward: '#000', scrim: 'rgb(15 25 35 / .45)', chevron: chevron('414f5d'),
+    'edge-top': 'transparent', toward: '#000', scrim: 'rgb(15 25 35 / .45)', chevron: chevron('414f5d'), spin: spin('414f5d'),
   },
   dark: {
     'shadow-card': '0 1px 2px rgb(0 0 0 / .5)',
     'shadow-raised': '0 14px 34px rgb(0 0 0 / .55), 0 2px 6px rgb(0 0 0 / .4)',
-    'edge-top': 'rgb(255 255 255 / .05)', toward: '#fff', scrim: 'rgb(0 0 0 / .6)', chevron: chevron('b2bbc8'),
+    'edge-top': 'rgb(255 255 255 / .05)', toward: '#fff', scrim: 'rgb(0 0 0 / .6)', chevron: chevron('b2bbc8'), spin: spin('b2bbc8'),
   },
 };
 
@@ -2661,6 +2680,44 @@ const THEME_TOGGLE_CSS = `.theme-toggle { box-sizing: border-box; width: var(--c
 .theme-toggle:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }`;
 
 return { currentTheme, setTheme, mountThemeToggle, THEME_TOGGLE_CSS };
+})();
+// ── ui/spin ──
+__m["ui/spin"] = (() => {
+
+// ── SPIN BUTTONS ────────────────────────────────────────────────
+// A number field that keeps up/down buttons (class="has-spin") shows our own
+// icon (the --spin token, drawn in its right padding, no box behind it) in
+// place of the browser's. Clicking the top half of that area steps up, the
+// bottom half steps down; the arrow keys work as they always do. One listener
+// for the page, so fields drawn later work too.
+
+const FIELD = 'input[type=number].has-spin';
+// Is the pointer over the icon (the field's right padding)?
+function overSpin(el, e) {
+  const r = el.getBoundingClientRect();
+  const pad = parseFloat(getComputedStyle(el).paddingRight) || 0;
+  return e.clientX >= r.right - pad - 2 && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+}
+
+function mountSpin(doc = document) {
+  doc.addEventListener('mousedown', e => {
+    const el = e.target.closest && e.target.closest(FIELD);
+    if (!el || el.disabled || el.readOnly || !overSpin(el, e)) return;
+    e.preventDefault();
+    el.focus();
+    const r = el.getBoundingClientRect();
+    if (e.clientY < r.top + r.height / 2) el.stepUp(); else el.stepDown();
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  // The pointer cursor over the icon only
+  doc.addEventListener('mousemove', e => {
+    const el = e.target.closest && e.target.closest(FIELD);
+    if (el) el.classList.toggle('on-spin', overSpin(el, e));
+  });
+}
+
+return { mountSpin };
 })();
 // ── rules/character ──
 __m["rules/character"] = (() => {

@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tag Palettes (proposal)</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Spectral:wght@600;700&display=swap" rel="stylesheet">
+<!-- A proposal, not wired to the app: three palettes for the sheet's tags
+     (spell levels 1st-9th and slot badges, Wizard / Priest, Magic items,
+     proficiency rolls), in Midnight & Brass, light and dark. Each tag's text
+     is checked against its fill (all pass 4.5:1). -->
+<style>
+  body { margin: 0; background: #e9e9ec; color: #1c1c1f; font: 15px/1.45 'Barlow', system-ui, sans-serif; }
+  .page { max-width: 76rem; margin: 0 auto; padding: 20px 16px 48px; display: grid; gap: 16px; }
+  h1 { font: 700 1.4rem 'Spectral', serif; margin: 0; }
+  .note { margin: 0; color: #4a4a50; max-width: 62rem; }
+  .pick { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .pick button { font: inherit; padding: 6px 12px; border: 1px solid #a6a6ad; background: #fff; border-radius: 6px; cursor: pointer; }
+  .pick button[aria-pressed="true"] { background: #1c1c1f; color: #fff; border-color: #1c1c1f; }
+  .pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr)); gap: 16px; }
+  .theme { background: var(--bg); color: var(--text); border-radius: 14px; padding: 18px; display: grid; gap: 14px; align-content: start; }
+  .mode { font: 600 .7rem 'Barlow'; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .card { background: var(--surface); border: 1px solid var(--divider); border-radius: 10px; padding: 12px 14px; display: grid; gap: 8px; }
+  .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .name { font: 600 1rem 'Spectral', serif; }
+  .meta { font-size: 13px; color: var(--muted); }
+  .t { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 999px; font: 600 12px/1 'Barlow'; letter-spacing: .04em; background: var(--tb); color: var(--tt); box-shadow: inset 0 0 0 1px var(--te); white-space: nowrap; }
+  .t.caps { text-transform: uppercase; letter-spacing: .1em; font-size: 11px; }
+  .lbl { font: 600 11px 'Barlow'; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .opt-note { margin: 0; color: #4a4a50; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Tag palettes: a proposal</h1>
+  <p class="note">The sheet's tags in Midnight &amp; Brass: spell levels and the slot badges above the spell list, Wizard / Priest, Magic items and proficiency rolls. Each option uses a soft fill, a deep text colour and a hairline edge from the same hue, at matched lightness, so tags stay quieter than buttons and never use the action colour. Every tag passes 4.5:1 in both themes.</p>
+  <div class="pick" id="opts" role="group" aria-label="Palette"></div>
+  <p class="opt-note" id="opt-note"></p>
+  <div class="pair" id="pair"></div>
+</div>
+<script>
+const { LEVELS, OPTIONS } = {"LEVELS":["1st","2nd","3rd","4th","5th","6th","7th","8th","9th"],"OPTIONS":{"spectrum":{"name":"A · Spectrum","note":"Nine hues, evenly spaced around the wheel, all at the same lightness and strength so none shouts. Each level is told apart by hue (and always by its label).","levels":[{"light":{"bg":"#daecff","text":"#054980","edge":"#aecef1"},"dark":{"bg":"#192f46","text":"#aed5ff","edge":"#2e4a67"}},{"light":{"bg":"#e9e6fe","text":"#483a7e","edge":"#c9c5f0"},"dark":{"bg":"#2d2945","text":"#d0cafe","edge":"#474266"}},{"light":{"bg":"#fae0f7","text":"#672e63","edge":"#e2bddd"},"dark":{"bg":"#3c243a","text":"#f2bdec","edge":"#5a3c57"}},{"light":{"bg":"#fee1e5","text":"#77283a","edge":"#efbbc2"},"dark":{"bg":"#432328","text":"#ffbdc5","edge":"#643a40"}},{"light":{"bg":"#ffe3d5","text":"#733200","edge":"#ecc0a8"},"dark":{"bg":"#422616","text":"#fec2a0","edge":"#623e29"}},{"light":{"bg":"#f4e9cc","text":"#594500","edge":"#dac99e"},"dark":{"bg":"#382c0c","text":"#e7cf90","edge":"#54461e"}},{"light":{"bg":"#e1efd4","text":"#335200","edge":"#bed3aa"},"dark":{"bg":"#253317","text":"#bfdda2","edge":"#3d4e2b"}},{"light":{"bg":"#d0f3e5","text":"#035541","edge":"#a4d8c5"},"dark":{"bg":"#0d362a","text":"#97e4c8","edge":"#215243"}},{"light":{"bg":"#ccf1f8","text":"#03515c","edge":"#9dd6e0"},"dark":{"bg":"#03343c","text":"#8ce1f0","edge":"#16505a"}}],"types":{"Wizard":{"light":{"bg":"#dfeafe","text":"#254582","edge":"#b5cbf3"},"dark":{"bg":"#202e47","text":"#b9d2fe","edge":"#364868"}},"Priest":{"light":{"bg":"#d8f2dc","text":"#005725","edge":"#b0d6b6"},"dark":{"bg":"#1a3520","text":"#a9e1b4","edge":"#2f5136"}},"Magic":{"light":{"bg":"#f2e3fe","text":"#5a3473","edge":"#d7c0e8"},"dark":{"bg":"#352641","text":"#e2c2fb","edge":"#523e60"}},"Roll":{"light":{"bg":"#d2f3e3","text":"#00563c","edge":"#a7d8c1"},"dark":{"bg":"#103627","text":"#9be3c3","edge":"#245240"}}}},"ramp":{"name":"B · Rising power","note":"One family, slate to brass-gold: the tag deepens and warms as the level rises, so higher-level spells look more potent at a glance.","levels":[{"light":{"bg":"#dfebf8","text":"#2d4a67","edge":"#bbcde0"},"dark":{"bg":"#232f3b","text":"#bbd4ef","edge":"#3a4959"}},{"light":{"bg":"#d9edf7","text":"#164e65","edge":"#b3d0de"},"dark":{"bg":"#1d313a","text":"#aed8ed","edge":"#324c58"}},{"light":{"bg":"#d5eff3","text":"#02525b","edge":"#acd3d9"},"dark":{"bg":"#173337","text":"#a4dce5","edge":"#2b4e53"}},{"light":{"bg":"#d4f1ed","text":"#01544e","edge":"#aad5cf"},"dark":{"bg":"#143431","text":"#a0dfd8","edge":"#28504c"}},{"light":{"bg":"#d6f1e4","text":"#00553d","edge":"#add5c3"},"dark":{"bg":"#173429","text":"#a5e0c6","edge":"#2c5041"}},{"light":{"bg":"#dbf0db","text":"#1e5523","edge":"#b5d4b5"},"dark":{"bg":"#1f3420","text":"#b2dfb3","edge":"#355035"}},{"light":{"bg":"#e4eed2","text":"#3d5001","edge":"#c2d2a8"},"dark":{"bg":"#293215","text":"#c6db9f","edge":"#414d29"}},{"light":{"bg":"#eeebcc","text":"#504900","edge":"#d1cd9e"},"dark":{"bg":"#332f0c","text":"#dbd490","edge":"#4e491e"}},{"light":{"bg":"#f9e7c9","text":"#5e4201","edge":"#e0c799"},"dark":{"bg":"#3c2b07","text":"#f0cb88","edge":"#5a4418"}}],"types":{"Wizard":{"light":{"bg":"#dfeafe","text":"#254582","edge":"#b5cbf3"},"dark":{"bg":"#202e47","text":"#b9d2fe","edge":"#364868"}},"Priest":{"light":{"bg":"#d2f3e3","text":"#00563c","edge":"#a7d8c1"},"dark":{"bg":"#103627","text":"#9be3c3","edge":"#245240"}},"Magic":{"light":{"bg":"#f2e3fe","text":"#5a3473","edge":"#d7c0e8"},"dark":{"bg":"#352641","text":"#e2c2fb","edge":"#523e60"}},"Roll":{"light":{"bg":"#d2f3e3","text":"#00563c","edge":"#a7d8c1"},"dark":{"bg":"#103627","text":"#9be3c3","edge":"#245240"}}}},"quiet":{"name":"C · Quiet","note":"Levels are neutral (the label carries the meaning); colour is kept for the few tags that mean a kind: Wizard, Priest, Magic.","levels":[{"light":{"bg":"#e5eaf0","text":"#3d4956","edge":"#c3cbd4"},"dark":{"bg":"#292e34","text":"#c7d2df","edge":"#424850"}},{"light":{"bg":"#e5eaf0","text":"#3d4956","edge":"#c3cbd4"},"dark":{"bg":"#292e34","text":"#c7d2df","edge":"#424850"}},{"light":{"bg":"#e5eaf0","text":"#3d4956","edge":"#c3cbd4"},"dark":{"bg":"#292e34","text":"#c7d2df","edge":"#424850"}},{"light":{"bg":"#e5eaf0","text":"#3d4956","edge":"#c3cbd4"},"dark":{"bg":"#292e34","text":"#c7d2df","edge":"#424850"}},{"light":{"bg":"#e5eaf0","text":"#3d4956","edge":"#c3cbd4"},"dark":{"bg":"#292e34","text":"#c7d2df","edge":"#424850"}},{"light":{"bg":"#e5eaf0","text":"#3d4956","edge":"#c3cbd4"},"dark":{"bg":"#292e34","text":"#c7d2df","edge":"#424850"}},{"light":{"bg":"#e5eaf0","text":"#3d4956","edge":"#c3cbd4"},"dark":{"bg":"#292e34","text":"#c7d2df","edge":"#424850"}},{"light":{"bg":"#e5eaf0","text":"#3d4956","edge":"#c3cbd4"},"dark":{"bg":"#292e34","text":"#c7d2df","edge":"#424850"}},{"light":{"bg":"#e5eaf0","text":"#3d4956","edge":"#c3cbd4"},"dark":{"bg":"#292e34","text":"#c7d2df","edge":"#424850"}}],"types":{"Wizard":{"light":{"bg":"#dfeafe","text":"#254582","edge":"#b5cbf3"},"dark":{"bg":"#202e47","text":"#b9d2fe","edge":"#364868"}},"Priest":{"light":{"bg":"#d2f3e3","text":"#00563c","edge":"#a7d8c1"},"dark":{"bg":"#103627","text":"#9be3c3","edge":"#245240"}},"Magic":{"light":{"bg":"#f2e3fe","text":"#5a3473","edge":"#d7c0e8"},"dark":{"bg":"#352641","text":"#e2c2fb","edge":"#523e60"}},"Roll":{"light":{"bg":"#e5eaf0","text":"#3d4956","edge":"#c3cbd4"},"dark":{"bg":"#292e34","text":"#c7d2df","edge":"#424850"}}}}}};
+const THEMES = {"light":{"danger":"#a03f3c","onDanger":"#fefbfb","dangerText":"#983b38","successText":"#286648","highlightFill":"#96ddb6","onHighlight":"#0e271b","text":"#0f1923","muted":"#414f5d","faint":"#596571","border":"#687686","bg":"#eef2f6","surface":"#fdfeff","raised":"#fdfeff","sunken":"#e3e8ee","divider":"#d8dde3","accent":"#dcaf6c","accentStrong":"#ce9e58","onAccent":"#261a09","accentText":"#754f19","focus":"#835a20","accentEdge":"#966b2e","accent2":"#334a62","onAccent2":"#f6f9fb","accent2Text":"#334a62","bar":"#1b222a","barText":"#f0f2f4","barMuted":"#b0b8c1","barTitle":"#e8bc7d","barActive":"#e3b572"},"dark":{"bg":"#0a0f14","surface":"#12181e","raised":"#1b2129","sunken":"#06080d","divider":"#242b33","text":"#ebeff4","muted":"#b2bbc8","faint":"#969fab","border":"#5f6a77","accent":"#dcaf61","accentStrong":"#edc47d","accentText":"#e0b771","onAccent":"#201300","focus":"#e0b771","accent2":"#9bbeff","onAccent2":"#0d1a32","accent2Text":"#a5c5fe","danger":"#f07f77","onDanger":"#290b0a","dangerText":"#f4928a","successText":"#6ccea6","bar":"#04080d","barText":"#ebeff4","barMuted":"#a3acb8","barTitle":"#e6bd77","barActive":"#e3b667","highlightFill":"#5ed8a9","onHighlight":"#002115","accentEdge":"#dcaf61"}}
+;
+let cur = 'spectrum';
+const t = (c, mode, label, cls = '') => `<span class="t ${cls}" style="--tb:${c[mode].bg};--tt:${c[mode].text};--te:${c[mode].edge}">${label}</span>`;
+function panel(mode) {
+  const th = THEMES[mode], op = OPTIONS[cur];
+  const vars = `--bg:${th.bg};--surface:${th.surface};--divider:${th.divider};--text:${th.text};--muted:${th.muted}`;
+  const slots = op.levels.map((c, i) => t(c, mode, `${LEVELS[i]} ×${[4, 3, 3, 2, 2, 1, 1, 1, 1][i]}`)).join('');
+  const spells = [['Magic Missile', 0, 'Wizard'], ['Cure Light Wounds', 0, 'Priest'], ['Fireball', 2, 'Wizard'], ['Raise Dead', 4, 'Priest'], ['Disintegrate', 5, 'Wizard'], ['Wish', 8, 'Wizard']]
+    .map(([n, l, ty]) => `<div class="row">${t(op.levels[l], mode, LEVELS[l])}${t(op.types[ty], mode, ty, 'caps')}<span class="name">${n}</span></div>`).join('');
+  return `<section class="theme" style="${vars}"><span class="mode">${op.name} · ${mode}</span>
+    <div class="card"><span class="lbl">Spell slots</span><div class="row">${slots}</div></div>
+    <div class="card"><span class="lbl">Spellbook</span>${spells}</div>
+    <div class="card"><div class="row"><span class="name">Ring of Protection +1</span>${t(op.types.Magic, mode, 'Magic', 'caps')}</div><span class="meta">Worn · AC and saves +1</span></div>
+    <div class="card"><div class="row"><span class="name">Tracking</span>${t(op.types.Roll, mode, 'WIS 14')}</div><span class="meta">Roll needed with the ability modifier</span></div>
+  </section>`;
+}
+function render() {
+  document.getElementById('pair').innerHTML = panel('light') + panel('dark');
+  document.getElementById('opt-note').textContent = OPTIONS[cur].note;
+  document.querySelectorAll('#opts button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.k === cur)));
+}
+document.getElementById('opts').innerHTML = Object.entries(OPTIONS).map(([k, o]) => `<button type="button" data-k="${k}">${o.name}</button>`).join('');
+document.getElementById('opts').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { cur = b.dataset.k; render(); } });
+render();
+</script>
+</body>
+</html>

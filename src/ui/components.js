@@ -40,6 +40,19 @@ ${BOXED}:focus { border-color: var(--color-focus); outline: 2px solid var(--colo
 ${BOXED}[readonly] { background-color: var(--color-sunken); }
 ${BOXED}:disabled { opacity: .45; cursor: not-allowed; }
 ${BOXED}[aria-invalid="true"] { border-color: var(--color-danger-text); }
+/* A select's open list follows the theme */
+select option { background-color: var(--color-raised); color: var(--color-text); }
+/* Spin buttons, where a number field keeps them (class="has-spin"): our up/down
+   icon in its right padding, no box behind it (src/ui/spin.js makes it work).
+   The browser's own are hidden. */
+input[type=number].has-spin:not(.ui-native) {
+  -moz-appearance: textfield; appearance: textfield;
+  padding-right: calc(var(--field-px) + 1em);
+  background-image: var(--spin); background-repeat: no-repeat; background-position: right calc(var(--field-px) - 2px) center; background-size: 0.55em auto;
+}
+input[type=number].has-spin.open-field { padding-right: 1.1em; background-position: right 0 center; }
+input[type=number].has-spin::-webkit-inner-spin-button, input[type=number].has-spin::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input[type=number].has-spin.on-spin { cursor: pointer; }
 
 /* The open field */
 :is(input, select, textarea).open-field {

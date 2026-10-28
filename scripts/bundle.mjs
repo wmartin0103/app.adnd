@@ -48,6 +48,7 @@ export const RULES_FILES = [
   'src/ui/round-ui.js',
   'src/ui/tokens.js',
   'src/ui/theme.js',
+  'src/ui/spin.js',
   'src/rules/character.js',
   'src/rules/migrate.js',
   'src/rules/combat.js',

@@ -38,6 +38,7 @@ export const TARGETS = {
     SheetRules: ['rules/weapons', ['PHB_WEAPONS']],
     SheetGuess: ['rules/migrate', ['guessCategory']],
     Characters: ['characters', ['loadCharacter', 'saveSheet', 'isBlank']],
+    Spin: ['ui/spin', ['mountSpin']],
     Theme: ['ui/theme', ['mountThemeToggle', 'currentTheme', 'setTheme']],
   },
 };
