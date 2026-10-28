@@ -116,6 +116,11 @@ a sheet full of fields. Weights loaded: Barlow 400, 500, 600; Spectral 600,
 | Control, large / medium / small | Barlow 500 | 17 / 15 / 13px | inside the 44 / 36 / 28px controls |
 | Numbers in fields and tables | Barlow 500 | as the control | tabular (same-width) figures so columns line up |
 
+Italic: no italic font files are loaded. Where text is italic (an `<i>`, or
+`font-style: italic`), Barlow is slanted by the browser, which is fine
+(decided 2026-10-27; a Spectral italic for small labels was tried and set
+aside in favour of the sans).
+
 Serif numbers always use lining figures (`font-variant-numeric:
 lining-nums`, set after any `font` shorthand, which resets it).
 
