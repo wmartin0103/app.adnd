@@ -6,7 +6,7 @@
 <title>Style Directions (proposal)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Crimson+Pro:wght@400;600&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
-<!-- A proposal, not wired to the app: three colour directions, each in light
+<!-- A proposal, not wired to the app: two colour directions, each in light
      and dark, drawn with the same parts (sizes S/M/L, Primary and Secondary
      buttons with a Destructive theme, icon buttons, tab buttons, inputs,
      selects, a card, a well, a raised menu). Every colour pairing's contrast
@@ -32,6 +32,13 @@
   .theme p { margin: 0; }
   .t-muted { color: var(--muted); } .t-faint { color: var(--faint); }
 
+  /* The app's header bar: brand colour carried by the chrome; page tabs underline in the second accent */
+  .bar { background: var(--bar); color: var(--barText); border-radius: var(--radius-card); padding: 10px 16px 0; display: grid; gap: 6px; box-shadow: var(--e1); }
+  .bar .brand { font: 700 1.05rem var(--font-display); letter-spacing: .06em; color: var(--barTitle); display: flex; justify-content: space-between; align-items: center; }
+  .bar .brand small { font: 500 .8rem var(--font-ui); letter-spacing: 0; color: var(--barMuted); }
+  .bar nav { display: flex; gap: 18px; }
+  .bar nav a { color: var(--barMuted); text-decoration: none; font: 600 .85rem var(--font-ui); padding: 6px 0 8px; border-bottom: 3px solid transparent; }
+  .bar nav a[aria-current="page"] { color: var(--barText); border-bottom-color: var(--barActive); }
   /* Surfaces: page → card (e1) → raised menu (e2); wells sink */
   .card { background: var(--surface); border-radius: var(--radius-card); box-shadow: var(--e1), inset 0 1px 0 var(--edge-hi); padding: 16px; display: grid; gap: 12px; border: 1px solid var(--divider); }
   .well { background: var(--sunken); border-radius: 8px; padding: 12px; display: grid; gap: 8px; box-shadow: inset 0 1px 2px rgb(0 0 0 / .08); }
@@ -66,11 +73,13 @@
   .tabs { display: inline-flex; border: 1px solid var(--border); border-radius: var(--radius-ctl); overflow: hidden; height: var(--h); box-sizing: border-box; }
   .tabs button { font: 600 var(--fs) var(--font-ui); padding: 0 var(--px); border: 0; border-left: 1px solid var(--border); background: var(--surface); color: var(--muted); cursor: pointer; }
   .tabs button:first-child { border-left: 0; }
-  .tabs button[aria-pressed="true"] { background: var(--accent); color: var(--onAccent); }
+  .tabs button[aria-pressed="true"] { background: var(--accent2); color: var(--onAccent2); box-shadow: inset 0 0 0 1.5px var(--accent2Text); }
 
   /* A roll result in the well */
-  .die { width: 2.6rem; height: 2.6rem; display: grid; place-items: center; border-radius: 8px; font: 700 1.2rem var(--font-display); background: var(--surface); border: 1px solid var(--border); }
-  .crit { display: inline-flex; padding: 3px 9px; border-radius: 999px; font: 700 .65rem var(--font-ui); letter-spacing: .12em; text-transform: uppercase; background: var(--highlightFill); color: var(--text); }
+  .die { width: 2.6rem; height: 2.6rem; display: grid; place-items: center; border-radius: 8px; font: 700 1.2rem var(--font-display); background: var(--surface); border: 2px solid var(--accent2Text); color: var(--accent2Text); }
+  .crit { display: inline-flex; padding: 3px 9px; border-radius: 999px; font: 700 .65rem var(--font-ui); letter-spacing: .12em; text-transform: uppercase; background: var(--highlightFill); color: var(--onHighlight); }
+  .card.featured { border-top: 3px solid var(--accent2); }
+  .kicker { font: 700 .7rem var(--font-ui); letter-spacing: .14em; text-transform: uppercase; color: var(--accent2Text); }
   .big { font: 700 1.6rem var(--font-display); color: var(--accentText); }
   .hit { color: var(--successText); font-weight: 600; }
   .miss { color: var(--dangerText); font-weight: 600; }
@@ -96,7 +105,7 @@
 <body>
 <div class="page">
   <h1>Style directions: a proposal</h1>
-  <p class="note">Three colour directions in the same parts, light and dark side by side. Sizes S / M / L are 28 / 36 / 44px; every bordered control of a size shares its height. Contrast is measured live: body text AAA (7:1), other text AA (4.5:1), borders, focus and icons 3:1. Nothing here is wired to the app.</p>
+  <p class="note">Two colour directions, each with a second accent, in the same parts, light and dark side by side. Sizes S / M / L are 28 / 36 / 44px; every bordered control of a size shares its height. Contrast is measured live: body text AAA (7:1), other text AA (4.5:1), borders, focus and icons 3:1. Nothing here is wired to the app.</p>
   <div class="pick" role="group" aria-label="Direction"><b>Direction</b><span id="dirs"></span></div>
   <div class="pick" role="group" aria-label="Interface type"><b>Interface type</b>
     <button type="button" data-face="Source Sans 3" aria-pressed="true">Source Sans 3 (sans)</button>
@@ -105,14 +114,16 @@
   <div class="pair" id="pair"></div>
 </div>
 <script>
-const DIRS = {"ember":{"name":"Ember","light":{"bg":"#f3f1ee","surface":"#ffffff","raised":"#ffffff","sunken":"#eae6e1","text":"#1c1815","muted":"#4b443f","faint":"#6b635d","border":"#857b74","divider":"#e2dcd6","accent":"#9b2f17","accentStrong":"#7b2411","accentText":"#9b2f17","onAccent":"#ffffff","focus":"#9b2f17","danger":"#b3261e","onDanger":"#ffffff","dangerText":"#a3221b","successText":"#1e6b3a","highlightText":"#7d5208","highlightFill":"#f2c86b"},"dark":{"bg":"#131110","surface":"#1c1917","raised":"#262220","sunken":"#0e0c0b","text":"#f4efea","muted":"#c4bab2","faint":"#a1968e","border":"#7d726b","divider":"#2f2a27","accent":"#e0775b","accentStrong":"#f09075","accentText":"#f0957b","onAccent":"#1a0c07","focus":"#f0957b","danger":"#f28b82","onDanger":"#2a0705","dangerText":"#f59a92","successText":"#7fd19b","highlightText":"#f2c86b","highlightFill":"#8a6214"}},"slate":{"name":"Slate & Gold","light":{"bg":"#f2f4f7","surface":"#ffffff","raised":"#ffffff","sunken":"#e7eaef","text":"#111722","muted":"#414b5b","faint":"#5f6878","border":"#78818f","divider":"#dfe3e9","accent":"#24426b","accentStrong":"#1a3152","accentText":"#24426b","onAccent":"#ffffff","focus":"#24426b","danger":"#b3261e","onDanger":"#ffffff","dangerText":"#a3221b","successText":"#1e6b3a","highlightText":"#7d5208","highlightFill":"#f2c86b"},"dark":{"bg":"#0f131a","surface":"#171c25","raised":"#212733","sunken":"#0a0d12","text":"#eef2f7","muted":"#b6bfcc","faint":"#939dab","border":"#6d7889","divider":"#262d39","accent":"#e6b85c","accentStrong":"#f2ca76","accentText":"#ecc372","onAccent":"#1d1505","focus":"#ecc372","danger":"#f28b82","onDanger":"#2a0705","dangerText":"#f59a92","successText":"#7fd19b","highlightText":"#f2c86b","highlightFill":"#8a6214"}},"arcane":{"name":"Arcane","light":{"bg":"#f4f3f8","surface":"#ffffff","raised":"#ffffff","sunken":"#e9e7f1","text":"#15121f","muted":"#463f57","faint":"#655d78","border":"#837b92","divider":"#e1deea","accent":"#5534b8","accentStrong":"#432794","accentText":"#5534b8","onAccent":"#ffffff","focus":"#5534b8","danger":"#b3261e","onDanger":"#ffffff","dangerText":"#a3221b","successText":"#1e6b3a","highlightText":"#7d5208","highlightFill":"#f2c86b"},"dark":{"bg":"#100e16","surface":"#19161f","raised":"#23202c","sunken":"#0b0a10","text":"#f1eef7","muted":"#bdb5cc","faint":"#9a91ab","border":"#776e88","divider":"#2b2735","accent":"#a996ff","accentStrong":"#bcadff","accentText":"#b6a6ff","onAccent":"#140c33","focus":"#b6a6ff","danger":"#f28b82","onDanger":"#2a0705","dangerText":"#f59a92","successText":"#7fd19b","highlightText":"#f2c86b","highlightFill":"#8a6214"}}};
+const DIRS = {"slate":{"name":"Slate & Gold","light":{"danger":"#b3261e","onDanger":"#ffffff","dangerText":"#a3221b","successText":"#1c6837","highlightFill":"#f0c35a","onHighlight":"#1c1400","bg":"#ebeff5","surface":"#ffffff","raised":"#ffffff","sunken":"#e2e8f0","text":"#0e1a2c","muted":"#3a4860","faint":"#56647c","border":"#717f96","divider":"#d6dde8","accent":"#1d3f72","accentStrong":"#142f57","accentText":"#1d3f72","onAccent":"#ffffff","focus":"#1d3f72","accent2":"#e9b949","onAccent2":"#1c1400","accent2Text":"#7f5600","bar":"#13284a","barText":"#f3f6fb","barMuted":"#b9c6db","barTitle":"#f0c35a","barActive":"#f0c35a"},"dark":{"danger":"#f28b82","onDanger":"#2a0705","dangerText":"#f59a92","successText":"#7fd19b","highlightFill":"#e3b04b","onHighlight":"#1d1505","bg":"#0f131a","surface":"#171c25","raised":"#212733","sunken":"#0a0d12","text":"#eef2f7","muted":"#b6bfcc","faint":"#939dab","border":"#6d7889","divider":"#262d39","accent":"#e6b85c","accentStrong":"#f2ca76","accentText":"#ecc372","onAccent":"#1d1505","focus":"#ecc372","accent2":"#8fb6ef","onAccent2":"#0a1a33","accent2Text":"#9cc0f5","bar":"#0b0f15","barText":"#eef2f7","barMuted":"#a3adbb","barTitle":"#ecc372","barActive":"#ecc372"}},"arcane":{"name":"Arcane","light":{"danger":"#b3261e","onDanger":"#ffffff","dangerText":"#a3221b","successText":"#1c6837","highlightFill":"#f0c35a","onHighlight":"#1c1400","bg":"#f1eff9","surface":"#ffffff","raised":"#ffffff","sunken":"#e7e3f4","text":"#15102a","muted":"#443b62","faint":"#5f567c","border":"#7c7398","divider":"#dfdaee","accent":"#5a32c8","accentStrong":"#4523a3","accentText":"#5430bd","onAccent":"#ffffff","focus":"#5a32c8","accent2":"#22b3a1","onAccent2":"#031d19","accent2Text":"#0b6b5f","bar":"#2a1868","barText":"#f6f3ff","barMuted":"#c9bff0","barTitle":"#7ee6d6","barActive":"#7ee6d6"},"dark":{"danger":"#f28b82","onDanger":"#2a0705","dangerText":"#f59a92","successText":"#7fd19b","highlightFill":"#e3b04b","onHighlight":"#1d1505","bg":"#100e16","surface":"#19161f","raised":"#23202c","sunken":"#0b0a10","text":"#f1eef7","muted":"#bdb5cc","faint":"#9a91ab","border":"#776e88","divider":"#2b2735","accent":"#a996ff","accentStrong":"#bcadff","accentText":"#b6a6ff","onAccent":"#140c33","focus":"#b6a6ff","accent2":"#4fd1bd","onAccent2":"#03201a","accent2Text":"#5fdcc7","bar":"#0c0a12","barText":"#f1eef7","barMuted":"#a79fba","barTitle":"#b6a6ff","barActive":"#5fdcc7"}}};
 const CHECKS = [
   ['Body text', 'text', 'surface', 7], ['Body text on page', 'text', 'bg', 7], ['Text in a well', 'text', 'sunken', 7],
   ['Muted text', 'muted', 'surface', 4.5], ['Placeholder', 'faint', 'surface', 4.5],
   ['Control border', 'border', 'surface', 3], ['Border in a well', 'border', 'sunken', 3], ['Focus ring', 'focus', 'surface', 3],
   ['Primary button', 'onAccent', 'accent', 4.5], ['Secondary button', 'accentText', 'surface', 4.5],
   ['Destructive filled', 'onDanger', 'danger', 4.5], ['Destructive outlined', 'dangerText', 'surface', 4.5],
-  ['Hit', 'successText', 'surface', 4.5], ['Crit badge', 'text', 'highlightFill', 4.5],
+  ['Hit', 'successText', 'surface', 4.5], ['Crit badge', 'onHighlight', 'highlightFill', 4.5],
+  ['Second accent text', 'accent2Text', 'surface', 4.5], ['Selected tab', 'onAccent2', 'accent2', 4.5],
+  ['Header text', 'barText', 'bar', 7], ['Header title', 'barTitle', 'bar', 4.5], ['Header muted', 'barMuted', 'bar', 4.5], ['Current page mark', 'barActive', 'bar', 3],
 ];
 const hex = h => [0, 2, 4].map(i => parseInt(h.slice(1 + i, 3 + i), 16) / 255);
 const lum = h => { const [r, g, b] = hex(h).map(c => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
@@ -140,7 +151,10 @@ function themePanel(dir, mode) {
   }).join('');
   return `<section class="theme ${mode}" style="${vars}" aria-label="${DIRS[dir].name}, ${mode}">
     <span class="mode">${DIRS[dir].name} · ${mode}</span>
-    <div class="card">
+    <header class="bar"><div class="brand">AD&amp;D Campaign <small>Signed in as Sam</small></div>
+      <nav aria-label="Pages"><a href="#" aria-current="page">Characters</a><a href="#">Initiative</a><a href="#">Saves</a><a href="#">Account</a></nav></header>
+    <div class="card featured">
+      <span class="kicker">In play</span>
       <h3>Brannoc Thale</h3>
       <p>Human Fighter 6 <span class="t-muted">· In play</span> <span class="t-faint">· Saved today</span></p>
       <div class="lbl">Small</div>${size('sm')}
@@ -165,7 +179,7 @@ function themePanel(dir, mode) {
     <div class="card"><table class="cr">${rows}</table></div>
   </section>`;
 }
-let dir = 'ember';
+let dir = 'slate';
 function render() {
   document.getElementById('pair').innerHTML = themePanel(dir, 'light') + themePanel(dir, 'dark');
   document.querySelectorAll('#dirs button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.dir === dir)));
