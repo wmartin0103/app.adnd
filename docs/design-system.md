@@ -172,6 +172,26 @@ page's `<head>`:
   calculated values shown in read-only inputs (Missile, Hit and Damage Adj.)
   read as plain numbers, with no box, underline or hover.
 
+## Tags
+
+A small label for a kind or a level: a spell's level and type, a magic
+item, a proficiency's roll (`src/ui/components.js`, class `tag` and a
+modifier). A pill, Barlow 600 at 12px (11px capitals with `tag-caps`), 20px
+tall, with a soft fill, a deep text colour and a hairline edge from one hue
+(the `--tag-*` tokens, per theme). Quieter than a button, and never the
+action colour. Every tag's text passes 4.5:1 on its fill in both themes.
+
+"Rising power" (decided 2026-10-28):
+
+- **Spell levels** `tag-l1` … `tag-l9`: one family that deepens and warms
+  from slate (1st) through teal and green to brass-gold (9th), so a
+  higher-level spell looks more potent. The slot badges above the spell list
+  use the same.
+- **Kinds**: `tag-wizard` (blue), `tag-priest` (green), `tag-magic` (violet,
+  magic items), `tag-roll` (green, a proficiency's roll).
+
+`prototypes/tag-palettes.html` shows it beside the two options not chosen.
+
 ## Buttons
 
 - **Primary**: filled with the action colour (`accent`, rim `accent-edge`,

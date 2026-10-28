@@ -33,6 +33,38 @@ const chevron = hex => `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 // A number field's up/down icon, the same strokes
 const spin = hex => `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 16'%3E%3Cpath d='M2 6l3-3 3 3M2 10l3 3 3-3' fill='none' stroke='%23${hex}' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`;
 
+// Tags (docs/design-system.md, Tags; "Rising power", decided 2026-10-28): spell
+// levels 1-9 deepen from slate to brass-gold; Wizard, Priest, Magic items and
+// proficiency rolls each have a hue. A soft fill, a deep text, a hairline edge.
+export const TAGS = {
+  light: { 'tag-l1-bg': '#dfebf8', 'tag-l1-text': '#2d4a67', 'tag-l1-edge': '#bbcde0',
+    'tag-l2-bg': '#d9edf7', 'tag-l2-text': '#164e65', 'tag-l2-edge': '#b3d0de',
+    'tag-l3-bg': '#d5eff3', 'tag-l3-text': '#02525b', 'tag-l3-edge': '#acd3d9',
+    'tag-l4-bg': '#d4f1ed', 'tag-l4-text': '#01544e', 'tag-l4-edge': '#aad5cf',
+    'tag-l5-bg': '#d6f1e4', 'tag-l5-text': '#00553d', 'tag-l5-edge': '#add5c3',
+    'tag-l6-bg': '#dbf0db', 'tag-l6-text': '#1e5523', 'tag-l6-edge': '#b5d4b5',
+    'tag-l7-bg': '#e4eed2', 'tag-l7-text': '#3d5001', 'tag-l7-edge': '#c2d2a8',
+    'tag-l8-bg': '#eeebcc', 'tag-l8-text': '#504900', 'tag-l8-edge': '#d1cd9e',
+    'tag-l9-bg': '#f9e7c9', 'tag-l9-text': '#5e4201', 'tag-l9-edge': '#e0c799',
+    'tag-wizard-bg': '#dfeafe', 'tag-wizard-text': '#254582', 'tag-wizard-edge': '#b5cbf3',
+    'tag-priest-bg': '#d2f3e3', 'tag-priest-text': '#00563c', 'tag-priest-edge': '#a7d8c1',
+    'tag-magic-bg': '#f2e3fe', 'tag-magic-text': '#5a3473', 'tag-magic-edge': '#d7c0e8',
+    'tag-roll-bg': '#d2f3e3', 'tag-roll-text': '#00563c', 'tag-roll-edge': '#a7d8c1' },
+  dark: { 'tag-l1-bg': '#232f3b', 'tag-l1-text': '#bbd4ef', 'tag-l1-edge': '#3a4959',
+    'tag-l2-bg': '#1d313a', 'tag-l2-text': '#aed8ed', 'tag-l2-edge': '#324c58',
+    'tag-l3-bg': '#173337', 'tag-l3-text': '#a4dce5', 'tag-l3-edge': '#2b4e53',
+    'tag-l4-bg': '#143431', 'tag-l4-text': '#a0dfd8', 'tag-l4-edge': '#28504c',
+    'tag-l5-bg': '#173429', 'tag-l5-text': '#a5e0c6', 'tag-l5-edge': '#2c5041',
+    'tag-l6-bg': '#1f3420', 'tag-l6-text': '#b2dfb3', 'tag-l6-edge': '#355035',
+    'tag-l7-bg': '#293215', 'tag-l7-text': '#c6db9f', 'tag-l7-edge': '#414d29',
+    'tag-l8-bg': '#332f0c', 'tag-l8-text': '#dbd490', 'tag-l8-edge': '#4e491e',
+    'tag-l9-bg': '#3c2b07', 'tag-l9-text': '#f0cb88', 'tag-l9-edge': '#5a4418',
+    'tag-wizard-bg': '#202e47', 'tag-wizard-text': '#b9d2fe', 'tag-wizard-edge': '#364868',
+    'tag-priest-bg': '#103627', 'tag-priest-text': '#9be3c3', 'tag-priest-edge': '#245240',
+    'tag-magic-bg': '#352641', 'tag-magic-text': '#e2c2fb', 'tag-magic-edge': '#523e60',
+    'tag-roll-bg': '#103627', 'tag-roll-text': '#9be3c3', 'tag-roll-edge': '#245240' },
+};
+
 // Shadows and the step direction differ by theme too (depth: shadow in light,
 // a lighter surface in dark; hover and pressing mix toward black or white)
 const DEPTH = {
@@ -63,7 +95,7 @@ export const CONSTANTS = {
 export const FONTS_URL = 'https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Spectral:wght@600;700&display=swap';
 
 const block = vars => Object.entries(vars).map(([k, v]) => `  --${k.startsWith('font') || k.startsWith('ctl') || k.startsWith('radius') ? '' : 'color-'}${k}: ${v};`).join('\n');
-const themeVars = mode => `${block(COLORS[mode])}\n${Object.entries(DEPTH[mode]).map(([k, v]) => `  --${k}: ${v};`).join('\n')}`;
+const themeVars = mode => `${block(COLORS[mode])}\n${Object.entries(DEPTH[mode]).map(([k, v]) => `  --${k}: ${v};`).join('\n')}\n${Object.entries(TAGS[mode]).map(([k, v]) => `  --${k}: ${v};`).join('\n')}`;
 
 // Light by default; dark when the system asks for it and no choice was made,
 // or when the page chose it (data-theme on <html>, set by the toggle)

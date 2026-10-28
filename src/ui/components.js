@@ -66,3 +66,29 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
 :is(input, select, textarea).open-field::placeholder { color: var(--color-text-faint); opacity: 1; }
 :is(input, select, textarea).open-field:disabled { opacity: .45; cursor: not-allowed; }
 :is(input, select, textarea).open-field[aria-invalid="true"] { border-bottom-color: var(--color-danger-text); }`;
+
+// ── Tags ──
+// A small label for a kind or a level (a spell's level and type, a magic
+// item, a proficiency's roll): a pill with a soft fill, deep text and a
+// hairline edge from one hue (the --tag-* tokens). Quieter than a button, and
+// never the action colour. tag-caps for a kind written in capitals.
+export const TAGS_CSS = `/* Tags (docs/design-system.md, Tags) */
+:is(span, div, b, a).tag {
+  display: inline-flex; align-items: center; box-sizing: border-box; height: 20px; padding: 0 7px; border: 0; border-radius: 999px;
+  font: 600 12px/1 var(--font-sans); letter-spacing: .03em; text-transform: none; white-space: nowrap;
+  background: var(--tag-bg, var(--color-sunken)); color: var(--tag-text, var(--color-text-muted)); box-shadow: inset 0 0 0 1px var(--tag-edge, var(--color-divider));
+}
+:is(span, div, b, a).tag.tag-caps { text-transform: uppercase; letter-spacing: .1em; font-size: 11px; }
+.tag-l1 { --tag-bg: var(--tag-l1-bg); --tag-text: var(--tag-l1-text); --tag-edge: var(--tag-l1-edge); }
+.tag-l2 { --tag-bg: var(--tag-l2-bg); --tag-text: var(--tag-l2-text); --tag-edge: var(--tag-l2-edge); }
+.tag-l3 { --tag-bg: var(--tag-l3-bg); --tag-text: var(--tag-l3-text); --tag-edge: var(--tag-l3-edge); }
+.tag-l4 { --tag-bg: var(--tag-l4-bg); --tag-text: var(--tag-l4-text); --tag-edge: var(--tag-l4-edge); }
+.tag-l5 { --tag-bg: var(--tag-l5-bg); --tag-text: var(--tag-l5-text); --tag-edge: var(--tag-l5-edge); }
+.tag-l6 { --tag-bg: var(--tag-l6-bg); --tag-text: var(--tag-l6-text); --tag-edge: var(--tag-l6-edge); }
+.tag-l7 { --tag-bg: var(--tag-l7-bg); --tag-text: var(--tag-l7-text); --tag-edge: var(--tag-l7-edge); }
+.tag-l8 { --tag-bg: var(--tag-l8-bg); --tag-text: var(--tag-l8-text); --tag-edge: var(--tag-l8-edge); }
+.tag-l9 { --tag-bg: var(--tag-l9-bg); --tag-text: var(--tag-l9-text); --tag-edge: var(--tag-l9-edge); }
+.tag-wizard { --tag-bg: var(--tag-wizard-bg); --tag-text: var(--tag-wizard-text); --tag-edge: var(--tag-wizard-edge); }
+.tag-priest { --tag-bg: var(--tag-priest-bg); --tag-text: var(--tag-priest-text); --tag-edge: var(--tag-priest-edge); }
+.tag-magic { --tag-bg: var(--tag-magic-bg); --tag-text: var(--tag-magic-text); --tag-edge: var(--tag-magic-edge); }
+.tag-roll { --tag-bg: var(--tag-roll-bg); --tag-text: var(--tag-roll-text); --tag-edge: var(--tag-roll-edge); }`;
