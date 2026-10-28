@@ -4,10 +4,21 @@ The look and the rules every page follows: the character sheet, the DM
 Helper and the site pages (sign-in, Your characters, Account). Agreed with
 the owner on 2026-10-27, ahead of a dark theme.
 
-**Status: decided, not yet applied.** The tools still use their older,
-separate styles. Moving them onto this system is follow-up work. Until
-then, new work should follow this document, and anything that looks
-different from it should say why in a comment next to it.
+**Status: partly applied (2026-10-27).**
+
+- Applied everywhere (the sheet, the DM Helper, the sign-in, Your
+  characters and Account pages): the colour tokens in light and dark, the
+  light/dark toggle in each header, Barlow and Spectral. The tokens live in
+  `src/ui/tokens.js`; `scripts/build-legacy.mjs` writes them into every
+  page's `<head>`. Each page's older variable names now point at the tokens.
+- Every page passes the contrast check in both themes
+  (`scripts/contrast-scan.js`, run in the browser on a page served from the
+  repo).
+- Not yet: the controls (sizes, the one select, buttons, states), the
+  surfaces, and moving non-interactive text off the action colour (section
+  titles, the round number and such are still brass). Until then, new work
+  should follow this document, and anything that looks different from it
+  should say why in a comment next to it.
 
 Live references (prototypes, not wired to the app):
 

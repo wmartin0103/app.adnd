@@ -1741,7 +1741,7 @@ const {lineSay} = __m["rules/round"];
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-const STYLES = "/* Shared tokens: the character sheet's palette and type, under names of their\n   own (each tool keeps its own token names for the rest of its page) */\n:root { --ui-ink: #1a1714; --ui-muted: #5a534e; --ui-faint: #9a9390; --ui-rule: #d8d0c8; --ui-accent: #8b2e12; --ui-accent-dark: #6e2410;\n  --ui-surface: #ffffff; --ui-page: #f5f5f5; --ui-gold: #b8873a; --ui-radius: 4px; --ui-ctl-h: 2.1rem;\n  --ui-display: 'Cinzel', Georgia, serif; --ui-body: 'Crimson Pro', Georgia, serif; }\n/* A label over a control, the control, a button */\n.ui-field { display: inline-flex; flex-direction: column; gap: 0.15rem; }\n.ui-label { font-family: var(--ui-display); font-size: 0.65rem; letter-spacing: 0.13em; text-transform: uppercase; color: var(--ui-muted); }\n.ui-control { box-sizing: border-box; height: var(--ui-ctl-h); padding: 0 0.5rem; font: 0.95rem var(--ui-body); color: var(--ui-ink);\n  background: var(--ui-page); border: 1px solid var(--ui-rule); border-radius: var(--ui-radius); cursor: pointer; }\n.ui-control:focus { outline: none; border-color: var(--ui-accent); }\n.ui-btn { box-sizing: border-box; height: var(--ui-ctl-h); display: inline-flex; align-items: center; gap: 0.4rem; padding: 0 0.8rem;\n  font-family: var(--ui-display); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap;\n  background: var(--ui-accent); color: var(--ui-surface); border: 1px solid var(--ui-accent); border-radius: var(--ui-radius); cursor: pointer; }\n.ui-btn:hover, .ui-btn:focus-visible { background: var(--ui-accent-dark); }\n/* A select with checkboxes in its list */\n.round-multi { position: relative; }\n.round-multi .round-multi-btn { width: auto; min-width: 9.5rem; max-width: 16rem; overflow: hidden; text-overflow: ellipsis; text-align: left; padding-right: 1.9rem; position: relative; white-space: nowrap; }\n.round-multi-btn::after { content: ''; position: absolute; right: 0.65rem; top: 50%; width: 0.4rem; height: 0.4rem; margin-top: -0.3rem;\n  border-right: 1.5px solid var(--ui-muted); border-bottom: 1.5px solid var(--ui-muted); transform: rotate(45deg); }\n.round-multi.is-open .round-multi-btn { border-color: var(--ui-accent); }\n.round-multi.is-open .round-multi-btn::after { transform: rotate(-135deg); margin-top: -0.1rem; }\n.round-multi-list { position: absolute; top: 100%; left: 0; z-index: 30; margin-top: 0.25rem; min-width: 100%; width: max-content; max-width: 18rem;\n  background: var(--ui-surface); border: 1px solid var(--ui-rule); border-radius: var(--ui-radius); box-shadow: 0 6px 18px rgba(26,23,20,0.12); padding: 0.3rem; }\n.round-multi-opt { display: flex; align-items: flex-start; gap: 0.55rem; padding: 0.45rem 0.55rem; border-radius: var(--ui-radius); cursor: pointer; font-size: 0.95rem; }\n.round-multi-opt:hover, .round-multi-opt:focus-within { background: var(--ui-page); }\n.round-multi-opt input { accent-color: var(--ui-accent); margin-top: 0.2rem; }\n.round-multi-opt small { display: block; font-size: 0.8rem; color: var(--ui-muted); }\n/* A read-only value in a line, the height of the controls beside it */\n.round-read-value { display: inline-flex; align-items: center; height: var(--ui-ctl-h); font-size: 0.95rem; color: var(--ui-ink); white-space: nowrap; }\n.round-read.is-key .round-read-value { font-family: var(--ui-display); font-weight: 700; font-size: 1.05rem; color: var(--ui-accent); }\n/* A rolled line: one strip, same type throughout, pieces split by dividers */\n.round-summary { display: flex; flex-wrap: wrap; align-items: center; min-height: var(--ui-ctl-h); font-size: 0.95rem; color: var(--ui-ink); }\n.round-summary > span { padding: 0 0.75rem; border-left: 1px solid var(--ui-rule); line-height: 1.3; }\n.round-summary > span:first-child { padding-left: 0; border-left: 0; }\n.round-summary > .is-key { font-family: var(--ui-display); font-weight: 700; color: var(--ui-accent); }\n/* The hit roll: the round's big moment */\n.roll-hit-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; padding: 0.4rem 0.85rem 0.4rem 0.6rem; box-shadow: 0 2px 0 #5a1d0b; }\n.roll-hit-btn svg { width: 1.15rem; height: 1.15rem; }\n.roll-hit-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 #5a1d0b; }\n.hit-rolls { flex-basis: 100%; display: grid; gap: 0.45rem; justify-items: start; }\n.hit-rolls > .hit-roll { width: 100%; box-sizing: border-box; }\n.hit-who { font-family: var(--ui-display); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ui-muted); min-width: 4.5rem; }\n.hit-roll { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1.5rem; padding: 0.55rem 0.9rem; border-radius: var(--ui-radius);\n  background: linear-gradient(100deg, #fbf3ee, var(--ui-surface) 70%); border: 1px solid #e9cfc2; }\n.hit-die { position: relative; width: 3.4rem; height: 3.4rem; flex: none; color: var(--ui-accent); }\n.hit-die svg { position: absolute; inset: 0; width: 100%; height: 100%; }\n.hit-die-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding-top: 0.15rem;\n  font-family: var(--ui-display); font-weight: 700; font-size: 1.35rem; color: var(--ui-ink); }\n.hit-stat { display: flex; flex-direction: column; line-height: 1; }\n.hit-stat-label { font-family: var(--ui-display); font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ui-muted); margin-bottom: 0.25rem; }\n.hit-stat-value { font-family: var(--ui-display); font-weight: 700; font-size: 2rem; color: var(--ui-accent); }\n.hit-stat-sub { font-size: 0.8rem; color: var(--ui-muted); margin-top: 0.15rem; }\n.hit-stat.is-dmg .hit-stat-value { color: var(--ui-ink); font-size: 1.6rem; }\n.hit-stat.is-miss .hit-stat-value { color: var(--ui-muted); }\n.hit-stat.is-updated .hit-stat-value { border-radius: var(--ui-radius); }\n@media (prefers-reduced-motion: no-preference) {\n  .hit-stat.is-updated .hit-stat-value { animation: hit-update 1.2s ease-out; }\n}\n@keyframes hit-update { 0% { background: rgba(184,135,58,0.45); } 100% { background: transparent; } }\n.hit-nat { font-family: var(--ui-display); font-weight: 700; font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; padding: 0.25rem 0.55rem; border-radius: 999px; }\n.hit-roll.is-crit { background: linear-gradient(100deg, #fbf1dc, var(--ui-surface) 75%); border-color: var(--ui-gold); box-shadow: 0 0 0 2px rgba(184,135,58,0.25); }\n.hit-roll.is-crit .hit-die { color: var(--ui-gold); }\n.hit-roll.is-crit .hit-nat { background: var(--ui-gold); color: var(--ui-surface); }\n.hit-roll.is-fumble { background: linear-gradient(100deg, #eee9e6, var(--ui-surface) 75%); border-color: #9a9390; }\n.hit-roll.is-fumble .hit-die, .hit-roll.is-fumble .hit-stat-value { color: var(--ui-muted); }\n.hit-roll.is-fumble .hit-stat.is-miss .hit-stat-value { color: #3b3431; }\n.hit-roll.is-fumble .hit-nat { background: #3b3431; color: var(--ui-surface); }\n@media (prefers-reduced-motion: no-preference) {\n  .hit-roll.is-fresh .hit-die svg { animation: hit-tumble 0.55s cubic-bezier(.2,.8,.3,1); }\n  .hit-roll.is-fresh .hit-die-num, .hit-roll.is-fresh .hit-stat-value { animation: hit-pop 0.45s 0.3s cubic-bezier(.2,1.4,.4,1) both; }\n  .hit-roll.is-fresh.is-crit { animation: hit-glow 1.2s 0.5s ease-out; }\n}\n@keyframes hit-tumble { from { transform: rotate(-200deg) scale(0.6); } to { transform: none; } }\n@keyframes hit-pop { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: none; } }\n@keyframes hit-glow { 0% { box-shadow: 0 0 0 2px rgba(184,135,58,0.25); } 30% { box-shadow: 0 0 0 8px rgba(184,135,58,0.35); } 100% { box-shadow: 0 0 0 2px rgba(184,135,58,0.25); } }";
+const STYLES = "/* Shared tokens: the character sheet's palette and type, under names of their\n   own (each tool keeps its own token names for the rest of its page) */\n:root { --ui-ink: var(--color-text); --ui-muted: var(--color-text-muted); --ui-faint: var(--color-text-faint); --ui-rule: var(--color-divider); --ui-accent: var(--color-accent-text); --ui-accent-dark: color-mix(in oklab, var(--color-accent-text) 82%, var(--toward));\n  --ui-surface: var(--color-surface); --ui-page: var(--color-bg); --ui-gold: var(--color-accent); --ui-radius: var(--radius-ctl); --ui-ctl-h: 2.1rem;\n  --ui-display: var(--font-serif); --ui-body: var(--font-sans); }\n/* A label over a control, the control, a button */\n.ui-field { display: inline-flex; flex-direction: column; gap: 0.15rem; }\n.ui-label { font-family: var(--ui-display); font-size: 0.65rem; letter-spacing: 0.13em; text-transform: uppercase; color: var(--ui-muted); }\n.ui-control { box-sizing: border-box; height: var(--ui-ctl-h); padding: 0 0.5rem; font: 0.95rem var(--ui-body); color: var(--ui-ink);\n  background: var(--ui-page); border: 1px solid var(--ui-rule); border-radius: var(--ui-radius); cursor: pointer; }\n.ui-control:focus { outline: none; border-color: var(--ui-accent); }\n.ui-btn { box-sizing: border-box; height: var(--ui-ctl-h); display: inline-flex; align-items: center; gap: 0.4rem; padding: 0 0.8rem;\n  font-family: var(--ui-display); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap;\n  background: var(--ui-accent); color: var(--ui-surface); border: 1px solid var(--ui-accent); border-radius: var(--ui-radius); cursor: pointer; }\n.ui-btn:hover, .ui-btn:focus-visible { background: var(--ui-accent-dark); }\n/* A select with checkboxes in its list */\n.round-multi { position: relative; }\n.round-multi .round-multi-btn { width: auto; min-width: 9.5rem; max-width: 16rem; overflow: hidden; text-overflow: ellipsis; text-align: left; padding-right: 1.9rem; position: relative; white-space: nowrap; }\n.round-multi-btn::after { content: ''; position: absolute; right: 0.65rem; top: 50%; width: 0.4rem; height: 0.4rem; margin-top: -0.3rem;\n  border-right: 1.5px solid var(--ui-muted); border-bottom: 1.5px solid var(--ui-muted); transform: rotate(45deg); }\n.round-multi.is-open .round-multi-btn { border-color: var(--ui-accent); }\n.round-multi.is-open .round-multi-btn::after { transform: rotate(-135deg); margin-top: -0.1rem; }\n.round-multi-list { position: absolute; top: 100%; left: 0; z-index: 30; margin-top: 0.25rem; min-width: 100%; width: max-content; max-width: 18rem;\n  background: var(--ui-surface); border: 1px solid var(--ui-rule); border-radius: var(--ui-radius); box-shadow: var(--shadow-raised); padding: 0.3rem; }\n.round-multi-opt { display: flex; align-items: flex-start; gap: 0.55rem; padding: 0.45rem 0.55rem; border-radius: var(--ui-radius); cursor: pointer; font-size: 0.95rem; }\n.round-multi-opt:hover, .round-multi-opt:focus-within { background: var(--ui-page); }\n.round-multi-opt input { accent-color: var(--ui-accent); margin-top: 0.2rem; }\n.round-multi-opt small { display: block; font-size: 0.8rem; color: var(--ui-muted); }\n/* A read-only value in a line, the height of the controls beside it */\n.round-read-value { display: inline-flex; align-items: center; height: var(--ui-ctl-h); font-size: 0.95rem; color: var(--ui-ink); white-space: nowrap; }\n.round-read.is-key .round-read-value { font-family: var(--ui-display); font-weight: 700; font-size: 1.05rem; color: var(--ui-accent); }\n/* A rolled line: one strip, same type throughout, pieces split by dividers */\n.round-summary { display: flex; flex-wrap: wrap; align-items: center; min-height: var(--ui-ctl-h); font-size: 0.95rem; color: var(--ui-ink); }\n.round-summary > span { padding: 0 0.75rem; border-left: 1px solid var(--ui-rule); line-height: 1.3; }\n.round-summary > span:first-child { padding-left: 0; border-left: 0; }\n.round-summary > .is-key { font-family: var(--ui-display); font-weight: 700; color: var(--ui-accent); }\n/* The hit roll: the round's big moment */\n.roll-hit-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; padding: 0.4rem 0.85rem 0.4rem 0.6rem; box-shadow: 0 2px 0 color-mix(in oklab, var(--ui-accent) 55%, #000); }\n.roll-hit-btn svg { width: 1.15rem; height: 1.15rem; }\n.roll-hit-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 color-mix(in oklab, var(--ui-accent) 55%, #000); }\n.hit-rolls { flex-basis: 100%; display: grid; gap: 0.45rem; justify-items: start; }\n.hit-rolls > .hit-roll { width: 100%; box-sizing: border-box; }\n.hit-who { font-family: var(--ui-display); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ui-muted); min-width: 4.5rem; }\n.hit-roll { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1.5rem; padding: 0.55rem 0.9rem; border-radius: var(--ui-radius);\n  background: linear-gradient(100deg, color-mix(in oklab, var(--ui-accent) 8%, var(--ui-surface)), var(--ui-surface) 70%); border: 1px solid color-mix(in oklab, var(--ui-accent) 28%, var(--ui-surface)); }\n.hit-die { position: relative; width: 3.4rem; height: 3.4rem; flex: none; color: var(--ui-accent); }\n.hit-die svg { position: absolute; inset: 0; width: 100%; height: 100%; }\n.hit-die-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding-top: 0.15rem;\n  font-family: var(--ui-display); font-weight: 700; font-size: 1.35rem; color: var(--ui-ink); }\n.hit-stat { display: flex; flex-direction: column; line-height: 1; }\n.hit-stat-label { font-family: var(--ui-display); font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ui-muted); margin-bottom: 0.25rem; }\n.hit-stat-value { font-family: var(--ui-display); font-weight: 700; font-size: 2rem; color: var(--ui-accent); }\n.hit-stat-sub { font-size: 0.8rem; color: var(--ui-muted); margin-top: 0.15rem; }\n.hit-stat.is-dmg .hit-stat-value { color: var(--ui-ink); font-size: 1.6rem; }\n.hit-stat.is-miss .hit-stat-value { color: var(--ui-muted); }\n.hit-stat.is-updated .hit-stat-value { border-radius: var(--ui-radius); }\n@media (prefers-reduced-motion: no-preference) {\n  .hit-stat.is-updated .hit-stat-value { animation: hit-update 1.2s ease-out; }\n}\n@keyframes hit-update { 0% { background: color-mix(in oklab, var(--color-accent) 45%, transparent); } 100% { background: transparent; } }\n.hit-nat { font-family: var(--ui-display); font-weight: 700; font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; padding: 0.25rem 0.55rem; border-radius: 999px; }\n.hit-roll.is-crit { background: linear-gradient(100deg, color-mix(in oklab, var(--color-highlight) 22%, var(--ui-surface)), var(--ui-surface) 75%); border-color: var(--color-success-text); box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); }\n.hit-roll.is-crit .hit-die { color: var(--color-success-text); }\n.hit-roll.is-crit .hit-nat { background: var(--color-highlight); color: var(--color-on-highlight); }\n.hit-roll.is-fumble { background: linear-gradient(100deg, color-mix(in oklab, var(--ui-muted) 12%, var(--ui-surface)), var(--ui-surface) 75%); border-color: var(--ui-faint); }\n.hit-roll.is-fumble .hit-die, .hit-roll.is-fumble .hit-stat-value { color: var(--ui-muted); }\n.hit-roll.is-fumble .hit-stat.is-miss .hit-stat-value { color: var(--ui-ink); }\n.hit-roll.is-fumble .hit-nat { background: var(--ui-ink); color: var(--ui-surface); }\n@media (prefers-reduced-motion: no-preference) {\n  .hit-roll.is-fresh .hit-die svg { animation: hit-tumble 0.55s cubic-bezier(.2,.8,.3,1); }\n  .hit-roll.is-fresh .hit-die-num, .hit-roll.is-fresh .hit-stat-value { animation: hit-pop 0.45s 0.3s cubic-bezier(.2,1.4,.4,1) both; }\n  .hit-roll.is-fresh.is-crit { animation: hit-glow 1.2s 0.5s ease-out; }\n}\n@keyframes hit-tumble { from { transform: rotate(-200deg) scale(0.6); } to { transform: none; } }\n@keyframes hit-pop { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: none; } }\n@keyframes hit-glow { 0% { box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); } 30% { box-shadow: 0 0 0 8px color-mix(in oklab, var(--color-highlight) 50%, transparent); } 100% { box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); } }";
 function ensureStyles(doc = document) {
   if (doc.getElementById('round-ui-styles')) return;
   const st = doc.createElement('style'); st.id = 'round-ui-styles'; st.textContent = STYLES;
@@ -1893,6 +1893,141 @@ function hitRoll(line, fresh, onReroll, judge) {
 }
 
 return { STYLES, ensureStyles, multi, readField, D20_SVG, hitRoll };
+})();
+// ── ui/tokens ──
+__m["ui/tokens"] = (() => {
+
+// ── DESIGN TOKENS ───────────────────────────────────────────────
+// The design system's values (docs/design-system.md): Midnight & Brass in
+// light and dark, Barlow and Spectral, the control sizes, radii and shadows.
+// scripts/build-legacy.mjs writes them into the <head> of every page (the
+// tools and the site pages), with a line that sets the theme before the
+// page draws, so there's no flash of the other theme. Components use these
+// names only; the two themes differ in values, never in components.
+
+const COLORS = {
+  light: {
+    bg: '#eef2f6', surface: '#fdfeff', raised: '#fdfeff', sunken: '#e3e8ee', divider: '#d8dde3',
+    text: '#0f1923', 'text-muted': '#414f5d', 'text-faint': '#596571', border: '#687686',
+    accent: '#dcaf6c', 'accent-strong': '#ce9e58', 'accent-edge': '#966b2e', 'on-accent': '#261a09', 'accent-text': '#754f19', focus: '#835a20',
+    accent2: '#334a62', 'on-accent2': '#f6f9fb', 'accent2-text': '#334a62',
+    danger: '#a03f3c', 'on-danger': '#fefbfb', 'danger-text': '#983b38',
+    'success-text': '#286648', highlight: '#96ddb6', 'on-highlight': '#0e271b',
+    bar: '#1b222a', 'bar-text': '#f0f2f4', 'bar-muted': '#b0b8c1', 'bar-title': '#e8bc7d', 'bar-active': '#e3b572',
+  },
+  dark: {
+    bg: '#0a0f14', surface: '#12181e', raised: '#1b2129', sunken: '#06080d', divider: '#242b33',
+    text: '#ebeff4', 'text-muted': '#b2bbc8', 'text-faint': '#969fab', border: '#5f6a77',
+    accent: '#dcaf61', 'accent-strong': '#edc47d', 'accent-edge': '#dcaf61', 'on-accent': '#201300', 'accent-text': '#e0b771', focus: '#e0b771',
+    accent2: '#9bbeff', 'on-accent2': '#0d1a32', 'accent2-text': '#a5c5fe',
+    danger: '#f07f77', 'on-danger': '#290b0a', 'danger-text': '#f4928a',
+    'success-text': '#6ccea6', highlight: '#5ed8a9', 'on-highlight': '#002115',
+    bar: '#04080d', 'bar-text': '#ebeff4', 'bar-muted': '#a3acb8', 'bar-title': '#e6bd77', 'bar-active': '#e3b667',
+  },
+};
+
+// Shadows and the step direction differ by theme too (depth: shadow in light,
+// a lighter surface in dark; hover and pressing mix toward black or white)
+const DEPTH = {
+  light: {
+    'shadow-card': '0 1px 2px rgb(20 16 12 / .06), 0 1px 3px rgb(20 16 12 / .10)',
+    'shadow-raised': '0 12px 30px rgb(20 16 12 / .16), 0 2px 6px rgb(20 16 12 / .08)',
+    'edge-top': 'transparent', toward: '#000', scrim: 'rgb(15 25 35 / .45)',
+  },
+  dark: {
+    'shadow-card': '0 1px 2px rgb(0 0 0 / .5)',
+    'shadow-raised': '0 14px 34px rgb(0 0 0 / .55), 0 2px 6px rgb(0 0 0 / .4)',
+    'edge-top': 'rgb(255 255 255 / .05)', toward: '#fff', scrim: 'rgb(0 0 0 / .6)',
+  },
+};
+
+// The same in both themes
+const CONSTANTS = {
+  'font-serif': "'Spectral', Georgia, serif",
+  'font-sans': "'Barlow', system-ui, sans-serif",
+  'ctl-sm': '28px', 'ctl-md': '36px', 'ctl-lg': '44px',
+  'ctl-fs-sm': '13px', 'ctl-fs-md': '15px', 'ctl-fs-lg': '17px',
+  'ctl-ico-sm': '14px', 'ctl-ico-md': '16px', 'ctl-ico-lg': '20px',
+  'ctl-pad-sm': '8px', 'ctl-pad-md': '12px', 'ctl-pad-lg': '16px',
+  'radius-ctl': '6px', 'radius-inner': '8px', 'radius-card': '10px',
+};
+
+// The fonts: Barlow 400/500/600, Spectral 600/700 (docs/design-system.md, Type)
+const FONTS_URL = 'https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Spectral:wght@600;700&display=swap';
+
+const block = vars => Object.entries(vars).map(([k, v]) => `  --${k.startsWith('font') || k.startsWith('ctl') || k.startsWith('radius') ? '' : 'color-'}${k}: ${v};`).join('\n');
+const themeVars = mode => `${block(COLORS[mode])}\n${Object.entries(DEPTH[mode]).map(([k, v]) => `  --${k}: ${v};`).join('\n')}`;
+
+// Light by default; dark when the system asks for it and no choice was made,
+// or when the page chose it (data-theme on <html>, set by the toggle)
+function tokensCSS() {
+  return [
+    `:root {\n${block(CONSTANTS)}\n${themeVars('light')}\n  color-scheme: light;\n}`,
+    `@media (prefers-color-scheme: dark) {\n  :root:not([data-theme="light"]) {\n${themeVars('dark').replace(/^/gm, '  ')}\n    color-scheme: dark;\n  }\n}`,
+    `:root[data-theme="dark"] {\n${themeVars('dark')}\n  color-scheme: dark;\n}`,
+  ].join('\n');
+}
+
+// Runs in <head> before the page draws: a choice made with the toggle wins
+const THEME_KEY = 'adnd-theme';
+const themeInitScript = () =>
+  `try { var t = localStorage.getItem('${THEME_KEY}'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) { /* storage blocked: follow the system */ }`;
+
+return { COLORS, CONSTANTS, FONTS_URL, tokensCSS, THEME_KEY, themeInitScript };
+})();
+// ── ui/theme ──
+__m["ui/theme"] = (() => {
+const {THEME_KEY} = __m["ui/tokens"];
+// ── LIGHT / DARK ────────────────────────────────────────────────
+// The toggle in each page's header. Until it's pressed the page follows the
+// system's setting; pressed, it picks the other theme and remembers it
+// (localStorage, the same key the <head> line reads before the page draws).
+
+
+const MOON = '<svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M13.5 9.6A5.5 5.5 0 0 1 6.4 2.5a5.5 5.5 0 1 0 7.1 7.1Z"/></svg>';
+const SUN = '<svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="3"/><path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3 3l1.1 1.1M11.9 11.9 13 13M3 13l1.1-1.1M11.9 4.1 13 3"/></svg>';
+
+const systemDark = () => { try { return matchMedia('(prefers-color-scheme: dark)').matches; } catch (e) { return false; } };
+// The theme in use now: the page's choice, else the system's
+function currentTheme(doc = document) {
+  const t = doc.documentElement.getAttribute('data-theme');
+  return t === 'light' || t === 'dark' ? t : (systemDark() ? 'dark' : 'light');
+}
+function setTheme(theme, doc = document) {
+  doc.documentElement.setAttribute('data-theme', theme);
+  try { localStorage.setItem(THEME_KEY, theme); } catch (e) { /* storage blocked: this visit only */ }
+}
+
+// A button for a header: it shows where you'd go (a moon in light, a sun in
+// dark) and says so to a screen reader; pressed means dark is on
+function mountThemeToggle(el) {
+  if (!el) return null;
+  const doc = el.ownerDocument;
+  const btn = doc.createElement('button');
+  btn.type = 'button'; btn.className = 'theme-toggle';
+  const paint = () => {
+    const dark = currentTheme(doc) === 'dark';
+    btn.innerHTML = dark ? SUN : MOON;
+    btn.setAttribute('aria-pressed', String(dark));
+    btn.setAttribute('aria-label', 'Dark theme');
+    btn.title = dark ? 'Switch to the light theme' : 'Switch to the dark theme';
+  };
+  btn.addEventListener('click', () => { setTheme(currentTheme(doc) === 'dark' ? 'light' : 'dark', doc); paint(); });
+  // Following the system: repaint when it changes
+  try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', paint); } catch (e) { /* older browsers */ }
+  paint();
+  el.appendChild(btn);
+  return btn;
+}
+
+// The toggle's look (it rides along with the tokens in <head>)
+const THEME_TOGGLE_CSS = `.theme-toggle { box-sizing: border-box; width: var(--ctl-sm); height: var(--ctl-sm); padding: 0; display: inline-flex; align-items: center; justify-content: center;
+  background: var(--color-surface); color: var(--color-text-muted); border: 1px solid var(--color-border); border-radius: var(--radius-ctl); cursor: pointer; vertical-align: middle; }
+.theme-toggle svg { width: var(--ctl-ico-sm); height: var(--ctl-ico-sm); }
+.theme-toggle:hover { color: var(--color-accent-text); border-color: var(--color-accent-text); }
+.theme-toggle:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }`;
+
+return { currentTheme, setTheme, mountThemeToggle, THEME_TOGGLE_CSS };
 })();
 // ── rules/character ──
 __m["rules/character"] = (() => {

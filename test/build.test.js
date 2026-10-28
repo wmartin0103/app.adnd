@@ -1,7 +1,16 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { TARGETS, bundleFor, catalogScript, CATALOG_JS, CATALOG_TAG, PAGES, bundleForPage } from '../scripts/build-legacy.mjs';
+import { TARGETS, bundleFor, catalogScript, CATALOG_JS, CATALOG_TAG, PAGES, bundleForPage, headBlock } from '../scripts/build-legacy.mjs';
+
+for (const file of [...Object.keys(TARGETS), ...Object.keys(PAGES)]) {
+  test(`${file} carries the current design tokens (run scripts/build-legacy.mjs if this fails)`, () => {
+    const lf = t => t.replace(/\r\n/g, '\n');
+    const html = lf(readFileSync(file, 'utf8'));
+    assert.ok(html.includes(lf(headBlock())), `${file}'s tokens are out of date`);
+    assert.ok(html.indexOf(headBlock()) < html.indexOf('</head>'), `${file}: tokens belong in <head>`);
+  });
+}
 
 for (const file of Object.keys(PAGES)) {
   test(`${file} carries the current sign-in code (run scripts/build-legacy.mjs if this fails)`, () => {
