@@ -114,6 +114,43 @@
   .char-card { display: grid; gap: 6px; padding: 12px 14px; border: 1px solid var(--divider); border-radius: 8px; background: var(--surface); }
   .badge { justify-self: start; font: 700 11px/1 var(--sans); letter-spacing: .1em; text-transform: uppercase; padding: 4px 8px; border-radius: 999px; background: var(--accent2); color: var(--onAccent2); }
 
+
+  /* ── Interaction states ──
+     One step = a mix toward black (light) or white (dark): the same rule in both themes.
+     .is-hover / .is-active / .is-focus force a state for the States card. */
+  .light { --toward: #000; } .dark { --toward: #fff; }
+  .btn, .tabs button, input.ctl, select.ctl { transition: background-color .12s, border-color .12s, color .12s; }
+  .btn:active:not(:disabled), .btn.is-active { transform: translateY(1px); }
+  /* Primary */
+  .primary:hover:not(:disabled), .primary.is-hover { background: var(--accentStrong); border-color: var(--accentStrong); }
+  .primary:active:not(:disabled), .primary.is-active { background: color-mix(in oklab, var(--accentStrong) 85%, var(--toward)); border-color: color-mix(in oklab, var(--accentStrong) 85%, var(--toward)); }
+  /* Secondary: the border takes the action colour, a faint tint fills */
+  .secondary:hover:not(:disabled), .secondary.is-hover { border-color: var(--accentText); background: color-mix(in oklab, var(--accentText) 9%, var(--surface)); }
+  .secondary:active:not(:disabled), .secondary.is-active { border-color: var(--accentText); background: color-mix(in oklab, var(--accentText) 18%, var(--surface)); }
+  /* Destructive: the same steps in red */
+  .primary.danger:hover:not(:disabled), .primary.danger.is-hover { background: color-mix(in oklab, var(--danger) 86%, var(--toward)); border-color: color-mix(in oklab, var(--danger) 86%, var(--toward)); }
+  .primary.danger:active:not(:disabled), .primary.danger.is-active { background: color-mix(in oklab, var(--danger) 74%, var(--toward)); border-color: color-mix(in oklab, var(--danger) 74%, var(--toward)); }
+  .secondary.danger:hover:not(:disabled), .secondary.danger.is-hover { border-color: var(--dangerText); background: color-mix(in oklab, var(--dangerText) 9%, var(--surface)); }
+  .secondary.danger:active:not(:disabled), .secondary.danger.is-active { border-color: var(--dangerText); background: color-mix(in oklab, var(--dangerText) 18%, var(--surface)); }
+  /* Tab buttons: pressed (selected) stays; hover is a tint, distinct for the selected one */
+  .tabs button:hover:not([aria-pressed="true"]), .tabs button.is-hover:not([aria-pressed="true"]) { background: color-mix(in oklab, var(--muted) 10%, var(--surface)); color: var(--text); }
+  .tabs button:active:not([aria-pressed="true"]), .tabs button.is-active:not([aria-pressed="true"]) { background: color-mix(in oklab, var(--muted) 20%, var(--surface)); }
+  .tabs button[aria-pressed="true"]:hover, .tabs button[aria-pressed="true"].is-hover { background: color-mix(in oklab, var(--accent2) 88%, var(--toward)); }
+  /* Fields: hover darkens the border; error is a red border and a message below */
+  input.ctl:hover:not(:disabled):not(:focus), select.ctl:hover:not(:disabled):not(:focus), .ctl.is-hover { border-color: var(--muted); }
+  input.ctl:focus, select.ctl:focus { border-color: var(--focus); }
+  .ctl[aria-invalid="true"], .ctl[aria-invalid="true"]:hover { border-color: var(--dangerText); }
+  .field-error { display: flex; align-items: center; gap: 4px; font: var(--t-small); color: var(--dangerText); }
+  .field-error svg { width: 13px; height: 13px; flex: none; }
+  /* Focus: one ring for every control (keyboard focus on buttons, any focus on fields) */
+  .btn:focus-visible, .tabs button:focus-visible, input.ctl:focus, select.ctl:focus, .is-focus { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .tabs button:focus-visible { outline-offset: -3px; }
+  /* Disabled: faded, no hover, not allowed */
+  .btn:disabled, .ctl:disabled, .tabs button:disabled { opacity: .45; cursor: not-allowed; }
+  /* The States card */
+  table.states td, table.states th { white-space: nowrap; }
+  table.states td:first-child { font: var(--t-small); color: var(--muted); }
+
   /* The page around the proposal */
   .controls-bar { position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 8px 24px; background: #26262b; color: #f2f2f5; font: 500 13px/1 system-ui, sans-serif; }
   .controls-bar button { font: inherit; padding: 6px 10px; border-radius: 6px; border: 1px solid #5c5c66; background: #34343b; color: inherit; cursor: pointer; }
@@ -157,7 +194,7 @@
     <section class="card featured" aria-labelledby="round-title">
       <div class="row" style="justify-content:space-between;align-items:center">
         <h2 id="round-title" class="t-card" data-role="Card title · Spectral 600 18">This round · Round 3</h2>
-        <button class="ctl md btn primary" type="button">Send to DM</button>
+        <button class="ctl md btn primary" type="button" disabled title="Nothing to send yet">Send to DM</button>
       </div>
       <div class="attack">
         <div class="attack-head">
@@ -181,10 +218,11 @@
         <div class="attack-head"><span class="t-card">Dagger, thrown</span><span class="meta t-small"><span><span class="t-label">THAC0</span> 17</span><span><span class="t-label">Dmg</span> 1d4</span></span></div>
         <div class="row">
           <label class="field"><span class="t-label">Targets</span><select class="ctl md"><option>Goblin E2</option></select></label>
-          <label class="field"><span class="t-label">Other</span><input class="ctl md num" value="0"></label>
+          <div class="field"><label class="t-label" for="dagger-other">Other</label><input id="dagger-other" class="ctl md num" value="+x" aria-invalid="true" aria-describedby="dagger-other-err"></div>
           <button class="ctl md btn primary" type="button"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.5 14 5v6l-6 3.5L2 11V5Z M5 6.5h6L8 12Z"/></svg>Roll to hit</button>
           <button class="ctl md btn secondary danger icon" type="button" aria-label="Remove the thrown dagger"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4h11M6.5 4V2.5h3V4M4 4l.7 9.2a1 1 0 0 0 1 .8h4.6a1 1 0 0 0 1-.8L12 4"/></svg></button>
         </div>
+        <p class="field-error" id="dagger-other-err"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5v4.2M8 11.2v.1"/></svg>Other: use a number, like +2 or −1</p>
       </div>
     </section>
 
@@ -208,6 +246,22 @@
         <tr><td><input class="ctl sm" value="Dagger"></td><td><select class="ctl sm"><option>S</option></select></td><td><select class="ctl sm"><option>Pierce</option></select></td><td><input class="ctl sm num" value="2"></td><td><input class="ctl sm num" value="0"></td><td class="tab-nums t-small" style="color:var(--text)">1d4 · 1d3</td><td><input class="ctl sm" value="Thrown 10/20/30"></td></tr>
       </tbody>
     </table>
+  </section>
+
+
+  <section class="card" aria-labelledby="states-title">
+    <h2 id="states-title" class="t-section">States</h2>
+    <p class="t-small">Every control in each state, side by side. The controls on the rest of the page respond for real: hover, press, Tab for focus. Pressed is the selected tab ("Level"); error is the thrown dagger's Other field above.</p>
+    <div style="overflow-x:auto"><table class="states"><thead><tr><th></th><th>Rest</th><th>Hover</th><th>Active (held)</th><th>Focus</th><th>Disabled</th></tr></thead><tbody>
+      <tr><td>Primary</td><td><button class="ctl md btn primary " type="button" tabindex="-1">Roll to hit</button></td><td><button class="ctl md btn primary is-hover" type="button" tabindex="-1">Roll to hit</button></td><td><button class="ctl md btn primary is-active" type="button" tabindex="-1">Roll to hit</button></td><td><button class="ctl md btn primary is-focus" type="button" tabindex="-1">Roll to hit</button></td><td><button class="ctl md btn primary " type="button" disabled tabindex="-1">Roll to hit</button></td></tr>
+      <tr><td>Secondary</td><td><button class="ctl md btn secondary " type="button" tabindex="-1">Add weapon</button></td><td><button class="ctl md btn secondary is-hover" type="button" tabindex="-1">Add weapon</button></td><td><button class="ctl md btn secondary is-active" type="button" tabindex="-1">Add weapon</button></td><td><button class="ctl md btn secondary is-focus" type="button" tabindex="-1">Add weapon</button></td><td><button class="ctl md btn secondary " type="button" disabled tabindex="-1">Add weapon</button></td></tr>
+      <tr><td>Destructive, filled</td><td><button class="ctl md btn primary danger " type="button" tabindex="-1">Delete</button></td><td><button class="ctl md btn primary danger is-hover" type="button" tabindex="-1">Delete</button></td><td><button class="ctl md btn primary danger is-active" type="button" tabindex="-1">Delete</button></td><td><button class="ctl md btn primary danger is-focus" type="button" tabindex="-1">Delete</button></td><td><button class="ctl md btn primary danger " type="button" disabled tabindex="-1">Delete</button></td></tr>
+      <tr><td>Destructive, outlined</td><td><button class="ctl md btn secondary danger " type="button" tabindex="-1">Clear all</button></td><td><button class="ctl md btn secondary danger is-hover" type="button" tabindex="-1">Clear all</button></td><td><button class="ctl md btn secondary danger is-active" type="button" tabindex="-1">Clear all</button></td><td><button class="ctl md btn secondary danger is-focus" type="button" tabindex="-1">Clear all</button></td><td><button class="ctl md btn secondary danger " type="button" disabled tabindex="-1">Clear all</button></td></tr>
+      <tr><td>Tab buttons</td><td><div class="tabs md" role="group" aria-label="Example"><button type="button" tabindex="-1" class="" aria-pressed="false">Lower</button><button type="button" tabindex="-1" class="" aria-pressed="true">Level</button></div></td><td><div class="tabs md" role="group" aria-label="Example"><button type="button" tabindex="-1" class="is-hover" aria-pressed="false">Lower</button><button type="button" tabindex="-1" class="is-hover" aria-pressed="true">Level</button></div></td><td><div class="tabs md" role="group" aria-label="Example"><button type="button" tabindex="-1" class="is-active" aria-pressed="false">Lower</button><button type="button" tabindex="-1" class="is-active" aria-pressed="true">Level</button></div></td><td><div class="tabs md" role="group" aria-label="Example"><button type="button" tabindex="-1" class="is-focus" aria-pressed="false">Lower</button><button type="button" tabindex="-1" class="is-focus" aria-pressed="true">Level</button></div></td><td><div class="tabs md" role="group" aria-label="Example"><button type="button" tabindex="-1" class="" disabled aria-pressed="false">Lower</button><button type="button" tabindex="-1" class="" disabled aria-pressed="true">Level</button></div></td></tr>
+      <tr><td>Text field</td><td><input class="ctl md " value="Long sword +1" tabindex="-1" aria-label="Example field"></td><td><input class="ctl md is-hover" value="Long sword +1" tabindex="-1" aria-label="Example field"></td><td class="t-small">—</td><td><input class="ctl md is-focus" value="Long sword +1" tabindex="-1" aria-label="Example field"></td><td><input class="ctl md " value="Long sword +1" tabindex="-1" disabled aria-label="Example field"></td></tr>
+      <tr><td>Select</td><td><select class="ctl md " tabindex="-1" aria-label="Example select"><option>Goblin E1</option></select></td><td><select class="ctl md is-hover" tabindex="-1" aria-label="Example select"><option>Goblin E1</option></select></td><td class="t-small">—</td><td><select class="ctl md is-focus" tabindex="-1" aria-label="Example select"><option>Goblin E1</option></select></td><td><select class="ctl md " tabindex="-1" disabled aria-label="Example select"><option>Goblin E1</option></select></td></tr>
+      <tr><td>Error</td><td colspan="5"><div class="field"><input class="ctl md num" value="+x" aria-invalid="true" tabindex="-1" aria-label="Example error"><span class="field-error"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5v4.2M8 11.2v.1"/></svg>Use a number, like +2 or −1</span></div></td></tr>
+    </tbody></table></div>
   </section>
 
   <section class="card" aria-labelledby="notes-title">
