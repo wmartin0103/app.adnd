@@ -60,6 +60,10 @@
   .preview .die { width: 2.6rem; height: 2.6rem; display: grid; place-items: center; border: 2px solid var(--accent2Text); border-radius: 8px; font: 700 1.2rem var(--serif), serif; color: var(--accent2Text); font-variant-numeric: lining-nums; }
   .preview p { margin: 0; }
   .muted { color: var(--muted); }
+  table.scale td { padding: 10px 8px; }
+  table.scale td:first-child { white-space: nowrap; font-weight: 600; }
+  table.scale td:nth-child(2) { color: var(--muted); white-space: nowrap; }
+  .ex { margin: 0; }
   .well { background: var(--sunken); border-radius: 8px; padding: 12px; display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
 </style>
 </head>
@@ -67,6 +71,11 @@
 <div class="page">
   <h1>Type specimen</h1>
   <p class="note">Sans for controls and body text, serif for the stylistic parts. Each sans is measured in the browser: x-height and cap height as a share of the font size (bigger x-height reads larger at the same size), its natural line height (what makes rows and inputs tall), and how wide a typical sheet line runs at 15px. Controls are 28 / 36 / 44px whatever the font. Nothing here is wired to the app.</p>
+
+  <section class="card" id="scale-card">
+    <h2>Proposed type scale · Barlow and Spectral</h2>
+    <table class="scale"><thead><tr><th>Role</th><th>Face · weight</th><th style="text-align:right">Size / line</th><th>Example</th></tr></thead><tbody id="scale"></tbody></table>
+  </section>
 
   <section class="card">
     <h2>Sans: controls and body text</h2>
@@ -105,6 +114,26 @@ const SANS = ['Barlow', 'Atkinson Hyperlegible', 'Hanken Grotesk', 'Instrument S
 const SERIF = ['Spectral', 'Alegreya', 'Fraunces', 'Source Serif 4', 'Newsreader'];
 const SAMPLE = 'Brannoc Thale · Long sword +1 · 1d8+1 · AC 3';
 function setTheme(name) { Object.entries(THEMES[name]).forEach(([k, v]) => document.documentElement.style.setProperty(`--${k}`, v)); }
+// The proposed scale: [role, face, weight, size px, line height, extra CSS, example]
+const SCALE = [
+  ['Page title', 'Spectral', 700, 28, 1.2, '', 'Your characters'],
+  ['Character name', 'Spectral', 700, 24, 1.2, '', 'Brannoc Thale'],
+  ['Card title', 'Spectral', 600, 18, 1.25, '', 'Long sword +1'],
+  ['Section title', 'Spectral', 600, 14, 1.3, 'text-transform:uppercase;letter-spacing:.12em;color:var(--muted)', 'Weapon proficiencies'],
+  ['Big number', 'Spectral', 700, 32, 1, 'font-variant-numeric:lining-nums;color:var(--successText)', 'Hit 17'],
+  ['Number', 'Spectral', 700, 22, 1, 'font-variant-numeric:lining-nums', '9 damage'],
+  ['Body', 'Barlow', 400, 15, 1.45, '', 'The ogre swings its club wide; the blow glances off your shield.'],
+  ['Body small', 'Barlow', 400, 13, 1.4, 'color:var(--muted)', 'Human Fighter 6 · Saved today · 1d8+1: 8 + 1'],
+  ['Label', 'Barlow', 600, 12, 1.2, 'text-transform:uppercase;letter-spacing:.08em;color:var(--muted)', 'Targets · Ground · Other'],
+  ['Control, large', 'Barlow', 500, 17, 1, '', 'Roll to hit · Long sword'],
+  ['Control, medium', 'Barlow', 500, 15, 1, '', 'Roll to hit · Long sword'],
+  ['Control, small', 'Barlow', 500, 13, 1, '', 'Roll to hit · Long sword'],
+  ['Numbers in fields and tables', 'Barlow', 500, 15, 1, 'font-variant-numeric:tabular-nums', '16 · 3 · 10 · 1d8+1'],
+];
+function drawScale() {
+  document.getElementById('scale').innerHTML = SCALE.map(([role, face, w, px, lh, css, ex]) =>
+    `<tr><td>${role}</td><td>${face} ${w}</td><td class="num">${px}px / ${lh}</td><td><p class="ex" style="font-family:'${face}';font-weight:${w};font-size:${px}px;line-height:${lh};${css}">${ex}</p></td></tr>`).join('');
+}
 // Measured in the browser: x-height, cap height, natural line height, width
 function metrics(f) {
   const c = document.createElement('canvas').getContext('2d'); c.font = `400 100px '${f}'`;
@@ -144,6 +173,7 @@ document.querySelectorAll('[data-theme]').forEach(b => b.addEventListener('click
 pickers('pick-sans', SANS, '--sans', 'Barlow');
 pickers('pick-serif', SERIF, '--serif', 'Spectral');
 drawSerif();
+drawScale();
 drawSans();
 </script>
 </body>
