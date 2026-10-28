@@ -14,7 +14,7 @@ the owner on 2026-10-27, ahead of a dark theme.
 - Every page passes the contrast check in both themes
   (`scripts/contrast-scan.js`, run in the browser on a page served from the
   repo).
-- Not yet: the controls (sizes, the one select, buttons, states), the
+- Fields (boxed and open) are applied (stage 4a). Not yet: buttons, the
   surfaces, and moving non-interactive text off the action colour (section
   titles, the round number and such are still brass). Until then, new work
   should follow this document, and anything that looks different from it
@@ -143,6 +143,30 @@ minimum touch target). Padding may be tightened where a row is short of
 room; height, type and icon may not.
 
 Corners: controls 6px, wells and items 8px, cards 10px.
+
+## Fields
+
+Two styles of editable field, both in `src/ui/components.js` and in every
+page's `<head>`:
+
+- **Boxed field**: text, number and select boxes, and text areas. A border,
+  the S/M/L sizes above, Barlow 500, the chevron on selects. A dense area
+  sets the small size on its container (`--field-h`, `--field-fs`,
+  `--field-px`, or the class `size-sm`); the rest are medium. The select
+  with checkboxes (`.ui-control`) looks the same.
+- **Open field** (`class="open-field"`): text that's editable where it sits:
+  names, notes and stat numbers in cards and headers. An underline at rest
+  (the border colour, so it's clearly editable), the action colour on hover
+  (it's interactive), a 2px focus-colour underline while editing. Its type
+  comes from what it shows (a name, a big number), so it has no set height;
+  small text in an open field is at least body small (13px).
+
+Exceptions, each commented where it's written:
+
+- **Fused controls**: two fields sharing one border (a proficiency's
+  ability and its adjustment; a weapon's hit and damage picks) don't draw
+  their own.
+- `class="ui-native"` opts a field out entirely (none do yet).
 
 ## Buttons
 

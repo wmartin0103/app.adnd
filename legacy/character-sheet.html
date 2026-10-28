@@ -61,6 +61,7 @@
   --edge-top: transparent;
   --toward: #000;
   --scrim: rgb(15 25 35 / .45);
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23414f5d' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
@@ -99,6 +100,7 @@
     --edge-top: rgb(255 255 255 / .05);
     --toward: #fff;
     --scrim: rgb(0 0 0 / .6);
+    --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23b2bbc8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     color-scheme: dark;
   }
 }
@@ -137,6 +139,7 @@
   --edge-top: rgb(255 255 255 / .05);
   --toward: #fff;
   --scrim: rgb(0 0 0 / .6);
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23b2bbc8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   color-scheme: dark;
 }
 .theme-toggle { box-sizing: border-box; width: var(--ctl-sm); height: var(--ctl-sm); padding: 0; display: inline-flex; align-items: center; justify-content: center;
@@ -144,6 +147,44 @@
 .theme-toggle svg { width: var(--ctl-ico-sm); height: var(--ctl-ico-sm); }
 .theme-toggle:hover { color: var(--color-accent-text); border-color: var(--color-accent-text); }
 .theme-toggle:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+/* Fields (docs/design-system.md: Sizes, States) */
+:root { --field-h: var(--ctl-md); --field-fs: var(--ctl-fs-md); --field-px: var(--ctl-pad-md); }
+.size-sm { --field-h: var(--ctl-sm); --field-fs: var(--ctl-fs-sm); --field-px: var(--ctl-pad-sm); }
+.size-md { --field-h: var(--ctl-md); --field-fs: var(--ctl-fs-md); --field-px: var(--ctl-pad-md); }
+.size-lg { --field-h: var(--ctl-lg); --field-fs: var(--ctl-fs-lg); --field-px: var(--ctl-pad-lg); }
+:is(input:not([type]), input[type=text], input[type=number], input[type=email], input[type=password], input[type=search], input[type=url], input[type=tel], select, textarea):not(.ui-native):not(.open-field) {
+  box-sizing: border-box; height: var(--field-h); min-height: 0; margin: 0; padding: 0 var(--field-px);
+  font-family: var(--font-sans); font-size: var(--field-fs); font-weight: 500; font-style: normal; line-height: normal;
+  letter-spacing: normal; text-transform: none; color: var(--color-text);
+  background-color: var(--color-surface); background-image: none;
+  border: 1px solid var(--color-border); border-radius: var(--radius-ctl); box-shadow: none; outline: none;
+  transition: border-color .12s, background-color .12s;
+}
+:is(input:not([type]), input[type=text], input[type=number], input[type=email], input[type=password], input[type=search], input[type=url], input[type=tel], select, textarea):not(.ui-native):not(.open-field):is(textarea) { height: auto; padding: 8px var(--field-px); line-height: 1.45; font-weight: 400; }
+:is(input:not([type]), input[type=text], input[type=number], input[type=email], input[type=password], input[type=search], input[type=url], input[type=tel], select, textarea):not(.ui-native):not(.open-field):is(select) {
+  -webkit-appearance: none; appearance: none; cursor: pointer; text-overflow: ellipsis;
+  padding-right: calc(var(--field-px) + 1.2em);
+  background-image: var(--chevron); background-repeat: no-repeat; background-position: right calc(var(--field-px) - 0.1em) center; background-size: 0.7em auto;
+}
+:is(input:not([type]), input[type=text], input[type=number], input[type=email], input[type=password], input[type=search], input[type=url], input[type=tel], select, textarea):not(.ui-native):not(.open-field)::placeholder { color: var(--color-text-faint); opacity: 1; }
+:is(input:not([type]), input[type=text], input[type=number], input[type=email], input[type=password], input[type=search], input[type=url], input[type=tel], select, textarea):not(.ui-native):not(.open-field):hover:not(:disabled):not(:focus):not([readonly]) { border-color: var(--color-text-muted); }
+:is(input:not([type]), input[type=text], input[type=number], input[type=email], input[type=password], input[type=search], input[type=url], input[type=tel], select, textarea):not(.ui-native):not(.open-field):focus { border-color: var(--color-focus); outline: 2px solid var(--color-focus); outline-offset: 2px; }
+:is(input:not([type]), input[type=text], input[type=number], input[type=email], input[type=password], input[type=search], input[type=url], input[type=tel], select, textarea):not(.ui-native):not(.open-field)[readonly] { background-color: var(--color-sunken); }
+:is(input:not([type]), input[type=text], input[type=number], input[type=email], input[type=password], input[type=search], input[type=url], input[type=tel], select, textarea):not(.ui-native):not(.open-field):disabled { opacity: .45; cursor: not-allowed; }
+:is(input:not([type]), input[type=text], input[type=number], input[type=email], input[type=password], input[type=search], input[type=url], input[type=tel], select, textarea):not(.ui-native):not(.open-field)[aria-invalid="true"] { border-color: var(--color-danger-text); }
+
+/* The open field */
+:is(input, select, textarea).open-field {
+  background-color: transparent; border: 0; border-bottom: 1px solid var(--color-border); border-radius: 0;
+  box-shadow: none; outline: none; color: var(--color-text); transition: border-color .12s;
+}
+select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer; padding-right: 1.4em;
+  background-image: var(--chevron); background-repeat: no-repeat; background-position: right 0.1em center; background-size: 0.7em auto; }
+:is(input, select, textarea).open-field:hover:not(:disabled):not(:focus):not([readonly]) { border-bottom-color: var(--color-accent-text); }
+:is(input, select, textarea).open-field:focus { border-bottom: 2px solid var(--color-focus); margin-bottom: -1px; }
+:is(input, select, textarea).open-field::placeholder { color: var(--color-text-faint); opacity: 1; }
+:is(input, select, textarea).open-field:disabled { opacity: .45; cursor: not-allowed; }
+:is(input, select, textarea).open-field[aria-invalid="true"] { border-bottom-color: var(--color-danger-text); }
 </style>
 <script>try { var t = localStorage.getItem('adnd-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) { /* storage blocked: follow the system */ }</script>
 <!-- end design tokens -->
@@ -2589,7 +2630,27 @@
     .add-class-btn:focus-visible { outline: 2px solid var(--theme-primary); outline-offset: 2px; }
     /* add-class-btn is hidden (not disabled) when at MAX_CLASSES */
 
-  </style>
+  
+    /* Fields are the shared component (src/ui/components.js). Small where the
+       rows are dense: the weapon, equipment and item tables, thief skills,
+       saving-throw modifiers, spell cards and the proficiency lists. */
+    #weapons-list, #equipment-list, #items-list, #thieving-skills-list, .save-mod-input,
+    .spell-card, .spell-class-sel, #nwp-list, #wpn-prof-list, #abilities-cards-list {
+      --field-h: var(--ctl-sm); --field-fs: var(--ctl-fs-sm); --field-px: var(--ctl-pad-sm);
+    }
+    /* Exception, fused controls: two fields share one border (a proficiency's
+       ability and its adjustment; a weapon's hit and damage picks), so neither
+       draws its own */
+    .nwp-roll-wrap :is(input, select):is(.nwp-adj-inp, .nwp-ability-sel):not(.ui-native):not(.open-field),
+    .wpn-split-pick :is(input, select).wpn-pick:not(.ui-native):not(.open-field) {
+      border: 0; border-radius: 0; background-color: transparent; height: calc(var(--field-h) - 2px);
+    }
+    .nwp-roll-wrap select.nwp-ability-sel:not(.ui-native):not(.open-field) { border-right: 1px solid var(--color-border); }
+    .nwp-roll-wrap :is(input, select):not(.ui-native):not(.open-field):focus,
+    .wpn-split-pick :is(input, select):not(.ui-native):not(.open-field):focus { outline-offset: -2px; }
+    /* Open fields with small text (links, notes, descriptions, small numbers): body small, 13px */
+    .open-field:is(.nwp-url-inp, .spell-card-url-inp, .spellbook-pages-inp, .movement-mod-inp, .spell-card-notes, .trait-notes, .money-inp, .nwp-card-desc) { font-family: var(--font-sans); font-size: 13px; }
+</style>
 </head>
 <body>
   <main class="sheet" aria-label="Character Sheet">
@@ -2603,7 +2664,7 @@
           <label for="char-name" class="sr-only">Character Name</label>
           <input
             id="char-name"
-            class="character-name-input"
+            class="character-name-input open-field"
             type="text"
             placeholder="Character Name"
             autocomplete="off"
@@ -2613,12 +2674,12 @@
         <div class="header-player-row">
           <div class="header-meta-field">
             <label class="header-player-label" for="char-player">Player</label>
-            <input id="char-player" class="header-player-input" type="text"
+            <input id="char-player" class="header-player-input open-field" type="text"
               placeholder="—" autocomplete="off" data-save="player" />
           </div>
           <div class="header-meta-field">
             <label class="header-player-label" for="char-race-group">Race</label>
-            <select id="char-race-group" class="header-player-input header-select" data-save="race-group">
+            <select id="char-race-group" class="header-player-input header-select open-field" data-save="race-group">
               <option value="human">Human</option>
               <option value="dwarf">Dwarf</option>
               <option value="gnome">Gnome</option>
@@ -2630,7 +2691,7 @@
           </div>
           <div class="header-meta-field">
             <label class="header-player-label" for="char-alignment">Alignment</label>
-            <input id="char-alignment" class="header-player-input" type="text"
+            <input id="char-alignment" class="header-player-input open-field" type="text"
               placeholder="—" autocomplete="off" data-save="alignment" />
           </div>
 
@@ -2708,13 +2769,13 @@
           <div class="ac-combined-values">
             <div class="ac-half">
               <label class="ac-sub-label" for="armor-class">Base</label>
-              <input id="armor-class" class="combat-value ac-value" type="number" data-save="ac"
+              <input id="armor-class" class="combat-value ac-value open-field" type="number" data-save="ac"
                 aria-describedby="base-ac-desc" />
             </div>
             <div class="ac-divider" aria-hidden="true"></div>
             <div class="ac-half">
               <span class="ac-sub-label" id="effective-ac-label">Effective</span>
-              <output id="effective-ac" class="combat-value ac-value"
+              <output id="effective-ac" class="combat-value ac-value open-field"
                 aria-labelledby="effective-ac-label"
                 aria-describedby="effective-ac-desc" style="display:block;">—</output>
               <span class="ac-sub-note" id="effective-ac-desc"></span>
@@ -2741,14 +2802,14 @@
             <div class="hp-inputs">
               <div class="hp-input-wrap">
                 <label class="sr-only" for="hp-current">Current HP</label>
-                <input id="hp-current" class="hp-main" type="number" min="0"
+                <input id="hp-current" class="hp-main open-field" type="number" min="0"
                   data-save="hp-current" aria-describedby="hp-current-sub" />
                 <span id="hp-current-sub" class="hp-sub-label">Current</span>
               </div>
               <span class="hp-sep" aria-hidden="true">/</span>
               <div class="hp-input-wrap">
                 <label class="sr-only" for="hp-max">Maximum HP</label>
-                <input id="hp-max" class="hp-main" type="number" min="1"
+                <input id="hp-max" class="hp-main open-field" type="number" min="1"
                   data-save="hp-max" aria-describedby="hp-max-sub" />
                 <span id="hp-max-sub" class="hp-sub-label">Maximum</span>
               </div>
@@ -2763,11 +2824,11 @@
             Movement
             <span class="movement-mod-row">
               <span class="movement-mod-label">Mod</span>
-              <input id="movement-mod" class="movement-mod-inp" type="text"
+              <input id="movement-mod" class="movement-mod-inp open-field" type="text"
                      data-save="movement-mod" placeholder="±0" />
             </span>
           </label>
-          <span id="movement-total" class="combat-value">12</span>
+          <span id="movement-total" class="combat-value open-field">12</span>
           <span class="combat-sublabel">Yards / Round</span>
         </div>
 
@@ -2776,21 +2837,21 @@
         <!-- Missile Attack Adj. — hidden when modifier is zero -->
         <div class="combat-card" id="card-missile-adj">
           <label class="combat-label" for="missile-adj">Missile Adj.</label>
-          <input id="missile-adj" class="combat-value" type="text" readonly />
+          <input id="missile-adj" class="combat-value open-field" type="text" readonly />
           <span class="combat-sublabel">From Dexterity</span>
         </div>
 
         <!-- Hit Adj. — hidden when modifier is zero -->
         <div class="combat-card" id="card-hit-adj">
           <label class="combat-label" for="hit-adj">Hit Adj.</label>
-          <input id="hit-adj" class="combat-value" type="text" readonly />
+          <input id="hit-adj" class="combat-value open-field" type="text" readonly />
           <span class="combat-sublabel">From Strength</span>
         </div>
 
         <!-- Damage Adj. — hidden when modifier is zero -->
         <div class="combat-card" id="card-damage-adj">
           <label class="combat-label" for="damage-adj">Damage Adj.</label>
-          <input id="damage-adj" class="combat-value" type="text" readonly />
+          <input id="damage-adj" class="combat-value open-field" type="text" readonly />
           <span class="combat-sublabel">From Strength</span>
         </div>
 
@@ -3043,7 +3104,7 @@
         Items
         <div class="section-heading-right">
           <label class="sr-only" for="money-inp">Money</label>
-          <input type="text" id="money-inp" class="money-inp" data-save="money" placeholder="Money…" aria-label="Money" />
+          <input type="text" id="money-inp" class="money-inp open-field" data-save="money" placeholder="Money…" aria-label="Money" />
           <span id="items-weight-total" class="item-weight-total"></span>
           <span class="scenario-chevron racial-traits-chevron" id="items-chevron" aria-hidden="true"></span>
         </div>
@@ -4561,7 +4622,7 @@ const {lineSay} = __m["rules/round"];
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-const STYLES = "/* Shared tokens: the character sheet's palette and type, under names of their\n   own (each tool keeps its own token names for the rest of its page) */\n:root { --ui-ink: var(--color-text); --ui-muted: var(--color-text-muted); --ui-faint: var(--color-text-faint); --ui-rule: var(--color-divider); --ui-accent: var(--color-accent-text); --ui-accent-dark: color-mix(in oklab, var(--color-accent-text) 82%, var(--toward));\n  --ui-surface: var(--color-surface); --ui-page: var(--color-bg); --ui-gold: var(--color-accent); --ui-radius: var(--radius-ctl); --ui-ctl-h: 2.1rem;\n  --ui-display: var(--font-serif); --ui-body: var(--font-sans); }\n/* A label over a control, the control, a button */\n.ui-field { display: inline-flex; flex-direction: column; gap: 0.15rem; }\n.ui-label { font-family: var(--ui-display); font-size: 0.65rem; letter-spacing: 0.13em; text-transform: uppercase; color: var(--ui-muted); }\n.ui-control { box-sizing: border-box; height: var(--ui-ctl-h); padding: 0 0.5rem; font: 0.95rem var(--ui-body); color: var(--ui-ink);\n  background: var(--ui-page); border: 1px solid var(--ui-rule); border-radius: var(--ui-radius); cursor: pointer; }\n.ui-control:focus { outline: none; border-color: var(--ui-accent); }\n.ui-btn { box-sizing: border-box; height: var(--ui-ctl-h); display: inline-flex; align-items: center; gap: 0.4rem; padding: 0 0.8rem;\n  font-family: var(--ui-display); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap;\n  background: var(--ui-accent); color: var(--ui-surface); border: 1px solid var(--ui-accent); border-radius: var(--ui-radius); cursor: pointer; }\n.ui-btn:hover, .ui-btn:focus-visible { background: var(--ui-accent-dark); }\n/* A select with checkboxes in its list */\n.round-multi { position: relative; }\n.round-multi .round-multi-btn { width: auto; min-width: 9.5rem; max-width: 16rem; overflow: hidden; text-overflow: ellipsis; text-align: left; padding-right: 1.9rem; position: relative; white-space: nowrap; }\n.round-multi-btn::after { content: ''; position: absolute; right: 0.65rem; top: 50%; width: 0.4rem; height: 0.4rem; margin-top: -0.3rem;\n  border-right: 1.5px solid var(--ui-muted); border-bottom: 1.5px solid var(--ui-muted); transform: rotate(45deg); }\n.round-multi.is-open .round-multi-btn { border-color: var(--ui-accent); }\n.round-multi.is-open .round-multi-btn::after { transform: rotate(-135deg); margin-top: -0.1rem; }\n.round-multi-list { position: absolute; top: 100%; left: 0; z-index: 30; margin-top: 0.25rem; min-width: 100%; width: max-content; max-width: 18rem;\n  background: var(--ui-surface); border: 1px solid var(--ui-rule); border-radius: var(--ui-radius); box-shadow: var(--shadow-raised); padding: 0.3rem; }\n.round-multi-opt { display: flex; align-items: flex-start; gap: 0.55rem; padding: 0.45rem 0.55rem; border-radius: var(--ui-radius); cursor: pointer; font-size: 0.95rem; }\n.round-multi-opt:hover, .round-multi-opt:focus-within { background: var(--ui-page); }\n.round-multi-opt input { accent-color: var(--ui-accent); margin-top: 0.2rem; }\n.round-multi-opt small { display: block; font-size: 0.8rem; color: var(--ui-muted); }\n/* A read-only value in a line, the height of the controls beside it */\n.round-read-value { display: inline-flex; align-items: center; height: var(--ui-ctl-h); font-size: 0.95rem; color: var(--ui-ink); white-space: nowrap; }\n.round-read.is-key .round-read-value { font-family: var(--ui-display); font-weight: 700; font-size: 1.05rem; color: var(--ui-accent); }\n/* A rolled line: one strip, same type throughout, pieces split by dividers */\n.round-summary { display: flex; flex-wrap: wrap; align-items: center; min-height: var(--ui-ctl-h); font-size: 0.95rem; color: var(--ui-ink); }\n.round-summary > span { padding: 0 0.75rem; border-left: 1px solid var(--ui-rule); line-height: 1.3; }\n.round-summary > span:first-child { padding-left: 0; border-left: 0; }\n.round-summary > .is-key { font-family: var(--ui-display); font-weight: 700; color: var(--ui-accent); }\n/* The hit roll: the round's big moment */\n.roll-hit-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; padding: 0.4rem 0.85rem 0.4rem 0.6rem; box-shadow: 0 2px 0 color-mix(in oklab, var(--ui-accent) 55%, #000); }\n.roll-hit-btn svg { width: 1.15rem; height: 1.15rem; }\n.roll-hit-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 color-mix(in oklab, var(--ui-accent) 55%, #000); }\n.hit-rolls { flex-basis: 100%; display: grid; gap: 0.45rem; justify-items: start; }\n.hit-rolls > .hit-roll { width: 100%; box-sizing: border-box; }\n.hit-who { font-family: var(--ui-display); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ui-muted); min-width: 4.5rem; }\n.hit-roll { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1.5rem; padding: 0.55rem 0.9rem; border-radius: var(--ui-radius);\n  background: linear-gradient(100deg, color-mix(in oklab, var(--ui-accent) 8%, var(--ui-surface)), var(--ui-surface) 70%); border: 1px solid color-mix(in oklab, var(--ui-accent) 28%, var(--ui-surface)); }\n.hit-die { position: relative; width: 3.4rem; height: 3.4rem; flex: none; color: var(--ui-accent); }\n.hit-die svg { position: absolute; inset: 0; width: 100%; height: 100%; }\n.hit-die-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding-top: 0.15rem;\n  font-family: var(--ui-display); font-weight: 700; font-size: 1.35rem; color: var(--ui-ink); }\n.hit-stat { display: flex; flex-direction: column; line-height: 1; }\n.hit-stat-label { font-family: var(--ui-display); font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ui-muted); margin-bottom: 0.25rem; }\n.hit-stat-value { font-family: var(--ui-display); font-weight: 700; font-size: 2rem; color: var(--ui-accent); }\n.hit-stat-sub { font-size: 0.8rem; color: var(--ui-muted); margin-top: 0.15rem; }\n.hit-stat.is-dmg .hit-stat-value { color: var(--ui-ink); font-size: 1.6rem; }\n.hit-stat.is-miss .hit-stat-value { color: var(--ui-muted); }\n.hit-stat.is-updated .hit-stat-value { border-radius: var(--ui-radius); }\n@media (prefers-reduced-motion: no-preference) {\n  .hit-stat.is-updated .hit-stat-value { animation: hit-update 1.2s ease-out; }\n}\n@keyframes hit-update { 0% { background: color-mix(in oklab, var(--color-accent) 45%, transparent); } 100% { background: transparent; } }\n.hit-nat { font-family: var(--ui-display); font-weight: 700; font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; padding: 0.25rem 0.55rem; border-radius: 999px; }\n.hit-roll.is-crit { background: linear-gradient(100deg, color-mix(in oklab, var(--color-highlight) 22%, var(--ui-surface)), var(--ui-surface) 75%); border-color: var(--color-success-text); box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); }\n.hit-roll.is-crit .hit-die { color: var(--color-success-text); }\n.hit-roll.is-crit .hit-nat { background: var(--color-highlight); color: var(--color-on-highlight); }\n.hit-roll.is-fumble { background: linear-gradient(100deg, color-mix(in oklab, var(--ui-muted) 12%, var(--ui-surface)), var(--ui-surface) 75%); border-color: var(--ui-faint); }\n.hit-roll.is-fumble .hit-die, .hit-roll.is-fumble .hit-stat-value { color: var(--ui-muted); }\n.hit-roll.is-fumble .hit-stat.is-miss .hit-stat-value { color: var(--ui-ink); }\n.hit-roll.is-fumble .hit-nat { background: var(--ui-ink); color: var(--ui-surface); }\n@media (prefers-reduced-motion: no-preference) {\n  .hit-roll.is-fresh .hit-die svg { animation: hit-tumble 0.55s cubic-bezier(.2,.8,.3,1); }\n  .hit-roll.is-fresh .hit-die-num, .hit-roll.is-fresh .hit-stat-value { animation: hit-pop 0.45s 0.3s cubic-bezier(.2,1.4,.4,1) both; }\n  .hit-roll.is-fresh.is-crit { animation: hit-glow 1.2s 0.5s ease-out; }\n}\n@keyframes hit-tumble { from { transform: rotate(-200deg) scale(0.6); } to { transform: none; } }\n@keyframes hit-pop { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: none; } }\n@keyframes hit-glow { 0% { box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); } 30% { box-shadow: 0 0 0 8px color-mix(in oklab, var(--color-highlight) 50%, transparent); } 100% { box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); } }";
+const STYLES = "/* Shared tokens: the character sheet's palette and type, under names of their\n   own (each tool keeps its own token names for the rest of its page) */\n:root { --ui-ink: var(--color-text); --ui-muted: var(--color-text-muted); --ui-faint: var(--color-text-faint); --ui-rule: var(--color-divider); --ui-accent: var(--color-accent-text); --ui-accent-dark: color-mix(in oklab, var(--color-accent-text) 82%, var(--toward));\n  --ui-surface: var(--color-surface); --ui-page: var(--color-bg); --ui-gold: var(--color-accent); --ui-radius: var(--radius-ctl); --ui-ctl-h: 2.1rem;\n  --ui-display: var(--font-serif); --ui-body: var(--font-sans); }\n/* A label over a control, the control, a button */\n.ui-field { display: inline-flex; flex-direction: column; gap: 0.15rem; }\n.ui-label { font-family: var(--ui-display); font-size: 0.65rem; letter-spacing: 0.13em; text-transform: uppercase; color: var(--ui-muted); }\n/* Looks like a field (src/ui/components.js): the select with checkboxes sits among selects */\n.ui-control { box-sizing: border-box; height: var(--field-h, var(--ui-ctl-h)); padding: 0 var(--field-px, 0.5rem); font: 500 var(--field-fs, 0.95rem) var(--ui-body); color: var(--ui-ink);\n  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--ui-radius); cursor: pointer; }\n.ui-control:hover { border-color: var(--color-text-muted); }\n.ui-control:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-color: var(--color-focus); }\n.ui-btn { box-sizing: border-box; height: var(--ui-ctl-h); display: inline-flex; align-items: center; gap: 0.4rem; padding: 0 0.8rem;\n  font-family: var(--ui-display); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap;\n  background: var(--ui-accent); color: var(--ui-surface); border: 1px solid var(--ui-accent); border-radius: var(--ui-radius); cursor: pointer; }\n.ui-btn:hover, .ui-btn:focus-visible { background: var(--ui-accent-dark); }\n/* A select with checkboxes in its list */\n.round-multi { position: relative; }\n.round-multi .round-multi-btn { width: auto; min-width: 9.5rem; max-width: 16rem; overflow: hidden; text-overflow: ellipsis; text-align: left; padding-right: 1.9rem; position: relative; white-space: nowrap; }\n.round-multi-btn::after { content: ''; position: absolute; right: 0.65rem; top: 50%; width: 0.4rem; height: 0.4rem; margin-top: -0.3rem;\n  border-right: 1.5px solid var(--ui-muted); border-bottom: 1.5px solid var(--ui-muted); transform: rotate(45deg); }\n.round-multi.is-open .round-multi-btn { border-color: var(--ui-accent); }\n.round-multi.is-open .round-multi-btn::after { transform: rotate(-135deg); margin-top: -0.1rem; }\n.round-multi-list { position: absolute; top: 100%; left: 0; z-index: 30; margin-top: 0.25rem; min-width: 100%; width: max-content; max-width: 18rem;\n  background: var(--ui-surface); border: 1px solid var(--ui-rule); border-radius: var(--ui-radius); box-shadow: var(--shadow-raised); padding: 0.3rem; }\n.round-multi-opt { display: flex; align-items: flex-start; gap: 0.55rem; padding: 0.45rem 0.55rem; border-radius: var(--ui-radius); cursor: pointer; font-size: 0.95rem; }\n.round-multi-opt:hover, .round-multi-opt:focus-within { background: var(--ui-page); }\n.round-multi-opt input { accent-color: var(--ui-accent); margin-top: 0.2rem; }\n.round-multi-opt small { display: block; font-size: 0.8rem; color: var(--ui-muted); }\n/* A read-only value in a line, the height of the controls beside it */\n.round-read-value { display: inline-flex; align-items: center; height: var(--ui-ctl-h); font-size: 0.95rem; color: var(--ui-ink); white-space: nowrap; }\n.round-read.is-key .round-read-value { font-family: var(--ui-display); font-weight: 700; font-size: 1.05rem; color: var(--ui-accent); }\n/* A rolled line: one strip, same type throughout, pieces split by dividers */\n.round-summary { display: flex; flex-wrap: wrap; align-items: center; min-height: var(--ui-ctl-h); font-size: 0.95rem; color: var(--ui-ink); }\n.round-summary > span { padding: 0 0.75rem; border-left: 1px solid var(--ui-rule); line-height: 1.3; }\n.round-summary > span:first-child { padding-left: 0; border-left: 0; }\n.round-summary > .is-key { font-family: var(--ui-display); font-weight: 700; color: var(--ui-accent); }\n/* The hit roll: the round's big moment */\n.roll-hit-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; padding: 0.4rem 0.85rem 0.4rem 0.6rem; box-shadow: 0 2px 0 color-mix(in oklab, var(--ui-accent) 55%, #000); }\n.roll-hit-btn svg { width: 1.15rem; height: 1.15rem; }\n.roll-hit-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 color-mix(in oklab, var(--ui-accent) 55%, #000); }\n.hit-rolls { flex-basis: 100%; display: grid; gap: 0.45rem; justify-items: start; }\n.hit-rolls > .hit-roll { width: 100%; box-sizing: border-box; }\n.hit-who { font-family: var(--ui-display); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ui-muted); min-width: 4.5rem; }\n.hit-roll { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1.5rem; padding: 0.55rem 0.9rem; border-radius: var(--ui-radius);\n  background: linear-gradient(100deg, color-mix(in oklab, var(--ui-accent) 8%, var(--ui-surface)), var(--ui-surface) 70%); border: 1px solid color-mix(in oklab, var(--ui-accent) 28%, var(--ui-surface)); }\n.hit-die { position: relative; width: 3.4rem; height: 3.4rem; flex: none; color: var(--ui-accent); }\n.hit-die svg { position: absolute; inset: 0; width: 100%; height: 100%; }\n.hit-die-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding-top: 0.15rem;\n  font-family: var(--ui-display); font-weight: 700; font-size: 1.35rem; color: var(--ui-ink); }\n.hit-stat { display: flex; flex-direction: column; line-height: 1; }\n.hit-stat-label { font-family: var(--ui-display); font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ui-muted); margin-bottom: 0.25rem; }\n.hit-stat-value { font-family: var(--ui-display); font-weight: 700; font-size: 2rem; color: var(--ui-accent); }\n.hit-stat-sub { font-size: 0.8rem; color: var(--ui-muted); margin-top: 0.15rem; }\n.hit-stat.is-dmg .hit-stat-value { color: var(--ui-ink); font-size: 1.6rem; }\n.hit-stat.is-miss .hit-stat-value { color: var(--ui-muted); }\n.hit-stat.is-updated .hit-stat-value { border-radius: var(--ui-radius); }\n@media (prefers-reduced-motion: no-preference) {\n  .hit-stat.is-updated .hit-stat-value { animation: hit-update 1.2s ease-out; }\n}\n@keyframes hit-update { 0% { background: color-mix(in oklab, var(--color-accent) 45%, transparent); } 100% { background: transparent; } }\n.hit-nat { font-family: var(--ui-display); font-weight: 700; font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; padding: 0.25rem 0.55rem; border-radius: 999px; }\n.hit-roll.is-crit { background: linear-gradient(100deg, color-mix(in oklab, var(--color-highlight) 22%, var(--ui-surface)), var(--ui-surface) 75%); border-color: var(--color-success-text); box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); }\n.hit-roll.is-crit .hit-die { color: var(--color-success-text); }\n.hit-roll.is-crit .hit-nat { background: var(--color-highlight); color: var(--color-on-highlight); }\n.hit-roll.is-fumble { background: linear-gradient(100deg, color-mix(in oklab, var(--ui-muted) 12%, var(--ui-surface)), var(--ui-surface) 75%); border-color: var(--ui-faint); }\n.hit-roll.is-fumble .hit-die, .hit-roll.is-fumble .hit-stat-value { color: var(--ui-muted); }\n.hit-roll.is-fumble .hit-stat.is-miss .hit-stat-value { color: var(--ui-ink); }\n.hit-roll.is-fumble .hit-nat { background: var(--ui-ink); color: var(--ui-surface); }\n@media (prefers-reduced-motion: no-preference) {\n  .hit-roll.is-fresh .hit-die svg { animation: hit-tumble 0.55s cubic-bezier(.2,.8,.3,1); }\n  .hit-roll.is-fresh .hit-die-num, .hit-roll.is-fresh .hit-stat-value { animation: hit-pop 0.45s 0.3s cubic-bezier(.2,1.4,.4,1) both; }\n  .hit-roll.is-fresh.is-crit { animation: hit-glow 1.2s 0.5s ease-out; }\n}\n@keyframes hit-tumble { from { transform: rotate(-200deg) scale(0.6); } to { transform: none; } }\n@keyframes hit-pop { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: none; } }\n@keyframes hit-glow { 0% { box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); } 30% { box-shadow: 0 0 0 8px color-mix(in oklab, var(--color-highlight) 50%, transparent); } 100% { box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); } }";
 function ensureStyles(doc = document) {
   if (doc.getElementById('round-ui-styles')) return;
   const st = doc.createElement('style'); st.id = 'round-ui-styles'; st.textContent = STYLES;
@@ -4746,18 +4807,21 @@ const COLORS = {
   },
 };
 
+// The select chevron, in the muted text colour (an image: a data URI can't read a CSS colour)
+const chevron = hex => `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23${hex}' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`;
+
 // Shadows and the step direction differ by theme too (depth: shadow in light,
 // a lighter surface in dark; hover and pressing mix toward black or white)
 const DEPTH = {
   light: {
     'shadow-card': '0 1px 2px rgb(20 16 12 / .06), 0 1px 3px rgb(20 16 12 / .10)',
     'shadow-raised': '0 12px 30px rgb(20 16 12 / .16), 0 2px 6px rgb(20 16 12 / .08)',
-    'edge-top': 'transparent', toward: '#000', scrim: 'rgb(15 25 35 / .45)',
+    'edge-top': 'transparent', toward: '#000', scrim: 'rgb(15 25 35 / .45)', chevron: chevron('414f5d'),
   },
   dark: {
     'shadow-card': '0 1px 2px rgb(0 0 0 / .5)',
     'shadow-raised': '0 14px 34px rgb(0 0 0 / .55), 0 2px 6px rgb(0 0 0 / .4)',
-    'edge-top': 'rgb(255 255 255 / .05)', toward: '#fff', scrim: 'rgb(0 0 0 / .6)',
+    'edge-top': 'rgb(255 255 255 / .05)', toward: '#fff', scrim: 'rgb(0 0 0 / .6)', chevron: chevron('b2bbc8'),
   },
 };
 
@@ -6491,7 +6555,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         const scoreInput = document.createElement('input');
         scoreInput.type = 'number';
         scoreInput.id = `ability-${ability.id}`;
-        scoreInput.className = 'ability-score-input';
+        scoreInput.className = 'ability-score-input open-field';
         scoreInput.min = 1;
         scoreInput.max = 25;
         scoreInput.dataset.save = ability.saveKey;
@@ -6912,7 +6976,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         const nameInput = document.createElement('input');
         nameInput.type = 'text';
         nameInput.id = `${cls.id}-name`;
-        nameInput.className = 'class-input';
+        nameInput.className = 'class-input open-field';
         nameInput.placeholder = 'e.g. Fighter';
         nameInput.value = cls.name;
         nameInput.setAttribute('aria-label', `${index === 0 ? 'Primary' : 'Secondary'} class name`);
@@ -6985,7 +7049,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         groupLabel.textContent = 'Group';
         const groupSelect = document.createElement('select');
         groupSelect.id = `${cls.id}-group`;
-        groupSelect.className = 'class-group-select';
+        groupSelect.className = 'class-group-select open-field';
         groupSelect.setAttribute('aria-label', 'THAC0 progression group');
         Object.entries(THAC0_GROUPS).forEach(([key, grp]) => {
           const opt = document.createElement('option');
@@ -7014,7 +7078,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         const levelInput = document.createElement('input');
         levelInput.type = 'number';
         levelInput.id = `${cls.id}-level`;
-        levelInput.className = 'class-level-input';
+        levelInput.className = 'class-level-input open-field';
         levelInput.min = 1;
         levelInput.max = 20;
         levelInput.placeholder = '1';
@@ -7045,7 +7109,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         const xpInput = document.createElement('input');
         xpInput.type = 'number';
         xpInput.id = `${cls.id}-xp`;
-        xpInput.className = 'class-input';
+        xpInput.className = 'class-input open-field';
         xpInput.min = 0;
         xpInput.placeholder = '0';
         xpInput.value = cls.xp;
@@ -7275,7 +7339,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         // Scenario name
         const nameInput = document.createElement('input');
         nameInput.type = 'text';
-        nameInput.className = 'scenario-name-input';
+        nameInput.className = 'scenario-name-input open-field';
         nameInput.placeholder = `Scenario ${index + 1}`;
         nameInput.value = scenario.name;
         nameInput.setAttribute('aria-label', 'Scenario name');
@@ -7521,8 +7585,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           hitModInp.className = 'scenario-select hitmod-inp';
           hitModInp.style.width = '4.5rem';
           hitModInp.style.textAlign = 'center';
-          hitModInp.style.fontFamily = 'var(--font-display)';
-          hitModInp.style.fontWeight = '600';
           hitModInp.value = scenario.hitMod || '';
           hitModInp.placeholder = '0';
           hitModInp.step = 1;
@@ -7562,8 +7624,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           inp.className = 'scenario-select hitmod-inp';
           inp.style.width = '4.5rem';
           inp.style.textAlign = 'center';
-          inp.style.fontFamily = 'var(--font-display)';
-          inp.style.fontWeight = '600';
           inp.value = scenario.dmgMod || '';
           inp.placeholder = '0';
           inp.step = 1;
@@ -8648,7 +8708,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       }
 
       // Col: Name | Size | DmgType | Spd | Hit/DmgAdj | Damage | Notes | Del
-      const COL = 'minmax(8rem, 1.6fr) 3.4rem 4.6rem 3rem 5.6rem 7.4rem minmax(6rem, 1.4fr) 1.4rem';
+      const COL = 'minmax(8rem, 1.6fr) 4.4rem 4.6rem 3rem 7rem 7.4rem minmax(6rem, 1.4fr) 1.4rem';   // Size and Hit/Dmg fit their picks' text and chevrons
 
       // ── Header ──────────────────────────────────────────────
       const header = document.createElement('div');
@@ -9366,7 +9426,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         // ── Name ───────────────────────────────────────────────
         const nameInp = document.createElement('input');
         nameInp.type = 'text';
-        nameInp.className = 'spell-card-name';
+        nameInp.className = 'spell-card-name open-field';
         nameInp.value = spl.name;
         nameInp.placeholder = 'Spell name';
         nameInp.setAttribute('aria-label', 'Spell name');
@@ -9394,7 +9454,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         // ── Notes ──────────────────────────────────────────────
         const notesInp = document.createElement('input');
         notesInp.type = 'text';
-        notesInp.className = 'spell-card-notes';
+        notesInp.className = 'spell-card-notes open-field';
         notesInp.value = spl.notes || '';
         notesInp.placeholder = 'Notes…';
         notesInp.setAttribute('aria-label', 'Spell notes');
@@ -9408,7 +9468,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
         const urlInp = document.createElement('input');
         urlInp.type = 'url';
-        urlInp.className = 'spell-card-url-inp';
+        urlInp.className = 'spell-card-url-inp open-field';
         urlInp.value = spl.url || '';
         urlInp.placeholder = 'Reference URL…';
         urlInp.setAttribute('aria-label', 'Spell reference URL');
@@ -9507,7 +9567,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       const pagesUsedInp = document.createElement('input');
       pagesUsedInp.type = 'number';
       pagesUsedInp.min = 0;
-      pagesUsedInp.className = 'spellbook-pages-inp';
+      pagesUsedInp.className = 'spellbook-pages-inp open-field';
       pagesUsedInp.placeholder = '0';
       pagesUsedInp.value = spellbookPagesUsed || '';
       pagesUsedInp.setAttribute('aria-label', 'Pages used');
@@ -9521,7 +9581,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       const pagesTotalInp = document.createElement('input');
       pagesTotalInp.type = 'number';
       pagesTotalInp.min = 0;
-      pagesTotalInp.className = 'spellbook-pages-inp';
+      pagesTotalInp.className = 'spellbook-pages-inp open-field';
       pagesTotalInp.placeholder = '0';
       pagesTotalInp.value = spellbookPagesTotal || '';
       pagesTotalInp.setAttribute('aria-label', 'Total pages');
@@ -9978,7 +10038,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
         const notesEl = document.createElement('input');
         notesEl.type = 'text';
-        notesEl.className = 'trait-notes';
+        notesEl.className = 'trait-notes open-field';
         notesEl.id = `trait-notes-${trait.id}`;
         notesEl.placeholder = 'Notes…';
         notesEl.value = state.notes;
@@ -10706,7 +10766,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         // ── Name ─────────────────────────────────────────────
         const nameInp = document.createElement('input');
         nameInp.type = 'text';
-        nameInp.className = 'nwp-card-name';
+        nameInp.className = 'nwp-card-name open-field';
         nameInp.value = nwp.name;
         nameInp.placeholder = 'Proficiency name';
         nameInp.addEventListener('input',  () => { nwp.name = nameInp.value; });
@@ -10715,7 +10775,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
         // ── Description ───────────────────────────────────────
         const descInp = document.createElement('textarea');
-        descInp.className = 'nwp-card-desc';
+        descInp.className = 'nwp-card-desc open-field';
         descInp.value = nwp.desc;
         descInp.placeholder = 'Description…';
         descInp.rows = 1;
@@ -10728,7 +10788,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         urlRow.className = 'nwp-url-row';
         const urlInp = document.createElement('input');
         urlInp.type = 'url';
-        urlInp.className = 'nwp-url-inp';
+        urlInp.className = 'nwp-url-inp open-field';
         urlInp.value = nwp.url || '';
         urlInp.placeholder = 'Reference URL…';
         const infoLink = document.createElement('a');
@@ -10856,7 +10916,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
         const nameInp = document.createElement('input');
         nameInp.type = 'text';
-        nameInp.className = 'nwp-card-name ability-card-name';
+        nameInp.className = 'nwp-card-name ability-card-name open-field';
         nameInp.value = ab.name;
         nameInp.placeholder = 'Ability name';
         nameInp.addEventListener('input',  () => { ab.name = nameInp.value; });
@@ -10878,7 +10938,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
         // ── Description (multi-line textarea) ────────────────
         const descInp = document.createElement('textarea');
-        descInp.className = 'nwp-card-desc ability-card-desc';
+        descInp.className = 'nwp-card-desc ability-card-desc open-field';
         descInp.value = ab.desc;
         descInp.placeholder = 'Description…';
         descInp.rows = 3;
@@ -10892,7 +10952,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
         const urlInp = document.createElement('input');
         urlInp.type = 'url';
-        urlInp.className = 'nwp-url-inp';
+        urlInp.className = 'nwp-url-inp open-field';
         urlInp.value = ab.url || '';
         urlInp.placeholder = 'Reference URL…';
 
@@ -10958,7 +11018,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
         const nameInp = document.createElement('input');
         nameInp.type = 'text';
-        nameInp.className = 'nwp-card-name ability-card-name';
+        nameInp.className = 'nwp-card-name ability-card-name open-field';
         nameInp.value = ab.name;
         nameInp.placeholder = 'Weapon name';
         nameInp.addEventListener('input',  () => { ab.name = nameInp.value; });
@@ -10979,7 +11039,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         card.appendChild(top);
 
         const descInp = document.createElement('textarea');
-        descInp.className = 'nwp-card-desc ability-card-desc';
+        descInp.className = 'nwp-card-desc ability-card-desc open-field';
         descInp.value = ab.desc;
         descInp.placeholder = 'Description…';
         descInp.rows = 3;
@@ -10992,7 +11052,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
         const urlInp = document.createElement('input');
         urlInp.type = 'url';
-        urlInp.className = 'nwp-url-inp';
+        urlInp.className = 'nwp-url-inp open-field';
         urlInp.value = ab.url || '';
         urlInp.placeholder = 'Reference URL…';
 

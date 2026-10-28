@@ -27,18 +27,21 @@ export const COLORS = {
   },
 };
 
+// The select chevron, in the muted text colour (an image: a data URI can't read a CSS colour)
+const chevron = hex => `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23${hex}' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`;
+
 // Shadows and the step direction differ by theme too (depth: shadow in light,
 // a lighter surface in dark; hover and pressing mix toward black or white)
 const DEPTH = {
   light: {
     'shadow-card': '0 1px 2px rgb(20 16 12 / .06), 0 1px 3px rgb(20 16 12 / .10)',
     'shadow-raised': '0 12px 30px rgb(20 16 12 / .16), 0 2px 6px rgb(20 16 12 / .08)',
-    'edge-top': 'transparent', toward: '#000', scrim: 'rgb(15 25 35 / .45)',
+    'edge-top': 'transparent', toward: '#000', scrim: 'rgb(15 25 35 / .45)', chevron: chevron('414f5d'),
   },
   dark: {
     'shadow-card': '0 1px 2px rgb(0 0 0 / .5)',
     'shadow-raised': '0 14px 34px rgb(0 0 0 / .55), 0 2px 6px rgb(0 0 0 / .4)',
-    'edge-top': 'rgb(255 255 255 / .05)', toward: '#fff', scrim: 'rgb(0 0 0 / .6)',
+    'edge-top': 'rgb(255 255 255 / .05)', toward: '#fff', scrim: 'rgb(0 0 0 / .6)', chevron: chevron('b2bbc8'),
   },
 };
 

@@ -61,6 +61,7 @@
   --edge-top: transparent;
   --toward: #000;
   --scrim: rgb(15 25 35 / .45);
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23414f5d' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
@@ -99,6 +100,7 @@
     --edge-top: rgb(255 255 255 / .05);
     --toward: #fff;
     --scrim: rgb(0 0 0 / .6);
+    --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23b2bbc8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     color-scheme: dark;
   }
 }
@@ -137,6 +139,7 @@
   --edge-top: rgb(255 255 255 / .05);
   --toward: #fff;
   --scrim: rgb(0 0 0 / .6);
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23b2bbc8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   color-scheme: dark;
 }
 .theme-toggle { box-sizing: border-box; width: var(--ctl-sm); height: var(--ctl-sm); padding: 0; display: inline-flex; align-items: center; justify-content: center;
@@ -144,6 +147,44 @@
 .theme-toggle svg { width: var(--ctl-ico-sm); height: var(--ctl-ico-sm); }
 .theme-toggle:hover { color: var(--color-accent-text); border-color: var(--color-accent-text); }
 .theme-toggle:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+/* Fields (docs/design-system.md: Sizes, States) */
+:root { --field-h: var(--ctl-md); --field-fs: var(--ctl-fs-md); --field-px: var(--ctl-pad-md); }
+.size-sm { --field-h: var(--ctl-sm); --field-fs: var(--ctl-fs-sm); --field-px: var(--ctl-pad-sm); }
+.size-md { --field-h: var(--ctl-md); --field-fs: var(--ctl-fs-md); --field-px: var(--ctl-pad-md); }
+.size-lg { --field-h: var(--ctl-lg); --field-fs: var(--ctl-fs-lg); --field-px: var(--ctl-pad-lg); }
+:is(input:not([type]), input[type=text], input[type=number], input[type=email], input[type=password], input[type=search], input[type=url], input[type=tel], select, textarea):not(.ui-native):not(.open-field) {
+  box-sizing: border-box; height: var(--field-h); min-height: 0; margin: 0; padding: 0 var(--field-px);
+  font-family: var(--font-sans); font-size: var(--field-fs); font-weight: 500; font-style: normal; line-height: normal;
+  letter-spacing: normal; text-transform: none; color: var(--color-text);
+  background-color: var(--color-surface); background-image: none;
+  border: 1px solid var(--color-border); border-radius: var(--radius-ctl); box-shadow: none; outline: none;
+  transition: border-color .12s, background-color .12s;
+}
+:is(input:not([type]), input[type=text], input[type=number], input[type=email], input[type=password], input[type=search], input[type=url], input[type=tel], select, textarea):not(.ui-native):not(.open-field):is(textarea) { height: auto; padding: 8px var(--field-px); line-height: 1.45; font-weight: 400; }
+:is(input:not([type]), input[type=text], input[type=number], input[type=email], input[type=password], input[type=search], input[type=url], input[type=tel], select, textarea):not(.ui-native):not(.open-field):is(select) {
+  -webkit-appearance: none; appearance: none; cursor: pointer; text-overflow: ellipsis;
+  padding-right: calc(var(--field-px) + 1.2em);
+  background-image: var(--chevron); background-repeat: no-repeat; background-position: right calc(var(--field-px) - 0.1em) center; background-size: 0.7em auto;
+}
+:is(input:not([type]), input[type=text], input[type=number], input[type=email], input[type=password], input[type=search], input[type=url], input[type=tel], select, textarea):not(.ui-native):not(.open-field)::placeholder { color: var(--color-text-faint); opacity: 1; }
+:is(input:not([type]), input[type=text], input[type=number], input[type=email], input[type=password], input[type=search], input[type=url], input[type=tel], select, textarea):not(.ui-native):not(.open-field):hover:not(:disabled):not(:focus):not([readonly]) { border-color: var(--color-text-muted); }
+:is(input:not([type]), input[type=text], input[type=number], input[type=email], input[type=password], input[type=search], input[type=url], input[type=tel], select, textarea):not(.ui-native):not(.open-field):focus { border-color: var(--color-focus); outline: 2px solid var(--color-focus); outline-offset: 2px; }
+:is(input:not([type]), input[type=text], input[type=number], input[type=email], input[type=password], input[type=search], input[type=url], input[type=tel], select, textarea):not(.ui-native):not(.open-field)[readonly] { background-color: var(--color-sunken); }
+:is(input:not([type]), input[type=text], input[type=number], input[type=email], input[type=password], input[type=search], input[type=url], input[type=tel], select, textarea):not(.ui-native):not(.open-field):disabled { opacity: .45; cursor: not-allowed; }
+:is(input:not([type]), input[type=text], input[type=number], input[type=email], input[type=password], input[type=search], input[type=url], input[type=tel], select, textarea):not(.ui-native):not(.open-field)[aria-invalid="true"] { border-color: var(--color-danger-text); }
+
+/* The open field */
+:is(input, select, textarea).open-field {
+  background-color: transparent; border: 0; border-bottom: 1px solid var(--color-border); border-radius: 0;
+  box-shadow: none; outline: none; color: var(--color-text); transition: border-color .12s;
+}
+select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer; padding-right: 1.4em;
+  background-image: var(--chevron); background-repeat: no-repeat; background-position: right 0.1em center; background-size: 0.7em auto; }
+:is(input, select, textarea).open-field:hover:not(:disabled):not(:focus):not([readonly]) { border-bottom-color: var(--color-accent-text); }
+:is(input, select, textarea).open-field:focus { border-bottom: 2px solid var(--color-focus); margin-bottom: -1px; }
+:is(input, select, textarea).open-field::placeholder { color: var(--color-text-faint); opacity: 1; }
+:is(input, select, textarea).open-field:disabled { opacity: .45; cursor: not-allowed; }
+:is(input, select, textarea).open-field[aria-invalid="true"] { border-bottom-color: var(--color-danger-text); }
 </style>
 <script>try { var t = localStorage.getItem('adnd-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) { /* storage blocked: follow the system */ }</script>
 <!-- end design tokens -->
@@ -354,7 +395,7 @@
   .surname{font-family:var(--serif);font-size:1rem}
   .surroll{color:var(--muted)}
   #lightBody > tr.act > td.name{font-size:1.05rem}
-  #lightBody > tr.act select.stat{padding:2px 4px;font-size:.85rem;width:auto}
+  #lightBody > tr.act select.stat{width:auto; min-width:4.2rem}   /* fits a two-digit roll and the chevron */
   #lightBody > tr.act .actson{font-size:1.1rem}
   .lightdetail{font-size:.8rem;color:var(--muted);padding:0 4px 6px 4px;line-height:1.5}
   .lightdetail b{color:var(--brass);font-weight:600}
@@ -622,7 +663,7 @@
   .surmods .gclabel select{min-width:7.5rem}
   /* The crit and fumble box under the round: a toolbar like the others (full-size select, all on one baseline) */
   .lightcrit{align-items:flex-end; flex-wrap:wrap}
-  #lightCritBox .gclabel select{height:var(--ctl-h); font-size:1rem; padding:0 .5rem; min-width:12rem}
+  #lightCritBox .gclabel select{min-width:12rem}
   .lock{height:var(--ctl-h); font-family:var(--serif); font-size:.65rem; letter-spacing:.1em; text-transform:uppercase}
   .roundctl b{font-family:var(--serif); font-size:1.15rem; line-height:var(--ctl-h); color:var(--brass)}
 
@@ -692,6 +733,11 @@
   .bd-crit{flex-basis:100%; font-size:.9rem; line-height:1.4}
   #newRoundLight.armed{outline:2px solid var(--rust); outline-offset:2px}   /* waiting for the second click */
   .char.placeholder, #lightTracker{overflow:visible}          /* the Targets and Conditions lists open past the card */
+  /* Fields are the shared component (src/ui/components.js). Small in dense rows: the
+     round's table, an Enemy's row, a player's card. Medium again where a row of
+     labelled controls sits in a card: an Enemy's attack lines, the crit box. */
+  table, .char{--field-h:var(--ctl-sm); --field-fs:var(--ctl-fs-sm); --field-px:var(--ctl-pad-sm)}
+  .bd-attacks, #lightCritBox{--field-h:var(--ctl-md); --field-fs:var(--ctl-fs-md); --field-px:var(--ctl-pad-md)}
 </style>
 </head>
 <body>
@@ -2325,7 +2371,7 @@ const {lineSay} = __m["rules/round"];
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-const STYLES = "/* Shared tokens: the character sheet's palette and type, under names of their\n   own (each tool keeps its own token names for the rest of its page) */\n:root { --ui-ink: var(--color-text); --ui-muted: var(--color-text-muted); --ui-faint: var(--color-text-faint); --ui-rule: var(--color-divider); --ui-accent: var(--color-accent-text); --ui-accent-dark: color-mix(in oklab, var(--color-accent-text) 82%, var(--toward));\n  --ui-surface: var(--color-surface); --ui-page: var(--color-bg); --ui-gold: var(--color-accent); --ui-radius: var(--radius-ctl); --ui-ctl-h: 2.1rem;\n  --ui-display: var(--font-serif); --ui-body: var(--font-sans); }\n/* A label over a control, the control, a button */\n.ui-field { display: inline-flex; flex-direction: column; gap: 0.15rem; }\n.ui-label { font-family: var(--ui-display); font-size: 0.65rem; letter-spacing: 0.13em; text-transform: uppercase; color: var(--ui-muted); }\n.ui-control { box-sizing: border-box; height: var(--ui-ctl-h); padding: 0 0.5rem; font: 0.95rem var(--ui-body); color: var(--ui-ink);\n  background: var(--ui-page); border: 1px solid var(--ui-rule); border-radius: var(--ui-radius); cursor: pointer; }\n.ui-control:focus { outline: none; border-color: var(--ui-accent); }\n.ui-btn { box-sizing: border-box; height: var(--ui-ctl-h); display: inline-flex; align-items: center; gap: 0.4rem; padding: 0 0.8rem;\n  font-family: var(--ui-display); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap;\n  background: var(--ui-accent); color: var(--ui-surface); border: 1px solid var(--ui-accent); border-radius: var(--ui-radius); cursor: pointer; }\n.ui-btn:hover, .ui-btn:focus-visible { background: var(--ui-accent-dark); }\n/* A select with checkboxes in its list */\n.round-multi { position: relative; }\n.round-multi .round-multi-btn { width: auto; min-width: 9.5rem; max-width: 16rem; overflow: hidden; text-overflow: ellipsis; text-align: left; padding-right: 1.9rem; position: relative; white-space: nowrap; }\n.round-multi-btn::after { content: ''; position: absolute; right: 0.65rem; top: 50%; width: 0.4rem; height: 0.4rem; margin-top: -0.3rem;\n  border-right: 1.5px solid var(--ui-muted); border-bottom: 1.5px solid var(--ui-muted); transform: rotate(45deg); }\n.round-multi.is-open .round-multi-btn { border-color: var(--ui-accent); }\n.round-multi.is-open .round-multi-btn::after { transform: rotate(-135deg); margin-top: -0.1rem; }\n.round-multi-list { position: absolute; top: 100%; left: 0; z-index: 30; margin-top: 0.25rem; min-width: 100%; width: max-content; max-width: 18rem;\n  background: var(--ui-surface); border: 1px solid var(--ui-rule); border-radius: var(--ui-radius); box-shadow: var(--shadow-raised); padding: 0.3rem; }\n.round-multi-opt { display: flex; align-items: flex-start; gap: 0.55rem; padding: 0.45rem 0.55rem; border-radius: var(--ui-radius); cursor: pointer; font-size: 0.95rem; }\n.round-multi-opt:hover, .round-multi-opt:focus-within { background: var(--ui-page); }\n.round-multi-opt input { accent-color: var(--ui-accent); margin-top: 0.2rem; }\n.round-multi-opt small { display: block; font-size: 0.8rem; color: var(--ui-muted); }\n/* A read-only value in a line, the height of the controls beside it */\n.round-read-value { display: inline-flex; align-items: center; height: var(--ui-ctl-h); font-size: 0.95rem; color: var(--ui-ink); white-space: nowrap; }\n.round-read.is-key .round-read-value { font-family: var(--ui-display); font-weight: 700; font-size: 1.05rem; color: var(--ui-accent); }\n/* A rolled line: one strip, same type throughout, pieces split by dividers */\n.round-summary { display: flex; flex-wrap: wrap; align-items: center; min-height: var(--ui-ctl-h); font-size: 0.95rem; color: var(--ui-ink); }\n.round-summary > span { padding: 0 0.75rem; border-left: 1px solid var(--ui-rule); line-height: 1.3; }\n.round-summary > span:first-child { padding-left: 0; border-left: 0; }\n.round-summary > .is-key { font-family: var(--ui-display); font-weight: 700; color: var(--ui-accent); }\n/* The hit roll: the round's big moment */\n.roll-hit-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; padding: 0.4rem 0.85rem 0.4rem 0.6rem; box-shadow: 0 2px 0 color-mix(in oklab, var(--ui-accent) 55%, #000); }\n.roll-hit-btn svg { width: 1.15rem; height: 1.15rem; }\n.roll-hit-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 color-mix(in oklab, var(--ui-accent) 55%, #000); }\n.hit-rolls { flex-basis: 100%; display: grid; gap: 0.45rem; justify-items: start; }\n.hit-rolls > .hit-roll { width: 100%; box-sizing: border-box; }\n.hit-who { font-family: var(--ui-display); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ui-muted); min-width: 4.5rem; }\n.hit-roll { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1.5rem; padding: 0.55rem 0.9rem; border-radius: var(--ui-radius);\n  background: linear-gradient(100deg, color-mix(in oklab, var(--ui-accent) 8%, var(--ui-surface)), var(--ui-surface) 70%); border: 1px solid color-mix(in oklab, var(--ui-accent) 28%, var(--ui-surface)); }\n.hit-die { position: relative; width: 3.4rem; height: 3.4rem; flex: none; color: var(--ui-accent); }\n.hit-die svg { position: absolute; inset: 0; width: 100%; height: 100%; }\n.hit-die-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding-top: 0.15rem;\n  font-family: var(--ui-display); font-weight: 700; font-size: 1.35rem; color: var(--ui-ink); }\n.hit-stat { display: flex; flex-direction: column; line-height: 1; }\n.hit-stat-label { font-family: var(--ui-display); font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ui-muted); margin-bottom: 0.25rem; }\n.hit-stat-value { font-family: var(--ui-display); font-weight: 700; font-size: 2rem; color: var(--ui-accent); }\n.hit-stat-sub { font-size: 0.8rem; color: var(--ui-muted); margin-top: 0.15rem; }\n.hit-stat.is-dmg .hit-stat-value { color: var(--ui-ink); font-size: 1.6rem; }\n.hit-stat.is-miss .hit-stat-value { color: var(--ui-muted); }\n.hit-stat.is-updated .hit-stat-value { border-radius: var(--ui-radius); }\n@media (prefers-reduced-motion: no-preference) {\n  .hit-stat.is-updated .hit-stat-value { animation: hit-update 1.2s ease-out; }\n}\n@keyframes hit-update { 0% { background: color-mix(in oklab, var(--color-accent) 45%, transparent); } 100% { background: transparent; } }\n.hit-nat { font-family: var(--ui-display); font-weight: 700; font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; padding: 0.25rem 0.55rem; border-radius: 999px; }\n.hit-roll.is-crit { background: linear-gradient(100deg, color-mix(in oklab, var(--color-highlight) 22%, var(--ui-surface)), var(--ui-surface) 75%); border-color: var(--color-success-text); box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); }\n.hit-roll.is-crit .hit-die { color: var(--color-success-text); }\n.hit-roll.is-crit .hit-nat { background: var(--color-highlight); color: var(--color-on-highlight); }\n.hit-roll.is-fumble { background: linear-gradient(100deg, color-mix(in oklab, var(--ui-muted) 12%, var(--ui-surface)), var(--ui-surface) 75%); border-color: var(--ui-faint); }\n.hit-roll.is-fumble .hit-die, .hit-roll.is-fumble .hit-stat-value { color: var(--ui-muted); }\n.hit-roll.is-fumble .hit-stat.is-miss .hit-stat-value { color: var(--ui-ink); }\n.hit-roll.is-fumble .hit-nat { background: var(--ui-ink); color: var(--ui-surface); }\n@media (prefers-reduced-motion: no-preference) {\n  .hit-roll.is-fresh .hit-die svg { animation: hit-tumble 0.55s cubic-bezier(.2,.8,.3,1); }\n  .hit-roll.is-fresh .hit-die-num, .hit-roll.is-fresh .hit-stat-value { animation: hit-pop 0.45s 0.3s cubic-bezier(.2,1.4,.4,1) both; }\n  .hit-roll.is-fresh.is-crit { animation: hit-glow 1.2s 0.5s ease-out; }\n}\n@keyframes hit-tumble { from { transform: rotate(-200deg) scale(0.6); } to { transform: none; } }\n@keyframes hit-pop { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: none; } }\n@keyframes hit-glow { 0% { box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); } 30% { box-shadow: 0 0 0 8px color-mix(in oklab, var(--color-highlight) 50%, transparent); } 100% { box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); } }";
+const STYLES = "/* Shared tokens: the character sheet's palette and type, under names of their\n   own (each tool keeps its own token names for the rest of its page) */\n:root { --ui-ink: var(--color-text); --ui-muted: var(--color-text-muted); --ui-faint: var(--color-text-faint); --ui-rule: var(--color-divider); --ui-accent: var(--color-accent-text); --ui-accent-dark: color-mix(in oklab, var(--color-accent-text) 82%, var(--toward));\n  --ui-surface: var(--color-surface); --ui-page: var(--color-bg); --ui-gold: var(--color-accent); --ui-radius: var(--radius-ctl); --ui-ctl-h: 2.1rem;\n  --ui-display: var(--font-serif); --ui-body: var(--font-sans); }\n/* A label over a control, the control, a button */\n.ui-field { display: inline-flex; flex-direction: column; gap: 0.15rem; }\n.ui-label { font-family: var(--ui-display); font-size: 0.65rem; letter-spacing: 0.13em; text-transform: uppercase; color: var(--ui-muted); }\n/* Looks like a field (src/ui/components.js): the select with checkboxes sits among selects */\n.ui-control { box-sizing: border-box; height: var(--field-h, var(--ui-ctl-h)); padding: 0 var(--field-px, 0.5rem); font: 500 var(--field-fs, 0.95rem) var(--ui-body); color: var(--ui-ink);\n  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--ui-radius); cursor: pointer; }\n.ui-control:hover { border-color: var(--color-text-muted); }\n.ui-control:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-color: var(--color-focus); }\n.ui-btn { box-sizing: border-box; height: var(--ui-ctl-h); display: inline-flex; align-items: center; gap: 0.4rem; padding: 0 0.8rem;\n  font-family: var(--ui-display); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap;\n  background: var(--ui-accent); color: var(--ui-surface); border: 1px solid var(--ui-accent); border-radius: var(--ui-radius); cursor: pointer; }\n.ui-btn:hover, .ui-btn:focus-visible { background: var(--ui-accent-dark); }\n/* A select with checkboxes in its list */\n.round-multi { position: relative; }\n.round-multi .round-multi-btn { width: auto; min-width: 9.5rem; max-width: 16rem; overflow: hidden; text-overflow: ellipsis; text-align: left; padding-right: 1.9rem; position: relative; white-space: nowrap; }\n.round-multi-btn::after { content: ''; position: absolute; right: 0.65rem; top: 50%; width: 0.4rem; height: 0.4rem; margin-top: -0.3rem;\n  border-right: 1.5px solid var(--ui-muted); border-bottom: 1.5px solid var(--ui-muted); transform: rotate(45deg); }\n.round-multi.is-open .round-multi-btn { border-color: var(--ui-accent); }\n.round-multi.is-open .round-multi-btn::after { transform: rotate(-135deg); margin-top: -0.1rem; }\n.round-multi-list { position: absolute; top: 100%; left: 0; z-index: 30; margin-top: 0.25rem; min-width: 100%; width: max-content; max-width: 18rem;\n  background: var(--ui-surface); border: 1px solid var(--ui-rule); border-radius: var(--ui-radius); box-shadow: var(--shadow-raised); padding: 0.3rem; }\n.round-multi-opt { display: flex; align-items: flex-start; gap: 0.55rem; padding: 0.45rem 0.55rem; border-radius: var(--ui-radius); cursor: pointer; font-size: 0.95rem; }\n.round-multi-opt:hover, .round-multi-opt:focus-within { background: var(--ui-page); }\n.round-multi-opt input { accent-color: var(--ui-accent); margin-top: 0.2rem; }\n.round-multi-opt small { display: block; font-size: 0.8rem; color: var(--ui-muted); }\n/* A read-only value in a line, the height of the controls beside it */\n.round-read-value { display: inline-flex; align-items: center; height: var(--ui-ctl-h); font-size: 0.95rem; color: var(--ui-ink); white-space: nowrap; }\n.round-read.is-key .round-read-value { font-family: var(--ui-display); font-weight: 700; font-size: 1.05rem; color: var(--ui-accent); }\n/* A rolled line: one strip, same type throughout, pieces split by dividers */\n.round-summary { display: flex; flex-wrap: wrap; align-items: center; min-height: var(--ui-ctl-h); font-size: 0.95rem; color: var(--ui-ink); }\n.round-summary > span { padding: 0 0.75rem; border-left: 1px solid var(--ui-rule); line-height: 1.3; }\n.round-summary > span:first-child { padding-left: 0; border-left: 0; }\n.round-summary > .is-key { font-family: var(--ui-display); font-weight: 700; color: var(--ui-accent); }\n/* The hit roll: the round's big moment */\n.roll-hit-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; padding: 0.4rem 0.85rem 0.4rem 0.6rem; box-shadow: 0 2px 0 color-mix(in oklab, var(--ui-accent) 55%, #000); }\n.roll-hit-btn svg { width: 1.15rem; height: 1.15rem; }\n.roll-hit-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 color-mix(in oklab, var(--ui-accent) 55%, #000); }\n.hit-rolls { flex-basis: 100%; display: grid; gap: 0.45rem; justify-items: start; }\n.hit-rolls > .hit-roll { width: 100%; box-sizing: border-box; }\n.hit-who { font-family: var(--ui-display); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ui-muted); min-width: 4.5rem; }\n.hit-roll { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1.5rem; padding: 0.55rem 0.9rem; border-radius: var(--ui-radius);\n  background: linear-gradient(100deg, color-mix(in oklab, var(--ui-accent) 8%, var(--ui-surface)), var(--ui-surface) 70%); border: 1px solid color-mix(in oklab, var(--ui-accent) 28%, var(--ui-surface)); }\n.hit-die { position: relative; width: 3.4rem; height: 3.4rem; flex: none; color: var(--ui-accent); }\n.hit-die svg { position: absolute; inset: 0; width: 100%; height: 100%; }\n.hit-die-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding-top: 0.15rem;\n  font-family: var(--ui-display); font-weight: 700; font-size: 1.35rem; color: var(--ui-ink); }\n.hit-stat { display: flex; flex-direction: column; line-height: 1; }\n.hit-stat-label { font-family: var(--ui-display); font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ui-muted); margin-bottom: 0.25rem; }\n.hit-stat-value { font-family: var(--ui-display); font-weight: 700; font-size: 2rem; color: var(--ui-accent); }\n.hit-stat-sub { font-size: 0.8rem; color: var(--ui-muted); margin-top: 0.15rem; }\n.hit-stat.is-dmg .hit-stat-value { color: var(--ui-ink); font-size: 1.6rem; }\n.hit-stat.is-miss .hit-stat-value { color: var(--ui-muted); }\n.hit-stat.is-updated .hit-stat-value { border-radius: var(--ui-radius); }\n@media (prefers-reduced-motion: no-preference) {\n  .hit-stat.is-updated .hit-stat-value { animation: hit-update 1.2s ease-out; }\n}\n@keyframes hit-update { 0% { background: color-mix(in oklab, var(--color-accent) 45%, transparent); } 100% { background: transparent; } }\n.hit-nat { font-family: var(--ui-display); font-weight: 700; font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; padding: 0.25rem 0.55rem; border-radius: 999px; }\n.hit-roll.is-crit { background: linear-gradient(100deg, color-mix(in oklab, var(--color-highlight) 22%, var(--ui-surface)), var(--ui-surface) 75%); border-color: var(--color-success-text); box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); }\n.hit-roll.is-crit .hit-die { color: var(--color-success-text); }\n.hit-roll.is-crit .hit-nat { background: var(--color-highlight); color: var(--color-on-highlight); }\n.hit-roll.is-fumble { background: linear-gradient(100deg, color-mix(in oklab, var(--ui-muted) 12%, var(--ui-surface)), var(--ui-surface) 75%); border-color: var(--ui-faint); }\n.hit-roll.is-fumble .hit-die, .hit-roll.is-fumble .hit-stat-value { color: var(--ui-muted); }\n.hit-roll.is-fumble .hit-stat.is-miss .hit-stat-value { color: var(--ui-ink); }\n.hit-roll.is-fumble .hit-nat { background: var(--ui-ink); color: var(--ui-surface); }\n@media (prefers-reduced-motion: no-preference) {\n  .hit-roll.is-fresh .hit-die svg { animation: hit-tumble 0.55s cubic-bezier(.2,.8,.3,1); }\n  .hit-roll.is-fresh .hit-die-num, .hit-roll.is-fresh .hit-stat-value { animation: hit-pop 0.45s 0.3s cubic-bezier(.2,1.4,.4,1) both; }\n  .hit-roll.is-fresh.is-crit { animation: hit-glow 1.2s 0.5s ease-out; }\n}\n@keyframes hit-tumble { from { transform: rotate(-200deg) scale(0.6); } to { transform: none; } }\n@keyframes hit-pop { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: none; } }\n@keyframes hit-glow { 0% { box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); } 30% { box-shadow: 0 0 0 8px color-mix(in oklab, var(--color-highlight) 50%, transparent); } 100% { box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); } }";
 function ensureStyles(doc = document) {
   if (doc.getElementById('round-ui-styles')) return;
   const st = doc.createElement('style'); st.id = 'round-ui-styles'; st.textContent = STYLES;
@@ -2510,18 +2556,21 @@ const COLORS = {
   },
 };
 
+// The select chevron, in the muted text colour (an image: a data URI can't read a CSS colour)
+const chevron = hex => `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23${hex}' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`;
+
 // Shadows and the step direction differ by theme too (depth: shadow in light,
 // a lighter surface in dark; hover and pressing mix toward black or white)
 const DEPTH = {
   light: {
     'shadow-card': '0 1px 2px rgb(20 16 12 / .06), 0 1px 3px rgb(20 16 12 / .10)',
     'shadow-raised': '0 12px 30px rgb(20 16 12 / .16), 0 2px 6px rgb(20 16 12 / .08)',
-    'edge-top': 'transparent', toward: '#000', scrim: 'rgb(15 25 35 / .45)',
+    'edge-top': 'transparent', toward: '#000', scrim: 'rgb(15 25 35 / .45)', chevron: chevron('414f5d'),
   },
   dark: {
     'shadow-card': '0 1px 2px rgb(0 0 0 / .5)',
     'shadow-raised': '0 14px 34px rgb(0 0 0 / .55), 0 2px 6px rgb(0 0 0 / .4)',
-    'edge-top': 'rgb(255 255 255 / .05)', toward: '#fff', scrim: 'rgb(0 0 0 / .6)',
+    'edge-top': 'rgb(255 255 255 / .05)', toward: '#fff', scrim: 'rgb(0 0 0 / .6)', chevron: chevron('b2bbc8'),
   },
 };
 
@@ -4624,7 +4673,7 @@ function buildChar(name){
     const namecol=document.createElement('div'); namecol.className='namecol';
     const nameLine=document.createElement('div'); nameLine.className='nameline';
     const inRound=document.createElement('input'); inRound.type='checkbox'; inRound.className='hold'; inRound.checked=true; inRound.title='in this round — uncheck for an Enemy that arrives later';
-    const nameInput=document.createElement('input'); nameInput.type='text'; nameInput.className='bname'; nameInput.value=name; nameInput.title='rename this creature';
+    const nameInput=document.createElement('input'); nameInput.type='text'; nameInput.className='bname open-field'; nameInput.value=name; nameInput.title='rename this creature';
     // Icons, to leave room on the row for AC and THAC0
     const iconBtn=(cls, tip, svg)=>{ const x=document.createElement('button'); x.type='button'; x.className='iconbtn '+cls; x.title=tip; x.setAttribute('aria-label', tip); x.innerHTML=svg; return x; };
     const dupBtn=iconBtn('bdup', 'Duplicate: another Enemy with the same stats',
@@ -6255,7 +6304,7 @@ function lightRowFor(name){
   }
   let nameLabel;
   if(b.placeholder){                                               // Enemies: editable, shared with the full view
-    nameLabel=document.createElement('input'); nameLabel.type='text'; nameLabel.className='bname'; nameLabel.value=b.nameInput.value; nameLabel.title='rename this creature';
+    nameLabel=document.createElement('input'); nameLabel.type='text'; nameLabel.className='bname open-field'; nameLabel.value=b.nameInput.value; nameLabel.title='rename this creature';
     nameLabel.addEventListener('input', ()=>{ b.nameInput.value=nameLabel.value; update(); });
   }else nameLabel=document.createElement('span');
   nameTd.appendChild(nameLabel);
