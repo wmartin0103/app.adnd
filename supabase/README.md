@@ -15,7 +15,7 @@ The database behind sign-in and the live round (and, later, cloud saves).
   own at first sign-in). Also for a forgotten password: set a new one on the
   user in Authentication → Users, then run it again. Steps are in the file.
 
-- **`set-role.sql`** — data: makes someone in the campaign its DM or a
+- **`set-role.sql`** — data: sets someone's role in the campaign (DM or player) and, optionally, admin. DM + admin is the owner's own access; player + not admin takes it back. A
   player. A DM keeps their own characters too, so it's how a tester tries
   both sides; run it again with `player` to undo.
 
