@@ -222,6 +222,12 @@ action colour. Every tag's text passes 4.5:1 on its fill in both themes.
   it. The number can be typed. Sized like a field; `size-xs` in a tight
   card header. Inside, − and + are bare (the action colour's tint on hover),
   and the box takes the field's hover and focus border.
+- **Remove** (`is-remove`): the × that removes something, a bare danger icon
+  button with one × icon (`REMOVE_ICON` on the sheet), its icon a size up
+  from other icons. A **whole-card** remove adds `is-corner`: it sits in the
+  card's top-right corner, 4px in. The card's padding doesn't change; only
+  the row it belongs to keeps clear of it. Row removes (a weapon, an item)
+  stay at the end of their row.
 - **Link buttons** (`is-link`): look like a link (`accent-text`, no
   underline or box at rest) but do a button's job on the page. For a quiet action that sits
   apart from the controls, such as Add Scenario below the attacks. Hover
