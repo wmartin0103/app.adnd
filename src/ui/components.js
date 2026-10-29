@@ -149,3 +149,31 @@ ${BTN}:is(:disabled, [aria-disabled="true"]) { opacity: .45; cursor: not-allowed
 :is(div, span, fieldset, [role=group]).ui-tabs:not(#\\#) > button:is([aria-pressed="true"], .is-active):hover { background: color-mix(in oklab, var(--color-accent2) 88%, var(--toward)); }
 :is(div, span, fieldset, [role=group]).ui-tabs:not(#\\#) > button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -3px; }
 `;
+
+// ── Surfaces ──
+// The layers (docs/design-system.md, Surfaces and depth): a card for a
+// top-level section (is-featured: the one that matters most now, at most one
+// per screen); inside a card, a well for read-outs and items for repeated
+// things; raised for menus and lists that float; an overlay for dialogs.
+// Cards don't nest; wells don't nest. Depth comes from the shadow in light and
+// the lighter surface in dark. :not(#\#) lifts these over a page's older box
+// styles; a page that needs something different says why.
+export const SURFACES_CSS = `/* Surfaces (docs/design-system.md: Surfaces and depth) */
+:is(section, article, aside, div, form, header).ui-card:not(#\\#) {
+  background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card), inset 0 1px 0 var(--edge-top); padding: var(--card-pad, 18px);
+}
+:is(section, article, aside, div, form, header).ui-card.is-featured:not(#\\#) { border-top: 3px solid var(--color-accent2); }
+:is(div, section, span, output, figure, dl).ui-well:not(#\\#) {
+  background: var(--color-sunken); border: 0; border-radius: var(--radius-inner); box-shadow: inset 0 1px 2px rgb(0 0 0 / .06);
+}
+:is(div, article, li, section, label).ui-item:not(#\\#) {
+  background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-inner); box-shadow: none;
+}
+:is(div, ul, menu, section).ui-raised:not(#\\#), dialog.ui-overlay:not(#\\#) {
+  background: var(--color-raised); color: var(--color-text); border: 1px solid var(--color-divider); border-radius: var(--radius-inner);
+  box-shadow: var(--shadow-raised), inset 0 1px 0 var(--edge-top);
+}
+dialog.ui-overlay:not(#\\#) { border-radius: var(--radius-card); }
+dialog.ui-overlay::backdrop { background: var(--scrim); }
+`;

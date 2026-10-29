@@ -381,6 +381,25 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
 :is(div, span, fieldset, [role=group]).ui-tabs:not(#\#) > button:is([aria-pressed="true"], .is-active):hover { background: color-mix(in oklab, var(--color-accent2) 88%, var(--toward)); }
 :is(div, span, fieldset, [role=group]).ui-tabs:not(#\#) > button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -3px; }
 
+/* Surfaces (docs/design-system.md: Surfaces and depth) */
+:is(section, article, aside, div, form, header).ui-card:not(#\#) {
+  background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card), inset 0 1px 0 var(--edge-top); padding: var(--card-pad, 18px);
+}
+:is(section, article, aside, div, form, header).ui-card.is-featured:not(#\#) { border-top: 3px solid var(--color-accent2); }
+:is(div, section, span, output, figure, dl).ui-well:not(#\#) {
+  background: var(--color-sunken); border: 0; border-radius: var(--radius-inner); box-shadow: inset 0 1px 2px rgb(0 0 0 / .06);
+}
+:is(div, article, li, section, label).ui-item:not(#\#) {
+  background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-inner); box-shadow: none;
+}
+:is(div, ul, menu, section).ui-raised:not(#\#), dialog.ui-overlay:not(#\#) {
+  background: var(--color-raised); color: var(--color-text); border: 1px solid var(--color-divider); border-radius: var(--radius-inner);
+  box-shadow: var(--shadow-raised), inset 0 1px 0 var(--edge-top);
+}
+dialog.ui-overlay:not(#\#) { border-radius: var(--radius-card); }
+dialog.ui-overlay::backdrop { background: var(--scrim); }
+
 </style>
 <script>try { var t = localStorage.getItem('adnd-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) { /* storage blocked: follow the system */ }</script>
 <!-- end design tokens -->

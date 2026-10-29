@@ -381,6 +381,25 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
 :is(div, span, fieldset, [role=group]).ui-tabs:not(#\#) > button:is([aria-pressed="true"], .is-active):hover { background: color-mix(in oklab, var(--color-accent2) 88%, var(--toward)); }
 :is(div, span, fieldset, [role=group]).ui-tabs:not(#\#) > button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -3px; }
 
+/* Surfaces (docs/design-system.md: Surfaces and depth) */
+:is(section, article, aside, div, form, header).ui-card:not(#\#) {
+  background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card), inset 0 1px 0 var(--edge-top); padding: var(--card-pad, 18px);
+}
+:is(section, article, aside, div, form, header).ui-card.is-featured:not(#\#) { border-top: 3px solid var(--color-accent2); }
+:is(div, section, span, output, figure, dl).ui-well:not(#\#) {
+  background: var(--color-sunken); border: 0; border-radius: var(--radius-inner); box-shadow: inset 0 1px 2px rgb(0 0 0 / .06);
+}
+:is(div, article, li, section, label).ui-item:not(#\#) {
+  background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-inner); box-shadow: none;
+}
+:is(div, ul, menu, section).ui-raised:not(#\#), dialog.ui-overlay:not(#\#) {
+  background: var(--color-raised); color: var(--color-text); border: 1px solid var(--color-divider); border-radius: var(--radius-inner);
+  box-shadow: var(--shadow-raised), inset 0 1px 0 var(--edge-top);
+}
+dialog.ui-overlay:not(#\#) { border-radius: var(--radius-card); }
+dialog.ui-overlay::backdrop { background: var(--scrim); }
+
 </style>
 <script>try { var t = localStorage.getItem('adnd-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) { /* storage blocked: follow the system */ }</script>
 <!-- end design tokens -->
@@ -2887,7 +2906,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
     <!-- ── Classes + Saving Throws ──────────────────────────── -->
     <div class="identity-saves-row">
 
-      <section class="section identity-main" aria-labelledby="classes-heading">
+      <section class="section identity-main ui-card" aria-labelledby="classes-heading">
         <h2 id="classes-heading" class="section-heading">
           Class &amp; Experience
           <div class="classes-effective-level" id="effective-level-display" aria-live="polite"></div>
@@ -2901,7 +2920,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
       </section>
 
       <!-- Saving Throws alongside Classes -->
-      <aside class="section saves-aside" aria-labelledby="saves-heading">
+      <aside class="section saves-aside ui-card" aria-labelledby="saves-heading">
         <h2 id="saves-heading" class="section-heading">Saving Throws</h2>
         <table class="saves-table" aria-live="polite" aria-atomic="true">
           <thead>
@@ -2921,7 +2940,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
     </div><!-- /.identity-saves-row -->
 
     <!-- ── Ability Scores ──────────────────────────────────── -->
-    <section class="section" aria-labelledby="abilities-heading">
+    <section class="section ui-card" aria-labelledby="abilities-heading">
       <h2 id="abilities-heading" class="section-heading">Ability Scores</h2>
       <div class="ability-grid" id="ability-grid">
         <!-- Injected by JS -->
@@ -2933,12 +2952,12 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
     <div class="combat-saves-main">
 
     <!-- ── Combat ──────────────────────────────────────────── -->
-    <section class="section" aria-labelledby="combat-heading">
+    <section class="section ui-card" aria-labelledby="combat-heading">
       <h2 id="combat-heading" class="section-heading">Character Details</h2>
       <div class="combat-grid">
 
         <!-- Armor Class — Base + Effective combined -->
-        <div class="combat-card ac-combined-card">
+        <div class="combat-card ac-combined-card ui-item">
           <span class="combat-label">Armor Class</span>
           <div class="ac-combined-values">
             <div class="ac-half">
@@ -2958,7 +2977,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
         </div>
 
         <!-- HP Current / Max -->
-        <div class="combat-card" style="grid-column: span 2; min-width: 0;">
+        <div class="combat-card ui-item" style="grid-column: span 2; min-width: 0;">
           <div class="hp-label-row">
             <span class="combat-label" id="hp-label">Hit Points</span>
             <div
@@ -2993,7 +3012,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
         </div>
 
         <!-- Movement -->
-        <div class="combat-card">
+        <div class="combat-card ui-item">
           <label class="combat-label movement-label-row">
             Movement
             <span class="movement-mod-row">
@@ -3009,21 +3028,21 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
 
 
         <!-- Missile Attack Adj. — hidden when modifier is zero -->
-        <div class="combat-card" id="card-missile-adj">
+        <div class="combat-card ui-item" id="card-missile-adj">
           <label class="combat-label" for="missile-adj">Missile Adj.</label>
           <input id="missile-adj" class="combat-value ui-native" type="text" readonly />
           <span class="combat-sublabel">From Dexterity</span>
         </div>
 
         <!-- Hit Adj. — hidden when modifier is zero -->
-        <div class="combat-card" id="card-hit-adj">
+        <div class="combat-card ui-item" id="card-hit-adj">
           <label class="combat-label" for="hit-adj">Hit Adj.</label>
           <input id="hit-adj" class="combat-value ui-native" type="text" readonly />
           <span class="combat-sublabel">From Strength</span>
         </div>
 
         <!-- Damage Adj. — hidden when modifier is zero -->
-        <div class="combat-card" id="card-damage-adj">
+        <div class="combat-card ui-item" id="card-damage-adj">
           <label class="combat-label" for="damage-adj">Damage Adj.</label>
           <input id="damage-adj" class="combat-value ui-native" type="text" readonly />
           <span class="combat-sublabel">From Strength</span>
@@ -3035,11 +3054,11 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
     </div><!-- /.combat-saves-main -->
 
     <!-- ── Combat Scenarios ───────────────────────────────── -->
-    <section class="section" aria-labelledby="scenarios-heading">
+    <section class="section combat-section" aria-labelledby="scenarios-heading">
       <h2 id="scenarios-heading" class="section-heading">Combat</h2>
 
       <!-- ── Effects: stances, forms, temporary effects ─────── -->
-      <div class="stances">
+      <div class="stances ui-card">
         <div class="stances-head">
           <h3 class="stances-title"><button type="button" id="effects-toggle" class="effects-toggle" aria-expanded="true" aria-controls="effects-body">
             <span class="effects-chev" aria-hidden="true"></span>Effects</button></h3>
@@ -3057,7 +3076,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
       </div>
 
       <!-- ── This round: initiative, your conditions, the read-out (synced with the DM) ── -->
-      <div class="round" id="round-panel" aria-labelledby="round-title">
+      <div class="round ui-card is-featured" id="round-panel" aria-labelledby="round-title">
         <div class="round-head">
           <h3 class="stances-title" id="round-title">This round</h3>
           <span class="round-status" id="round-status" aria-live="polite"></span>
@@ -3081,7 +3100,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
     </div><!-- /.combat-saves-row -->
 
     <!-- ── Weapons ────────────────────────────────────────── -->
-    <section class="section" id="weapons-section" aria-labelledby="weapons-heading">
+    <section class="section ui-card" id="weapons-section" aria-labelledby="weapons-heading">
       <h2 class="section-heading racial-traits-heading" id="weapons-heading"
           role="button" tabindex="0"
           aria-expanded="true" aria-controls="weapons-panel">
@@ -3114,7 +3133,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
     </section>
 
     <!-- ── Spells ─────────────────────────────────────────────── -->
-    <section class="section" aria-labelledby="wpn-prof-heading">
+    <section class="section ui-card" aria-labelledby="wpn-prof-heading">
       <h2 class="section-heading racial-traits-heading" id="wpn-prof-heading"
           role="button" tabindex="0"
           aria-expanded="true" aria-controls="wpn-prof-panel">
@@ -3132,7 +3151,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
       </div>
     </section>
 
-    <section class="section" id="spells-section" aria-labelledby="spells-heading">
+    <section class="section ui-card" id="spells-section" aria-labelledby="spells-heading">
       <h2 class="section-heading racial-traits-heading" id="spells-heading"
           role="button" tabindex="0"
           aria-expanded="true" aria-controls="spells-panel">
@@ -3165,7 +3184,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
     <!-- ── Two-col row: Thieving + future section ─────────── -->
     <div class="two-col-row" id="thieving-traits-row">
     <!-- ── Thieving Abilities ───────────────────────────────── -->
-    <section class="section racial-traits-section" id="thieving-section"
+    <section class="section racial-traits-section ui-card" id="thieving-section"
       aria-labelledby="thieving-heading" hidden>
       <h2 class="section-heading racial-traits-heading" id="thieving-heading"
         role="button" tabindex="0" aria-expanded="true" aria-controls="thieving-panel">
@@ -3195,7 +3214,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
     </section>
 
     <!-- ── Racial Traits (collapsible) ─────────────────────── -->
-    <section class="section racial-traits-section" aria-labelledby="racial-traits-heading">
+    <section class="section racial-traits-section ui-card" aria-labelledby="racial-traits-heading">
       <h2 class="section-heading racial-traits-heading" id="racial-traits-heading"
           id="racial-traits-toggle-btn" role="button" tabindex="0"
           aria-expanded="true" aria-controls="racial-traits-panel">
@@ -3212,7 +3231,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
     </div><!-- /.two-col-row -->
 
     <!-- ── Non-Weapon Proficiencies ───────────────────────── -->
-    <section class="section" aria-labelledby="nwp-heading">
+    <section class="section ui-card" aria-labelledby="nwp-heading">
       <h2 class="section-heading racial-traits-heading" id="nwp-heading"
           role="button" tabindex="0"
           aria-expanded="true" aria-controls="nwp-panel">
@@ -3232,7 +3251,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
       </div>
     </section>
 
-    <section class="section" aria-labelledby="abilities-cards-heading">
+    <section class="section ui-card" aria-labelledby="abilities-cards-heading">
       <h2 class="section-heading racial-traits-heading" id="abilities-cards-heading"
           role="button" tabindex="0"
           aria-expanded="true" aria-controls="abilities-cards-panel">
@@ -3250,7 +3269,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
     </section>
 
     <!-- ── Equipment ──────────────────────────────────────────── -->
-    <section class="section" aria-labelledby="equipment-heading">
+    <section class="section ui-card" aria-labelledby="equipment-heading">
       <h2 class="section-heading racial-traits-heading" id="equipment-heading"
           role="button" tabindex="0"
           aria-expanded="true" aria-controls="equipment-panel">
@@ -3271,7 +3290,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
     </section>
 
     <!-- ── Items ────────────────────────────────────────────── -->
-    <section class="section" aria-labelledby="items-heading">
+    <section class="section ui-card" aria-labelledby="items-heading">
       <h2 class="section-heading racial-traits-heading" id="items-heading"
           role="button" tabindex="0"
           aria-expanded="true" aria-controls="items-panel">
@@ -3294,7 +3313,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
     </section>
 
     <!-- ── Notes full-width ───────────────────────────────── -->
-    <section class="section" aria-labelledby="notes-heading">
+    <section class="section ui-card" aria-labelledby="notes-heading">
       <h2 id="notes-heading" class="section-heading">Notes</h2>
       <label for="char-notes" class="sr-only">Character notes</label>
       <textarea
@@ -6784,7 +6803,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       const grid = document.getElementById('ability-grid');
       ABILITIES.forEach(ability => {
         const card = document.createElement('article');
-        card.className = 'ability-card';
+        card.className = 'ability-card ui-item';
 
         // Score input
         const nameEl = document.createElement('span');
@@ -7566,7 +7585,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
         // ── Outer card ──────────────────────────────────────────
         const card = document.createElement('article');
-        card.className = 'scenario-card' + (scenario.collapsed ? ' is-collapsed' : '');
+        card.className = 'scenario-card ui-card' + (scenario.collapsed ? ' is-collapsed' : '');
         const isSpell = scenarioType(scenario) === 'spell';
         const spellInfo = isSpell ? scenarioSpell(scenario) : null;
         // Spellarrow (Bowcaster kit): a bow shot carrying a memorized spell
@@ -7915,7 +7934,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           const esc = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
           const sg = n => (n === '?' ? '?' : n ? signed(n) : '');
           const result = document.createElement('div');
-          result.className = 'scenario-result';
+          result.className = 'scenario-result ui-well';
           result.id = `scenario-result-${scenario.id}`;
           const rate = scenarioRate(scenario);
           result.innerHTML = `
@@ -7993,7 +8012,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         if (thac0 === null && spellInfo) {
           const esc = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
           const r = document.createElement('div');
-          r.className = 'scenario-result';
+          r.className = 'scenario-result ui-well';
           r.innerHTML = `<div class="sr-head">
               <div class="sr-cell"><span class="scenario-result-label">Cast time</span><span class="scenario-result-value accent">${esc(spellInfo.castTimeNow || '—')}</span></div>
               <div class="sr-cell"><span class="scenario-result-label">Save</span><span class="sr-val">${esc(spellInfo.save || '—')}</span></div>
@@ -8059,7 +8078,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       }
       stances.forEach(st => {
         const card = document.createElement('div');
-        card.className = 'stance-card' + (st.on ? ' is-on' : '');
+        card.className = 'stance-card ui-item' + (st.on ? ' is-on' : '');
         card.setAttribute('role', 'listitem');
         card.dataset.stanceId = st.id;
         const label = st.name || 'Unnamed';
@@ -9515,7 +9534,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
       function buildCard(spl, section) {
         const card = document.createElement('div');
-        card.className = 'spell-card'
+        card.className = 'spell-card ui-item'
         card.dataset.spellId = spl.id; + (section === 'memorized' && (parseInt(spl.charges) || 0) === 0 ? ' spell-card-cast' : '');
 
         // ── Top bar ────────────────────────────────────────────
@@ -10940,7 +10959,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
       nwps.forEach(nwp => {
         const card = document.createElement('div');
-        card.className = 'nwp-card';
+        card.className = 'nwp-card ui-item';
 
         // ── Top bar ──────────────────────────────────────────
         const top = document.createElement('div');
@@ -11124,7 +11143,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
       abilitiesCards.forEach(ab => {
         const card = document.createElement('div');
-        card.className = 'nwp-card';
+        card.className = 'nwp-card ui-item';
 
         // ── Top bar (name inline + delete) ───────────────────
         const top = document.createElement('div');
@@ -11227,7 +11246,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
       wpnProfCards.forEach(ab => {
         const card = document.createElement('div');
-        card.className = 'nwp-card';
+        card.className = 'nwp-card ui-item';
 
         const top = document.createElement('div');
         top.className = 'nwp-card-top';
