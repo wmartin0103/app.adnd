@@ -483,37 +483,12 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   header.top .reset.armed{border-color:var(--rust);color:var(--parchment);background:color-mix(in oklab, var(--rust) 30%, transparent)}
   header.top .reset:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
   .hidden{display:none}
-  .toptabs{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch}
-  .toptab{flex:0 0 auto;font-family:var(--serif);font-size:1rem;color:var(--muted);background:none;border:1px solid var(--edge);border-radius:999px;padding:7px 18px;cursor:pointer}
-  .toptab:hover{color:var(--parchment)}
-  .toptab.active{color:var(--parchment);background:var(--panel);border-color:var(--brass)}
   .rollbtn{display:none}
   .moveafter{display:flex;align-items:center;gap:6px;padding:7px 14px;font-family:var(--serif);font-size:.82rem;border-top:1px solid var(--edge)}
   .rbtn,.res{display:none}
   .rbtn:disabled{opacity:.35;cursor:default}
   .mhead{display:none}
-  .char.inplayer .mods .mhead,.char.inplayer .namecol .mhead,.char.inplayer .cfields .mhead{display:block;flex:0 0 100%;width:100%;font-family:var(--serif);font-size:1.1rem;color:var(--brass);padding:2px 0 0}
-  .char.inplayer .cfields .inithead{margin-top:6px}
   .parrytgt,.acmod{font-size:13px;padding:1px 3px;width:auto}
-  .char.inplayer .mods .acthead{margin-top:10px}
-  /* player view: Conditions first (Flanking, ground, Charging, Set4Charge, Other), then Actions (Move 1st) */
-  .char.inplayer .mods .conhead{order:-1}
-  .char.inplayer .mods .m-flank{order:1}
-  .char.inplayer .mods .m-ground{order:2}
-  .char.inplayer .mods .m-charge{order:3}
-  .char.inplayer .mods .m-set4{order:4}
-  .char.inplayer .mods .m-other{order:5}
-  .char.inplayer .mods .m-quick{order:6}
-  .char.inplayer .mods .acthead{order:7}
-  .char.inplayer .mods .m-size{order:8;flex-direction:row;align-items:center;gap:4px;font-family:var(--sans);font-size:var(--sm);color:var(--muted);margin-right:6px}
-  .char.inplayer .mods .m-size select{width:auto;min-width:0;font-size:13px;min-height:26px;padding:1px 3px}
-  .char.inplayer .mods .m-move{order:9}
-  /* player view: the Conditions row in the small AC-line type, all on one line */
-  .char.inplayer .mods .item.m-flank,.char.inplayer .mods .item.m-ground,.char.inplayer .mods .item.m-charge,.char.inplayer .mods .item.m-set4,.char.inplayer .mods .item.m-other{font-family:var(--sans);font-size:clamp(.62rem,2.8vw,.72rem);color:var(--muted);gap:3px}
-  .char.inplayer .mods .m-flank input,.char.inplayer .mods .m-charge input,.char.inplayer .mods .m-set4 input{width:15px;height:15px;margin:0}
-  .char.inplayer .mods .m-ground select,.char.inplayer .mods .m-other select{font-size:13px;min-height:26px;padding:1px 2px;width:auto}
-  /* player view: the Actions section in the same small type as Conditions */
-  .char.inplayer{--sm:clamp(.62rem,2.8vw,.72rem)}
   .char.synced .cfields,.char.synced .mods,.char.synced table.acts,.char.synced .moveafter{display:none !important}
   .syncpanel{padding:8px 12px 10px;font-family:var(--sans);font-size:.85rem;display:grid;gap:4px}
   .syncpanel .sphead{color:var(--muted)}
@@ -526,7 +501,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .cloud-bar + .reset{margin-left:10px}
   .cloud-btn,.cloud-dialog button{font:inherit;font-size:.8rem;background:none;border:1px solid currentColor;border-radius:4px;padding:3px 10px;cursor:pointer;color:inherit}
   a.cloud-btn{display:inline-block;text-decoration:none}
-  .cloud-dialog{border:1px solid var(--color-border);background:var(--color-raised);color:var(--color-text);box-shadow:var(--shadow-raised);border-radius:6px;padding:18px 20px;width:min(22rem,calc(100vw - 2rem))}
+  .cloud-dialog{border:1px solid var(--color-border);background:var(--color-raised);color:var(--color-text);box-shadow:var(--shadow-raised);border-radius:var(--radius-card);padding:18px 20px;width:min(22rem,calc(100vw - 2rem))}
   .cloud-dialog::backdrop{background:var(--scrim)}
   .cloud-form{display:grid;gap:10px}
   .cloud-title{font-size:1.05rem;margin:0}
@@ -535,67 +510,10 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .cloud-error{color:var(--rust);font-size:.85rem;min-height:1em;margin:0}
   .cloud-actions{display:flex;justify-content:flex-end;gap:8px}
   .extrablock .chead{font-family:var(--serif)}
-  .char.inplayer .mods .item.m-move,.char.inplayer .mods .item.m-mult,.char.inplayer .mods .item.m-quick{font-family:var(--sans);font-size:var(--sm);color:var(--muted);gap:4px}
-  .char.inplayer .mods .item.m-move input{width:17px;height:17px;margin:0}
-  .char.inplayer .mods .item.m-mult select{font-size:13px;min-height:26px;padding:1px 2px}
-  .char.inplayer .quick{padding:5px 10px !important;font-size:var(--sm) !important}
-  .char.inplayer tr.act td.name{font-family:var(--sans);font-size:var(--sm);color:var(--muted)}
-  .char.inplayer tr.act.sel td.name{color:var(--parchment)}
-  .char.inplayer tr.act td select{font-size:13px;min-height:26px;padding:1px 3px}
-  .char.inplayer tr.act td.pick input,.char.inplayer tr.act td:nth-child(1) input{width:18px;height:18px}
-  .char.inplayer tr.act td .n{font-size:.9rem !important}
-  .char.inplayer tr.divider td{font-size:var(--sm)}
-  .char.inplayer .moveafter{display:flex;align-items:center;gap:6px;padding:10px 12px;font-family:var(--sans);font-size:var(--sm);color:var(--muted);border-top:1px solid var(--edge)}
-  .char.inplayer .moveafter input{width:17px;height:17px;margin:0}
-  .char.inplayer .mods{gap:8px 7px;padding:8px 8px;justify-content:flex-start}
-  .char.inplayer .mods .m-mult{order:10}
 
-  /* ---- a player's own tab: the full card, laid out for a phone ---- */
-  #playerArea{max-width:480px;margin:0 auto}
-  .char.inplayer .rollbtn{display:inline-block;align-self:flex-end;padding:8px 16px;font-size:.95rem}
-  .char.inplayer .chead{flex-direction:column;align-items:stretch;gap:10px}
-  .char.inplayer .cfields{margin-left:0;width:100%;gap:10px;justify-content:flex-start}
-  .char.inplayer .cfields .rollbtn{margin-left:0}
-  .char.inplayer .cfields .psize{margin-left:auto}      /* Roll, Init roll and Act On sit left; Size sits right */
-  .char.inplayer .namecol{width:100%}
-  .char.inplayer .acrow,.char.inplayer .stats{flex-wrap:wrap;gap:6px 14px}
-  .char.inplayer .mods{flex-wrap:wrap}
-  .char.inplayer select{font-size:16px;min-height:34px}
-  .char.inplayer input[type=checkbox]{width:22px;height:22px}
-  .char.inplayer .acw.chk,.char.inplayer .mods .item{font-size:.9rem}
-  .char.inplayer table.acts,.char.inplayer table.acts tbody{display:block;width:100%}
-  .char.inplayer table.acts thead{display:none}
-  .char.inplayer tr.act{display:grid;grid-template-columns:26px repeat(5,1fr);gap:8px;padding:10px 12px;border-bottom:1px solid var(--edge);align-items:center}
-  .char.inplayer tr.act td{display:block;padding:0;border:none;text-align:left;min-width:0}
-  .char.inplayer tr.act td:not(.pick):not(.name)::before{display:block;font-size:.62rem;color:var(--muted);margin-bottom:2px}
-  .char.inplayer tr.act td:nth-child(1){grid-column:1;grid-row:1}
-  .char.inplayer tr.act td:nth-child(3){grid-column:2 / 5;grid-row:1;padding-left:0 !important}
-  .char.inplayer tr.act td:nth-child(5){grid-column:5 / 7;grid-row:1}
-  .char.inplayer tr.act td:nth-child(5)::before{content:none}
-  .char.inplayer tr.act td:nth-child(5) select{flex:1;min-width:0;max-width:none}
+
   .rtwrap{display:flex;align-items:center;gap:6px;width:100%}
   .tlab{font-family:var(--sans);font-size:var(--sm,.72rem);color:var(--muted);white-space:nowrap}
-  .char.inplayer tr.act td:nth-child(2){grid-column:2;grid-row:2}
-  .char.inplayer tr.act td:nth-child(4){grid-column:3;grid-row:2}
-  .char.inplayer tr.act td:nth-child(6){display:none}
-  .char.inplayer tr.act td:nth-child(7){grid-column:4 / 6;grid-row:2}
-  .char.inplayer tr.act td:nth-child(8){grid-column:6;grid-row:2}
-  .char.inplayer tr.act td:nth-child(2)::before{content:'Init'}
-  .char.inplayer tr.act td:nth-child(4)::before{content:'THAC0'}
-  .char.inplayer tr.act td:nth-child(7)::before{content:'d20'}
-  .char.inplayer tr.act td:nth-child(8)::before{content:'Damage'}
-  .char.inplayer tr.divider,.char.inplayer tr.critres,.char.inplayer tr.turnres{display:block}
-  /* players never see the roll or the numbers behind it: just Hit or Miss. Crits, fumbles and Turn Undead are the DM's. */
-  .char.inplayer tr.critres,.char.inplayer tr.turnres{display:none !important}
-  .char.inplayer td.d20 .n{display:none !important}
-  .char.inplayer tr.act:not(.sel) td.d20.na .n{display:inline !important}
-  .char.inplayer tr.act.sel .rbtn{display:inline-block}
-  .char.inplayer .rbtn{padding:4px 12px;font-size:var(--sm);margin-right:8px;vertical-align:middle}
-  .char.inplayer td.d20 .res{display:inline;font-family:var(--serif);font-weight:700;font-size:.95rem;vertical-align:middle}
-  .char.inplayer td.d20.hit .res::after{content:'Hit';color:var(--verdigris)}
-  .char.inplayer td.d20.miss .res::after{content:'Miss';color:var(--rust)}
-  .char.inplayer tr.divider td,.char.inplayer tr.critres td,.char.inplayer tr.turnres td{display:block;padding:8px 12px}
-  .char.inplayer .fullnote{padding:10px 12px}
   @media (max-width:520px){
     body{padding:14px 10px 48px}
     header.top h1{font-size:1.25rem}
@@ -630,7 +548,9 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
 
   .tracker{display:flex;flex-direction:column;gap:12px}
 
-  .char{background:var(--panel);border:1px solid var(--edge);border-radius:8px;overflow:hidden}
+  /* A card (docs/design-system.md: Sections and cards). Its tables run to the
+     edges, so the card has no padding of its own; rows and headers carry it */
+  .char,.gcresults{background:var(--color-surface);border:1px solid var(--color-divider);border-radius:var(--radius-card);box-shadow:var(--shadow-card),inset 0 1px 0 var(--edge-top);overflow:hidden}
   .char.first{border-color:var(--verdigris)}
   #skills .char{margin-bottom:12px}
 
@@ -733,7 +653,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .mods{
     display:flex;flex-wrap:nowrap;gap:4px 14px;align-items:center;
     padding:7px 14px;border-bottom:1px solid var(--edge);
-    background:var(--color-sunken);overflow-x:auto;
+    overflow-x:auto;
   }
   .mods .item{display:flex;align-items:center;gap:5px;font-family:var(--serif);font-size:.82rem;white-space:nowrap}
   input[type=checkbox]{accent-color:var(--verdigris);cursor:pointer}
@@ -814,7 +734,9 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .rxpickers{flex-wrap:nowrap;margin-bottom:6px}
   .rxpickers .gclabel select{min-width:0}
   .rxpickers #rxStance{width:130px} .rxpickers #rxRep{width:80px} .rxpickers #rxRace{width:130px} .rxpickers #rxOcc{width:160px} .rxpickers #rxCulture{width:95px}
-  .gcresults{background:var(--panel);border:1px solid var(--edge);border-radius:8px;overflow:hidden;margin-bottom:14px}
+  .gcresults{margin-bottom:14px}
+  /* The initiative order is the live round: the featured card, like the sheet's This round */
+  #lightTracker,#tracker > .char{border-top:3px solid var(--color-accent2)}
   .gcresults table{margin:0}
   .gctable td.name{font-family:var(--serif)}
   .gctable td.tgt{font-family:var(--serif);font-size:1.15rem;font-weight:700}
@@ -831,10 +753,6 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   td.rxres{font-family:var(--serif);font-weight:700;font-size:1.05rem}
   .rx-friendly{color:var(--verdigris)} .rx-indiff{color:var(--parchment)} .rx-caut{color:var(--brass)}
   .rx-threat{color:color-mix(in oklab, #c0621f 72%, var(--parchment))} .rx-host{color:var(--rust)} .rx-flight{color:color-mix(in oklab, #2f5d8a 65%, var(--parchment))}
-  .playerrx{display:flex;justify-content:flex-start;align-items:baseline;gap:8px;margin:0 0 8px;font-size:.95rem;flex-wrap:wrap}
-  .playerrx .lbl{color:var(--muted);font-size:.8rem;letter-spacing:.04em;text-transform:uppercase}
-  .playerrx b{font-family:var(--serif);font-size:1.1rem}
-  .playerrx .sub{color:var(--muted);font-size:.8rem}
   .encbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
   #encOut{margin-top:4px} #encWrap{padding:12px 16px}
   .enccheck{font-size:.9rem;margin-bottom:8px}
@@ -958,11 +876,14 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   #lightBody > tr.baddycard-row:last-child > td{border-bottom:0 !important}
   #lightBody > tr.baddycard-row .char, #lightBody > tr.baddycard-row .char.first{border:0; border-radius:0; background:transparent; box-shadow:none}
   #lightBody > tr.baddycard-row .char table.batk thead th{background:transparent}
-  /* Details as a well inside their row: an Enemy's AC, THAC0 and attacks; a
-     player's actions from their sheet */
-  #lightBody > tr.baddycard-row .char.inlight, #lightBody .lightdetail:not(:empty){
-    background:var(--color-sunken); border:1px solid var(--edge); border-radius:4px;
-    box-shadow:inset 0 1px 3px rgb(0 0 0 / .08); padding:.45rem .75rem .55rem;
+  /* Details inside their row: an Enemy's attacks have controls, so they're an
+     item; a player's actions from their sheet are a read-out, so a well */
+  #lightBody > tr.baddycard-row .char.inlight, #lightBody .lightdetail:not(:empty){ padding:.45rem .75rem .55rem; }
+  #lightBody > tr.baddycard-row .char.inlight{
+    background:var(--color-surface); border:1px solid var(--color-divider); border-radius:var(--radius-inner); box-shadow:none;
+  }
+  #lightBody .lightdetail:not(:empty){
+    background:var(--color-sunken); border:0; border-radius:var(--radius-inner); box-shadow:var(--shadow-well);
   }
   #lightBody > tr.baddycard-row .char.inlight table.batk th, #lightBody > tr.baddycard-row .char.inlight table.batk td{border-bottom-color:var(--edge)}
   #lightBody > tr.baddycard-row .char.inlight table.batk tr:last-child td{border-bottom:0}
@@ -998,8 +919,6 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     <span class="theme-slot" id="themeSlot"></span>
     <button class="reset ui-button is-secondary is-danger size-sm" id="resetAll" title="Reset everything to the starting state">↺ Reset</button>
   </header>
-
-  <nav class="toptabs" id="topTabs"></nav>
 
   <div id="dmArea">
   <nav class="tabs">
@@ -1128,7 +1047,6 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   </div>
   </div><!-- /dmArea -->
 
-  <div id="playerArea" class="hidden"><div id="playerRx" class="playerrx"></div><div id="playerHost"></div></div>
 </div>
 
 <script src="../data/spell-catalog.js"></script>
@@ -2620,7 +2538,7 @@ const {lineSay} = __m["rules/round"];
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-const STYLES = "/* Shared tokens: the character sheet's palette and type, under names of their\n   own (each tool keeps its own token names for the rest of its page) */\n:root { --ui-ink: var(--color-text); --ui-muted: var(--color-text-muted); --ui-faint: var(--color-text-faint); --ui-rule: var(--color-divider); --ui-accent: var(--color-accent-text); --ui-accent-dark: color-mix(in oklab, var(--color-accent-text) 82%, var(--toward));\n  --ui-surface: var(--color-surface); --ui-page: var(--color-bg); --ui-gold: var(--color-accent); --ui-radius: var(--radius-ctl); --ui-ctl-h: 2.1rem;\n  --ui-display: var(--font-serif); --ui-body: var(--font-sans); }\n/* A label over a control, the control, a button */\n.ui-field { display: inline-flex; flex-direction: column; gap: 0.15rem; }\n.ui-label { font-family: var(--ui-display); font-size: 0.65rem; letter-spacing: 0.13em; text-transform: uppercase; color: var(--ui-muted); }\n/* Looks like a field (src/ui/components.js): the select with checkboxes sits among selects */\n.ui-control { box-sizing: border-box; height: var(--field-h, var(--ui-ctl-h)); padding: 0 var(--field-px, 0.5rem); font: 500 var(--field-fs, 0.95rem) var(--ui-body); color: var(--ui-ink);\n  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--ui-radius); cursor: pointer; }\n.ui-control:hover { border-color: var(--color-text-muted); }\n.ui-control:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-color: var(--color-focus); }\n.ui-btn { box-sizing: border-box; height: var(--ui-ctl-h); display: inline-flex; align-items: center; gap: 0.4rem; padding: 0 0.8rem;\n  font-family: var(--ui-display); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap;\n  background: var(--ui-accent); color: var(--ui-surface); border: 1px solid var(--ui-accent); border-radius: var(--ui-radius); cursor: pointer; }\n.ui-btn:hover, .ui-btn:focus-visible { background: var(--ui-accent-dark); }\n/* A select with checkboxes in its list */\n.round-multi { position: relative; }\n.round-multi .round-multi-btn { width: auto; min-width: 9.5rem; max-width: 16rem; overflow: hidden; text-overflow: ellipsis; text-align: left; padding-right: 1.9rem; position: relative; white-space: nowrap; }\n.round-multi-btn::after { content: ''; position: absolute; right: 0.65rem; top: 50%; width: 0.4rem; height: 0.4rem; margin-top: -0.3rem;\n  border-right: 1.5px solid var(--ui-muted); border-bottom: 1.5px solid var(--ui-muted); transform: rotate(45deg); }\n.round-multi.is-open .round-multi-btn { border-color: var(--ui-accent); }\n.round-multi.is-open .round-multi-btn::after { transform: rotate(-135deg); margin-top: -0.1rem; }\n.round-multi-list { position: absolute; top: 100%; left: 0; z-index: 30; margin-top: 0.25rem; min-width: 100%; width: max-content; max-width: 18rem;\n  background: var(--ui-surface); border: 1px solid var(--ui-rule); border-radius: var(--ui-radius); box-shadow: var(--shadow-raised); padding: 0.3rem; }\n.round-multi-opt { display: flex; align-items: flex-start; gap: 0.55rem; padding: 0.45rem 0.55rem; border-radius: var(--ui-radius); cursor: pointer; font-size: 0.95rem; }\n.round-multi-opt:hover, .round-multi-opt:focus-within { background: var(--ui-page); }\n.round-multi-opt input { accent-color: var(--ui-accent); margin-top: 0.2rem; }\n.round-multi-opt small { display: block; font-size: 0.8rem; color: var(--ui-muted); }\n/* A read-only value in a line, the height of the controls beside it */\n.round-read-value { display: inline-flex; align-items: center; height: var(--ui-ctl-h); font-size: 0.95rem; color: var(--ui-ink); white-space: nowrap; }\n.round-read.is-key .round-read-value { font-family: var(--ui-display); font-weight: 700; font-size: 1.05rem; color: var(--ui-accent); }\n/* A rolled line: one strip, same type throughout, pieces split by dividers */\n.round-summary { display: flex; flex-wrap: wrap; align-items: center; min-height: var(--ui-ctl-h); font-size: 0.95rem; color: var(--ui-ink); }\n.round-summary > span { padding: 0 0.75rem; border-left: 1px solid var(--ui-rule); line-height: 1.3; }\n.round-summary > span:first-child { padding-left: 0; border-left: 0; }\n.round-summary > .is-key { font-family: var(--ui-display); font-weight: 700; color: var(--ui-accent); }\n/* The hit roll: the round's big moment */\n.roll-hit-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; padding: 0.4rem 0.85rem 0.4rem 0.6rem; box-shadow: 0 2px 0 color-mix(in oklab, var(--ui-accent) 55%, #000); }\n.roll-hit-btn svg { width: 1.15rem; height: 1.15rem; }\n.roll-hit-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 color-mix(in oklab, var(--ui-accent) 55%, #000); }\n.hit-rolls { flex-basis: 100%; display: grid; gap: 0.45rem; justify-items: start; }\n.hit-rolls > .hit-roll { width: 100%; box-sizing: border-box; }\n.hit-who { font-family: var(--ui-display); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ui-muted); min-width: 4.5rem; }\n.hit-roll { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1.5rem; padding: 0.55rem 0.9rem; border-radius: var(--ui-radius);\n  background: linear-gradient(100deg, color-mix(in oklab, var(--ui-accent) 8%, var(--ui-surface)), var(--ui-surface) 70%); border: 1px solid color-mix(in oklab, var(--ui-accent) 28%, var(--ui-surface)); }\n.hit-die { position: relative; width: 3.4rem; height: 3.4rem; flex: none; color: var(--ui-accent); }\n.hit-die svg { position: absolute; inset: 0; width: 100%; height: 100%; }\n.hit-die-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding-top: 0.15rem;\n  font-family: var(--ui-display); font-weight: 700; font-size: 1.35rem; color: var(--ui-ink); }\n.hit-stat { display: flex; flex-direction: column; line-height: 1; }\n.hit-stat-label { font-family: var(--ui-display); font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ui-muted); margin-bottom: 0.25rem; }\n.hit-stat-value { font-family: var(--ui-display); font-weight: 700; font-size: 2rem; color: var(--ui-accent); }\n.hit-stat-sub { font-size: 0.8rem; color: var(--ui-muted); margin-top: 0.15rem; }\n.hit-stat.is-dmg .hit-stat-value { color: var(--ui-ink); font-size: 1.6rem; }\n.hit-stat.is-miss .hit-stat-value { color: var(--ui-muted); }\n.hit-stat.is-updated .hit-stat-value { border-radius: var(--ui-radius); }\n@media (prefers-reduced-motion: no-preference) {\n  .hit-stat.is-updated .hit-stat-value { animation: hit-update 1.2s ease-out; }\n}\n@keyframes hit-update { 0% { background: color-mix(in oklab, var(--color-accent) 45%, transparent); } 100% { background: transparent; } }\n.hit-nat { font-family: var(--ui-display); font-weight: 700; font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; padding: 0.25rem 0.55rem; border-radius: 999px; }\n.hit-roll.is-crit { background: linear-gradient(100deg, color-mix(in oklab, var(--color-highlight) 22%, var(--ui-surface)), var(--ui-surface) 75%); border-color: var(--color-success-text); box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); }\n.hit-roll.is-crit .hit-die { color: var(--color-success-text); }\n.hit-roll.is-crit .hit-nat { background: var(--color-highlight); color: var(--color-on-highlight); }\n.hit-roll.is-fumble { background: linear-gradient(100deg, color-mix(in oklab, var(--ui-muted) 12%, var(--ui-surface)), var(--ui-surface) 75%); border-color: var(--ui-faint); }\n.hit-roll.is-fumble .hit-die, .hit-roll.is-fumble .hit-stat-value { color: var(--ui-muted); }\n.hit-roll.is-fumble .hit-stat.is-miss .hit-stat-value { color: var(--ui-ink); }\n.hit-roll.is-fumble .hit-nat { background: var(--ui-ink); color: var(--ui-surface); }\n@media (prefers-reduced-motion: no-preference) {\n  .hit-roll.is-fresh .hit-die svg { animation: hit-tumble 0.55s cubic-bezier(.2,.8,.3,1); }\n  .hit-roll.is-fresh .hit-die-num, .hit-roll.is-fresh .hit-stat-value { animation: hit-pop 0.45s 0.3s cubic-bezier(.2,1.4,.4,1) both; }\n  .hit-roll.is-fresh.is-crit { animation: hit-glow 1.2s 0.5s ease-out; }\n}\n@keyframes hit-tumble { from { transform: rotate(-200deg) scale(0.6); } to { transform: none; } }\n@keyframes hit-pop { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: none; } }\n@keyframes hit-glow { 0% { box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); } 30% { box-shadow: 0 0 0 8px color-mix(in oklab, var(--color-highlight) 50%, transparent); } 100% { box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); } }";
+const STYLES = "/* Shared tokens: the character sheet's palette and type, under names of their\n   own (each tool keeps its own token names for the rest of its page) */\n:root { --ui-ink: var(--color-text); --ui-muted: var(--color-text-muted); --ui-faint: var(--color-text-faint); --ui-rule: var(--color-divider); --ui-accent: var(--color-accent-text); --ui-accent-dark: color-mix(in oklab, var(--color-accent-text) 82%, var(--toward));\n  --ui-surface: var(--color-surface); --ui-page: var(--color-bg); --ui-gold: var(--color-accent); --ui-radius: var(--radius-ctl); --ui-ctl-h: 2.1rem;\n  --ui-display: var(--font-serif); --ui-body: var(--font-sans); }\n/* A label over a control, the control, a button */\n.ui-field { display: inline-flex; flex-direction: column; gap: 0.15rem; }\n.ui-label { font-family: var(--ui-display); font-size: 0.65rem; letter-spacing: 0.13em; text-transform: uppercase; color: var(--ui-muted); }\n/* Looks like a field (src/ui/components.js): the select with checkboxes sits among selects */\n.ui-control { box-sizing: border-box; height: var(--field-h, var(--ui-ctl-h)); padding: 0 var(--field-px, 0.5rem); font: 500 var(--field-fs, 0.95rem) var(--ui-body); color: var(--ui-ink);\n  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--ui-radius); cursor: pointer; }\n.ui-control:hover { border-color: var(--color-text-muted); }\n.ui-control:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-color: var(--color-focus); }\n.ui-btn { box-sizing: border-box; height: var(--ui-ctl-h); display: inline-flex; align-items: center; gap: 0.4rem; padding: 0 0.8rem;\n  font-family: var(--ui-display); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap;\n  background: var(--ui-accent); color: var(--ui-surface); border: 1px solid var(--ui-accent); border-radius: var(--ui-radius); cursor: pointer; }\n.ui-btn:hover, .ui-btn:focus-visible { background: var(--ui-accent-dark); }\n/* A select with checkboxes in its list */\n.round-multi { position: relative; }\n.round-multi .round-multi-btn { width: auto; min-width: 9.5rem; max-width: 16rem; overflow: hidden; text-overflow: ellipsis; text-align: left; padding-right: 1.9rem; position: relative; white-space: nowrap; }\n.round-multi-btn::after { content: ''; position: absolute; right: 0.65rem; top: 50%; width: 0.4rem; height: 0.4rem; margin-top: -0.3rem;\n  border-right: 1.5px solid var(--ui-muted); border-bottom: 1.5px solid var(--ui-muted); transform: rotate(45deg); }\n.round-multi.is-open .round-multi-btn { border-color: var(--ui-accent); }\n.round-multi.is-open .round-multi-btn::after { transform: rotate(-135deg); margin-top: -0.1rem; }\n.round-multi-list { position: absolute; top: 100%; left: 0; z-index: 30; margin-top: 0.25rem; min-width: 100%; width: max-content; max-width: 18rem;\n  background: var(--color-raised); border: 1px solid var(--color-divider); border-radius: var(--radius-inner); box-shadow: var(--shadow-raised), inset 0 1px 0 var(--edge-top); padding: 0.3rem; }\n.round-multi-opt { display: flex; align-items: flex-start; gap: 0.55rem; padding: 0.45rem 0.55rem; border-radius: var(--ui-radius); cursor: pointer; font-size: 0.95rem; }\n.round-multi-opt:hover, .round-multi-opt:focus-within { background: var(--ui-page); }\n.round-multi-opt input { accent-color: var(--ui-accent); margin-top: 0.2rem; }\n.round-multi-opt small { display: block; font-size: 0.8rem; color: var(--ui-muted); }\n/* A read-only value in a line, the height of the controls beside it */\n.round-read-value { display: inline-flex; align-items: center; height: var(--ui-ctl-h); font-size: 0.95rem; color: var(--ui-ink); white-space: nowrap; }\n.round-read.is-key .round-read-value { font-family: var(--ui-display); font-weight: 700; font-size: 1.05rem; color: var(--ui-accent); }\n/* A rolled line: one strip, same type throughout, pieces split by dividers */\n.round-summary { display: flex; flex-wrap: wrap; align-items: center; min-height: var(--ui-ctl-h); font-size: 0.95rem; color: var(--ui-ink); }\n.round-summary > span { padding: 0 0.75rem; border-left: 1px solid var(--ui-rule); line-height: 1.3; }\n.round-summary > span:first-child { padding-left: 0; border-left: 0; }\n.round-summary > .is-key { font-family: var(--ui-display); font-weight: 700; color: var(--ui-accent); }\n/* The hit roll: the round's big moment */\n.roll-hit-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; padding: 0.4rem 0.85rem 0.4rem 0.6rem; box-shadow: 0 2px 0 color-mix(in oklab, var(--ui-accent) 55%, #000); }\n.roll-hit-btn svg { width: 1.15rem; height: 1.15rem; }\n.roll-hit-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 color-mix(in oklab, var(--ui-accent) 55%, #000); }\n.hit-rolls { flex-basis: 100%; display: grid; gap: 0.45rem; justify-items: start; }\n.hit-rolls > .hit-roll { width: 100%; box-sizing: border-box; }\n.hit-who { font-family: var(--ui-display); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ui-muted); min-width: 4.5rem; }\n.hit-roll { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1.5rem; padding: 0.55rem 0.9rem; border-radius: var(--ui-radius);\n  background: linear-gradient(100deg, color-mix(in oklab, var(--ui-accent) 8%, var(--ui-surface)), var(--ui-surface) 70%); border: 1px solid color-mix(in oklab, var(--ui-accent) 28%, var(--ui-surface)); }\n.hit-die { position: relative; width: 3.4rem; height: 3.4rem; flex: none; color: var(--ui-accent); }\n.hit-die svg { position: absolute; inset: 0; width: 100%; height: 100%; }\n.hit-die-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding-top: 0.15rem;\n  font-family: var(--ui-display); font-weight: 700; font-size: 1.35rem; color: var(--ui-ink); }\n.hit-stat { display: flex; flex-direction: column; line-height: 1; }\n.hit-stat-label { font-family: var(--ui-display); font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ui-muted); margin-bottom: 0.25rem; }\n.hit-stat-value { font-family: var(--ui-display); font-weight: 700; font-size: 2rem; color: var(--ui-accent); }\n.hit-stat-sub { font-size: 0.8rem; color: var(--ui-muted); margin-top: 0.15rem; }\n.hit-stat.is-dmg .hit-stat-value { color: var(--ui-ink); font-size: 1.6rem; }\n.hit-stat.is-miss .hit-stat-value { color: var(--ui-muted); }\n.hit-stat.is-updated .hit-stat-value { border-radius: var(--ui-radius); }\n@media (prefers-reduced-motion: no-preference) {\n  .hit-stat.is-updated .hit-stat-value { animation: hit-update 1.2s ease-out; }\n}\n@keyframes hit-update { 0% { background: color-mix(in oklab, var(--color-accent) 45%, transparent); } 100% { background: transparent; } }\n.hit-nat { font-family: var(--ui-display); font-weight: 700; font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; padding: 0.25rem 0.55rem; border-radius: 999px; }\n.hit-roll.is-crit { background: linear-gradient(100deg, color-mix(in oklab, var(--color-highlight) 22%, var(--ui-surface)), var(--ui-surface) 75%); border-color: var(--color-success-text); box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); }\n.hit-roll.is-crit .hit-die { color: var(--color-success-text); }\n.hit-roll.is-crit .hit-nat { background: var(--color-highlight); color: var(--color-on-highlight); }\n.hit-roll.is-fumble { background: linear-gradient(100deg, color-mix(in oklab, var(--ui-muted) 12%, var(--ui-surface)), var(--ui-surface) 75%); border-color: var(--ui-faint); }\n.hit-roll.is-fumble .hit-die, .hit-roll.is-fumble .hit-stat-value { color: var(--ui-muted); }\n.hit-roll.is-fumble .hit-stat.is-miss .hit-stat-value { color: var(--ui-ink); }\n.hit-roll.is-fumble .hit-nat { background: var(--ui-ink); color: var(--ui-surface); }\n@media (prefers-reduced-motion: no-preference) {\n  .hit-roll.is-fresh .hit-die svg { animation: hit-tumble 0.55s cubic-bezier(.2,.8,.3,1); }\n  .hit-roll.is-fresh .hit-die-num, .hit-roll.is-fresh .hit-stat-value { animation: hit-pop 0.45s 0.3s cubic-bezier(.2,1.4,.4,1) both; }\n  .hit-roll.is-fresh.is-crit { animation: hit-glow 1.2s 0.5s ease-out; }\n}\n@keyframes hit-tumble { from { transform: rotate(-200deg) scale(0.6); } to { transform: none; } }\n@keyframes hit-pop { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: none; } }\n@keyframes hit-glow { 0% { box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); } 30% { box-shadow: 0 0 0 8px color-mix(in oklab, var(--color-highlight) 50%, transparent); } 100% { box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); } }";
 function ensureStyles(doc = document) {
   if (doc.getElementById('round-ui-styles')) return;
   const st = doc.createElement('style'); st.id = 'round-ui-styles'; st.textContent = STYLES;
@@ -4949,7 +4867,7 @@ function buildModsStrip(st){
   const other=document.createElement('select');
   for(let n=OTHER_MAX;n>=OTHER_MIN;n--) other.appendChild(opt(n,fmt(n)));
   other.value=st.other||'0';
-  const oLbl=document.createElement('span'); oLbl.className='olbl'; oLbl.textContent='Other';       // hidden on a player's tab to save room
+  const oLbl=document.createElement('span'); oLbl.className='olbl'; oLbl.textContent='Other';
   other.title='Other modifier'; other.setAttribute('aria-label','Other modifier');
   const oW=document.createElement('span'); oW.className='item m-other'; oW.append(oLbl, other);
   mods.append(mL,multW,fL,gW,cL,s4L,oW);
@@ -5088,7 +5006,7 @@ function buildChar(name){
   fields.prepend(initHead);
   const rollBtn=document.createElement('button'); rollBtn.className='reroll small rollbtn ui-button is-primary'; rollBtn.textContent='Roll'; rollBtn.title='roll this character\'s initiative';
   rollBtn.addEventListener('click', ()=> rollInitFor(name));
-  fields.insertBefore(rollBtn, initLbl);                  // shown only on a player's own tab
+  fields.insertBefore(rollBtn, initLbl);                  // hidden: from the player tabs (removed)
 
   // stats under the name (±5 dropdowns, for magical adjustment)
   const namecol=document.createElement('div'); namecol.className='namecol';
@@ -5241,7 +5159,7 @@ function buildChar(name){
       rows.forEach(r=>{ if(r.box && !r.action.secondary && r.box!==box) r.box.checked=false; });   // one primary at a time
       rows.forEach(r=>{ if(!r.action.secondary){ r.roll=null; r.pct=null; r.sub=null; r.dmg=null; } });   // clear primary d20s only
       if(box.checked && me.rt && !me.rt.userSet) selectTarget(me.rt, curTarget);                                // follow the working target
-      if(box.checked){ if(!me.action.noAttack){ if(!el.classList.contains('inplayer')) rollAttack(me, name); }   // on a player's tab they press Roll
+      if(box.checked){ if(!me.action.noAttack){ rollAttack(me, name); }
                        else if(me.action.turn) me.roll=d20(); }                                                  // Turn Undead rolls itself, and only the DM sees it
       update();
     });
@@ -5286,7 +5204,7 @@ function buildChar(name){
       const srow={tr, box:sbox, initTd, thTd, rt, tgtTd, rollTd, rbtn, dmgTd, action:{name:s.name, thac0:s.thac0, secondary:true, dual:!!s.modes, modes:s.modes}, castSel:null, modeSel:smode, critSel:scrit, critTr, roll:null, pct:null, sub:null, dmg:null};
       rows.push(srow);
       sbox.addEventListener('change', ()=>{
-        if(sbox.checked){ if(!el.classList.contains('inplayer')) rollAttack(srow, name); }          // on a player's tab they roll it themselves
+        if(sbox.checked){ rollAttack(srow, name); }
         else { srow.roll=null; srow.pct=null; srow.sub=null; srow.dmg=null; }
         update();
       });
@@ -5297,7 +5215,7 @@ function buildChar(name){
   table.appendChild(tbody);
 
   const fullNote=document.createElement('div'); fullNote.className='fullnote'; fullNote.style.display='none';
-  const conHead=document.createElement('div'); conHead.className='mhead conhead'; conHead.textContent='Combat Conditions';   // headings show only on a player's own tab
+  const conHead=document.createElement('div'); conHead.className='mhead conhead'; conHead.textContent='Combat Conditions';   // hidden: from the player tabs (removed)
   const actHead=document.createElement('div'); actHead.className='mhead acthead'; actHead.textContent='Actions';
   let quickBtn=null;
   if(c.quickness){                                              // manual: click to roll, click again to clear
@@ -5536,12 +5454,12 @@ function update(){
     const sit=situation(b);
     if(b.parrySel){                                                // targeted parry: list the Enemies in the round
       const keep=b.parrySel.value; [...b.parrySel.querySelectorAll('option')].slice(1).forEach(o=>o.remove());
-      baddies.forEach(n=>{ if(!blocks[n]||!blocks[n].inRound.checked) return; const o=opt(n, b.el.classList.contains('inplayer') ? blocks[n].bdId : `${blocks[n].nameInput.value||n} · ${blocks[n].bdId}`); b.parrySel.appendChild(o); });
+      baddies.forEach(n=>{ if(!blocks[n]||!blocks[n].inRound.checked) return; const o=opt(n, `${blocks[n].nameInput.value||n} · ${blocks[n].bdId}`); b.parrySel.appendChild(o); });
       b.parrySel.value = [...b.parrySel.options].some(o=>o.value===keep) ? keep : '';
     }
     b.rowTargets.forEach(rt=>{
       syncBaddyOptions(rt);                                    // real add/remove, so phones never list an Enemy who is not in the round
-      Object.keys(rt.bdOpts).forEach(n=>{ const o=rt.bdOpts[n]; if(bdAC[n]===undefined) return; o.value=bdAC[n]; o.textContent = b.el.classList.contains('inplayer') ? blocks[n].bdId : `${blocks[n].nameInput.value||n} · ${blocks[n].bdId}${blocks[n].initRoll.value==='50'?' (held)':''}`; });
+      Object.keys(rt.bdOpts).forEach(n=>{ const o=rt.bdOpts[n]; if(bdAC[n]===undefined) return; o.value=bdAC[n]; o.textContent = `${blocks[n].nameInput.value||n} · ${blocks[n].bdId}${blocks[n].initRoll.value==='50'?' (held)':''}`; });
       rt.sel.title='';
     });
     const rowTac = r => (r.rt && r.rt.sel.value!=='') ? (parseInt(r.rt.sel.value,10)||0) : 10;      // 10 only as a stand-in; Roll stays off until a target is chosen
@@ -6278,21 +6196,8 @@ function renderReaction(){
     }));
     host.querySelectorAll('[data-apsave]').forEach(sel=> sel.addEventListener('change', ()=>{ rxApNeed[sel.dataset.key]=parseInt(sel.value,10); renderReaction(); }));
   }
-  updatePlayerRx();
 }
 
-/* NPC Reaction label at the top right of each character tab: how the NPCs receive that character (from the Reaction tab's roll) */
-function updatePlayerRx(){
-  const el=document.getElementById('playerRx'); if(!el) return;
-  const act=document.querySelector('.toptab.active'), name=act?act.dataset.top:'dm';
-  if(!name||name==='dm'||!CHARACTERS[name]){ el.innerHTML=''; return; }
-  const m=REACTION_MODS[name]||{};
-  const part=(r)=> r ? `<b class="${RX_CLASS[r.res]}">${r.res}</b>` : `<b class="rx-pending">—</b>`;
-  let body;
-  if(m.split){ const ks=Object.keys(m.split).filter(k=>k!=='why'); body=ks.map((k,i)=>`${i?`<span class="sub">${k}</span> `:`<span class="sub">${k}</span> `}${part(rxResult(name,m.split[k],k))}`).join(' <span class="sub">·</span> '); }
-  else body=part(rxResult(name,0));
-  el.innerHTML=`<span class="lbl">NPC Reaction:</span> ${body}`;
-}
 
 /* ---------------- Enemies: created on demand ---------------- */
 const baddies=[]; let baddyCount=0;
@@ -6358,7 +6263,6 @@ function loadActive(){
 const activeSet=loadActive();
 function isActive(name){ const c=CHARACTERS[name]; if(!c) return false; if(c.placeholder) return true; return activeSet.has(name); }
 function applyActive(){
-  if(window.rebuildTopTabs) window.rebuildTopTabs();
   Object.keys(skillBlocks).forEach(name=>{ skillBlocks[name].style.display = isActive(name) ? '' : 'none'; });
   update();
   if(typeof renderGroup==='function') renderGroup();
@@ -7165,32 +7069,6 @@ function encCheck(){
 /* ---------------- Tabs & wiring ---------------- */
 document.getElementById('addBaddy').addEventListener('click', ()=>{ addBaddy(); update(); });
 
-/* ---------------- Top-level tabs: DM, then one per character checked in Config ---------------- */
-let topTab='dm', playerCard=null;
-function returnPlayerCard(){
-  if(playerCard){ const b=blocks[playerCard]; if(b){ b.el.classList.remove('inplayer'); b.sizeLbl.classList.remove('item','m-size'); b.fields.appendChild(b.sizeLbl); tracker.appendChild(b.el); } playerCard=null; }
-}
-function showTop(which){
-  returnPlayerCard();                                         // the card goes back to the DM's tracker
-  topTab=which; const dm = which==='dm';
-  document.getElementById('dmArea').classList.toggle('hidden', !dm);
-  document.getElementById('playerArea').classList.toggle('hidden', dm);
-  document.getElementById('resetAll').style.display = dm ? '' : 'none';
-  document.querySelectorAll('.toptab').forEach(t=> t.classList.toggle('active', t.dataset.top===which));
-  if(!dm && blocks[which]){ const b=blocks[which]; document.getElementById('playerHost').appendChild(b.el); b.el.classList.add('inplayer'); b.sizeLbl.classList.add('item','m-size'); b.mods.appendChild(b.sizeLbl); playerCard=which; }   // Size joins the Actions row
-  updatePlayerRx();
-  update();
-}
-window.rebuildTopTabs=function(){
-  const nav=document.getElementById('topTabs'); nav.innerHTML='';
-  const mk=(id,label)=>{ const b=document.createElement('button'); b.className='toptab'+(id===topTab?' active':''); b.dataset.top=id; b.textContent=label; b.addEventListener('click',()=>showTop(id)); nav.appendChild(b); };
-  mk('dm','DM');
-  const rank=n=>{ const i=SETUP_ORDER.indexOf(n); return i<0?99:i; };
-  const names=PCS.filter(isActive).sort((a,b)=> rank(a)-rank(b));
-  names.forEach(n=> mk(n,n));
-  if(topTab!=='dm' && !names.includes(topTab)) showTop('dm');   // that character was unchecked in Config
-};
-window.rebuildTopTabs();
 const TAB_KEY='adnd-active-tab';
 const tabs=document.querySelectorAll('.tab');
 function setTab(p){

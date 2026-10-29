@@ -14,8 +14,7 @@ the owner on 2026-10-27, ahead of a dark theme.
 - Every page passes the contrast check in both themes
   (`scripts/contrast-scan.js`, run in the browser on a page served from the
   repo).
-- Fields (4a) and buttons (4b) are applied, and surfaces (4c) on the
-  character sheet. Not yet: surfaces on the DM Helper and the site pages, and
+- Fields (4a), buttons (4b) and surfaces (4c) are applied. Not yet:
   moving non-interactive text off the action colour (section
   titles, the round number and such are still brass). Until then, new work
   should follow this document, and anything that looks different from it
@@ -299,6 +298,13 @@ On the sheet:
 Notes is an open section (a single text box). Combat is an open section whose
 parts are cards.
 
+On the DM Helper, each tab is an open section. Each character (Proficiencies,
+Saves, Config), the initiative order, results and the encounter are cards; a
+card with a table runs it to the edges (no card padding; rows carry it). In
+the order, an Enemy's attacks are an item (they have controls) and a
+player's actions from their sheet are a well (a read-out). On the site pages,
+each character and each Account section is a card.
+
 ## Surfaces and depth
 
 | Layer | Used for | Light | Dark |
@@ -324,8 +330,11 @@ Rules:
 3. Wells don't nest, and a well isn't interactive by itself: it holds a
    result; the controls that make it sit beside it.
 4. Corners shrink inward: card 10px, well and item 8px, control 6px.
-5. A **featured** card (what matters most right now, such as This round) gets
-   the second accent's top edge; at most one per screen.
+5. A **featured** card gets the second accent's top edge. It marks the one
+   thing that is live or current, so it follows state, never importance: This
+   round on the sheet, the initiative order on the DM Helper, the character in
+   play on Your characters. At most one per screen; not for static cards,
+   section headers or warnings.
 
 Shadows (light): card `0 1px 2px rgb(20 16 12 / .06), 0 1px 3px rgb(20 16 12 /
 .10)`; raised `0 12px 30px rgb(20 16 12 / .16), 0 2px 6px rgb(20 16 12 / .08)`.
