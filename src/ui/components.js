@@ -98,7 +98,7 @@ export const TAGS_CSS = `/* Tags (docs/design-system.md, Tags) */
 // is-secondary (outlined). is-danger turns either destructive (red fill, or
 // red text on the standard outline). is-icon makes it square; is-bare is an
 // icon button with no box until hover or focus (small icons in rows and
-// cards). The S/M/L size comes from the same --field-* values as fields, so a
+// cards); is-link looks like a link (underlined text, no box) but is a button. The S/M/L size comes from the same --field-* values as fields, so a
 // button and a field of a size line up. :not(#\#) lifts these rules over a
 // page's older button styles; a page that needs something different says why.
 const BTN = ':is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\\#)';
@@ -129,7 +129,11 @@ ${BTN}.is-bare { background-color: transparent; border-color: transparent; color
 ${BTN}.is-bare:is(:hover, :focus-visible):not(:disabled) { border-color: var(--color-border); color: var(--color-accent-text); background-color: color-mix(in oklab, var(--color-accent-text) 9%, transparent); }
 ${BTN}.is-bare.is-danger:is(:hover, :focus-visible):not(:disabled) { color: var(--color-danger-text); background-color: color-mix(in oklab, var(--color-danger-text) 9%, transparent); }
 ${BTN}.is-bare:is([aria-pressed="true"], .is-active) { color: var(--color-accent2-text); background-color: color-mix(in oklab, var(--color-accent2) 16%, transparent); }
-${BTN}:active:not(:disabled) { transform: translateY(1px); }
+${BTN}.is-link { height: auto; padding: 0.2em 0.1em; background-color: transparent; border-color: transparent; color: var(--color-accent-text);
+  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+${BTN}.is-link:hover:not(:disabled) { color: color-mix(in oklab, var(--color-accent-text) 85%, var(--toward)); text-decoration-thickness: 2px; }
+${BTN}.is-link.is-danger { color: var(--color-danger-text); }
+${BTN}:active:not(:disabled):not(.is-link) { transform: translateY(1px); }
 ${BTN}:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 ${BTN}:is(:disabled, [aria-disabled="true"]) { opacity: .45; cursor: not-allowed; }
 
@@ -158,6 +162,18 @@ ${BTN}:is(:disabled, [aria-disabled="true"]) { opacity: .45; cursor: not-allowed
 // Cards don't nest; wells don't nest. Depth comes from the shadow in light and
 // the lighter surface in dark. :not(#\#) lifts these over a page's older box
 // styles; a page that needs something different says why.
+// A disclosure (accordion) toggle: a button holding the chevron and the title.
+// It is the whole hit area, so other controls in the same header (a select, an
+// Add button, a field) don't light it up or toggle it. Hover is the bare
+// button's tint, drawn just around the toggle.
+export const DISCLOSURE_CSS = `
+button.ui-disclosure:not(#\\#) { display: inline-flex; align-items: center; gap: 0.45em; padding: 0.2em 0.45em; margin: -0.2em -0.45em; background: none; border: 0; border-radius: var(--radius-ctl); font: inherit; color: inherit; letter-spacing: inherit; text-transform: inherit; text-align: left; cursor: pointer; }
+button.ui-disclosure:not(#\\#):hover { color: var(--color-accent-text); background: color-mix(in oklab, var(--color-accent-text) 9%, transparent); }
+button.ui-disclosure:not(#\\#):focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.ui-disclosure-chev { flex: none; width: 0.45em; height: 0.45em; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-0.12em) rotate(45deg); transition: transform 0.15s; }
+.ui-disclosure[aria-expanded="false"] .ui-disclosure-chev { transform: rotate(-45deg); }
+`;
+
 export const SURFACES_CSS = `/* Surfaces (docs/design-system.md: Surfaces and depth) */
 :is(section, article, aside, div, form, header).ui-card:not(#\\#) {
   background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-card);

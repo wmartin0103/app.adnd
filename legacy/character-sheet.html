@@ -361,7 +361,11 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
 :is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-bare:is(:hover, :focus-visible):not(:disabled) { border-color: var(--color-border); color: var(--color-accent-text); background-color: color-mix(in oklab, var(--color-accent-text) 9%, transparent); }
 :is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-bare.is-danger:is(:hover, :focus-visible):not(:disabled) { color: var(--color-danger-text); background-color: color-mix(in oklab, var(--color-danger-text) 9%, transparent); }
 :is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-bare:is([aria-pressed="true"], .is-active) { color: var(--color-accent2-text); background-color: color-mix(in oklab, var(--color-accent2) 16%, transparent); }
-:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#):active:not(:disabled) { transform: translateY(1px); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-link { height: auto; padding: 0.2em 0.1em; background-color: transparent; border-color: transparent; color: var(--color-accent-text);
+  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-link:hover:not(:disabled) { color: color-mix(in oklab, var(--color-accent-text) 85%, var(--toward)); text-decoration-thickness: 2px; }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-link.is-danger { color: var(--color-danger-text); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#):active:not(:disabled):not(.is-link) { transform: translateY(1px); }
 :is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#):focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 :is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#):is(:disabled, [aria-disabled="true"]) { opacity: .45; cursor: not-allowed; }
 
@@ -380,6 +384,13 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
 :is(div, span, fieldset, [role=group]).ui-tabs:not(#\#) > button:is([aria-pressed="true"], .is-active) { background: var(--color-accent2); color: var(--color-on-accent2); }
 :is(div, span, fieldset, [role=group]).ui-tabs:not(#\#) > button:is([aria-pressed="true"], .is-active):hover { background: color-mix(in oklab, var(--color-accent2) 88%, var(--toward)); }
 :is(div, span, fieldset, [role=group]).ui-tabs:not(#\#) > button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -3px; }
+
+
+button.ui-disclosure:not(#\#) { display: inline-flex; align-items: center; gap: 0.45em; padding: 0.2em 0.45em; margin: -0.2em -0.45em; background: none; border: 0; border-radius: var(--radius-ctl); font: inherit; color: inherit; letter-spacing: inherit; text-transform: inherit; text-align: left; cursor: pointer; }
+button.ui-disclosure:not(#\#):hover { color: var(--color-accent-text); background: color-mix(in oklab, var(--color-accent-text) 9%, transparent); }
+button.ui-disclosure:not(#\#):focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.ui-disclosure-chev { flex: none; width: 0.45em; height: 0.45em; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-0.12em) rotate(45deg); transition: transform 0.15s; }
+.ui-disclosure[aria-expanded="false"] .ui-disclosure-chev { transform: rotate(-45deg); }
 
 /* Surfaces (docs/design-system.md: Surfaces and depth) */
 :is(section, article, aside, div, form, header).ui-card:not(#\#) {
@@ -2163,12 +2174,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       display: flex;
       align-items: center;
       gap: 0.6rem;
-      cursor: pointer;
-      user-select: none;
     }
-    .racial-traits-heading:hover { opacity: 0.8; }
-
-    .racial-traits-chevron { /* chevron sits at end of its container */ }
 
     .section-heading-right {
       margin-left: auto;
@@ -2336,7 +2342,6 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       position: relative;
       user-select: none;
     }
-    .scenario-header:hover { background: var(--parchment); }
 
     .scenario-chevron {
       display: flex;
@@ -2557,10 +2562,6 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     .sr-math tfoot th, .sr-math tfoot td { border-bottom: none; border-top: 1px solid var(--ink-muted); font-weight: 700; }
     .sr-math tfoot td { color: var(--accent); }
     .sr-effect td:first-child { color: var(--accent); }
-    .effects-toggle { display: inline-flex; align-items: center; gap: 0.4rem; background: none; border: none; padding: 0; font: inherit; color: inherit; letter-spacing: inherit; text-transform: inherit; cursor: pointer; }
-    .effects-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-    .effects-chev { width: 0.5rem; height: 0.5rem; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg) translateY(-2px); transition: transform 0.15s; }
-    .effects-toggle[aria-expanded="false"] .effects-chev { transform: rotate(-45deg); }
     .stances-on { font-size: 0.85rem; color: var(--ink-muted); margin-right: auto; }
     .stances { margin: 0 0 1rem; }
 
@@ -2605,25 +2606,8 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     .ac-matrix-table td.hit-hard  { color: var(--accent); font-weight: 600; }
     .ac-matrix-table td.hit-impossible { color: var(--ink-faint); }
 
-    .add-scenario-btn {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-family: var(--font-display);
-      font-size: 0.65rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--ink-muted);
-      background: transparent;
-      border: 1px dashed var(--rule);
-      border-radius: var(--radius);
-      padding: 0.6rem 1rem;
-      cursor: pointer;
-      width: 100%;
-      transition: border-color 0.2s, color 0.2s;
-    }
-    .add-scenario-btn:hover { border-color: var(--accent); color: var(--accent); }
-    .add-scenario-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    /* Below the attacks, centred */
+    #add-scenario-btn:not(#\#) { display: flex; width: fit-content; margin: 0.75rem auto 0; }
 
     /* ─── Classes Block ─────────────────────────────────────── */
     .classes-block {
@@ -3062,8 +3046,8 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       <!-- ── Effects: stances, forms, temporary effects ─────── -->
       <div class="stances ui-card">
         <div class="stances-head">
-          <h3 class="stances-title"><button type="button" id="effects-toggle" class="effects-toggle" aria-expanded="true" aria-controls="effects-body">
-            <span class="effects-chev" aria-hidden="true"></span>Effects</button></h3>
+          <h3 class="stances-title"><button type="button" id="effects-toggle" class="ui-disclosure" aria-expanded="true" aria-controls="effects-body">
+            <span class="ui-disclosure-chev" aria-hidden="true"></span>Effects</button></h3>
           <span class="stances-on" id="stances-on" aria-live="polite"></span>
           <span class="stances-ac" id="stances-ac" aria-live="polite"></span>
         </div>
@@ -3089,7 +3073,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       <div class="scenarios-list" id="scenarios-list" role="list">
         <!-- Injected by JS -->
       </div>
-      <button class="add-scenario-btn ui-button is-primary" id="add-scenario-btn" type="button" aria-label="Add combat scenario">
+      <button class="add-scenario-btn ui-button is-link" id="add-scenario-btn" type="button" aria-label="Add combat scenario">
         <span aria-hidden="true">＋</span> Add Scenario
       </button>
 
@@ -3103,13 +3087,10 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
 
     <!-- ── Weapons ────────────────────────────────────────── -->
     <section class="section ui-card" id="weapons-section" aria-labelledby="weapons-heading">
-      <h2 class="section-heading racial-traits-heading" id="weapons-heading"
-          role="button" tabindex="0"
-          aria-expanded="true" aria-controls="weapons-panel">
-        Weapons
+      <h2 class="section-heading racial-traits-heading" id="weapons-heading">
+        <button type="button" class="ui-disclosure" aria-expanded="true" aria-controls="weapons-panel"><span class="ui-disclosure-chev" aria-hidden="true"></span>Weapons</button>
         <div class="section-heading-right">
           <div class="wpn-racial-heading" id="wpn-racial-heading" aria-live="polite"></div>
-          <span class="scenario-chevron racial-traits-chevron" id="weapons-chevron" aria-hidden="true"></span>
         </div>
       </h2>
       <div id="weapons-panel">
@@ -3121,8 +3102,8 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
         </button>
         <!-- Ammunition: only when a weapon uses it (its settings gear) -->
         <div class="ammo-block" id="ammo-block" hidden>
-          <h3 class="ammo-heading" id="ammo-heading"><button type="button" id="ammo-toggle" class="effects-toggle" aria-expanded="false" aria-controls="ammo-body">
-            <span class="effects-chev" aria-hidden="true"></span>Special Ammunition<span class="ammo-count" id="ammo-count"></span></button></h3>
+          <h3 class="ammo-heading" id="ammo-heading"><button type="button" id="ammo-toggle" class="ui-disclosure" aria-expanded="false" aria-controls="ammo-body">
+            <span class="ui-disclosure-chev" aria-hidden="true"></span>Special Ammunition<span class="ammo-count" id="ammo-count"></span></button></h3>
           <!-- Closed until needed: magic or silvered ammo turns up now and then -->
           <div id="ammo-body" hidden>
             <div id="ammo-list" aria-labelledby="ammo-heading"></div>
@@ -3136,13 +3117,10 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
 
     <!-- ── Spells ─────────────────────────────────────────────── -->
     <section class="section" aria-labelledby="wpn-prof-heading">
-      <h2 class="section-heading racial-traits-heading" id="wpn-prof-heading"
-          role="button" tabindex="0"
-          aria-expanded="true" aria-controls="wpn-prof-panel">
-        Weapon Proficiencies
+      <h2 class="section-heading racial-traits-heading" id="wpn-prof-heading">
+        <button type="button" class="ui-disclosure" aria-expanded="true" aria-controls="wpn-prof-panel"><span class="ui-disclosure-chev" aria-hidden="true"></span>Weapon Proficiencies</button>
         <div class="section-heading-right">
           <span id="wp-slots-badge" class="prof-slots-badge" aria-live="polite"></span>
-          <span class="scenario-chevron racial-traits-chevron" id="wpn-prof-chevron" aria-hidden="true"></span>
         </div>
       </h2>
       <div id="wpn-prof-panel">
@@ -3154,10 +3132,8 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     </section>
 
     <section class="section" id="spells-section" aria-labelledby="spells-heading">
-      <h2 class="section-heading racial-traits-heading" id="spells-heading"
-          role="button" tabindex="0"
-          aria-expanded="true" aria-controls="spells-panel">
-        Spells
+      <h2 class="section-heading racial-traits-heading" id="spells-heading">
+        <button type="button" class="ui-disclosure" aria-expanded="true" aria-controls="spells-panel"><span class="ui-disclosure-chev" aria-hidden="true"></span>Spells</button>
         <div class="section-heading-right">
           <div class="spell-header-controls">
             <div id="spell-slot-badges" class="spell-slot-badges" aria-live="polite"></div>
@@ -3170,7 +3146,6 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
               <option value="blade">Blade (Custom)</option>
             </select>
           </div>
-          <span class="scenario-chevron racial-traits-chevron" id="spells-chevron" aria-hidden="true"></span>
         </div>
       </h2>
       <div id="spells-panel">
@@ -3188,9 +3163,8 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     <!-- ── Thieving Abilities ───────────────────────────────── -->
     <section class="section racial-traits-section ui-card" id="thieving-section"
       aria-labelledby="thieving-heading" hidden>
-      <h2 class="section-heading racial-traits-heading" id="thieving-heading"
-        role="button" tabindex="0" aria-expanded="true" aria-controls="thieving-panel">
-        Thieving Abilities
+      <h2 class="section-heading racial-traits-heading" id="thieving-heading">
+        <button type="button" class="ui-disclosure" aria-expanded="true" aria-controls="thieving-panel"><span class="ui-disclosure-chev" aria-hidden="true"></span>Thieving Abilities</button>
         <button class="thief-settings-btn ui-button is-bare is-icon size-sm" id="thief-settings-btn" type="button"
           aria-label="Thieving abilities settings" title="Settings">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -3206,7 +3180,6 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
           <option value="hybrid">Hybrid (Thief / Bard)</option>
           <option value="ranger">Ranger</option>
         </select>
-        <span class="scenario-chevron racial-traits-chevron" id="thieving-chevron" aria-hidden="true"></span>
       </h2>
       <div id="thieving-panel" aria-labelledby="thieving-heading">
         <div id="thieving-skills-list" class="thieving-skills-list">
@@ -3217,12 +3190,9 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
 
     <!-- ── Racial Traits (collapsible) ─────────────────────── -->
     <section class="section racial-traits-section ui-card" aria-labelledby="racial-traits-heading">
-      <h2 class="section-heading racial-traits-heading" id="racial-traits-heading"
-          id="racial-traits-toggle-btn" role="button" tabindex="0"
-          aria-expanded="true" aria-controls="racial-traits-panel">
-        Racial Traits
+      <h2 class="section-heading racial-traits-heading" id="racial-traits-heading">
+        <button type="button" class="ui-disclosure" aria-expanded="true" aria-controls="racial-traits-panel"><span class="ui-disclosure-chev" aria-hidden="true"></span>Racial Traits</button>
         <span class="racial-traits-race-badge" id="racial-traits-race-label"></span>
-        <span class="scenario-chevron racial-traits-chevron" id="racial-traits-chevron" aria-hidden="true"></span>
       </h2>
       <div id="racial-traits-panel" aria-labelledby="racial-traits-heading">
         <div id="racial-traits-list" class="racial-traits-list">
@@ -3234,13 +3204,10 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
 
     <!-- ── Non-Weapon Proficiencies ───────────────────────── -->
     <section class="section" aria-labelledby="nwp-heading">
-      <h2 class="section-heading racial-traits-heading" id="nwp-heading"
-          role="button" tabindex="0"
-          aria-expanded="true" aria-controls="nwp-panel">
-        Non-Weapon Proficiencies
+      <h2 class="section-heading racial-traits-heading" id="nwp-heading">
+        <button type="button" class="ui-disclosure" aria-expanded="true" aria-controls="nwp-panel"><span class="ui-disclosure-chev" aria-hidden="true"></span>Non-Weapon Proficiencies</button>
         <div class="section-heading-right">
           <span id="nwp-slots-badge" class="prof-slots-badge" aria-live="polite"></span>
-          <span class="scenario-chevron racial-traits-chevron" id="nwp-chevron" aria-hidden="true"></span>
         </div>
       </h2>
       <div id="nwp-panel">
@@ -3254,12 +3221,9 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     </section>
 
     <section class="section" aria-labelledby="abilities-cards-heading">
-      <h2 class="section-heading racial-traits-heading" id="abilities-cards-heading"
-          role="button" tabindex="0"
-          aria-expanded="true" aria-controls="abilities-cards-panel">
-        Abilities
+      <h2 class="section-heading racial-traits-heading" id="abilities-cards-heading">
+        <button type="button" class="ui-disclosure" aria-expanded="true" aria-controls="abilities-cards-panel"><span class="ui-disclosure-chev" aria-hidden="true"></span>Abilities</button>
         <div class="section-heading-right">
-          <span class="scenario-chevron racial-traits-chevron" id="abilities-cards-chevron" aria-hidden="true"></span>
         </div>
       </h2>
       <div id="abilities-cards-panel">
@@ -3272,13 +3236,10 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
 
     <!-- ── Equipment ──────────────────────────────────────────── -->
     <section class="section ui-card" aria-labelledby="equipment-heading">
-      <h2 class="section-heading racial-traits-heading" id="equipment-heading"
-          role="button" tabindex="0"
-          aria-expanded="true" aria-controls="equipment-panel">
-        Equipment
+      <h2 class="section-heading racial-traits-heading" id="equipment-heading">
+        <button type="button" class="ui-disclosure" aria-expanded="true" aria-controls="equipment-panel"><span class="ui-disclosure-chev" aria-hidden="true"></span>Equipment</button>
         <div class="section-heading-right">
           <span id="equipment-weight-total" class="item-weight-total"></span>
-          <span class="scenario-chevron racial-traits-chevron" id="equipment-chevron" aria-hidden="true"></span>
         </div>
       </h2>
       <div id="equipment-panel">
@@ -3293,15 +3254,12 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
 
     <!-- ── Items ────────────────────────────────────────────── -->
     <section class="section ui-card" aria-labelledby="items-heading">
-      <h2 class="section-heading racial-traits-heading" id="items-heading"
-          role="button" tabindex="0"
-          aria-expanded="true" aria-controls="items-panel">
-        Items
+      <h2 class="section-heading racial-traits-heading" id="items-heading">
+        <button type="button" class="ui-disclosure" aria-expanded="true" aria-controls="items-panel"><span class="ui-disclosure-chev" aria-hidden="true"></span>Items</button>
         <div class="section-heading-right">
           <label class="sr-only" for="money-inp">Money</label>
           <input type="text" id="money-inp" class="money-inp open-field" data-save="money" placeholder="Money…" aria-label="Money" />
           <span id="items-weight-total" class="item-weight-total"></span>
-          <span class="scenario-chevron racial-traits-chevron" id="items-chevron" aria-hidden="true"></span>
         </div>
       </h2>
       <div id="items-panel">
@@ -7624,9 +7582,11 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         badge.textContent = thac0 !== null ? `THAC0 ${thac0}${unknownHit ? ' − ?' : ''}` : spellInfo ? `Cast ${spellInfo.castTimeNow || '?'}` : '—';
 
         // Chevron toggle
-        const chevron = document.createElement('span');
-        chevron.className = 'scenario-chevron';
-        chevron.setAttribute('aria-hidden', 'true');
+        const chevron = document.createElement('button');
+        chevron.type = 'button';
+        chevron.className = 'scenario-chevron ui-button is-bare is-icon size-sm';
+        chevron.setAttribute('aria-expanded', scenario.collapsed ? 'false' : 'true');
+        chevron.setAttribute('aria-label', `Details of ${scenario.name || 'Scenario ' + (index + 1)}`);
         chevron.innerHTML = scenario.collapsed
           ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`
           : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 15 12 9 18 15"/></svg>`;
@@ -7690,12 +7650,12 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
 
 
-        // Chevron click: toggle collapsed
-        chevron.style.cursor = 'pointer';
+        // Chevron click: toggle collapsed (focus stays on it through the re-render)
         chevron.addEventListener('click', (e) => {
           e.stopPropagation();
           scenario.collapsed = !scenario.collapsed;
           renderScenarios();
+          document.querySelector(`[data-scenario-id="${scenario.id}"] .scenario-chevron`)?.focus();
           saveToItems();
         });
 
@@ -10100,7 +10060,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
     function initThievingPanel() {
       const heading        = document.getElementById('thieving-heading');
       const panel          = document.getElementById('thieving-panel');
-      const chevEl         = document.getElementById('thieving-chevron');
+      const btn            = heading && heading.querySelector('.ui-disclosure');
       const settingsBtn    = document.getElementById('thief-settings-btn');
       const subclassSelect = document.getElementById('thief-subclass-select');
       if (!heading || !panel) return;
@@ -10131,11 +10091,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       }
 
       function setChevron(open) {
-        if (!chevEl) return;
-        chevEl.innerHTML = open
-          ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 15 12 9 18 15"/></svg>`
-          : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
-        heading.setAttribute('aria-expanded', open ? 'true' : 'false');
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
       }
 
       function toggle() {
@@ -10144,11 +10100,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         setChevron(nowOpen);
       }
 
-      heading.addEventListener('click', toggle);
-      heading.addEventListener('keydown', e => {
-        if (e.target.closest('select, button, a, input')) return;
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
-      });
+      btn.addEventListener('click', toggle);
       panel.hidden = false;
       setChevron(true);
       renderThievingAbilities();
@@ -10299,15 +10251,11 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
     function initRacialTraitsPanel() {
       const heading = document.getElementById('racial-traits-heading');
       const panel   = document.getElementById('racial-traits-panel');
-      const chevEl  = document.getElementById('racial-traits-chevron');
-      if (!heading || !panel) return;
+      const btn     = heading && heading.querySelector('.ui-disclosure');
+      if (!btn || !panel) return;
 
       function setChevron(open) {
-        if (!chevEl) return;
-        chevEl.innerHTML = open
-          ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 15 12 9 18 15"/></svg>`
-          : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
-        heading.setAttribute('aria-expanded', open ? 'true' : 'false');
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
       }
 
       function toggle() {
@@ -10316,11 +10264,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         setChevron(nowOpen);
       }
 
-      heading.addEventListener('click', toggle);
-      heading.addEventListener('keydown', e => {
-        if (e.target.closest('select, button, a, input')) return;
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
-      });
+      btn.addEventListener('click', toggle);
 
       // Start open, chevron up
       setChevron(true);
@@ -11675,15 +11619,11 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
     function initSectionPanel(headingId, panelId, chevronId, storageKey) {
       const heading = document.getElementById(headingId);
       const panel   = document.getElementById(panelId);
-      const chevEl  = document.getElementById(chevronId);
-      if (!heading || !panel) return;
-
-      const SVG_UP   = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 15 12 9 18 15"/></svg>';
-      const SVG_DOWN = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
+      const btn     = heading && heading.querySelector('.ui-disclosure');
+      if (!btn || !panel) return;
 
       function setChevron(open) {
-        if (chevEl) chevEl.innerHTML = open ? SVG_UP : SVG_DOWN;
-        heading.setAttribute('aria-expanded', open ? 'true' : 'false');
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
       }
 
       function toggle() {
@@ -11701,14 +11641,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         setChevron(true);
       }
 
-      heading.addEventListener('click', e => {
-        if (e.target.closest('select, button, a, input')) return;
-        toggle();
-      });
-      heading.addEventListener('keydown', e => {
-        if (e.target.closest('select, button, a, input')) return;
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
-      });
+      btn.addEventListener('click', toggle);
     }
 
     initSectionPanel('weapons-heading', 'weapons-panel', 'weapons-chevron', 'panel-weapons');

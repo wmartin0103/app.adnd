@@ -214,10 +214,21 @@ action colour. Every tag's text passes 4.5:1 on its fill in both themes.
   and trash). No box at rest, so dense rows stay calm; on hover and focus
   they show the secondary button's border and tint (red for a delete). A
   pressed one (a settings panel open) takes a second-accent tint.
+- **Link buttons** (`is-link`): look like a link (`accent-text`, underlined,
+  no box) but do a button's job on the page. For a quiet action that sits
+  apart from the controls, such as Add Scenario below the attacks. Hover
+  darkens the text and thickens the underline; `is-danger` turns it red.
+- **Disclosure toggles** (`ui-disclosure`): what opens and closes a section
+  or a card (an accordion). The toggle is a button holding the chevron and
+  the title, and it is the whole hit area: other controls in the same header
+  (a select, a field, Add to round) don't toggle it or show its hover. Hover
+  is the bare button's tint, around the toggle only. Where the title is
+  itself a field (an attack's name), the chevron alone is the toggle, a bare
+  icon button. Effects is the model.
 
 In code (`src/ui/components.js`): `class="ui-button"` with `is-primary` or
-`is-secondary`, plus `is-danger`, `is-icon`, `is-bare`; `class="ui-tabs"` on
-a group of tab buttons. Sizes come from the same `--field-*` values as
+`is-secondary`, plus `is-danger`, `is-icon`, `is-bare`, `is-link`; `class="ui-tabs"` on
+a group of tab buttons; `class="ui-disclosure"` for a disclosure toggle. Sizes come from the same `--field-*` values as
 fields (`size-sm` / `size-lg`, or a dense container), so a button and a
 field of a size line up.
 
