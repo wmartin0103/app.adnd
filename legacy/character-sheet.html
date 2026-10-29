@@ -1547,7 +1547,6 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     .nwp-roll-wrap .nwp-adj-inp {
       border: none;
       border-radius: 0;
-      width: 1.6rem;
     }
     .nwp-slots-wrap {
       display: flex;
@@ -1555,8 +1554,11 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       gap: 0.25rem;
       margin-left: auto;
     }
-    .nwp-slots-wrap .nwp-adj-inp {
-      width: 1.6rem;
+    /* Slots and the roll adjustment hold a number or a word (Kit, Class): they
+       grow to fit it, with the side padding tightened (the card is narrow) */
+    .nwp-card-bottom input.nwp-adj-inp:not(#\#) { width: 3.5rem; min-width: 2.25rem; padding: 0 6px; text-align: center; }
+    @supports (field-sizing: content) {
+      .nwp-card-bottom input.nwp-adj-inp:not(#\#) { width: auto; field-sizing: content; max-width: 5rem; }
     }
     .nwp-ability-sel, .nwp-adj-inp,
     .item-qty-inp, .item-wt-inp, .item-charges-inp {
