@@ -302,7 +302,7 @@ parts are cards.
 | Page | behind everything, and open sections | `bg` | `bg` |
 | Card | related details (above) | `surface`, soft shadow, `divider` hairline | `surface` (lighter than the page), a faint top edge |
 | Compact card | a small card among siblings (an ability score, a spell): the same, with 12px padding in place of 18px | | |
-| Well | read-outs inside a card: an attack's result, roll results | `sunken`, no shadow | `sunken` |
+| Well | read-outs inside a card: an attack's result, roll results | `sunken`, an inner shadow from the top (`shadow-well`) | `sunken`, a deeper inner shadow |
 | Item | a repeated thing inside a card (an effect in Effects, a list row) | `surface` with a `divider` hairline, no shadow | same |
 | Raised | menus, dropdown lists, tooltips, toasts | `raised`, a stronger shadow | `raised` (lighter again), a stronger shadow, a faint top edge |
 | Overlay | dialogs, the page dimmed behind | `raised`, the strongest shadow | same |

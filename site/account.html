@@ -62,6 +62,7 @@
   --color-bar-active: #e3b572;
   --shadow-card: 0 1px 2px rgb(20 16 12 / .06), 0 1px 3px rgb(20 16 12 / .10);
   --shadow-raised: 0 12px 30px rgb(20 16 12 / .16), 0 2px 6px rgb(20 16 12 / .08);
+  --shadow-well: inset 0 2px 4px rgb(20 16 12 / .14), inset 0 1px 1px rgb(20 16 12 / .08);
   --edge-top: transparent;
   --toward: #000;
   --scrim: rgb(15 25 35 / .45);
@@ -141,6 +142,7 @@
     --color-bar-active: #e3b667;
     --shadow-card: 0 1px 2px rgb(0 0 0 / .5);
     --shadow-raised: 0 14px 34px rgb(0 0 0 / .55), 0 2px 6px rgb(0 0 0 / .4);
+    --shadow-well: inset 0 2px 5px rgb(0 0 0 / .45), inset 0 1px 1px rgb(0 0 0 / .3);
     --edge-top: rgb(255 255 255 / .05);
     --toward: #fff;
     --scrim: rgb(0 0 0 / .6);
@@ -220,6 +222,7 @@
   --color-bar-active: #e3b667;
   --shadow-card: 0 1px 2px rgb(0 0 0 / .5);
   --shadow-raised: 0 14px 34px rgb(0 0 0 / .55), 0 2px 6px rgb(0 0 0 / .4);
+  --shadow-well: inset 0 2px 5px rgb(0 0 0 / .45), inset 0 1px 1px rgb(0 0 0 / .3);
   --edge-top: rgb(255 255 255 / .05);
   --toward: #fff;
   --scrim: rgb(0 0 0 / .6);
@@ -418,7 +421,7 @@ button.ui-disclosure:not(#\#):focus-visible { outline: 2px solid var(--color-foc
 /* A small card among siblings (an ability score, a spell): less padding */
 :is(section, article, aside, div, form, header).ui-card.is-compact:not(#\#) { --card-pad: 12px; }
 :is(div, section, span, output, figure, dl).ui-well:not(#\#) {
-  background: var(--color-sunken); border: 0; border-radius: var(--radius-inner); box-shadow: inset 0 1px 2px rgb(0 0 0 / .06);
+  background: var(--color-sunken); border: 0; border-radius: var(--radius-inner); box-shadow: var(--shadow-well);
 }
 :is(div, article, li, section, label).ui-item:not(#\#) {
   background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-inner); box-shadow: none;
@@ -627,11 +630,13 @@ const DEPTH = {
   light: {
     'shadow-card': '0 1px 2px rgb(20 16 12 / .06), 0 1px 3px rgb(20 16 12 / .10)',
     'shadow-raised': '0 12px 30px rgb(20 16 12 / .16), 0 2px 6px rgb(20 16 12 / .08)',
+    'shadow-well': 'inset 0 2px 4px rgb(20 16 12 / .14), inset 0 1px 1px rgb(20 16 12 / .08)',
     'edge-top': 'transparent', toward: '#000', scrim: 'rgb(15 25 35 / .45)', chevron: chevron('414f5d'), spin: spin('414f5d'),
   },
   dark: {
     'shadow-card': '0 1px 2px rgb(0 0 0 / .5)',
     'shadow-raised': '0 14px 34px rgb(0 0 0 / .55), 0 2px 6px rgb(0 0 0 / .4)',
+    'shadow-well': 'inset 0 2px 5px rgb(0 0 0 / .45), inset 0 1px 1px rgb(0 0 0 / .3)',
     'edge-top': 'rgb(255 255 255 / .05)', toward: '#fff', scrim: 'rgb(0 0 0 / .6)', chevron: chevron('b2bbc8'), spin: spin('b2bbc8'),
   },
 };

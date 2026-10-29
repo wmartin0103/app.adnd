@@ -203,7 +203,7 @@ export const SURFACES_CSS = `/* Surfaces (docs/design-system.md: Surfaces and de
 /* A small card among siblings (an ability score, a spell): less padding */
 :is(section, article, aside, div, form, header).ui-card.is-compact:not(#\\#) { --card-pad: 12px; }
 :is(div, section, span, output, figure, dl).ui-well:not(#\\#) {
-  background: var(--color-sunken); border: 0; border-radius: var(--radius-inner); box-shadow: inset 0 1px 2px rgb(0 0 0 / .06);
+  background: var(--color-sunken); border: 0; border-radius: var(--radius-inner); box-shadow: var(--shadow-well);
 }
 :is(div, article, li, section, label).ui-item:not(#\\#) {
   background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-inner); box-shadow: none;
