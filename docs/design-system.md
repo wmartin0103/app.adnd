@@ -134,11 +134,14 @@ also the type, icon and padding.
 
 | Size | Height | Type | Icon | Side padding |
 |---|---|---|---|---|
+| Extra small | 22px | 12px | 12px | 6px |
 | Small | 28px | 13px | 14px | 8px |
 | Medium | 36px | 15px | 16px | 12px |
 | Large | 44px | 17px | 20px | 16px |
 
 Medium is the default. Small is for dense rows (tables, inline stats).
+Extra small is only for the quantity stepper in a tight card header (a
+memorized spell's count); it's niche, not a general size.
 Large is defined for touch-first or prominent actions (44px is the usual
 minimum touch target). Padding may be tightened where a row is short of
 room; height, type and icon may not.
@@ -214,6 +217,11 @@ action colour. Every tag's text passes 4.5:1 on its fill in both themes.
   and trash). No box at rest, so dense rows stay calm; on hover and focus
   they show the secondary button's border and tint (red for a delete). A
   pressed one (a settings panel open) takes a second-accent tint.
+- **Quantity stepper** (`ui-qty`): − / the number / + in one bordered box,
+  so it reads as one control and stays clearly apart from a remove × beside
+  it. The number can be typed. Sized like a field; `size-xs` in a tight
+  card header. Inside, − and + are bare (the action colour's tint on hover),
+  and the box takes the field's hover and focus border.
 - **Link buttons** (`is-link`): look like a link (`accent-text`, no
   underline or box at rest) but do a button's job on the page. For a quiet action that sits
   apart from the controls, such as Add Scenario below the attacks. Hover

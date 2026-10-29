@@ -9,7 +9,8 @@
 // Two styles of editable field:
 // - the boxed field (text, number and select boxes, text areas): a border,
 //   the S/M/L sizes; a dense area sets the small size on its container with
-//   --field-h / --field-fs / --field-px (or the class size-sm, size-lg);
+//   --field-h / --field-fs / --field-px (or the class size-sm, size-lg;
+//   size-xs only for the quantity stepper in a tight card header);
 // - the open field (class="open-field"): text that's editable where it sits,
 //   names, notes and stat numbers in cards and headers. An underline at rest,
 //   brass on hover (it's interactive), the focus colour while editing. Its
@@ -17,6 +18,7 @@
 const BOXED = ':is(input:not([type]), input[type=text], input[type=number], input[type=email], input[type=password], input[type=search], input[type=url], input[type=tel], select, textarea):not(.ui-native):not(.open-field)';
 export const FIELDS_CSS = `/* Fields (docs/design-system.md: Sizes, States) */
 :root { --field-h: var(--ctl-md); --field-fs: var(--ctl-fs-md); --field-px: var(--ctl-pad-md); }
+.size-xs { --field-h: var(--ctl-xs); --field-fs: var(--ctl-fs-xs); --field-px: var(--ctl-pad-xs); }
 .size-sm { --field-h: var(--ctl-sm); --field-fs: var(--ctl-fs-sm); --field-px: var(--ctl-pad-sm); }
 .size-md { --field-h: var(--ctl-md); --field-fs: var(--ctl-fs-md); --field-px: var(--ctl-pad-md); }
 .size-lg { --field-h: var(--ctl-lg); --field-fs: var(--ctl-fs-lg); --field-px: var(--ctl-pad-lg); }
@@ -173,6 +175,23 @@ button.ui-disclosure:not(#\\#):hover { color: var(--color-accent-text); backgrou
 button.ui-disclosure:not(#\\#):focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .ui-disclosure-chev { flex: none; width: 0.45em; height: 0.45em; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-0.12em) rotate(45deg); transition: transform 0.15s; }
 .ui-disclosure[aria-expanded="false"] .ui-disclosure-chev { transform: rotate(-45deg); }
+`;
+
+// A quantity stepper: − / the number / + in one box, so it reads as one control
+// (apart from a remove × beside it). The number can be typed. Sized like a
+// field (size-xs where a card header is tight).
+const QTY = '.ui-qty:not(#\\#)';
+export const QTY_CSS = `
+${QTY} { box-sizing: border-box; display: inline-flex; align-items: stretch; flex: none; height: var(--field-h); background-color: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-ctl); transition: border-color .12s; }
+${QTY}:hover { border-color: var(--color-text-muted); }
+${QTY}:focus-within { border-color: var(--color-focus); }
+${QTY} > button { box-sizing: border-box; display: flex; align-items: center; justify-content: center; width: calc(var(--field-h) - 4px); margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; color: var(--color-text-muted); font: 600 var(--field-fs)/1 var(--font-sans); cursor: pointer; transition: background-color .12s, color .12s; }
+${QTY} > button:first-child { border-radius: calc(var(--radius-ctl) - 1px) 0 0 calc(var(--radius-ctl) - 1px); }
+${QTY} > button:last-child { border-radius: 0 calc(var(--radius-ctl) - 1px) calc(var(--radius-ctl) - 1px) 0; }
+${QTY} > button:hover:not(:disabled) { color: var(--color-accent-text); background-color: color-mix(in oklab, var(--color-accent-text) 9%, transparent); }
+${QTY} > button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; position: relative; }
+${QTY} > button:disabled { opacity: .45; cursor: not-allowed; }
+${QTY} > input { box-sizing: border-box; width: calc(var(--field-fs) * 1.9); height: 100%; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; outline: none; box-shadow: none; text-align: center; color: var(--color-text); font: 600 var(--field-fs)/1 var(--font-sans); font-variant-numeric: tabular-nums; }
 `;
 
 export const SURFACES_CSS = `/* Surfaces (docs/design-system.md: Surfaces and depth) */

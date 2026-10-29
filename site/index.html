@@ -12,15 +12,19 @@
 :root {
   --font-serif: 'Spectral', Georgia, serif;
   --font-sans: 'Barlow', system-ui, sans-serif;
+  --ctl-xs: 22px;
   --ctl-sm: 28px;
   --ctl-md: 36px;
   --ctl-lg: 44px;
+  --ctl-fs-xs: 12px;
   --ctl-fs-sm: 13px;
   --ctl-fs-md: 15px;
   --ctl-fs-lg: 17px;
+  --ctl-ico-xs: 12px;
   --ctl-ico-sm: 14px;
   --ctl-ico-md: 16px;
   --ctl-ico-lg: 20px;
+  --ctl-pad-xs: 6px;
   --ctl-pad-sm: 8px;
   --ctl-pad-md: 12px;
   --ctl-pad-lg: 16px;
@@ -265,6 +269,7 @@
 
 /* Fields (docs/design-system.md: Sizes, States) */
 :root { --field-h: var(--ctl-md); --field-fs: var(--ctl-fs-md); --field-px: var(--ctl-pad-md); }
+.size-xs { --field-h: var(--ctl-xs); --field-fs: var(--ctl-fs-xs); --field-px: var(--ctl-pad-xs); }
 .size-sm { --field-h: var(--ctl-sm); --field-fs: var(--ctl-fs-sm); --field-px: var(--ctl-pad-sm); }
 .size-md { --field-h: var(--ctl-md); --field-fs: var(--ctl-fs-md); --field-px: var(--ctl-pad-md); }
 .size-lg { --field-h: var(--ctl-lg); --field-fs: var(--ctl-fs-lg); --field-px: var(--ctl-pad-lg); }
@@ -391,6 +396,18 @@ button.ui-disclosure:not(#\#):hover { color: var(--color-accent-text); backgroun
 button.ui-disclosure:not(#\#):focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .ui-disclosure-chev { flex: none; width: 0.45em; height: 0.45em; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-0.12em) rotate(45deg); transition: transform 0.15s; }
 .ui-disclosure[aria-expanded="false"] .ui-disclosure-chev { transform: rotate(-45deg); }
+
+
+.ui-qty:not(#\#) { box-sizing: border-box; display: inline-flex; align-items: stretch; flex: none; height: var(--field-h); background-color: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-ctl); transition: border-color .12s; }
+.ui-qty:not(#\#):hover { border-color: var(--color-text-muted); }
+.ui-qty:not(#\#):focus-within { border-color: var(--color-focus); }
+.ui-qty:not(#\#) > button { box-sizing: border-box; display: flex; align-items: center; justify-content: center; width: calc(var(--field-h) - 4px); margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; color: var(--color-text-muted); font: 600 var(--field-fs)/1 var(--font-sans); cursor: pointer; transition: background-color .12s, color .12s; }
+.ui-qty:not(#\#) > button:first-child { border-radius: calc(var(--radius-ctl) - 1px) 0 0 calc(var(--radius-ctl) - 1px); }
+.ui-qty:not(#\#) > button:last-child { border-radius: 0 calc(var(--radius-ctl) - 1px) calc(var(--radius-ctl) - 1px) 0; }
+.ui-qty:not(#\#) > button:hover:not(:disabled) { color: var(--color-accent-text); background-color: color-mix(in oklab, var(--color-accent-text) 9%, transparent); }
+.ui-qty:not(#\#) > button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; position: relative; }
+.ui-qty:not(#\#) > button:disabled { opacity: .45; cursor: not-allowed; }
+.ui-qty:not(#\#) > input { box-sizing: border-box; width: calc(var(--field-fs) * 1.9); height: 100%; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; outline: none; box-shadow: none; text-align: center; color: var(--color-text); font: 600 var(--field-fs)/1 var(--font-sans); font-variant-numeric: tabular-nums; }
 
 /* Surfaces (docs/design-system.md: Surfaces and depth) */
 :is(section, article, aside, div, form, header).ui-card:not(#\#) {
@@ -656,10 +673,10 @@ const DEPTH = {
 const CONSTANTS = {
   'font-serif': "'Spectral', Georgia, serif",
   'font-sans': "'Barlow', system-ui, sans-serif",
-  'ctl-sm': '28px', 'ctl-md': '36px', 'ctl-lg': '44px',
-  'ctl-fs-sm': '13px', 'ctl-fs-md': '15px', 'ctl-fs-lg': '17px',
-  'ctl-ico-sm': '14px', 'ctl-ico-md': '16px', 'ctl-ico-lg': '20px',
-  'ctl-pad-sm': '8px', 'ctl-pad-md': '12px', 'ctl-pad-lg': '16px',
+  'ctl-xs': '22px', 'ctl-sm': '28px', 'ctl-md': '36px', 'ctl-lg': '44px',
+  'ctl-fs-xs': '12px', 'ctl-fs-sm': '13px', 'ctl-fs-md': '15px', 'ctl-fs-lg': '17px',
+  'ctl-ico-xs': '12px', 'ctl-ico-sm': '14px', 'ctl-ico-md': '16px', 'ctl-ico-lg': '20px',
+  'ctl-pad-xs': '6px', 'ctl-pad-sm': '8px', 'ctl-pad-md': '12px', 'ctl-pad-lg': '16px',
   'radius-ctl': '6px', 'radius-inner': '8px', 'radius-card': '10px',
 };
 

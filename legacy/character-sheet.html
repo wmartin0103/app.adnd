@@ -12,15 +12,19 @@
 :root {
   --font-serif: 'Spectral', Georgia, serif;
   --font-sans: 'Barlow', system-ui, sans-serif;
+  --ctl-xs: 22px;
   --ctl-sm: 28px;
   --ctl-md: 36px;
   --ctl-lg: 44px;
+  --ctl-fs-xs: 12px;
   --ctl-fs-sm: 13px;
   --ctl-fs-md: 15px;
   --ctl-fs-lg: 17px;
+  --ctl-ico-xs: 12px;
   --ctl-ico-sm: 14px;
   --ctl-ico-md: 16px;
   --ctl-ico-lg: 20px;
+  --ctl-pad-xs: 6px;
   --ctl-pad-sm: 8px;
   --ctl-pad-md: 12px;
   --ctl-pad-lg: 16px;
@@ -265,6 +269,7 @@
 
 /* Fields (docs/design-system.md: Sizes, States) */
 :root { --field-h: var(--ctl-md); --field-fs: var(--ctl-fs-md); --field-px: var(--ctl-pad-md); }
+.size-xs { --field-h: var(--ctl-xs); --field-fs: var(--ctl-fs-xs); --field-px: var(--ctl-pad-xs); }
 .size-sm { --field-h: var(--ctl-sm); --field-fs: var(--ctl-fs-sm); --field-px: var(--ctl-pad-sm); }
 .size-md { --field-h: var(--ctl-md); --field-fs: var(--ctl-fs-md); --field-px: var(--ctl-pad-md); }
 .size-lg { --field-h: var(--ctl-lg); --field-fs: var(--ctl-fs-lg); --field-px: var(--ctl-pad-lg); }
@@ -391,6 +396,18 @@ button.ui-disclosure:not(#\#):hover { color: var(--color-accent-text); backgroun
 button.ui-disclosure:not(#\#):focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .ui-disclosure-chev { flex: none; width: 0.45em; height: 0.45em; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-0.12em) rotate(45deg); transition: transform 0.15s; }
 .ui-disclosure[aria-expanded="false"] .ui-disclosure-chev { transform: rotate(-45deg); }
+
+
+.ui-qty:not(#\#) { box-sizing: border-box; display: inline-flex; align-items: stretch; flex: none; height: var(--field-h); background-color: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-ctl); transition: border-color .12s; }
+.ui-qty:not(#\#):hover { border-color: var(--color-text-muted); }
+.ui-qty:not(#\#):focus-within { border-color: var(--color-focus); }
+.ui-qty:not(#\#) > button { box-sizing: border-box; display: flex; align-items: center; justify-content: center; width: calc(var(--field-h) - 4px); margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; color: var(--color-text-muted); font: 600 var(--field-fs)/1 var(--font-sans); cursor: pointer; transition: background-color .12s, color .12s; }
+.ui-qty:not(#\#) > button:first-child { border-radius: calc(var(--radius-ctl) - 1px) 0 0 calc(var(--radius-ctl) - 1px); }
+.ui-qty:not(#\#) > button:last-child { border-radius: 0 calc(var(--radius-ctl) - 1px) calc(var(--radius-ctl) - 1px) 0; }
+.ui-qty:not(#\#) > button:hover:not(:disabled) { color: var(--color-accent-text); background-color: color-mix(in oklab, var(--color-accent-text) 9%, transparent); }
+.ui-qty:not(#\#) > button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; position: relative; }
+.ui-qty:not(#\#) > button:disabled { opacity: .45; cursor: not-allowed; }
+.ui-qty:not(#\#) > input { box-sizing: border-box; width: calc(var(--field-fs) * 1.9); height: 100%; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; outline: none; box-shadow: none; text-align: center; color: var(--color-text); font: 600 var(--field-fs)/1 var(--font-sans); font-variant-numeric: tabular-nums; }
 
 /* Surfaces (docs/design-system.md: Surfaces and depth) */
 :is(section, article, aside, div, form, header).ui-card:not(#\#) {
@@ -1708,36 +1725,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       color: var(--ink-muted);
     }
 
-    .spell-charges-wrap {
-      display: flex;
-      align-items: center;
-      gap: 0.15rem;
-    }
-    .spell-charges-btn {
-      background: none;
-      border: 1px solid var(--rule);
-      border-radius: 2px;
-      width: 1.1rem;
-      height: 1.1rem;
-      font-size: 0.7rem;
-      line-height: 1;
-      cursor: pointer;
-      color: var(--ink-muted);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0;
-    }
-    .spell-charges-btn:hover { border-color: var(--accent); color: var(--accent); }
-    .spell-charges-val {
-      font-family: var(--font-display);
-      font-size: 0.7rem;
-      font-weight: 700;
-      min-width: 1rem;
-      text-align: center;
-      color: var(--ink);
-    }
-    .spell-charges-spent { color: var(--ink-faint); }
+    .spell-charges-spent input { color: var(--color-text-faint); }
     .spells-empty {
       font-family: var(--font-body);
       font-size: 0.8rem;
@@ -1782,9 +1770,8 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       align-items: center;
       gap: 0.25rem;
     }
-    /* The header is tight (tags, the charge stepper, ×): its bare icon buttons are
-       narrower than square, still full height, and never squeezed */
-    .spell-card-top button.ui-button.is-bare.is-icon:not(#\#) { width: 22px; flex: none; }
+    /* The header is tight (tags, the quantity stepper, ×): the × keeps its size */
+    .spell-card-top > .ui-button { flex: none; }
 
     .spell-type-badge {
       font-family: var(--font-display);
@@ -5020,10 +5007,10 @@ const DEPTH = {
 const CONSTANTS = {
   'font-serif': "'Spectral', Georgia, serif",
   'font-sans': "'Barlow', system-ui, sans-serif",
-  'ctl-sm': '28px', 'ctl-md': '36px', 'ctl-lg': '44px',
-  'ctl-fs-sm': '13px', 'ctl-fs-md': '15px', 'ctl-fs-lg': '17px',
-  'ctl-ico-sm': '14px', 'ctl-ico-md': '16px', 'ctl-ico-lg': '20px',
-  'ctl-pad-sm': '8px', 'ctl-pad-md': '12px', 'ctl-pad-lg': '16px',
+  'ctl-xs': '22px', 'ctl-sm': '28px', 'ctl-md': '36px', 'ctl-lg': '44px',
+  'ctl-fs-xs': '12px', 'ctl-fs-sm': '13px', 'ctl-fs-md': '15px', 'ctl-fs-lg': '17px',
+  'ctl-ico-xs': '12px', 'ctl-ico-sm': '14px', 'ctl-ico-md': '16px', 'ctl-ico-lg': '20px',
+  'ctl-pad-xs': '6px', 'ctl-pad-sm': '8px', 'ctl-pad-md': '12px', 'ctl-pad-lg': '16px',
   'radius-ctl': '6px', 'radius-inner': '8px', 'radius-card': '10px',
 };
 
@@ -9561,27 +9548,34 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           memWrap.appendChild(memLabel);
           topBar.appendChild(memWrap);
         } else {
-          // Charges counter
+          // How many are memorized: a quantity stepper. − at 1 takes the spell out of
+          // Memorized (as before); typing can't go below 1, so a typo never removes it.
           const chargesWrap = document.createElement('div');
-          chargesWrap.className = 'spell-charges-wrap';
+          chargesWrap.className = 'spell-charges-wrap ui-qty size-xs' + ((parseInt(spl.charges) || 0) === 0 ? ' spell-charges-spent' : '');
+          chargesWrap.setAttribute('role', 'group');
+          chargesWrap.setAttribute('aria-label', 'Times memorized');
 
           const decBtn = document.createElement('button');
           decBtn.type = 'button';
-          decBtn.className = 'spell-charges-btn ui-button is-bare is-icon size-sm';
           decBtn.textContent = '−';
-          decBtn.setAttribute('aria-label', 'Use charge');
+          decBtn.setAttribute('aria-label', 'Use one (cast)');
 
-          const chargesVal = document.createElement('span');
-          const chargesNum = parseInt(spl.charges) || 0;
-          chargesVal.className = 'spell-charges-val' + (chargesNum === 0 ? ' spell-charges-spent' : '');
-          chargesVal.textContent = chargesNum;
+          const chargesVal = document.createElement('input');
+          chargesVal.type = 'text';
+          chargesVal.inputMode = 'numeric';
+          chargesVal.className = 'ui-native';
+          chargesVal.value = parseInt(spl.charges) || 0;
+          chargesVal.setAttribute('aria-label', 'Times memorized');
 
           const incBtn = document.createElement('button');
           incBtn.type = 'button';
-          incBtn.className = 'spell-charges-btn ui-button is-bare is-icon size-sm';
           incBtn.textContent = '+';
-          incBtn.setAttribute('aria-label', 'Add charge');
+          incBtn.setAttribute('aria-label', 'Memorize one more');
 
+          const show = () => {
+            chargesVal.value = spl.charges;
+            chargesWrap.classList.toggle('spell-charges-spent', spl.charges === 0);
+          };
           decBtn.addEventListener('click', () => {
             spl.charges = parseInt(spl.charges) || 0;
             if (spl.charges > 0) {
@@ -9590,19 +9584,23 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
                 spells = spells.filter(s => s.id !== spl.id);
                 renderSpells();
               } else {
-                chargesVal.textContent = spl.charges;
-                chargesVal.className = 'spell-charges-val';
+                show();
               }
               saveToItems();
             }
           });
           incBtn.addEventListener('click', () => {
             spl.charges = (parseInt(spl.charges) || 0) + 1;
-            chargesVal.textContent = spl.charges;
-            chargesVal.className = 'spell-charges-val';
+            show();
             card.classList.remove('spell-card-cast');
             saveToItems();
           });
+          chargesVal.addEventListener('change', () => {
+            const n = parseInt(chargesVal.value);
+            if (n >= 1) { spl.charges = Math.min(n, 99); card.classList.remove('spell-card-cast'); saveToItems(); }
+            show();
+          });
+          chargesVal.addEventListener('focus', () => chargesVal.select());
 
           chargesWrap.appendChild(decBtn);
           chargesWrap.appendChild(chargesVal);
