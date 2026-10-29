@@ -369,7 +369,7 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
 :is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-bare:is(:hover, :focus-visible):not(:disabled) { border-color: var(--color-border); color: var(--color-accent-text); background-color: color-mix(in oklab, var(--color-accent-text) 9%, transparent); }
 :is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-bare.is-danger:is(:hover, :focus-visible):not(:disabled) { color: var(--color-danger-text); background-color: color-mix(in oklab, var(--color-danger-text) 9%, transparent); }
 :is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-bare:is([aria-pressed="true"], .is-active) { color: var(--color-accent2-text); background-color: color-mix(in oklab, var(--color-accent2) 16%, transparent); }
-:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-remove svg { width: calc(var(--field-fs) * 1.3); height: calc(var(--field-fs) * 1.3); }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-remove svg { width: calc(var(--field-fs) * 1.15); height: calc(var(--field-fs) * 1.15); }
 :is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-link { height: auto; padding: 0.2em 0.1em; background-color: transparent; border-color: transparent; color: var(--color-accent-text);
   text-decoration: none; text-underline-offset: 0.2em; }
 :is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-link:hover:not(:disabled) { color: color-mix(in oklab, var(--color-accent-text) 85%, var(--toward)); text-decoration: underline; text-decoration-thickness: 1px; }
@@ -419,12 +419,6 @@ button.ui-disclosure:not(#\#):focus-visible { outline: 2px solid var(--color-foc
   box-shadow: var(--shadow-card), inset 0 1px 0 var(--edge-top); padding: var(--card-pad, 18px);
 }
 :is(section, article, aside, div, form, header).ui-card.is-featured:not(#\#) { border-top: 3px solid var(--color-accent2); }
-/* A whole-card remove (×, class is-corner) sits in the card's top-right
-   corner, 4px in. The card's padding doesn't change; only the row the ×
-   belongs to keeps clear of it. */
-:is(section, article, aside, div, form, header).ui-card:has(.is-corner):not(#\#) { position: relative; }
-.ui-card .ui-button.is-corner:not(#\#) { position: absolute; top: 4px; right: 4px; margin: 0; z-index: 1; }
-.ui-card :has(> .ui-button.is-corner):not(#\#) { padding-right: max(0px, calc(var(--field-h) + 4px - var(--card-pad, 18px))); }
 /* A small card among siblings (an ability score, a spell): less padding */
 :is(section, article, aside, div, form, header).ui-card.is-compact:not(#\#) { --card-pad: 12px; }
 :is(div, section, span, output, figure, dl).ui-well:not(#\#) {

@@ -102,8 +102,7 @@ export const TAGS_CSS = `/* Tags (docs/design-system.md, Tags) */
 // icon button with no box until hover or focus (small icons in rows and
 // cards); is-link looks like a link (text in the action colour, underlined on
 // hover) but is a button. is-remove is the × that removes something (its icon
-// a size up from other icons); is-corner puts a whole-card remove in the
-// card's top-right corner, out of the content's padding. The S/M/L size comes from the same --field-* values
+// a little larger than other icons). The S/M/L size comes from the same --field-* values
 // as fields, so a button and a field of a size line up. :not(#\#) lifts these rules over a
 // page's older button styles; a page that needs something different says why.
 const BTN = ':is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\\#)';
@@ -134,7 +133,7 @@ ${BTN}.is-bare { background-color: transparent; border-color: transparent; color
 ${BTN}.is-bare:is(:hover, :focus-visible):not(:disabled) { border-color: var(--color-border); color: var(--color-accent-text); background-color: color-mix(in oklab, var(--color-accent-text) 9%, transparent); }
 ${BTN}.is-bare.is-danger:is(:hover, :focus-visible):not(:disabled) { color: var(--color-danger-text); background-color: color-mix(in oklab, var(--color-danger-text) 9%, transparent); }
 ${BTN}.is-bare:is([aria-pressed="true"], .is-active) { color: var(--color-accent2-text); background-color: color-mix(in oklab, var(--color-accent2) 16%, transparent); }
-${BTN}.is-remove svg { width: calc(var(--field-fs) * 1.3); height: calc(var(--field-fs) * 1.3); }
+${BTN}.is-remove svg { width: calc(var(--field-fs) * 1.15); height: calc(var(--field-fs) * 1.15); }
 ${BTN}.is-link { height: auto; padding: 0.2em 0.1em; background-color: transparent; border-color: transparent; color: var(--color-accent-text);
   text-decoration: none; text-underline-offset: 0.2em; }
 ${BTN}.is-link:hover:not(:disabled) { color: color-mix(in oklab, var(--color-accent-text) 85%, var(--toward)); text-decoration: underline; text-decoration-thickness: 1px; }
@@ -203,12 +202,6 @@ export const SURFACES_CSS = `/* Surfaces (docs/design-system.md: Surfaces and de
   box-shadow: var(--shadow-card), inset 0 1px 0 var(--edge-top); padding: var(--card-pad, 18px);
 }
 :is(section, article, aside, div, form, header).ui-card.is-featured:not(#\\#) { border-top: 3px solid var(--color-accent2); }
-/* A whole-card remove (×, class is-corner) sits in the card's top-right
-   corner, 4px in. The card's padding doesn't change; only the row the ×
-   belongs to keeps clear of it. */
-:is(section, article, aside, div, form, header).ui-card:has(.is-corner):not(#\\#) { position: relative; }
-.ui-card .ui-button.is-corner:not(#\\#) { position: absolute; top: 4px; right: 4px; margin: 0; z-index: 1; }
-.ui-card :has(> .ui-button.is-corner):not(#\\#) { padding-right: max(0px, calc(var(--field-h) + 4px - var(--card-pad, 18px))); }
 /* A small card among siblings (an ability score, a spell): less padding */
 :is(section, article, aside, div, form, header).ui-card.is-compact:not(#\\#) { --card-pad: 12px; }
 :is(div, section, span, output, figure, dl).ui-well:not(#\\#) {
