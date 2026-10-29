@@ -250,23 +250,53 @@ Decided 2026-10-28:
 - An error message says what to do ("Use a number, like +2 or −1"), not
   only what's wrong.
 
+## Sections and cards
+
+Two ways of grouping (decided 2026-10-29):
+
+- **A section** groups pieces of a similar nature. It is never contained: no
+  box, it sits on the page. It comes with a header (Spells, Ability Scores)
+  or without one (the sheet's top block: Class & Experience, Saving Throws,
+  Ability Scores and Character Details belong together), can be collapsible
+  or not, and can contain other sections (Ability Scores and Character
+  Details sit inside the top block).
+- **A card** is always contained, and holds related details: one thing, or one
+  table of related rows. Cards that do the same job for sibling information
+  sit side by side in an open section: each ability score, each stat (AC,
+  HP, Movement, Missile Adj.), each spell, each proficiency is its own card.
+  A card doesn't contain other cards unless that's specifically needed.
+
+On the sheet:
+
+| Open section, its entries as cards | A card |
+|---|---|
+| Ability Scores, Character Details, Spells, Weapon Proficiencies, Non-Weapon Proficiencies, Abilities | Class & Experience, Saving Throws, Weapons, Thieving Abilities, Racial Traits, Equipment, Items; in Combat: Effects, This round (featured), each attack |
+
+Notes is an open section (a single text box). Combat is an open section whose
+parts are cards.
+
 ## Surfaces and depth
 
 | Layer | Used for | Light | Dark |
 |---|---|---|---|
-| Page | behind everything | `bg` | `bg` |
-| Card | a top-level section (This round, Weapons, Notes) | `surface`, soft shadow, `divider` hairline | `surface` (lighter than the page), a faint top edge |
-| Well | read-outs inside a card: roll results, stat tiles | `sunken`, no shadow | `sunken` |
-| Item | a repeated thing inside a card (a character, a list row) | `surface` with a `divider` hairline, no shadow | same |
+| Page | behind everything, and open sections | `bg` | `bg` |
+| Card | related details (above) | `surface`, soft shadow, `divider` hairline | `surface` (lighter than the page), a faint top edge |
+| Compact card | a small card among siblings (an ability score, a spell): the same, with 12px padding in place of 18px | | |
+| Well | read-outs inside a card: an attack's result, roll results | `sunken`, no shadow | `sunken` |
+| Item | a repeated thing inside a card (an effect in Effects, a list row) | `surface` with a `divider` hairline, no shadow | same |
 | Raised | menus, dropdown lists, tooltips, toasts | `raised`, a stronger shadow | `raised` (lighter again), a stronger shadow, a faint top edge |
 | Overlay | dialogs, the page dimmed behind | `raised`, the strongest shadow | same |
+
+In code (`src/ui/components.js`): `ui-card` (`is-compact`, `is-featured`),
+`ui-well`, `ui-item`, `ui-raised`, `dialog.ui-overlay`. A section needs no
+class: it's the absence of a box.
 
 Rules:
 
 1. Depth comes from one place per layer: shadow in light, a lighter surface
    in dark (shadows barely show on dark backgrounds).
-2. Cards don't nest. Inside a card, use a well or an item, never another
-   shadowed card.
+2. Cards don't contain cards (unless specifically needed). Inside a card,
+   use a well or an item.
 3. Wells don't nest, and a well isn't interactive by itself: it holds a
    result; the controls that make it sit beside it.
 4. Corners shrink inward: card 10px, well and item 8px, control 6px.

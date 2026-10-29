@@ -387,6 +387,8 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
   box-shadow: var(--shadow-card), inset 0 1px 0 var(--edge-top); padding: var(--card-pad, 18px);
 }
 :is(section, article, aside, div, form, header).ui-card.is-featured:not(#\#) { border-top: 3px solid var(--color-accent2); }
+/* A small card among siblings (an ability score, a spell): less padding */
+:is(section, article, aside, div, form, header).ui-card.is-compact:not(#\#) { --card-pad: 12px; }
 :is(div, section, span, output, figure, dl).ui-well:not(#\#) {
   background: var(--color-sunken); border: 0; border-radius: var(--radius-inner); box-shadow: inset 0 1px 2px rgb(0 0 0 / .06);
 }

@@ -387,6 +387,8 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
   box-shadow: var(--shadow-card), inset 0 1px 0 var(--edge-top); padding: var(--card-pad, 18px);
 }
 :is(section, article, aside, div, form, header).ui-card.is-featured:not(#\#) { border-top: 3px solid var(--color-accent2); }
+/* A small card among siblings (an ability score, a spell): less padding */
+:is(section, article, aside, div, form, header).ui-card.is-compact:not(#\#) { --card-pad: 12px; }
 :is(div, section, span, output, figure, dl).ui-well:not(#\#) {
   background: var(--color-sunken); border: 0; border-radius: var(--radius-inner); box-shadow: inset 0 1px 2px rgb(0 0 0 / .06);
 }
@@ -2940,7 +2942,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     </div><!-- /.identity-saves-row -->
 
     <!-- ── Ability Scores ──────────────────────────────────── -->
-    <section class="section ui-card" aria-labelledby="abilities-heading">
+    <section class="section" aria-labelledby="abilities-heading">
       <h2 id="abilities-heading" class="section-heading">Ability Scores</h2>
       <div class="ability-grid" id="ability-grid">
         <!-- Injected by JS -->
@@ -2952,12 +2954,12 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     <div class="combat-saves-main">
 
     <!-- ── Combat ──────────────────────────────────────────── -->
-    <section class="section ui-card" aria-labelledby="combat-heading">
+    <section class="section" aria-labelledby="combat-heading">
       <h2 id="combat-heading" class="section-heading">Character Details</h2>
       <div class="combat-grid">
 
         <!-- Armor Class — Base + Effective combined -->
-        <div class="combat-card ac-combined-card ui-item">
+        <div class="combat-card ac-combined-card ui-card is-compact">
           <span class="combat-label">Armor Class</span>
           <div class="ac-combined-values">
             <div class="ac-half">
@@ -2977,7 +2979,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
         </div>
 
         <!-- HP Current / Max -->
-        <div class="combat-card ui-item" style="grid-column: span 2; min-width: 0;">
+        <div class="combat-card ui-card is-compact" style="grid-column: span 2; min-width: 0;">
           <div class="hp-label-row">
             <span class="combat-label" id="hp-label">Hit Points</span>
             <div
@@ -3012,7 +3014,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
         </div>
 
         <!-- Movement -->
-        <div class="combat-card ui-item">
+        <div class="combat-card ui-card is-compact">
           <label class="combat-label movement-label-row">
             Movement
             <span class="movement-mod-row">
@@ -3028,21 +3030,21 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
 
 
         <!-- Missile Attack Adj. — hidden when modifier is zero -->
-        <div class="combat-card ui-item" id="card-missile-adj">
+        <div class="combat-card ui-card is-compact" id="card-missile-adj">
           <label class="combat-label" for="missile-adj">Missile Adj.</label>
           <input id="missile-adj" class="combat-value ui-native" type="text" readonly />
           <span class="combat-sublabel">From Dexterity</span>
         </div>
 
         <!-- Hit Adj. — hidden when modifier is zero -->
-        <div class="combat-card ui-item" id="card-hit-adj">
+        <div class="combat-card ui-card is-compact" id="card-hit-adj">
           <label class="combat-label" for="hit-adj">Hit Adj.</label>
           <input id="hit-adj" class="combat-value ui-native" type="text" readonly />
           <span class="combat-sublabel">From Strength</span>
         </div>
 
         <!-- Damage Adj. — hidden when modifier is zero -->
-        <div class="combat-card ui-item" id="card-damage-adj">
+        <div class="combat-card ui-card is-compact" id="card-damage-adj">
           <label class="combat-label" for="damage-adj">Damage Adj.</label>
           <input id="damage-adj" class="combat-value ui-native" type="text" readonly />
           <span class="combat-sublabel">From Strength</span>
@@ -3133,7 +3135,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     </section>
 
     <!-- ── Spells ─────────────────────────────────────────────── -->
-    <section class="section ui-card" aria-labelledby="wpn-prof-heading">
+    <section class="section" aria-labelledby="wpn-prof-heading">
       <h2 class="section-heading racial-traits-heading" id="wpn-prof-heading"
           role="button" tabindex="0"
           aria-expanded="true" aria-controls="wpn-prof-panel">
@@ -3151,7 +3153,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       </div>
     </section>
 
-    <section class="section ui-card" id="spells-section" aria-labelledby="spells-heading">
+    <section class="section" id="spells-section" aria-labelledby="spells-heading">
       <h2 class="section-heading racial-traits-heading" id="spells-heading"
           role="button" tabindex="0"
           aria-expanded="true" aria-controls="spells-panel">
@@ -3231,7 +3233,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     </div><!-- /.two-col-row -->
 
     <!-- ── Non-Weapon Proficiencies ───────────────────────── -->
-    <section class="section ui-card" aria-labelledby="nwp-heading">
+    <section class="section" aria-labelledby="nwp-heading">
       <h2 class="section-heading racial-traits-heading" id="nwp-heading"
           role="button" tabindex="0"
           aria-expanded="true" aria-controls="nwp-panel">
@@ -3251,7 +3253,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       </div>
     </section>
 
-    <section class="section ui-card" aria-labelledby="abilities-cards-heading">
+    <section class="section" aria-labelledby="abilities-cards-heading">
       <h2 class="section-heading racial-traits-heading" id="abilities-cards-heading"
           role="button" tabindex="0"
           aria-expanded="true" aria-controls="abilities-cards-panel">
@@ -3313,7 +3315,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     </section>
 
     <!-- ── Notes full-width ───────────────────────────────── -->
-    <section class="section ui-card" aria-labelledby="notes-heading">
+    <section class="section" aria-labelledby="notes-heading">
       <h2 id="notes-heading" class="section-heading">Notes</h2>
       <label for="char-notes" class="sr-only">Character notes</label>
       <textarea
@@ -6803,7 +6805,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       const grid = document.getElementById('ability-grid');
       ABILITIES.forEach(ability => {
         const card = document.createElement('article');
-        card.className = 'ability-card ui-item';
+        card.className = 'ability-card ui-card is-compact';
 
         // Score input
         const nameEl = document.createElement('span');
@@ -9534,7 +9536,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
       function buildCard(spl, section) {
         const card = document.createElement('div');
-        card.className = 'spell-card ui-item'
+        card.className = 'spell-card ui-card is-compact'
         card.dataset.spellId = spl.id; + (section === 'memorized' && (parseInt(spl.charges) || 0) === 0 ? ' spell-card-cast' : '');
 
         // ── Top bar ────────────────────────────────────────────
@@ -10959,7 +10961,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
       nwps.forEach(nwp => {
         const card = document.createElement('div');
-        card.className = 'nwp-card ui-item';
+        card.className = 'nwp-card ui-card is-compact';
 
         // ── Top bar ──────────────────────────────────────────
         const top = document.createElement('div');
@@ -11143,7 +11145,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
       abilitiesCards.forEach(ab => {
         const card = document.createElement('div');
-        card.className = 'nwp-card ui-item';
+        card.className = 'nwp-card ui-card is-compact';
 
         // ── Top bar (name inline + delete) ───────────────────
         const top = document.createElement('div');
@@ -11246,7 +11248,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
       wpnProfCards.forEach(ab => {
         const card = document.createElement('div');
-        card.className = 'nwp-card ui-item';
+        card.className = 'nwp-card ui-card is-compact';
 
         const top = document.createElement('div');
         top.className = 'nwp-card-top';
