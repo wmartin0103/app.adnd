@@ -14,8 +14,9 @@ the owner on 2026-10-27, ahead of a dark theme.
 - Every page passes the contrast check in both themes
   (`scripts/contrast-scan.js`, run in the browser on a page served from the
   repo).
-- Fields (4a) and buttons (4b) are applied. Not yet: the
-  surfaces, and moving non-interactive text off the action colour (section
+- Fields (4a) and buttons (4b) are applied, and surfaces (4c) on the
+  character sheet. Not yet: surfaces on the DM Helper and the site pages, and
+  moving non-interactive text off the action colour (section
   titles, the round number and such are still brass). Until then, new work
   should follow this document, and anything that looks different from it
   should say why in a comment next to it.
