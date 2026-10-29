@@ -98,8 +98,9 @@ export const TAGS_CSS = `/* Tags (docs/design-system.md, Tags) */
 // is-secondary (outlined). is-danger turns either destructive (red fill, or
 // red text on the standard outline). is-icon makes it square; is-bare is an
 // icon button with no box until hover or focus (small icons in rows and
-// cards); is-link looks like a link (underlined text, no box) but is a button. The S/M/L size comes from the same --field-* values as fields, so a
-// button and a field of a size line up. :not(#\#) lifts these rules over a
+// cards); is-link looks like a link (text in the action colour, underlined on
+// hover) but is a button. The S/M/L size comes from the same --field-* values
+// as fields, so a button and a field of a size line up. :not(#\#) lifts these rules over a
 // page's older button styles; a page that needs something different says why.
 const BTN = ':is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\\#)';
 export const BUTTONS_CSS = `/* Buttons (docs/design-system.md: Buttons, States) */
@@ -130,8 +131,8 @@ ${BTN}.is-bare:is(:hover, :focus-visible):not(:disabled) { border-color: var(--c
 ${BTN}.is-bare.is-danger:is(:hover, :focus-visible):not(:disabled) { color: var(--color-danger-text); background-color: color-mix(in oklab, var(--color-danger-text) 9%, transparent); }
 ${BTN}.is-bare:is([aria-pressed="true"], .is-active) { color: var(--color-accent2-text); background-color: color-mix(in oklab, var(--color-accent2) 16%, transparent); }
 ${BTN}.is-link { height: auto; padding: 0.2em 0.1em; background-color: transparent; border-color: transparent; color: var(--color-accent-text);
-  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
-${BTN}.is-link:hover:not(:disabled) { color: color-mix(in oklab, var(--color-accent-text) 85%, var(--toward)); text-decoration-thickness: 2px; }
+  text-decoration: none; text-underline-offset: 0.2em; }
+${BTN}.is-link:hover:not(:disabled) { color: color-mix(in oklab, var(--color-accent-text) 85%, var(--toward)); text-decoration: underline; text-decoration-thickness: 1px; }
 ${BTN}.is-link.is-danger { color: var(--color-danger-text); }
 ${BTN}:active:not(:disabled):not(.is-link) { transform: translateY(1px); }
 ${BTN}:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }

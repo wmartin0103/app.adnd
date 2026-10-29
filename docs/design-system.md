@@ -214,10 +214,10 @@ action colour. Every tag's text passes 4.5:1 on its fill in both themes.
   and trash). No box at rest, so dense rows stay calm; on hover and focus
   they show the secondary button's border and tint (red for a delete). A
   pressed one (a settings panel open) takes a second-accent tint.
-- **Link buttons** (`is-link`): look like a link (`accent-text`, underlined,
-  no box) but do a button's job on the page. For a quiet action that sits
+- **Link buttons** (`is-link`): look like a link (`accent-text`, no
+  underline or box at rest) but do a button's job on the page. For a quiet action that sits
   apart from the controls, such as Add Scenario below the attacks. Hover
-  darkens the text and thickens the underline; `is-danger` turns it red.
+  darkens the text and underlines it; `is-danger` turns it red.
 - **Disclosure toggles** (`ui-disclosure`): what opens and closes a section
   or a card (an accordion). The toggle is a button holding the chevron and
   the title, and it is the whole hit area: other controls in the same header

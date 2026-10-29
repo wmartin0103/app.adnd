@@ -362,8 +362,8 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
 :is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-bare.is-danger:is(:hover, :focus-visible):not(:disabled) { color: var(--color-danger-text); background-color: color-mix(in oklab, var(--color-danger-text) 9%, transparent); }
 :is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-bare:is([aria-pressed="true"], .is-active) { color: var(--color-accent2-text); background-color: color-mix(in oklab, var(--color-accent2) 16%, transparent); }
 :is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-link { height: auto; padding: 0.2em 0.1em; background-color: transparent; border-color: transparent; color: var(--color-accent-text);
-  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
-:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-link:hover:not(:disabled) { color: color-mix(in oklab, var(--color-accent-text) 85%, var(--toward)); text-decoration-thickness: 2px; }
+  text-decoration: none; text-underline-offset: 0.2em; }
+:is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-link:hover:not(:disabled) { color: color-mix(in oklab, var(--color-accent-text) 85%, var(--toward)); text-decoration: underline; text-decoration-thickness: 1px; }
 :is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#).is-link.is-danger { color: var(--color-danger-text); }
 :is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#):active:not(:disabled):not(.is-link) { transform: translateY(1px); }
 :is(button, a, label, [role=button]).ui-button:not(.ui-native):not(#\#):focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
@@ -1780,8 +1780,11 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     .spell-card-top {
       display: flex;
       align-items: center;
-      gap: 0.35rem;
+      gap: 0.25rem;
     }
+    /* The header is tight (tags, the charge stepper, ×): its bare icon buttons are
+       narrower than square, still full height, and never squeezed */
+    .spell-card-top button.ui-button.is-bare.is-icon:not(#\#) { width: 22px; flex: none; }
 
     .spell-type-badge {
       font-family: var(--font-display);
@@ -9564,7 +9567,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
           const decBtn = document.createElement('button');
           decBtn.type = 'button';
-          decBtn.className = 'spell-charges-btn ui-button is-secondary is-icon size-sm';
+          decBtn.className = 'spell-charges-btn ui-button is-bare is-icon size-sm';
           decBtn.textContent = '−';
           decBtn.setAttribute('aria-label', 'Use charge');
 
@@ -9575,7 +9578,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
           const incBtn = document.createElement('button');
           incBtn.type = 'button';
-          incBtn.className = 'spell-charges-btn ui-button is-secondary is-icon size-sm';
+          incBtn.className = 'spell-charges-btn ui-button is-bare is-icon size-sm';
           incBtn.textContent = '+';
           incBtn.setAttribute('aria-label', 'Add charge');
 
