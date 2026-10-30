@@ -29,7 +29,7 @@ const attack = (n, extra = '') => `<div class="ui-item is-tinted atk">
     <button type="button" class="ui-button is-primary size-sm roll">${DIE} Roll to hit</button></div>${extra}
 </div>`;
 const orderRow = r => r.pc ? `
-  <div class="orow ui-card is-compact">
+  <div class="orow ui-card is-compact is-ally">
     <div class="who"><span class="nm">${r.name}</span><span class="meta">${r.tag}</span></div>
     ${field('Speed', sel(['—', '1', '2', '3', '4', '5', '6', '7'], String(r.speed), '4.5rem'))}${field('Init', sel(['—', ...Array.from({ length: 10 }, (_, i) => String(i + 1))], String(r.init), '4.5rem'))}
     <span class="act">${r.act}</span>
@@ -55,6 +55,8 @@ const surprise = `
       </div>
     </section>`;
 const initiative = `
+  <div class="try"><span class="lab">Try</span><div class="f"><span class="lab">Party edge</span><div class="ui-tabs size-sm" data-try="ally"><button type="button" class="is-active" aria-pressed="true" data-v="blue">Blue (second accent)</button><button type="button" aria-pressed="false" data-v="bronze">Bronze (brass)</button></div></div></div>
+
   ${surprise}
 
   <section class="ui-card is-featured">
@@ -284,6 +286,11 @@ const page = `<!doctype html>
   .hit .big { font: 700 26px/1 var(--font-serif); color: var(--color-accent-text); }
   .hit .big.miss { color: var(--color-text-muted); }
   .card-foot { padding-top: 6px; }
+  .try { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 18px; padding: 8px 12px; border: 1px dashed var(--color-border); border-radius: var(--radius-inner); }
+  .try > .lab { align-self: center; margin: 0; }
+  body { --ally-edge: var(--color-accent2); }
+  body[data-ally="bronze"] { --ally-edge: var(--color-accent); }
+  div.orow.ui-card.is-ally:not(#\\#) { border-left: 3px solid var(--ally-edge); }
 
   /* Tables */
   table.t { border-collapse: collapse; width: 100%; font-size: 14px; }
@@ -330,7 +337,7 @@ const page = `<!doctype html>
   document.addEventListener('click', e => {
     const d = e.target.closest('.ui-disclosure'); if (d) { const open = d.getAttribute('aria-expanded') !== 'true'; d.setAttribute('aria-expanded', open); const body = d.closest('.detail')?.querySelector('.atks'); if (body) body.hidden = !open; }
     const s = e.target.closest('.ui-switch'); if (s) s.setAttribute('aria-checked', s.getAttribute('aria-checked') !== 'true');
-    const t = e.target.closest('.ui-tabs > button'); if (t) { t.parentNode.querySelectorAll('button').forEach(x => { x.classList.toggle('is-active', x === t); x.setAttribute('aria-pressed', x === t); }); }
+    const t = e.target.closest('.ui-tabs > button'); if (t) { t.parentNode.querySelectorAll('button').forEach(x => { x.classList.toggle('is-active', x === t); x.setAttribute('aria-pressed', x === t); }); if (t.parentNode.dataset.try) document.body.dataset[t.parentNode.dataset.try] = t.dataset.v; }
   });
   (function(){ const b=document.createElement('button'); b.className='ui-button is-secondary is-icon size-sm'; b.type='button'; b.setAttribute('aria-label','Light or dark');
     const cur=()=>document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
