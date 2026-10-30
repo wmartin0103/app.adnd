@@ -46,7 +46,7 @@ export async function characterAccess(client, session) {
   const members = (mems.data || []).map(m => ({ userId: m.user_id, role: m.role, name: (m.profiles && m.profiles.display_name) || 'Someone' }))
     .sort((a, b) => a.name.localeCompare(b.name));
   const nameOf = id => (members.find(m => m.userId === id) || {}).name || 'Someone';
-  const manager = session.role === 'dm' || session.isAdmin;
+  const manager = session.isDM || session.isAdmin;
   const all = (chars.data || []).map(c => ({
     id: c.id, name: c.name, ownerId: c.owner_id, ownerName: nameOf(c.owner_id), mine: c.owner_id === me,
     canManage: c.owner_id === me || manager,

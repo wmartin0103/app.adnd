@@ -50,8 +50,7 @@ begin
     select id into v_camp from public.campaigns where name = v_campaign order by created_at limit 1;
     if v_camp is null then raise exception 'No campaign named %. The names: select name from campaigns;', v_campaign; end if;
   end if;
-  update public.campaign_members
-    set role = case when v_role = 'player' then 'player' else 'dm' end, also_plays = (v_role = 'both')
+  update public.campaign_members set role = v_role::public.member_role
     where campaign_id = v_camp and user_id = v_user;
   if not found then raise exception '% is not in the campaign yet: add them first (supabase/add-player.sql)', v_email; end if;
   if v_admin is not null then
@@ -61,7 +60,7 @@ end $$;
 
 -- Everyone after the change: name, email, role (both = dm + also plays), admin
 select p.display_name as name, u.email,
-       case when m.role = 'dm' and m.also_plays then 'both' else m.role end as role,
+       m.role,
        p.is_admin as admin, c.name as campaign
 from public.campaign_members m
 join public.profiles p on p.id = m.user_id

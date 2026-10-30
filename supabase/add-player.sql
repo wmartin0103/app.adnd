@@ -71,10 +71,9 @@ begin
   -- They choose their own password at first sign-in (src/cloud.js, needsNewPassword)
   update auth.users set raw_user_meta_data = coalesce(raw_user_meta_data, '{}'::jsonb) || '{"temp_password": true}'::jsonb
     where id = v_user;
-  -- In the campaign with that role (both = dm + also plays)
-  insert into public.campaign_members (campaign_id, user_id, role, also_plays)
-    values (v_camp, v_user, case when v_role = 'player' then 'player' else 'dm' end, v_role = 'both')
-    on conflict (campaign_id, user_id) do update set role = excluded.role, also_plays = excluded.also_plays;
+  -- In the campaign with that role
+  insert into public.campaign_members (campaign_id, user_id, role) values (v_camp, v_user, v_role::public.member_role)
+    on conflict (campaign_id, user_id) do update set role = excluded.role;
 
   -- Their characters, if any were named
   select coalesce(array_agg(trim(x)), '{}') into v_names
@@ -96,7 +95,7 @@ end $$;
 
 -- Everyone after the change: name, email, role, admin, and their characters
 select p.display_name as name, u.email,
-       case when m.role = 'dm' and m.also_plays then 'both' else m.role end as role,
+       m.role,
        p.is_admin as admin,
        (select string_agg(ch.name || ' (' || ch.status || ')', ', ' order by ch.name) from public.characters ch
           where ch.campaign_id = c.id and ch.owner_id = p.id) as characters

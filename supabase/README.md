@@ -17,8 +17,9 @@ The database behind sign-in and the live round (and, later, cloud saves).
 
 - **`set-role.sql`** — data: sets someone's role in the campaign (DM,
   player, or both: a DM who also plays) and, optionally, admin. DM + admin
-  is the owner's own access; player + not admin takes it back. 'both' needs
-  the `also_plays` migration. Steps are in the file.
+  is the owner's own access; player + not admin takes it back. In the Table
+  Editor, `campaign_members` shows each person's name and a role dropdown
+  (player, dm, both) too. Steps are in the file.
 
 ## Settings made in the dashboard (not in the repo)
 

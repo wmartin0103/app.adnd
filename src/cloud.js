@@ -33,20 +33,17 @@ export const cloudSession = async (client = cloudClient()) => {
     const { data } = await client.auth.getSession();
     const user = data && data.session && data.session.user;
     if (!user) return null;
-    const memberRows = cols => client.from('campaign_members').select(cols).eq('user_id', user.id);
-    const [{ data: prof }, mine] = await Promise.all([
+    const [{ data: prof }, { data: rows }] = await Promise.all([
       client.from('profiles').select('display_name, is_admin').eq('id', user.id).maybeSingle(),
-      memberRows('campaign_id, role, also_plays, campaigns(name)'),
+      client.from('campaign_members').select('campaign_id, role, campaigns(name)').eq('user_id', user.id),
     ]);
-    // Before supabase/migrations/20261030120000_also_plays.sql: no also_plays yet
-    const { data: rows } = mine.error ? await memberRows('campaign_id, role, campaigns(name)') : mine;
     const m = (rows || [])[0] || null;
     const role = m ? m.role : null;
     return {
       user, name: (prof && prof.display_name) || user.email, isAdmin: !!(prof && prof.is_admin), newPassword: needsNewPassword(user),
       campaignId: m ? m.campaign_id : null, campaignName: m && m.campaigns ? m.campaigns.name : '', role,
-      // Roles add up: the DM role runs the game; the player role (or a DM who also plays) has characters
-      isDM: role === 'dm', isPlayer: role === 'player' || !!(m && m.also_plays),
+      // The role: player (has characters), dm (runs the game) or both
+      isDM: role === 'dm' || role === 'both', isPlayer: role === 'player' || role === 'both',
     };
   } catch (e) { return null; }
 };

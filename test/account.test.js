@@ -92,7 +92,7 @@ test('account: a player manages their own characters and sees what they were giv
 test('account: the DM manages every character in the campaign, theirs first', async () => {
   const t = campaign();
   t.characters.push({ id: 'c-dm', campaign_id: 'k', name: 'Tig', owner_id: 'u-dm' });
-  const dm = { user: { id: 'u-dm' }, campaignId: 'k', role: 'dm', isAdmin: false };
+  const dm = { user: { id: 'u-dm' }, campaignId: 'k', role: 'dm', isDM: true, isAdmin: false };
   const a = await characterAccess(fakeClient(t), dm);
   assert.deepEqual(a.characters.map(x => [x.name, x.ownerName, x.mine]), [['Tig', 'Will', true], ['Goroth', 'Bob', false], ['Jaque', 'Ann', false]]);
   assert.deepEqual(await characterAccess(fakeClient(t), { user: { id: 'x' }, campaignId: null }), { members: [], characters: [], grantedToMe: [] });
