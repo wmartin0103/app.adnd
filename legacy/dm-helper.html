@@ -499,7 +499,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     min-height:100vh; padding:32px 16px 64px; line-height:1.4;
     display:flex; justify-content:center; align-items:flex-start;
   }
-  .app{width:100%;max-width:900px}   /* the sheet's width */
+  .app{width:100%;max-width:68rem}   /* room for the initiative order's cards (the redesign's width) */
 
   header.top{
     display:flex;align-items:baseline;gap:14px;
@@ -982,7 +982,9 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .addrow{padding:6px 0 0}
   /* A combatant's card: its rows, no table look; Speed, Init and Act on labelled inline */
   .ocard-t{width:100%;border-collapse:collapse;table-layout:fixed}
-  .ocard-t > tbody > tr > td{padding:0 !important;border:0 !important;background:none !important;box-shadow:none !important;vertical-align:middle}
+  .ocard-t > tbody > tr > td{padding:0 !important;border:0 !important;background:none !important;box-shadow:none !important;vertical-align:top}
+  /* Speed, Init and Act on sit level with the card's first line, even if the name line wraps */
+  .ocard-t > tbody > tr.act > td:nth-child(n+2){line-height:var(--field-h)}
   .ocard-t > tbody > tr + tr > td{padding-top:10px !important}
   .ocard-t > tbody > tr.act > td:nth-child(2){width:7.75rem}
   .ocard-t > tbody > tr.act > td:nth-child(3){width:6.75rem}
