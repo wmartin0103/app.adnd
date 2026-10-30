@@ -10,7 +10,7 @@ The database behind sign-in and the live round (and, later, cloud saves).
   integration is connected but didn't deploy on push (as of 2026-10-23).
 - **`setup-first-admin.sql`** — data, not structure: makes the owner an admin
   and DM of the first campaign. Run by hand in the SQL Editor, once.
-- **`add-player.sql`** — data: adds a player to the campaign, gives them
+- **`add-player.sql`** — data: adds someone to the campaign (player, DM or both), gives them
   their characters, and marks their password as temporary (they choose their
   own at first sign-in). Also for a forgotten password: set a new one on the
   user in Authentication → Users, then run it again. Steps are in the file.
