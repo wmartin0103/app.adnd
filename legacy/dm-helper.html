@@ -980,7 +980,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .inline-f{display:inline-flex;align-items:center;gap:8px}
   .inline-f > .lab{margin:0}
   .olist{display:grid;gap:8px}
-  .addrow{padding:6px 0 0}
+  .addrow{padding:6px 0 0;display:flex;justify-content:center}   /* centred below the order, like the sheet's Add Scenario */
   /* A combatant's card: its rows, no table look; Speed, Init and Act on labelled inline */
   .ocard-t{width:100%;border-collapse:collapse;table-layout:fixed}
   .ocard-t > tbody > tr > td{padding:0 !important;border:0 !important;background:none !important;box-shadow:none !important;vertical-align:top}
@@ -1084,7 +1084,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       <div class="sec-head"><h2 class="sec">Initiative order</h2><span class="hint">Lower acts first: roll + speed + bonuses</span>
         <div class="inline-f push"><span class="lab">Extra attacks</span><div class="ui-tabs size-sm" role="group" aria-label="Extra attacks" id="extraTiming"><button type="button" data-v="end">End of the order</button><button type="button" data-v="turn">At their turn</button></div></div></div>
       <div id="lightBody" class="olist"></div>
-      <div class="addrow"><button class="ui-button is-primary" id="addBaddy">+ Add Enemy</button></div>
+      <div class="addrow"><button class="ui-button is-link" id="addBaddy"><span aria-hidden="true">＋</span> Add Enemy</button></div>
     </section>
 
     <section class="ui-card size-sm" id="lightCritBox" style="display:none">
