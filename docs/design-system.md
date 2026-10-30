@@ -333,6 +333,27 @@ underline (decided 2026-10-29); hover brings a tab to the text colour.
 In code (`src/ui/components.js`): every `input[type=checkbox|radio]` unless
 `ui-native`; `ui-switch`; `ui-pagetabs`. Options: `prototypes/controls.html`.
 
+## Patterns
+
+Standard, reusable arrangements of the pieces above (decided 2026-10-30, as
+first made on Your characters). In code: `ui-choice`, `ui-menu`.
+
+- **Choice card** (`ui-choice` on a `<button>`): a whole card that is the
+  button, for a few big choices side by side ("Create a new character",
+  "Import a character file"). A card at rest (surface, divider hairline,
+  card corners and shadow, 22px 20px padding); hover and focus give it a
+  brass edge (border and a 1px inner ring), focus the ring too. Inside:
+  a title (`.t`: Spectral 600, 1.05rem, brass) and a line about it
+  (`.d`: muted). Use it for a page's main ways in, not for everyday actions.
+- **Menu** (`ui-menu`, `role="menu"`): actions on one thing, opened from a
+  ⋯ icon button. The raised layer (raised surface, divider hairline, 8px
+  corners, the raised shadow), 4px padding, at least 13rem wide. Items are
+  `<button role="menuitem">`: Barlow 16px, 8px 10px padding, control
+  corners, the text colour; hover and focus fill them with the page colour.
+  Groups are split by an `<hr>` (a divider hairline); a destructive item is
+  last, in its own group, red (`danger`) with an ellipsis when it asks to
+  confirm ("Delete…"). The page decides where the menu opens.
+
 ## Sections and cards
 
 Two ways of grouping (decided 2026-10-29):

@@ -48,7 +48,7 @@ export function audit(doc = document) {
     if (tag === 'INPUT' && /^(checkbox|radio)$/.test(e.type) && !e.classList.contains('ui-native') && cs.appearance !== 'none') add('Checkbox/radio drawn by the browser', e, cs.appearance);
     // Buttons: a component, at a size
     if (tag === 'BUTTON' || e.getAttribute('role') === 'button') {
-      const comp = e.matches('.ui-button, .ui-disclosure, .ui-switch, .ui-tabs > button, .ui-qty > button, .ui-pagetabs > button, .ui-pagetabs > a, .round-multi-btn, .ui-control, .tab');
+      const comp = e.matches('.ui-button, .ui-choice, .ui-menu > button, .ui-disclosure, .ui-switch, .ui-tabs > button, .ui-qty > button, .ui-pagetabs > button, .ui-pagetabs > a, .round-multi-btn, .ui-control, .tab');
       if (!comp) add('Button not a component', e, (e.textContent || e.getAttribute('aria-label') || '').trim().slice(0, 24));
       else if (e.matches('.ui-button:not(.is-link)') && !SIZES.includes(Math.round(box.height))) add('Button height', e, `${Math.round(box.height)}px`);
     }

@@ -236,6 +236,30 @@ ${QTY} > button:disabled { opacity: .45; cursor: not-allowed; }
 ${QTY} > input { box-sizing: border-box; width: calc(var(--field-fs) * 1.9); height: 100%; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; outline: none; box-shadow: none; text-align: center; color: var(--color-text); font: 600 var(--field-fs)/1 var(--font-sans); font-variant-numeric: tabular-nums; }
 `;
 
+// ── Patterns ──
+// The choice card (class="ui-choice" on a <button>): a whole card that is the
+// button, for a few big choices (Create a new character / Import a file). A
+// card at rest; hover and focus give it a brass edge. Inside: .t (the title,
+// Spectral, brass) and .d (a line about it, muted).
+// The menu (class="ui-menu", role="menu"): the raised layer, its items
+// <button role="menuitem">s, groups split by <hr>, a destructive item
+// class="danger" (red). An item fills with the page colour on hover and focus.
+// The page places the menu (position); the pattern is its look.
+export const PATTERNS_CSS = `/* Patterns (docs/design-system.md: Patterns) */
+button.ui-choice:not(#\\#) { display: grid; gap: 6px; align-content: start; text-align: left; font: inherit; color: var(--color-text); cursor: pointer;
+  background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-card); box-shadow: var(--shadow-card), inset 0 1px 0 var(--edge-top); padding: 22px 20px; }
+button.ui-choice:not(#\\#):is(:hover, :focus-visible) { border-color: var(--color-accent-text); box-shadow: inset 0 0 0 1px var(--color-accent-text); }
+button.ui-choice:not(#\\#):focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.ui-choice .t { font-family: var(--font-serif); font-weight: 600; font-size: 1.05rem; color: var(--color-accent-text); }
+.ui-choice .d { color: var(--color-text-muted); font-size: 0.98rem; }
+.ui-menu:not(#\\#) { display: grid; min-width: 13rem; padding: 4px; background: var(--color-raised); border: 1px solid var(--color-divider); border-radius: var(--radius-inner);
+  box-shadow: var(--shadow-raised), inset 0 1px 0 var(--edge-top); }
+.ui-menu:not(#\\#) > button { font: 400 1rem/1.45 var(--font-sans); text-align: left; background: none; border: 0; border-radius: var(--radius-ctl); padding: 8px 10px; cursor: pointer; color: var(--color-text); }
+.ui-menu:not(#\\#) > button:is(:hover, :focus-visible) { background: var(--color-bg); outline: none; }
+.ui-menu:not(#\\#) > button.danger { color: var(--color-danger-text); }
+.ui-menu:not(#\\#) > hr { border: 0; border-top: 1px solid var(--color-divider); margin: 4px 0; }
+`;
+
 export const SURFACES_CSS = `/* Surfaces (docs/design-system.md: Surfaces and depth) */
 :is(section, article, aside, div, form, header).ui-card:not(#\\#) {
   background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-card);
