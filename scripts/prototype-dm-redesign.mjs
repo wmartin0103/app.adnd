@@ -5,6 +5,7 @@ import { withHead } from './build-legacy.mjs';
 
 const X = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
 const COPY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>';
+const D10 = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 22 10.5 12 22 2 10.5z"/><path d="M12 2 8 12.5l4 2.5 4-2.5zM2 10.5l6 2M22 10.5l-6 2M12 15v7"/></svg>';
 const DIE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 2v20M3 7l9 5 9-5"/></svg>';
 const sel = (opts, cur, w = '') => `<select${w ? ` style="width:${w}"` : ''}>${opts.map(o => `<option${o === cur ? ' selected' : ''}>${o}</option>`).join('')}</select>`;
 const tabs = (opts, cur, label) => `<div class="ui-tabs size-sm" role="group" aria-label="${label}">${opts.map(o => `<button type="button" class="${o === cur ? 'is-active' : ''}" aria-pressed="${o === cur}">${o}</button>`).join('')}</div>`;
@@ -39,9 +40,10 @@ const orderRow = r => r.pc ? `
   <div class="orow ui-card is-compact is-opponent is-enemy">
     <div class="who"><input type="checkbox" checked aria-label="${r.name} in the round"><span class="tag">${r.id}</span><input class="open-field nm-in" value="${r.name}" aria-label="Enemy name">
       <span class="mini">${field('AC', sel(['3', '4', '5', '6'], String(r.ac), '4rem'))}${field('THAC0', sel(['17', '18', '19', '20'], String(r.thac0), '4.5rem'))}</span>
-      <button type="button" class="ui-button is-bare is-icon size-sm" aria-label="Duplicate ${r.name}">${COPY}</button><button type="button" class="ui-button is-bare is-icon is-danger is-remove size-sm" aria-label="Remove ${r.name}">${X}</button></div>
-    ${field('Speed', sel(['1', '2', '3', '4', '5'], String(r.speed), '4.5rem'))}<label class="f"><span class="lab">Init</span><span class="init-roll">${sel(['—', ...Array.from({ length: 10 }, (_, i) => String(i + 1))], r.init == null ? '—' : String(r.init), '4.5rem')}<button type="button" class="ui-button ${r.init == null ? 'is-primary' : 'is-bare'} is-icon size-sm" aria-label="Roll initiative for ${r.name}" title="Roll initiative for ${r.name}">${DIE}</button></span></label>
+      <button type="button" class="ui-button is-bare is-icon size-sm" aria-label="Duplicate ${r.name}">${COPY}</button><button type="button" class="ui-button ${r.init == null ? 'is-primary' : 'is-secondary'} size-sm" title="Roll initiative for ${r.name}">${D10} ${r.init == null ? 'Roll init' : 'Re-roll init'}</button></div>
+    ${field('Speed', sel(['1', '2', '3', '4', '5'], String(r.speed), '4.5rem'))}<label class="f"><span class="lab">Init</span>${sel(['—', ...Array.from({ length: 10 }, (_, i) => String(i + 1))], r.init == null ? '—' : String(r.init), '4.5rem')}</label>
     <span class="act${r.act == null ? ' none' : ''}">${r.act ?? '—'}</span>
+    <button type="button" class="ui-button is-bare is-icon is-danger is-remove size-sm rm" aria-label="Remove ${r.name}">${X}</button>
     <div class="detail"><button type="button" class="ui-disclosure" aria-expanded="${!!r.open}"><span class="ui-disclosure-chev" aria-hidden="true"></span>${r.open ? 'Attacks' : 'Attacks · 1 · 2d4, THAC0 19'}</button>
       <div class="atks"${r.open ? '' : ' hidden'}>${attack(1, `<div class="ui-well hit"><span class="die"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l9 5v10l-9 5-9-5V7z"/></svg><b>14</b></span><div><span class="lab">Hits AC</span><span class="big">5</span></div><div><span class="lab">vs Jaque, AC 4</span><span class="big miss">Miss</span></div></div>`)}<button type="button" class="ui-button is-link size-sm">+ Add attack</button></div></div>
   </div>`;
@@ -61,7 +63,7 @@ const initiative = `
   <section class="ui-card is-featured">
     <div class="roundbar">
       <div class="rb-main"><span class="round"><span class="lab">Round</span><span class="rn">3</span></span>
-      <button type="button" class="ui-button is-primary" title="Rolls for each Enemy that hasn't rolled; never re-rolls">⚄ Roll initiative for Enemies</button>
+      <button type="button" class="ui-button is-primary" title="Rolls for each Enemy that hasn't rolled; never re-rolls">${D10} Roll initiative for Enemies</button>
       <button type="button" class="ui-button is-secondary">Reset initiative</button>
       <div class="f"><span class="lab">Extra attacks</span>${tabs(['End of the order', 'At their turn'], 'End of the order', 'Extra attacks')}</div>
       <button type="button" class="ui-button is-primary">Next round ▸</button></div>
@@ -249,7 +251,7 @@ const page = `<!doctype html>
   .round .rn { font: 700 32px/1 var(--font-serif); color: var(--color-accent-text); font-variant-numeric: lining-nums; }
 
   /* The order */
-  .ohead, .orow { display: grid; grid-template-columns: minmax(12rem, 1fr) 5rem 7rem 4rem; column-gap: 12px; align-items: center; }
+  .ohead, .orow { display: grid; grid-template-columns: minmax(12rem, 1fr) 5rem 5rem 4rem 28px; column-gap: 12px; align-items: center; }
   .order { display: grid; gap: 8px; }
   .sec-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
   .sec-head h2.sec { margin: 0; }
@@ -265,7 +267,9 @@ const page = `<!doctype html>
   .orow .mini .lab { display: inline; margin: 0 4px 0 0; }
   .orow .mini label.f { flex-direction: row; align-items: center; }
   .orow .detail { grid-column: 1 / -1; }
-  .init-roll { display: inline-flex; align-items: center; gap: 4px; }
+  .orow .act { grid-column: 4; grid-row: 1; }
+  .orow .rm { grid-column: 5; grid-row: 1; justify-self: end; }
+  .ui-button svg { width: 1.1em; height: 1.1em; }
   .orow .act.none { color: var(--color-text-muted); }
   .ohead .c { text-align: center; }
   .orow .detail.ui-well { padding: 8px 12px; font-size: 14px; }
@@ -309,7 +313,8 @@ const page = `<!doctype html>
     .ohead { display: none; }
     .orow { grid-template-columns: 1fr 1fr 3rem; }
     .orow .who { grid-column: 1 / 3; grid-row: 1; }
-    .orow .act { grid-column: 3; grid-row: 1; }
+    .orow .act { grid-column: 3; grid-row: 2; }
+    .orow .rm { grid-column: 3; grid-row: 1; }
     .orow .lab { display: block; }
   }
 </style>
