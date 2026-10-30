@@ -14,11 +14,13 @@ the owner on 2026-10-27, ahead of a dark theme.
 - Every page passes the contrast check in both themes
   (`scripts/contrast-scan.js`, run in the browser on a page served from the
   repo).
-- Fields (4a), buttons (4b) and surfaces (4c) are applied. Not yet:
-  moving non-interactive text off the action colour (section
-  titles, the round number and such are still brass). Until then, new work
-  should follow this document, and anything that looks different from it
-  should say why in a comment next to it.
+- Fields (4a), buttons (4b) and surfaces (4c) are applied. The action
+  colour is only on things you can press (4d) on the character sheet and the
+  site pages; `scripts/brass-scan.js` finds any left (run in the browser
+  like the contrast check). The DM Helper keeps some until its redesign.
+  Not yet: checkboxes, radios, switches and page tabs (4e). New work should
+  follow this document, and anything that looks different from it should
+  say why in a comment next to it.
 
 Live references (prototypes, not wired to the app):
 
@@ -84,7 +86,10 @@ accent.
 Where colour goes:
 
 - **Brass** (`accent`): primary buttons, secondary buttons' text, the focus
-  ring, links. Only things you can press.
+  ring, links. Only things you can press. Not titles, values or results: section
+  titles are muted, numbers and results are the text colour, a negative
+  modifier is just the number (a positive one is green), something switched
+  on takes the second accent.
 - **Second accent:** the selected tab button, a featured card's top edge,
   small kicker labels ("In play"), the die's outline.
 - **Success green:** a hit, a good result. A **crit** is the same family,
