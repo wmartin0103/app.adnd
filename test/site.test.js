@@ -18,7 +18,7 @@ test('the website holds only the landing page, Account, the two tools and the ca
       assert.ok(readFileSync(path.join(out, tool), 'utf8').includes(CATALOG_TAG));
     }
     const landing = readFileSync(path.join(out, 'index.html'), 'utf8');
-    // Your characters opens each one's sheet; the DM Helper for the DM
+    // Home opens each one's sheet; the DM Helper for the DM
     assert.ok(landing.includes('legacy/character-sheet.html?id=') && landing.includes("'legacy/dm-helper.html'"));   // the DM's card goes there
     // Account sits beside it: the landing page links to it, the tools reach it one folder up
     assert.ok(landing.includes('href="account.html"'));

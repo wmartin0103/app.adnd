@@ -8,8 +8,8 @@
 --   characters on "Your characters" too.
 -- - A player sees the party and edits only their own characters (and any
 --   they're given).
--- - Both: a DM who also plays (has characters of their own, on "Your
---   characters", beside the DM Helper and the Party).
+-- - Both: a DM who also plays (has characters of their own, on
+--   Home, beside the DM Helper and the Party).
 -- - An admin can also manage accounts and campaigns: make or remove admins,
 --   add and remove members, edit or delete any character in any campaign.
 --

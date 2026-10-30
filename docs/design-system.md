@@ -1,7 +1,7 @@
 # Design system
 
 The look and the rules every page follows: the character sheet, the DM
-Helper and the site pages (sign-in, Your characters, Account). Agreed with
+Helper and the site pages (sign-in, Home, Account). Agreed with
 the owner on 2026-10-27, ahead of a dark theme.
 
 **Status: partly applied (2026-10-27).**
@@ -336,7 +336,7 @@ In code (`src/ui/components.js`): every `input[type=checkbox|radio]` unless
 ## Patterns
 
 Standard, reusable arrangements of the pieces above (decided 2026-10-30, as
-first made on Your characters). In code: `ui-choice`, `ui-menu`.
+first made on Home). In code: `ui-choice`, `ui-menu`.
 
 - **Choice card** (`ui-choice` on a `<button>`, or an `<a>` when it goes to
   another page): a whole card that is the button, for a few big choices side by side ("Create a new character",
@@ -420,7 +420,7 @@ Rules:
 5. A **featured** card gets the second accent's top edge. It marks the one
    thing that is live or current, so it follows state, never importance: This
    round on the sheet, the round on the DM Helper, the character in
-   play on Your characters. At most one per screen; not for static cards,
+   play on Home. At most one per screen; not for static cards,
    section headers or warnings.
 6. A **tinted item** looks close to a well, so it never takes an inner
    shadow: the shadow is what makes a well (decided 2026-10-29). It holds

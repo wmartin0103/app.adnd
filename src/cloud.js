@@ -175,15 +175,15 @@ export function createCloudRoundSync({ client, campaignId, userId, characterIds 
 }
 
 // ── Sign in ──
-// A small control for a tool's header: "Sign in" when signed out (opens a
-// dialog: email and password; accounts are made by an admin), the name and
-// campaign with Account and "Sign out" when signed in. Still on a temporary
-// password: only a link to choose one, and the tool stays offline (onChange
-// gets null). onChange gets the session (or null) on load and whenever it changes.
-// The Account page sits beside the landing page, one folder up from the tools.
+// A small control for a tool's header: always a Home button (Home has
+// Account and Sign out); "Sign in" too when signed out (opens a dialog: email
+// and password; accounts are made by an admin), the name and campaign when
+// signed in. Still on a temporary password: a link to choose one, and the
+// tool stays offline (onChange gets null). onChange gets the session (or
+// null) on load and whenever it changes.
+// Home and the Account page sit one folder up from the tools.
 const ACCOUNT_URL = '../account.html', HOME_URL = '../index.html';
-// opts.home: a link back to the landing page with this label (the sheet: "Your characters")
-export function mountCloud(el, onChange, opts = {}) {
+export function mountCloud(el, onChange) {
   const client = cloudClient();
   if (!el || !client) { if (onChange) onChange(null); return; }
   const doc = el.ownerDocument;
@@ -216,13 +216,13 @@ export function mountCloud(el, onChange, opts = {}) {
     const got = await cloudSession(client);
     const s = got && got.newPassword ? null : got;
     const key = got ? `${got.user.id}|${got.campaignId}|${got.name}|${got.newPassword}` : '';
+    const home = `<a class="cloud-btn ui-button is-secondary size-sm" href="${HOME_URL}">Home</a>`;
     if (got && got.newPassword) {
-      el.innerHTML = `<a class="cloud-btn ui-button is-secondary size-sm" href="${ACCOUNT_URL}">Choose your password</a>`;
+      el.innerHTML = `<a class="cloud-btn ui-button is-secondary size-sm" href="${ACCOUNT_URL}">Choose your password</a> ${home}`;
     } else if (s) {
-      el.innerHTML = `<span class="cloud-who">${esc(s.name)}${s.campaignName ? ` · ${esc(s.campaignName)}` : ' · no campaign yet'}</span> ${opts.home ? `<a class="cloud-btn ui-button is-secondary size-sm" href="${HOME_URL}">${esc(opts.home)}</a> ` : ''}<a class="cloud-btn ui-button is-secondary size-sm" href="${ACCOUNT_URL}">Account</a> <button type="button" class="cloud-btn ui-button is-secondary size-sm">Sign out</button>`;
-      el.querySelector('button').addEventListener('click', () => client.auth.signOut());
+      el.innerHTML = `<span class="cloud-who">${esc(s.name)}${s.campaignName ? ` · ${esc(s.campaignName)}` : ' · no campaign yet'}</span> ${home}`;
     } else {
-      el.innerHTML = '<button type="button" class="cloud-btn ui-button is-secondary size-sm">Sign in</button>';
+      el.innerHTML = `<button type="button" class="cloud-btn ui-button is-secondary size-sm">Sign in</button> ${home}`;
       el.querySelector('button').addEventListener('click', () => { err.textContent = ''; dialog.showModal(); form.email.focus(); });
     }
     if (key !== last) { last = key; if (onChange) onChange(s); }
