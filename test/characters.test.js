@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { summary, isBlank, fileName, listCharacters, createCharacter, setStatus, loadCharacter, saveSheet, deleteCharacter } from '../src/characters.js';
+import { summary, isBlank, fileName, listCharacters, createCharacter, setStatus, loadCharacter, saveSheet, deleteCharacter, isSheetSave, listParty, listMembers, createCharacterFor } from '../src/characters.js';
 
 // A stand-in for the Supabase client: the tables and calls used here, with
 // the database's one-in-play rule
@@ -119,4 +119,37 @@ test('characters: delete a backup or a dead one; the one in play stays', async (
   assert.deepEqual(t.characters.map(r => r.id), ['a']);
   await assert.rejects(deleteCharacter(c, 'a'), /couldn.t be deleted/);
   assert.deepEqual(t.characters.map(r => r.id), ['a']);
+});
+
+test("characters: the DM Helper's party is each player's one in play", async () => {
+  const t = { characters: [
+    { id: 'a', campaign_id: 'k', owner_id: 'u1', name: 'Rifiyr', status: 'play', data: sheet('Rifiyr') },
+    { id: 'b', campaign_id: 'k', owner_id: 'u2', name: 'Jaque', status: 'play', data: sheet('Jaque') },
+    { id: 'c', campaign_id: 'k', owner_id: 'u2', name: 'Tig', status: 'backup', data: sheet('Tig') },
+    { id: 'd', campaign_id: 'other', owner_id: 'u3', name: 'Nebish', status: 'play', data: sheet('Nebish') },
+  ] };
+  assert.deepEqual((await listParty(fakeClient(t), 'k')).map(p => p.name), ['Jaque', 'Rifiyr']);
+  assert.deepEqual(await listParty(fakeClient(t), null), []);
+});
+
+test("characters: the campaign's members by name, and the DM giving one a backup", async () => {
+  const t = {
+    campaign_members: [{ campaign_id: 'k', user_id: 'u2', role: 'player' }, { campaign_id: 'k', user_id: 'u1', role: 'dm' }],
+    profiles: [{ id: 'u1', display_name: 'Will' }, { id: 'u2', display_name: 'Alex' }],
+    characters: [{ id: 'a', campaign_id: 'k', owner_id: 'u2', name: 'Jaque', status: 'play' }],
+  };
+  const c = fakeClient(t);
+  assert.deepEqual(await listMembers(c, 'k'), [{ id: 'u2', name: 'Alex', role: 'player' }, { id: 'u1', name: 'Will', role: 'dm' }]);
+  const r = await createCharacterFor(c, { campaignId: 'k', user: { id: 'u1' } }, 'u2', sheet('Tig'));
+  assert.equal(r.status, 'backup');
+  const row = t.characters.find(x => x.id === r.id);
+  assert.deepEqual([row.owner_id, row.name, row.status], ['u2', 'Tig', 'backup']);
+  assert.equal(t.characters.find(x => x.id === 'a').status, 'play');   // their one in play stays
+});
+
+test('characters: a sheet save has a name and its classes', () => {
+  assert.equal(isSheetSave(sheet('Jaque')), true);
+  assert.equal(isSheetSave({ name: 'Jaque' }), false);
+  assert.equal(isSheetSave({ __classes: [] }), false);
+  assert.equal(isSheetSave(null), false);
 });

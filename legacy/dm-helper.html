@@ -511,7 +511,6 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .cloud-actions{display:flex;justify-content:flex-end;gap:8px}
   .extrablock .chead{font-family:var(--serif)}
 
-
   .rtwrap{display:flex;align-items:center;gap:6px;width:100%}
   .tlab{font-family:var(--sans);font-size:var(--sm,.72rem);color:var(--muted);white-space:nowrap}
   @media (max-width:520px){
@@ -762,7 +761,6 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .enchead{font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--brass);margin-bottom:4px}
   .encwhat{font-family:var(--serif);font-size:1.25rem;color:var(--parchment);margin-bottom:6px}
   .encwhy{font-size:.95rem;line-height:1.5;color:var(--muted)}
-  .cfglist{display:flex;flex-direction:column}
   .sheetimp{display:flex;flex-direction:column;gap:10px;padding:12px 14px}
   .sheetimp-row{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px;padding:8px 0;border-top:1px solid var(--edge)}
   .sheetimp-row .cname{font-size:1.05rem}
@@ -772,6 +770,19 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .sheetimp-row details ul{margin:6px 0 0;padding-left:1.2em}
   .sheetimp-row .err{flex-basis:100%;font-size:.82rem;color:var(--rust)}
   .sheetimp-status{font-size:.85rem;color:var(--verdigris)}
+  .giverow{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px}
+  #cfgSummary{margin-top:12px}
+  #cfgSummary .chead select{width:auto;min-width:12rem}
+  #cfgReview:empty{display:none}
+  #cfgReview .cfgblock{border:0;border-radius:0;box-shadow:none}
+  #cfgReview .review{padding:8px 14px;font-size:.85rem;color:var(--muted)}
+  #cfgReview .review ul{margin:6px 0 0;padding-left:1.2em}
+  #cfgReview .review summary{cursor:pointer}
+  #cfgReview .review.err,.sheetimp-status.err{color:var(--rust)}
+  .sheetimp-status.muted{color:var(--muted)}
+  .partynote{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:8px 14px;border:1px solid var(--color-divider);border-radius:var(--radius-inner);background:var(--color-surface);font-size:.9rem}
+  .partynote[hidden]{display:none}
+  .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
   .sheetimp-status.err{color:var(--rust)}
   .sheetimp .linkish{background:none;border:none;padding:0;color:var(--brass);font:inherit;font-size:.82rem;text-decoration:underline;cursor:pointer}
   #cfgReview .char{margin-top:12px}
@@ -780,9 +791,8 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .cfgtable td.l{text-align:left}
   .cfgblock .svnote{max-width:none}
   .effects-on{margin:0;padding:6px 14px;font-size:.78rem;color:var(--muted);border-bottom:1px solid var(--edge)}
-  .cfgrow{display:flex;align-items:center;gap:12px;padding:8px 14px;border-bottom:1px solid var(--edge);cursor:pointer}
-  .cfgrow:last-child{border-bottom:none}
-  .cfgrow input{width:18px;height:18px;accent-color:var(--verdigris);cursor:pointer}
+
+
   .np{margin-left:8px;font-family:var(--sans);font-size:.66rem;color:var(--muted);border:1px solid var(--edge);border-radius:3px;padding:0 4px;vertical-align:middle;cursor:default}
   footer{color:var(--muted);font-size:.75rem;margin-top:16px;text-align:center;line-height:1.6}
 
@@ -921,6 +931,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   </header>
 
   <div id="dmArea">
+  <div class="partynote" id="partyNote" role="status" hidden><span id="partyNoteText"></span> <button class="reroll ui-button is-secondary size-sm" type="button" id="partyReload">Reload</button></div>
   <nav class="tabs">
     <button class="tab" data-panel="react">Reaction</button>
     <button class="tab active" data-panel="combat">Initiative</button>
@@ -1031,19 +1042,17 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   </div>
 
   <div class="panel hidden" id="panel-config">
-    <div class="char" id="sheetImport" style="margin-bottom:12px">
-      <div class="chead"><span class="cname">Character sheets</span><span class="svnote">Import players' exported character sheet saves (.json). Their stats replace the hand-typed ones below and stay in this browser until removed. Your own settings (parry, armor spell, virtue, hidden by default, init bonus, turning) are kept.</span></div>
+    <div class="char" id="giveSheet">
+      <div class="chead"><span class="cname">Give a player a character</span><span class="svnote">Upload a character sheet save (.json) to a player's Backups, ready for when they need it.</span></div>
       <div class="sheetimp">
-        <div><button class="reroll ui-button is-secondary" type="button" id="sheetImportBtn">Import sheets…</button><input type="file" id="sheetFiles" accept=".json,application/json" multiple hidden></div>
-        <div id="sheetStatus" class="sheetimp-status" role="status"></div>
-        <div id="sheetList"></div>
+        <div class="giverow"><label class="gclabel">Player <select id="givePlayer"></select></label><button class="reroll ui-button is-secondary" type="button" id="giveBtn">Upload sheet…</button><input type="file" id="giveFile" accept=".json,application/json" hidden></div>
+        <div id="giveStatus" class="sheetimp-status" role="status"></div>
       </div>
     </div>
-    <div class="char">
-      <div class="chead"><span class="cname">Characters</span><span class="svnote">Checked characters appear on every tab; unchecked are hidden and left out of the initiative order.</span></div>
-      <div id="cfgChars" class="cfglist"></div>
+    <div class="char" id="cfgSummary">
+      <div class="chead"><span class="cname">Character summary</span><label class="gclabel"><span class="sr-only">Character</span><select id="cfgPick"></select></label><span class="svnote">Everything the tabs use for one character.</span></div>
+      <div id="cfgReview"></div>
     </div>
-    <div id="cfgReview"></div>
   </div>
   </div><!-- /dmArea -->
 
@@ -4162,6 +4171,46 @@ async function createCharacter(client, session, data, { mine = [], status } = {}
   return { id: row.id, status: st };
 }
 
+// A file the sheet exported: a name and its classes
+const isSheetSave = data => !!data && typeof data === 'object' && !!String(data.name || '').trim() && Array.isArray(data.__classes);
+
+// The DM Helper's party: each player's character in play (the database keeps
+// one per player), by name
+async function listParty(client, campaignId) {
+  if (!campaignId) return [];
+  const { data, error } = await client.from('characters').select('id, name, owner_id, data, updated_at')
+    .eq('campaign_id', campaignId).eq('status', 'play');
+  if (error) throw error;
+  return (data || []).map(r => ({ id: r.id, name: r.name, ownerId: r.owner_id, data: r.data, updatedAt: r.updated_at }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+// Who's in the campaign, by name: for the DM giving a player a character
+async function listMembers(client, campaignId) {
+  if (!campaignId) return [];
+  const m = await client.from('campaign_members').select('user_id, role').eq('campaign_id', campaignId);
+  if (m.error) throw m.error;
+  const ids = (m.data || []).map(r => r.user_id);
+  if (!ids.length) return [];
+  const p = await client.from('profiles').select('id, display_name').in('id', ids);
+  if (p.error) throw p.error;
+  const names = {};
+  (p.data || []).forEach(x => { names[x.id] = x.display_name; });
+  return (m.data || []).map(r => ({ id: r.user_id, name: names[r.user_id] || 'Someone', role: r.role }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+// The DM (or an admin) puts a sheet in a player's Backups; the database's
+// rules allow it only for the campaign's DM or an admin
+async function createCharacterFor(client, session, ownerId, data) {
+  const name = String((data && data.name) || '').trim() || 'New character';
+  const { data: row, error } = await client.from('characters')
+    .insert({ campaign_id: session.campaignId, owner_id: ownerId, name, data, status: 'backup' })
+    .select('id').single();
+  if (error) throw error;
+  return { id: row.id, status: 'backup' };
+}
+
 // Moves a character; into play, the one in play now goes to `others` (dead
 // or backup) first, as only one may be in play
 async function setStatus(client, mine, id, status, others = 'backup') {
@@ -4196,7 +4245,7 @@ async function saveSheet(client, id, data) {
   if (error) throw error;
 }
 
-return { STATUSES, STATUS_LABEL, summary, isBlank, fileName, listCharacters, createCharacter, setStatus, deleteCharacter, loadCharacter, saveSheet };
+return { STATUSES, STATUS_LABEL, summary, isBlank, fileName, listCharacters, createCharacter, isSheetSave, listParty, listMembers, createCharacterFor, setStatus, deleteCharacter, loadCharacter, saveSheet };
 })();
 window.SheetConverter = { toDMHelper: __m["adapters/dm-helper"].toDMHelper };
 window.SheetRound = { ROUND_MODS: __m["rules/round"].ROUND_MODS, MOVE_MULTS: __m["rules/round"].MOVE_MULTS, newRound: __m["rules/round"].newRound, roundQueue: __m["rules/round"].roundQueue, queueAttack: __m["rules/round"].queueAttack, unqueueAttack: __m["rules/round"].unqueueAttack, roundLines: __m["rules/round"].roundLines, lineToHit: __m["rules/round"].lineToHit, roundACPenalty: __m["rules/round"].roundACPenalty, lineTHAC0: __m["rules/round"].lineTHAC0, judgeRoll: __m["rules/round"].judgeRoll, actOn: __m["rules/round"].actOn, attackSpeed: __m["rules/round"].attackSpeed, rollLine: __m["rules/round"].rollLine, scoreRoll: __m["rules/round"].scoreRoll, rerollDamage: __m["rules/round"].rerollDamage, lineKind: __m["rules/round"].lineKind, hasRoll: __m["rules/round"].hasRoll, isHealing: __m["rules/round"].isHealing, lineSay: __m["rules/round"].lineSay, plainAttack: __m["rules/round"].plainAttack };
@@ -4204,6 +4253,7 @@ window.RoundSync = { createRoundSync: __m["round-sync"].createRoundSync };
 window.RoundUI = { STYLES: __m["ui/round-ui"].STYLES, ensureStyles: __m["ui/round-ui"].ensureStyles, multi: __m["ui/round-ui"].multi, readField: __m["ui/round-ui"].readField, hitRoll: __m["ui/round-ui"].hitRoll, D20_SVG: __m["ui/round-ui"].D20_SVG };
 window.Cloud = { cloudClient: __m["cloud"].cloudClient, cloudSession: __m["cloud"].cloudSession, createCloudRoundSync: __m["cloud"].createCloudRoundSync, mountCloud: __m["cloud"].mountCloud };
 window.Theme = { mountThemeToggle: __m["ui/theme"].mountThemeToggle, currentTheme: __m["ui/theme"].currentTheme, setTheme: __m["ui/theme"].setTheme };
+window.Characters = { isBlank: __m["characters"].isBlank, isSheetSave: __m["characters"].isSheetSave, listParty: __m["characters"].listParty, listMembers: __m["characters"].listMembers, createCharacterFor: __m["characters"].createCharacterFor };
 })();
 if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.SheetSpellCatalog = window.parent.SheetSpellCatalog; } catch (e) { /* not allowed */ } }
 /* ── end sheet converter ── */
@@ -4653,21 +4703,28 @@ const SAVES={
 };
 
 /* ============================================================ */
-/* ---------------- Imported character sheets ----------------
-   Sheets imported on the Config tab are kept in this browser and converted on
-   every load, replacing those characters' hand-typed entries above. The DM's
-   own settings typed above are kept: parry, armor spell, virtue, hidden by
-   default (legacy), init bonus, turning, shield, extra actions, an "All" save
-   bonus, and the save note. */
-const SHEETS_KEY='adnd-imported-sheets';
-const IMPORTED=(()=>{ try{ const v=JSON.parse(localStorage.getItem(SHEETS_KEY)); return Array.isArray(v)?v:[]; }catch(e){ return []; } })();
-const IMPORT_RESULTS=[];
+/* ---------------- The party: each player's character in play ----------------
+   Signed in, the party is each player's In play character in the campaign,
+   from their saved sheet (Your characters decides who's in play). It's kept
+   in this browser so the page starts with it; signed in again, the page
+   checks it and starts over with the new one if it changed. Never signed in
+   here: the hand-typed characters above, all but the ones marked legacy.
+   A sheet's conversion keeps the DM's own settings typed above: parry,
+   armor spell, virtue, init bonus, turning, shield, extra actions, an "All"
+   save bonus, and the save note. A character in play with no saved sheet yet
+   uses its hand-typed entry, if there is one. */
+const PARTY_KEY='adnd-dm-party';
+const PARTY=(()=>{ try{ const v=JSON.parse(localStorage.getItem(PARTY_KEY)); return v && Array.isArray(v.chars) ? v : null; }catch(e){ return null; } })();
+try{ localStorage.removeItem('adnd-imported-sheets'); localStorage.removeItem('adnd-active'); }catch(e){}   // the old Config import and checkboxes
+const SHEET_REVIEW={};   // name → what the conversion asks the DM to check, or why it failed
 const DM_ONLY=['legacy','initBonus','parry','parryTargeted','armorSpell','virtue','turn','shield','actions'];
-IMPORTED.forEach(entry=>{
+(PARTY ? PARTY.chars : []).forEach(entry=>{
+  if(!entry.save) return;
   try{
     if(!window.SheetConverter) throw new Error('The sheet converter is missing from this file.');
     const prev=CHARACTERS[entry.name]||{};
     const dm={}; DM_ONLY.forEach(k=>{ if(prev[k]!==undefined) dm[k]=prev[k]; });
+    delete dm.legacy;                                    // in play is in the party
     const r=SheetConverter.toDMHelper(entry.save, dm, {catalog: window.SheetSpellCatalog||null});
     CHARACTERS[r.name]=r.character;
     SKILLS[r.name]=r.skills;
@@ -4678,8 +4735,8 @@ IMPORTED.forEach(entry=>{
       SAVES[r.name]={base:r.saves.base, mods, ...((old.note||r.saves.note)?{note:old.note||r.saves.note}:{})};
     }
     Object.assign(DAMAGE,r.damage); Object.assign(CRIT_TYPES,r.critTypes); Object.assign(WEAPON_MATERIAL,r.material);
-    IMPORT_RESULTS.push({name:r.name, file:entry.file, at:entry.at, review:r.review});
-  }catch(e){ IMPORT_RESULTS.push({name:entry.name, file:entry.file, at:entry.at, error:String(e.message||e)}); }
+    SHEET_REVIEW[r.name]={review:r.review||[]};
+  }catch(e){ SHEET_REVIEW[entry.name]={error:String(e.message||e)}; }
 });
 
 const STORE_KEY='adnd-init-tracker';
@@ -5786,7 +5843,34 @@ function showRound(){
 }
 connectRound(null, true);
 if(window.Theme) Theme.mountThemeToggle(document.getElementById('themeSlot'));
-if(window.Cloud) Cloud.mountCloud(document.getElementById('cloudBar'), s => connectRound(s));
+/* The party from the campaign: on starting up the page starts over with it if
+   it changed; later (coming back to the page) it says so and offers to reload,
+   so an encounter in progress isn't lost */
+const PAGE_START=Date.now();
+let partySession=null, partyChecking=false, partyCheckedAt=0;
+const partySig=chars=> JSON.stringify((chars||[]).map(c=>[c.id,c.at]));
+async function syncParty(sess){
+  partySession=sess;
+  if(!sess || !sess.campaignId || !window.Characters || partyChecking) return;
+  const client=Cloud.cloudClient(); if(!client) return;
+  partyChecking=true; partyCheckedAt=Date.now();
+  let list=null;
+  try{ list=await Characters.listParty(client, sess.campaignId); }catch(e){ list=null; }
+  partyChecking=false;
+  if(!list || partySession!==sess) return;
+  const chars=list.map(p=>({id:p.id, name:p.name, at:p.updatedAt, save: Characters.isBlank(p.data) ? null : p.data}));
+  if(PARTY && PARTY.campaignId===sess.campaignId && partySig(PARTY.chars)===partySig(chars)) return;
+  try{ localStorage.setItem(PARTY_KEY, JSON.stringify({campaignId:sess.campaignId, chars})); }catch(e){ return; }
+  if(Date.now()-PAGE_START < 15000){ location.reload(); return; }
+  const was=new Set(PARTY ? PARTY.chars.map(c=>c.name) : []), now=new Set(chars.map(c=>c.name));
+  const joined=[...now].filter(n=>!was.has(n)), left=[...was].filter(n=>!now.has(n));
+  document.getElementById('partyNoteText').textContent = 'The party has changed' + (joined.length||left.length ? ` (${[joined.length?`in: ${joined.join(', ')}`:'', left.length?`out: ${left.join(', ')}`:''].filter(Boolean).join('; ')})` : ' (a sheet was updated)') + '. Reload to use it (the Enemies set up here start over).';
+  document.getElementById('partyNote').hidden=false;
+}
+document.getElementById('partyReload').addEventListener('click', ()=> location.reload());
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible' && Date.now()-partyCheckedAt > 30000) syncParty(partySession); });
+renderGive(null);
+if(window.Cloud) Cloud.mountCloud(document.getElementById('cloudBar'), s => { connectRound(s); syncParty(s); renderGive(s); });
 document.getElementById('nextRoundSync').addEventListener('click', ()=>{
   if(!ROUND) return;
   syncState = ROUND.sendDM({round: (syncState ? syncState.round : 1) + 1});
@@ -6198,7 +6282,6 @@ function renderReaction(){
   }
 }
 
-
 /* ---------------- Enemies: created on demand ---------------- */
 const baddies=[]; let baddyCount=0;
 function nextFreeName(base){   // "Gnoll" → "Gnoll 3" if Gnoll 1 and Gnoll 2 exist (display names)
@@ -6253,14 +6336,11 @@ function resetBaddies(){
   addBaddy();
 }
 
-/* ---------------- Config: which characters are in play ---------------- */
-const ACTIVE_KEY='adnd-active';
+/* ---------------- The party on every tab ---------------- */
 const PCS=Object.keys(CHARACTERS).filter(n=>!CHARACTERS[n].placeholder);
-function loadActive(){
-  try{ const v=JSON.parse(localStorage.getItem(ACTIVE_KEY)); if(Array.isArray(v)) return new Set(v.filter(n=>PCS.includes(n))); }catch(e){}
-  return new Set(PCS.filter(n=>!CHARACTERS[n].legacy));      // default: everyone not marked legacy
-}
-const activeSet=loadActive();
+const partyNames=PARTY ? PARTY.chars.map(c=>c.name).filter(n=>PCS.includes(n)) : [];
+// No one in play yet (or never signed in here): the hand-typed characters
+const activeSet=new Set(partyNames.length ? partyNames : PCS.filter(n=>!CHARACTERS[n].legacy));
 function isActive(name){ const c=CHARACTERS[name]; if(!c) return false; if(c.placeholder) return true; return activeSet.has(name); }
 function applyActive(){
   Object.keys(skillBlocks).forEach(name=>{ skillBlocks[name].style.display = isActive(name) ? '' : 'none'; });
@@ -6269,79 +6349,65 @@ function applyActive(){
   if(typeof renderSaves==='function') renderSaves();
   if(typeof renderReaction==='function') renderReaction();
 }
-function buildConfig(){
-  const host=document.getElementById('cfgChars');
-  PCS.slice().sort().forEach(name=>{
-    const row=document.createElement('label'); row.className='cfgrow';
-    const box=document.createElement('input'); box.type='checkbox'; box.checked=activeSet.has(name);
-    box.addEventListener('change', ()=>{
-      if(box.checked) activeSet.add(name); else activeSet.delete(name);
-      try{ localStorage.setItem(ACTIVE_KEY, JSON.stringify([...activeSet])); }catch(e){}
-      applyActive();
-    });
-    row.append(box, nameEl(name));
-    host.appendChild(row);
-  });
-}
-
-/* ---------------- Config: import character sheets ---------------- */
-function saveImported(list){ try{ localStorage.setItem(SHEETS_KEY, JSON.stringify(list)); return true; }catch(e){ return false; } }
-function renderSheetImports(){
-  const host=document.getElementById('sheetList'); host.innerHTML='';
-  if(!IMPORT_RESULTS.length){ host.innerHTML='<div class="meta" style="font-size:.85rem;color:var(--muted)">No sheets imported yet. Everyone uses their hand-typed stats.</div>'; return; }
-  IMPORT_RESULTS.forEach(r=>{
-    const row=document.createElement('div'); row.className='sheetimp-row';
-    const when=r.at?new Date(r.at).toLocaleDateString():'';
-    row.innerHTML=`<span class="cname">${esc(r.name)}</span><span class="meta">from ${esc(r.file||'a save file')}${when?` · imported ${esc(when)}`:''}</span>`;
-    const rm=document.createElement('button'); rm.type='button'; rm.className='linkish'; rm.textContent='Remove';
-    rm.title='Go back to the hand-typed stats for this character';
-    rm.addEventListener('click',()=>{ saveImported(IMPORTED.filter(e=>e.name!==r.name)); location.reload(); });
-    row.appendChild(rm);
-    if(r.error){ const e=document.createElement('div'); e.className='err'; e.textContent=`Couldn't convert this sheet: ${r.error}`; row.appendChild(e); }
-    else if(r.review && r.review.length){
-      const d=document.createElement('details');
-      d.innerHTML=`<summary>${r.review.length} thing${r.review.length===1?'':'s'} to check</summary><ul>${r.review.map(m=>`<li>${esc(m)}</li>`).join('')}</ul>`;
-      row.appendChild(d);
-    }
-    host.appendChild(row);
-  });
-}
-document.getElementById('sheetImportBtn').addEventListener('click',()=>document.getElementById('sheetFiles').click());
-document.getElementById('sheetFiles').addEventListener('change',async e=>{
-  const status=document.getElementById('sheetStatus'); status.className='sheetimp-status';
-  const files=[...e.target.files]; e.target.value='';
-  const list=IMPORTED.slice(); const added=[]; const problems=[];
-  for(const f of files){
-    try{
-      const save=JSON.parse(await f.text());
-      if(!save || typeof save!=='object' || !String(save.name||'').trim() || !Array.isArray(save.__classes)) throw new Error('not a character sheet save');
-      const name=String(save.name).trim();
-      const i=list.findIndex(x=>x.name===name);
-      const entry={name, file:f.name, at:new Date().toISOString(), save};
-      if(i>=0) list[i]=entry; else list.push(entry);
-      added.push(name);
-    }catch(err){ problems.push(`${f.name}: ${err.message}`); }
+/* ---------------- Config: give a player a character ---------------- */
+var giveSession=null;   // var: the sign-in callback can run before this line
+async function renderGive(sess){
+  giveSession=sess;
+  const sel=document.getElementById('givePlayer'), btn=document.getElementById('giveBtn'), status=document.getElementById('giveStatus');
+  sel.innerHTML=''; status.className='sheetimp-status'; status.textContent='';
+  const client=window.Cloud && Cloud.cloudClient();
+  if(!sess || !sess.campaignId || !client || !window.Characters){
+    sel.disabled=true; btn.disabled=true; sel.appendChild(new Option('—',''));
+    status.className='sheetimp-status muted'; status.textContent='Sign in as the DM to give a player a character.';
+    return;
   }
-  if(added.length){
-    if(!saveImported(list)){ status.className='sheetimp-status err'; status.textContent='This browser wouldn\'t store the sheets (storage is full or blocked).'; return; }
-    try{ const act=JSON.parse(localStorage.getItem(ACTIVE_KEY)); if(Array.isArray(act)){ added.forEach(n=>{ if(!act.includes(n)) act.push(n); }); localStorage.setItem(ACTIVE_KEY, JSON.stringify(act)); } }catch(err){}
+  let members=[];
+  try{ members=await Characters.listMembers(client, sess.campaignId); }catch(e){ status.className='sheetimp-status err'; status.textContent='Couldn\'t load the players.'; return; }
+  if(giveSession!==sess) return;
+  sel.appendChild(new Option('Choose a player…',''));
+  members.forEach(m=> sel.appendChild(new Option(m.role==='dm' ? `${m.name} (DM)` : m.name, m.id)));
+  sel.disabled=false; btn.disabled=true;
+}
+document.getElementById('givePlayer').addEventListener('change', e=>{ document.getElementById('giveBtn').disabled=!e.target.value; });
+document.getElementById('giveBtn').addEventListener('click',()=>document.getElementById('giveFile').click());
+document.getElementById('giveFile').addEventListener('change',async e=>{
+  const file=e.target.files[0]; e.target.value=''; if(!file) return;
+  const sel=document.getElementById('givePlayer'), status=document.getElementById('giveStatus');
+  const who=sel.selectedOptions[0] ? sel.selectedOptions[0].textContent.replace(/ \(DM\)$/,'') : '';
+  status.className='sheetimp-status';
+  let save;
+  try{ save=JSON.parse(await file.text()); }catch(err){ save=null; }
+  if(!Characters.isSheetSave(save)){ status.className='sheetimp-status err'; status.textContent=`${file.name} isn't a character sheet save.`; return; }
+  status.textContent='Uploading…';
+  try{
+    await Characters.createCharacterFor(Cloud.cloudClient(), giveSession, sel.value, save);
+    status.textContent=`${String(save.name).trim()} is in ${who}'s Backups.`;
+  }catch(err){
+    status.className='sheetimp-status err';
+    status.textContent = /row-level security|permission/i.test(String(err.message||'')) ? 'Only the DM or an admin can give a player a character.' : `Couldn't upload it: ${err.message||err}`;
   }
-  if(problems.length){ status.className='sheetimp-status err'; status.textContent=`Skipped ${problems.join('; ')}.`+(added.length?` Imported ${added.join(', ')}; reloading…`:''); }
-  else if(added.length){ status.textContent=`Imported ${added.join(', ')}. Reloading…`; }
-  if(added.length) setTimeout(()=>location.reload(), problems.length?2500:600);
 });
 
 /* ---------------- Config review: everything driving the tabs, per character ---------------- */
 function esc(x){ return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 function dmgText(d){ if(!d) return '—'; if(d.byType) return Object.keys(d.byType).map(t=>`${CRIT_SHORT[t]}: ${d.byType[t].sm} / ${d.byType[t].l}`).join(' · '); return `${d.sm} / ${d.l}${d.plus?` (+${d.plus} magic)`:''}${d.spell?` · spell ${d.spell}: ${d.spellNote||'on contact'}`:''}`; }
 function buildConfigReview(){
+  const pick=document.getElementById('cfgPick'), was=pick.value;
+  pick.innerHTML=''; pick.appendChild(new Option('Choose a character…',''));
+  PCS.filter(isActive).sort().forEach(n=> pick.appendChild(new Option(n, n)));
+  pick.value=[...pick.options].some(o=>o.value===was) ? was : '';
+  showConfigReview(pick.value);
+}
+document.getElementById('cfgPick').addEventListener('change', e=> showConfigReview(e.target.value));
+function showConfigReview(only){
   const host=document.getElementById('cfgReview'); host.innerHTML='';
-  PCS.slice().sort().forEach(name=>{
+  if(!only) return;
+  [only].forEach(name=>{
     const c=CHARACTERS[name], sv=SAVES[name]||{base:{},mods:{}}, rx=REACTION_MODS[name]||{};
     const block=document.createElement('div'); block.className='char cfgblock';
     const head=document.createElement('div'); head.className='chead'; head.appendChild(nameEl(name));
     const facts=[];
-    if(c.legacy) facts.push('hidden by default'); if(c.caster===false) facts.push('no casting'); if(c.shield) facts.push('carries a shield');
+    facts.push(SHEET_REVIEW[name] && !SHEET_REVIEW[name].error ? 'from their saved sheet' : 'hand-typed'); if(c.caster===false) facts.push('no casting'); if(c.shield) facts.push('carries a shield');
     facts.push(`base THAC0 ${c.baseTHAC0}`); if(c.initBonus) facts.push(`init bonus ${fmt(c.initBonus)}`);
     if(c.quickness) facts.push(`Quickness ${fmt(c.quickness.bonus)} init (d20 ≤ Dex)`);
     if(c.turn) facts.push(`turns undead as ${ORD(c.turn.level)}-level priest`);
@@ -6374,6 +6440,9 @@ function buildConfigReview(){
     Object.keys(sk).sort((a,b)=>a.localeCompare(b)).forEach(k=>{ h+=`<tr><td class="name">${esc(k)}</td><td class="num">${skT(sk[k])}</td><td class="l">${esc(skSrc(sk[k])||'')}</td></tr>`; });
     if(Object.keys(th).length){ h+=`<tr class="divider"><td colspan="3">Thieving skills (% ÷ 5)</td></tr>`; Object.keys(th).forEach(k=>{ h+=`<tr><td class="name">${esc(k)}</td><td class="num">${Math.round(th[k]/5)}</td><td class="l">${th[k]}%</td></tr>`; }); }
     h+=`</tbody></table>`;
+    const rv=SHEET_REVIEW[name];
+    if(rv && rv.error) h=`<div class="review err">Couldn't read their saved sheet (${esc(rv.error)}); this is the hand-typed entry.</div>`+h;
+    else if(rv && rv.review.length) h=`<details class="review"><summary>${rv.review.length} thing${rv.review.length===1?'':'s'} to check in the sheet</summary><ul>${rv.review.map(m=>`<li>${esc(m)}</li>`).join('')}</ul></details>`+h;
     const body=document.createElement('div'); body.innerHTML=h; block.appendChild(body);
     host.appendChild(block);
   });
@@ -6933,7 +7002,6 @@ const ENCOUNTERS={
  ]}
 };
 
-
 /* CREATURES — mixed into Roll encounter. Each roll first checks ENC_CREATURE_PCT (d%); on a hit it rolls 2d6 here instead of the d20 hooks.
    Entry = [name, number appearing, flavor line or null]. A null flavor means "roll a state" (ENC_STATES); settlement and city entries carry their own line.
    The 2d6 bell curve puts the common results in the middle (6-8) and the rare ones at the ends (2 and 12). */
@@ -7184,8 +7252,6 @@ buildSkills();
 buildSaves();
 buildReaction();
 buildConfigReview();
-buildConfig();
-renderSheetImports();
 applyActive();
 setTab((()=>{try{return localStorage.getItem(TAB_KEY)||'combat';}catch(e){return 'combat';}})());
 </script>

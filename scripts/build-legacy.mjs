@@ -24,6 +24,7 @@ export const TARGETS = {
     RoundUI: ['ui/round-ui', ['STYLES', 'ensureStyles', 'multi', 'readField', 'hitRoll', 'D20_SVG']],
     Cloud: ['cloud', ['cloudClient', 'cloudSession', 'createCloudRoundSync', 'mountCloud']],
     Theme: ['ui/theme', ['mountThemeToggle', 'currentTheme', 'setTheme']],
+    Characters: ['characters', ['isBlank', 'isSheetSave', 'listParty', 'listMembers', 'createCharacterFor']],
   },
   'legacy/character-sheet.html': {
     SheetSpells: ['rules/spells', ['findSpell']],

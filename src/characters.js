@@ -69,6 +69,46 @@ export async function createCharacter(client, session, data, { mine = [], status
   return { id: row.id, status: st };
 }
 
+// A file the sheet exported: a name and its classes
+export const isSheetSave = data => !!data && typeof data === 'object' && !!String(data.name || '').trim() && Array.isArray(data.__classes);
+
+// The DM Helper's party: each player's character in play (the database keeps
+// one per player), by name
+export async function listParty(client, campaignId) {
+  if (!campaignId) return [];
+  const { data, error } = await client.from('characters').select('id, name, owner_id, data, updated_at')
+    .eq('campaign_id', campaignId).eq('status', 'play');
+  if (error) throw error;
+  return (data || []).map(r => ({ id: r.id, name: r.name, ownerId: r.owner_id, data: r.data, updatedAt: r.updated_at }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+// Who's in the campaign, by name: for the DM giving a player a character
+export async function listMembers(client, campaignId) {
+  if (!campaignId) return [];
+  const m = await client.from('campaign_members').select('user_id, role').eq('campaign_id', campaignId);
+  if (m.error) throw m.error;
+  const ids = (m.data || []).map(r => r.user_id);
+  if (!ids.length) return [];
+  const p = await client.from('profiles').select('id, display_name').in('id', ids);
+  if (p.error) throw p.error;
+  const names = {};
+  (p.data || []).forEach(x => { names[x.id] = x.display_name; });
+  return (m.data || []).map(r => ({ id: r.user_id, name: names[r.user_id] || 'Someone', role: r.role }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+// The DM (or an admin) puts a sheet in a player's Backups; the database's
+// rules allow it only for the campaign's DM or an admin
+export async function createCharacterFor(client, session, ownerId, data) {
+  const name = String((data && data.name) || '').trim() || 'New character';
+  const { data: row, error } = await client.from('characters')
+    .insert({ campaign_id: session.campaignId, owner_id: ownerId, name, data, status: 'backup' })
+    .select('id').single();
+  if (error) throw error;
+  return { id: row.id, status: 'backup' };
+}
+
 // Moves a character; into play, the one in play now goes to `others` (dead
 // or backup) first, as only one may be in play
 export async function setStatus(client, mine, id, status, others = 'backup') {
