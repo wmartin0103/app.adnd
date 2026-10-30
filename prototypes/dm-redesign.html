@@ -451,12 +451,17 @@ button.ui-disclosure:not(#\#):focus-visible { outline: 2px solid var(--color-foc
 :is(section, article, aside, div, form, header).ui-card.is-featured:not(#\#) { border-top: 3px solid var(--color-accent2); }
 /* A small card among siblings (an ability score, a spell): less padding */
 :is(section, article, aside, div, form, header).ui-card.is-compact:not(#\#) { --card-pad: 12px; }
+/* An opponent's card (an Enemy in the initiative order): a red left edge */
+:is(section, article, aside, div, form, header).ui-card.is-opponent:not(#\#) { border-left: 3px solid var(--color-danger); }
 :is(div, section, span, output, figure, dl).ui-well:not(#\#) {
   background: var(--color-sunken); border: 0; border-radius: var(--radius-inner); box-shadow: var(--shadow-well);
 }
 :is(div, article, li, section, label).ui-item:not(#\#) {
   background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-inner); box-shadow: none;
 }
+/* A tinted item: a group of controls that holds a well (an Enemy's attack).
+   Never an inner shadow: that's what tells it from a well */
+:is(div, article, li, section).ui-item.is-tinted:not(#\#) { background: color-mix(in oklab, var(--color-text) 4%, var(--color-surface)); box-shadow: none; }
 :is(div, ul, menu, section).ui-raised:not(#\#), dialog.ui-overlay:not(#\#) {
   background: var(--color-raised); color: var(--color-text); border: 1px solid var(--color-divider); border-radius: var(--radius-inner);
   box-shadow: var(--shadow-raised), inset 0 1px 0 var(--edge-top);
@@ -511,11 +516,6 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .roundbar .sw { height: var(--field-h); }
   .roundbar .apart { display: flex; align-items: flex-end; padding-left: 16px; border-left: 1px solid var(--color-divider); }
   @media (max-width: 640px) { .roundbar { flex-direction: column; } .roundbar .apart { padding: 12px 0 0; border-left: 0; border-top: 1px solid var(--color-divider); } }
-  .try { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 18px; padding: 8px 12px; border: 1px dashed var(--color-border); border-radius: var(--radius-inner); }
-  .try > .lab { align-self: center; margin: 0; }
-  body { --enemy-edge: var(--color-accent2); }
-  body[data-edge="red"] { --enemy-edge: var(--color-danger); }
-  div.orow.ui-card.is-enemy:not(#\#) { border-left: 3px solid var(--enemy-edge); }
   .round .rn { font: 700 32px/1 var(--font-serif); color: var(--color-accent-text); font-variant-numeric: lining-nums; }
 
   /* The order */
@@ -543,9 +543,6 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .atks[hidden] { display: none; }
   .atks > .ui-item { justify-self: stretch; }
   .atk { padding: 10px 12px; display: grid; gap: 10px; }
-  body[data-atk="outline"] .atk-head { padding-bottom: 8px; border-bottom: 1px solid var(--color-divider); }
-  body[data-atk="tint"] div.atk.ui-item:not(#\#) { background: color-mix(in oklab, var(--color-text) 4%, var(--color-surface)); }
-  body[data-atk="rule"] div.atk.ui-item:not(#\#) { border: 0; border-left: 2px solid var(--color-border); border-radius: 0; background: transparent; padding: 2px 0 2px 14px; }
   .atk .lab { display: block; }
   .atk-head { display: flex; align-items: center; gap: 10px; }
   .atk-head b { font: 600 15px/1.2 var(--font-serif); margin-right: auto; }
@@ -585,7 +582,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   }
 </style>
 </head>
-<body data-edge="accent2" data-atk="outline">
+<body>
 <div class="page">
   <header class="top"><h1>DM Helper</h1><span class="camp">The Gnoll Hills · Round 3</span>
     <span class="who">Sam <a class="ui-button is-secondary size-sm" href="../site/index.html">Your characters</a><span id="themeSlot"></span><button type="button" class="ui-button is-secondary size-sm">Sign out</button></span></header>
@@ -598,7 +595,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
         <li>Round controls are an open section; the order is the featured card.</li>
         <li>Act on is the first column, in brass: the order reads top-down.</li>
         <li>Lock initiative is a switch; Extra attacks, the party's stance, Culture, Time and the crit's weapon are tab buttons; Creatures is a switch.</li>
-        <li>An Enemy's attacks fold away; open, each is an item with its controls; a roll's result is a well.</li>
+        <li>The order is a section; each combatant a card. An Enemy's card has a red left edge (is-opponent); its attacks fold away, and open each is a tinted item holding its controls and the roll's well.</li>
         <li>A player's action from their sheet is a well under their row.</li>
         <li>Surprise and Crits &amp; fumbles are cards beside each other.</li>
         <li>Proficiencies and Saves: the group check first, then a card per character (folding).</li>
@@ -613,11 +610,6 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   </details>
   <nav class="ui-pagetabs" id="ptabs"><button type="button" data-p="Initiative" class="active">Initiative</button><button type="button" data-p="Proficiencies" class="">Proficiencies</button><button type="button" data-p="Saves" class="">Saves</button><button type="button" data-p="Reaction" class="">Reaction</button><button type="button" data-p="Config" class="">Config</button></nav>
   <div class="panel" data-panel="Initiative">
-  <div class="try"><span class="lab">Try</span>
-    <div class="f"><span class="lab">Enemy edge</span><div class="ui-tabs size-sm" data-try="edge"><button type="button" class="is-active" aria-pressed="true" data-v="accent2">Second accent</button><button type="button" aria-pressed="false" data-v="red">Red</button></div></div>
-    <div class="f"><span class="lab">Attack</span><div class="ui-tabs size-sm" data-try="atk"><button type="button" class="is-active" aria-pressed="true" data-v="outline">Outlined, header rule</button><button type="button" aria-pressed="false" data-v="tint">Tinted</button><button type="button" aria-pressed="false" data-v="rule">Left rule, no box</button></div></div>
-  </div>
-
   
     <section class="ui-card size-sm">
       <div class="card-head"><button type="button" class="ui-disclosure" aria-expanded="true"><span class="ui-disclosure-chev" aria-hidden="true"></span><h3>Surprise</h3></button><span class="hint">d10 each, 1–3 surprised</span></div>
@@ -644,14 +636,14 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     <div class="sec-head"><h2 class="sec">Initiative order</h2><span class="hint">Lower acts first: roll + speed + bonuses</span></div>
     <div class="ohead"><span>Character</span><span>Speed</span><span>Init</span><span class="c">Act on</span></div>
     <div class="olist">
-  <div class="orow ui-card is-compact is-enemy">
+  <div class="orow ui-card is-compact is-opponent is-enemy">
     <div class="who"><input type="checkbox" checked aria-label="Gnoll 1 in the round"><span class="tag">E1</span><input class="open-field nm-in" value="Gnoll 1" aria-label="Enemy name">
       <span class="mini"><label class="f"><span class="lab">AC</span><select style="width:4rem"><option>3</option><option>4</option><option selected>5</option><option>6</option></select></label><label class="f"><span class="lab">THAC0</span><select style="width:4.5rem"><option>17</option><option>18</option><option selected>19</option><option>20</option></select></label></span>
       <button type="button" class="ui-button is-bare is-icon size-sm" aria-label="Duplicate Gnoll 1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button><button type="button" class="ui-button is-bare is-icon is-danger is-remove size-sm" aria-label="Remove Gnoll 1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
     <label class="f"><span class="lab">Speed</span><select style="width:4.5rem"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label><label class="f"><span class="lab">Init</span><select style="width:4.5rem"><option>—</option><option>1</option><option>2</option><option>3</option><option>4</option><option selected>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></label>
     <span class="act">8</span>
     <div class="detail"><button type="button" class="ui-disclosure" aria-expanded="true"><span class="ui-disclosure-chev" aria-hidden="true"></span>Attacks</button>
-      <div class="atks"><div class="ui-item atk">
+      <div class="atks"><div class="ui-item is-tinted atk">
   <div class="atk-head"><b>Attack 1</b><button type="button" class="ui-button is-secondary size-sm">Duplicate</button></div>
   <div class="line"><label class="f"><span class="lab">Dice</span><select style="width:5rem"><option>d4</option><option>d6</option><option>d8</option><option selected>2d4</option></select></label><label class="f"><span class="lab">Bonus</span><select style="width:4.5rem"><option selected>0</option><option>+1</option><option>+2</option></select></label><label class="f"><span class="lab">Targets</span><select style="width:9rem"><option selected>Jaque</option><option>Rifiyr</option><option>Goroth</option><option>Hanspeter</option><option>None</option></select></label><label class="f"><span class="lab">Ground</span><select style="width:6rem"><option selected>Level</option><option>Higher</option><option>Lower</option></select></label><label class="f"><span class="lab">Conditions</span><select style="width:8rem"><option selected>None</option><option>Flanking</option><option>Charging</option></select></label><label class="f"><span class="lab">Other</span><select style="width:4.5rem"><option selected>0</option><option>+1</option><option>+2</option><option>−1</option></select></label>
     <div class="readout"><span class="lab">THAC0</span><span class="num">19</span></div>
@@ -670,14 +662,14 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     <span class="act">11</span>
     <div class="detail ui-well"><span class="lab">From the sheet</span> Long bow · 2 arrows · waiting for the roll</div>
   </div>
-  <div class="orow ui-card is-compact is-enemy">
+  <div class="orow ui-card is-compact is-opponent is-enemy">
     <div class="who"><input type="checkbox" checked aria-label="Gnoll 2 in the round"><span class="tag">E2</span><input class="open-field nm-in" value="Gnoll 2" aria-label="Enemy name">
       <span class="mini"><label class="f"><span class="lab">AC</span><select style="width:4rem"><option>3</option><option>4</option><option selected>5</option><option>6</option></select></label><label class="f"><span class="lab">THAC0</span><select style="width:4.5rem"><option>17</option><option>18</option><option selected>19</option><option>20</option></select></label></span>
       <button type="button" class="ui-button is-bare is-icon size-sm" aria-label="Duplicate Gnoll 2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button><button type="button" class="ui-button is-bare is-icon is-danger is-remove size-sm" aria-label="Remove Gnoll 2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
     <label class="f"><span class="lab">Speed</span><select style="width:4.5rem"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label><label class="f"><span class="lab">Init</span><select style="width:4.5rem"><option>—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option selected>9</option><option>10</option></select></label>
     <span class="act">12</span>
     <div class="detail"><button type="button" class="ui-disclosure" aria-expanded="false"><span class="ui-disclosure-chev" aria-hidden="true"></span>Attacks · 1 · 2d4, THAC0 19</button>
-      <div class="atks" hidden><div class="ui-item atk">
+      <div class="atks" hidden><div class="ui-item is-tinted atk">
   <div class="atk-head"><b>Attack 1</b><button type="button" class="ui-button is-secondary size-sm">Duplicate</button></div>
   <div class="line"><label class="f"><span class="lab">Dice</span><select style="width:5rem"><option>d4</option><option>d6</option><option>d8</option><option selected>2d4</option></select></label><label class="f"><span class="lab">Bonus</span><select style="width:4.5rem"><option selected>0</option><option>+1</option><option>+2</option></select></label><label class="f"><span class="lab">Targets</span><select style="width:9rem"><option selected>Jaque</option><option>Rifiyr</option><option>Goroth</option><option>Hanspeter</option><option>None</option></select></label><label class="f"><span class="lab">Ground</span><select style="width:6rem"><option selected>Level</option><option>Higher</option><option>Lower</option></select></label><label class="f"><span class="lab">Conditions</span><select style="width:8rem"><option selected>None</option><option>Flanking</option><option>Charging</option></select></label><label class="f"><span class="lab">Other</span><select style="width:4.5rem"><option selected>0</option><option>+1</option><option>+2</option><option>−1</option></select></label>
     <div class="readout"><span class="lab">THAC0</span><span class="num">19</span></div>
@@ -792,7 +784,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   document.addEventListener('click', e => {
     const d = e.target.closest('.ui-disclosure'); if (d) { const open = d.getAttribute('aria-expanded') !== 'true'; d.setAttribute('aria-expanded', open); const body = d.closest('.detail')?.querySelector('.atks'); if (body) body.hidden = !open; }
     const s = e.target.closest('.ui-switch'); if (s) s.setAttribute('aria-checked', s.getAttribute('aria-checked') !== 'true');
-    const t = e.target.closest('.ui-tabs > button'); if (t) { t.parentNode.querySelectorAll('button').forEach(x => { x.classList.toggle('is-active', x === t); x.setAttribute('aria-pressed', x === t); }); if (t.parentNode.dataset.try) document.body.dataset[t.parentNode.dataset.try] = t.dataset.v; }
+    const t = e.target.closest('.ui-tabs > button'); if (t) { t.parentNode.querySelectorAll('button').forEach(x => { x.classList.toggle('is-active', x === t); x.setAttribute('aria-pressed', x === t); }); }
   });
   (function(){ const b=document.createElement('button'); b.className='ui-button is-secondary is-icon size-sm'; b.type='button'; b.setAttribute('aria-label','Light or dark');
     const cur=()=>document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');

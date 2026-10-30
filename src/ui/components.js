@@ -244,12 +244,17 @@ export const SURFACES_CSS = `/* Surfaces (docs/design-system.md: Surfaces and de
 :is(section, article, aside, div, form, header).ui-card.is-featured:not(#\\#) { border-top: 3px solid var(--color-accent2); }
 /* A small card among siblings (an ability score, a spell): less padding */
 :is(section, article, aside, div, form, header).ui-card.is-compact:not(#\\#) { --card-pad: 12px; }
+/* An opponent's card (an Enemy in the initiative order): a red left edge */
+:is(section, article, aside, div, form, header).ui-card.is-opponent:not(#\\#) { border-left: 3px solid var(--color-danger); }
 :is(div, section, span, output, figure, dl).ui-well:not(#\\#) {
   background: var(--color-sunken); border: 0; border-radius: var(--radius-inner); box-shadow: var(--shadow-well);
 }
 :is(div, article, li, section, label).ui-item:not(#\\#) {
   background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-inner); box-shadow: none;
 }
+/* A tinted item: a group of controls that holds a well (an Enemy's attack).
+   Never an inner shadow: that's what tells it from a well */
+:is(div, article, li, section).ui-item.is-tinted:not(#\\#) { background: color-mix(in oklab, var(--color-text) 4%, var(--color-surface)); box-shadow: none; }
 :is(div, ul, menu, section).ui-raised:not(#\\#), dialog.ui-overlay:not(#\\#) {
   background: var(--color-raised); color: var(--color-text); border: 1px solid var(--color-divider); border-radius: var(--radius-inner);
   box-shadow: var(--shadow-raised), inset 0 1px 0 var(--edge-top);

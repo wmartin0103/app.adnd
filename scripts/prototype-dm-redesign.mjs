@@ -22,7 +22,7 @@ const enemies = [
   { id: 'E2', name: 'Gnoll 2', act: 12, speed: 3, init: 9, ac: 5, thac0: 19 },
 ];
 const rows = [...party.map(p => ({ ...p, pc: true })), ...enemies].sort((a, b) => a.act - b.act);
-const attack = (n, extra = '') => `<div class="ui-item atk">
+const attack = (n, extra = '') => `<div class="ui-item is-tinted atk">
   <div class="atk-head"><b>Attack ${n}</b><button type="button" class="ui-button is-secondary size-sm">Duplicate</button>${n > 1 ? `<button type="button" class="ui-button is-bare is-icon is-danger is-remove size-sm" aria-label="Remove attack ${n}">${X}</button>` : ''}</div>
   <div class="line">${field('Dice', sel(['d4', 'd6', 'd8', '2d4'], n === 1 ? '2d4' : 'd6', '5rem'))}${field('Bonus', sel(['0', '+1', '+2'], '0', '4.5rem'))}${field('Targets', sel(['Jaque', 'Rifiyr', 'Goroth', 'Hanspeter', 'None'], n === 1 ? 'Jaque' : 'None', '9rem'))}${field('Ground', sel(['Level', 'Higher', 'Lower'], 'Level', '6rem'))}${field('Conditions', sel(['None', 'Flanking', 'Charging'], 'None', '8rem'))}${field('Other', sel(['0', '+1', '+2', '−1'], '0', '4.5rem'))}
     <div class="readout"><span class="lab">THAC0</span><span class="num">19</span></div>
@@ -35,7 +35,7 @@ const orderRow = r => r.pc ? `
     <span class="act">${r.act}</span>
     <div class="detail ui-well${r.none ? ' is-none' : ''}"><span class="lab">From the sheet</span> ${r.from}</div>
   </div>` : `
-  <div class="orow ui-card is-compact is-enemy">
+  <div class="orow ui-card is-compact is-opponent is-enemy">
     <div class="who"><input type="checkbox" checked aria-label="${r.name} in the round"><span class="tag">${r.id}</span><input class="open-field nm-in" value="${r.name}" aria-label="Enemy name">
       <span class="mini">${field('AC', sel(['3', '4', '5', '6'], String(r.ac), '4rem'))}${field('THAC0', sel(['17', '18', '19', '20'], String(r.thac0), '4.5rem'))}</span>
       <button type="button" class="ui-button is-bare is-icon size-sm" aria-label="Duplicate ${r.name}">${COPY}</button><button type="button" class="ui-button is-bare is-icon is-danger is-remove size-sm" aria-label="Remove ${r.name}">${X}</button></div>
@@ -55,11 +55,6 @@ const surprise = `
       </div>
     </section>`;
 const initiative = `
-  <div class="try"><span class="lab">Try</span>
-    <div class="f"><span class="lab">Enemy edge</span><div class="ui-tabs size-sm" data-try="edge"><button type="button" class="is-active" aria-pressed="true" data-v="accent2">Second accent</button><button type="button" aria-pressed="false" data-v="red">Red</button></div></div>
-    <div class="f"><span class="lab">Attack</span><div class="ui-tabs size-sm" data-try="atk"><button type="button" class="is-active" aria-pressed="true" data-v="outline">Outlined, header rule</button><button type="button" aria-pressed="false" data-v="tint">Tinted</button><button type="button" aria-pressed="false" data-v="rule">Left rule, no box</button></div></div>
-  </div>
-
   ${surprise}
 
   <section class="ui-card is-featured">
@@ -186,7 +181,7 @@ const notes = `
         <li>Round controls are an open section; the order is the featured card.</li>
         <li>Act on is the first column, in brass: the order reads top-down.</li>
         <li>Lock initiative is a switch; Extra attacks, the party's stance, Culture, Time and the crit's weapon are tab buttons; Creatures is a switch.</li>
-        <li>An Enemy's attacks fold away; open, each is an item with its controls; a roll's result is a well.</li>
+        <li>The order is a section; each combatant a card. An Enemy's card has a red left edge (is-opponent); its attacks fold away, and open each is a tinted item holding its controls and the roll's well.</li>
         <li>A player's action from their sheet is a well under their row.</li>
         <li>Surprise and Crits &amp; fumbles are cards beside each other.</li>
         <li>Proficiencies and Saves: the group check first, then a card per character (folding).</li>
@@ -250,11 +245,6 @@ const page = `<!doctype html>
   .roundbar .sw { height: var(--field-h); }
   .roundbar .apart { display: flex; align-items: flex-end; padding-left: 16px; border-left: 1px solid var(--color-divider); }
   @media (max-width: 640px) { .roundbar { flex-direction: column; } .roundbar .apart { padding: 12px 0 0; border-left: 0; border-top: 1px solid var(--color-divider); } }
-  .try { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 18px; padding: 8px 12px; border: 1px dashed var(--color-border); border-radius: var(--radius-inner); }
-  .try > .lab { align-self: center; margin: 0; }
-  body { --enemy-edge: var(--color-accent2); }
-  body[data-edge="red"] { --enemy-edge: var(--color-danger); }
-  div.orow.ui-card.is-enemy:not(#\\#) { border-left: 3px solid var(--enemy-edge); }
   .round .rn { font: 700 32px/1 var(--font-serif); color: var(--color-accent-text); font-variant-numeric: lining-nums; }
 
   /* The order */
@@ -282,9 +272,6 @@ const page = `<!doctype html>
   .atks[hidden] { display: none; }
   .atks > .ui-item { justify-self: stretch; }
   .atk { padding: 10px 12px; display: grid; gap: 10px; }
-  body[data-atk="outline"] .atk-head { padding-bottom: 8px; border-bottom: 1px solid var(--color-divider); }
-  body[data-atk="tint"] div.atk.ui-item:not(#\\#) { background: color-mix(in oklab, var(--color-text) 4%, var(--color-surface)); }
-  body[data-atk="rule"] div.atk.ui-item:not(#\\#) { border: 0; border-left: 2px solid var(--color-border); border-radius: 0; background: transparent; padding: 2px 0 2px 14px; }
   .atk .lab { display: block; }
   .atk-head { display: flex; align-items: center; gap: 10px; }
   .atk-head b { font: 600 15px/1.2 var(--font-serif); margin-right: auto; }
@@ -324,7 +311,7 @@ const page = `<!doctype html>
   }
 </style>
 </head>
-<body data-edge="accent2" data-atk="outline">
+<body>
 <div class="page">
   <header class="top"><h1>DM Helper</h1><span class="camp">The Gnoll Hills · Round 3</span>
     <span class="who">Sam <a class="ui-button is-secondary size-sm" href="../site/index.html">Your characters</a><span id="themeSlot"></span><button type="button" class="ui-button is-secondary size-sm">Sign out</button></span></header>
@@ -343,7 +330,7 @@ const page = `<!doctype html>
   document.addEventListener('click', e => {
     const d = e.target.closest('.ui-disclosure'); if (d) { const open = d.getAttribute('aria-expanded') !== 'true'; d.setAttribute('aria-expanded', open); const body = d.closest('.detail')?.querySelector('.atks'); if (body) body.hidden = !open; }
     const s = e.target.closest('.ui-switch'); if (s) s.setAttribute('aria-checked', s.getAttribute('aria-checked') !== 'true');
-    const t = e.target.closest('.ui-tabs > button'); if (t) { t.parentNode.querySelectorAll('button').forEach(x => { x.classList.toggle('is-active', x === t); x.setAttribute('aria-pressed', x === t); }); if (t.parentNode.dataset.try) document.body.dataset[t.parentNode.dataset.try] = t.dataset.v; }
+    const t = e.target.closest('.ui-tabs > button'); if (t) { t.parentNode.querySelectorAll('button').forEach(x => { x.classList.toggle('is-active', x === t); x.setAttribute('aria-pressed', x === t); }); }
   });
   (function(){ const b=document.createElement('button'); b.className='ui-button is-secondary is-icon size-sm'; b.type='button'; b.setAttribute('aria-label','Light or dark');
     const cur=()=>document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');

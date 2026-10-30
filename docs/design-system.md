@@ -348,11 +348,13 @@ each character and each Account section is a card.
 | Compact card | a small card among siblings (an ability score, a spell): the same, with 12px padding in place of 18px | | |
 | Well | read-outs inside a card: an attack's result, roll results | `sunken`, an inner shadow from the top (`shadow-well`) | `sunken`, a deeper inner shadow |
 | Item | a repeated thing inside a card (an effect in Effects, a list row) | `surface` with a `divider` hairline, no shadow | same |
+| Tinted item | a group of controls that holds a well (an Enemy's attack) | a 4% text tint on `surface`, the hairline, **never an inner shadow** | same |
 | Raised | menus, dropdown lists, tooltips, toasts | `raised`, a stronger shadow | `raised` (lighter again), a stronger shadow, a faint top edge |
 | Overlay | dialogs, the page dimmed behind | `raised`, the strongest shadow | same |
 
 In code (`src/ui/components.js`): `ui-card` (`is-compact`, `is-featured`),
-`ui-well`, `ui-item`, `ui-raised`, `dialog.ui-overlay`. A section needs no
+`ui-well`, `ui-item` (`is-tinted`), `ui-raised`, `dialog.ui-overlay`; `ui-card is-opponent` for an
+opponent's card. A section needs no
 class: it's the absence of a box.
 
 Rules:
@@ -366,9 +368,14 @@ Rules:
 4. Corners shrink inward: card 10px, well and item 8px, control 6px.
 5. A **featured** card gets the second accent's top edge. It marks the one
    thing that is live or current, so it follows state, never importance: This
-   round on the sheet, the initiative order on the DM Helper, the character in
+   round on the sheet, the round on the DM Helper, the character in
    play on Your characters. At most one per screen; not for static cards,
    section headers or warnings.
+6. A **tinted item** looks close to a well, so it never takes an inner
+   shadow: the shadow is what makes a well (decided 2026-10-29). It holds
+   controls; a well holds a read-out.
+7. An **opponent's card** (an Enemy in the initiative order) has a 3px
+   `danger` left edge (decided 2026-10-29).
 
 Shadows (light): card `0 1px 2px rgb(20 16 12 / .06), 0 1px 3px rgb(20 16 12 /
 .10)`; raised `0 12px 30px rgb(20 16 12 / .16), 0 2px 6px rgb(20 16 12 / .08)`.
