@@ -1362,17 +1362,18 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
     // The DM gives a backup to a player: it moves to their Backups
     function assign(c) {
       const d = $('assign'), host = $('assign-list');
-      const players = members.filter(m => m.plays && m.id !== session.user.id);
+      // Anyone who plays, you too if you do (it goes to your Player tab)
+      const me = session.user.id, players = members.filter(m => m.plays);
       $('assign-title').textContent = `Assign ${c.name} to a player?`;
-      $('assign-text').textContent = players.length ? `${c.name} moves to their Backups, ready for them to bring into play. You won’t see it here any more.` : 'There are no players in this campaign yet.';
+      $('assign-text').textContent = players.length ? `${c.name} moves to their Backups, ready for them to bring into play. It leaves these Backups.` : 'There are no players in this campaign yet.';
       host.textContent = '';
-      players.forEach((m, i) => { const l = el('label'); const r = el('input'); r.type = 'radio'; r.name = 'to'; r.value = m.id; r.checked = i === 0; l.append(r, ' ', el('span', '', m.name)); host.appendChild(l); });
+      players.forEach((m, i) => { const l = el('label'); const r = el('input'); r.type = 'radio'; r.name = 'to'; r.value = m.id; r.checked = i === 0; l.append(r, ' ', el('span', '', m.id === me ? `${m.name} (you)` : m.name)); host.appendChild(l); });
       $('assign-ok').disabled = !players.length;
       d.onclose = async () => {
         if (d.returnValue !== 'ok') return;
         const to = d.querySelector('input[name="to"]:checked'); if (!to) return;
         const who = players.find(m => m.id === to.value);
-        try { await Characters.assignCharacter(client, c.id, to.value); await reload(); say(`${c.name} is in ${who ? who.name + '’s' : 'their'} Backups.`); }
+        try { await Characters.assignCharacter(client, c.id, to.value); await reload(); say(to.value === me ? `${c.name} is in your Backups, on the Player tab.` : `${c.name} is in ${who ? who.name + '’s' : 'their'} Backups.`); }
         catch (e) { say(problem(e)); }
       };
       d.returnValue = ''; d.showModal();
