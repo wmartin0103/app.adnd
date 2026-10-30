@@ -34,6 +34,7 @@ export async function scan(doc = document) {
       const cs = getComputedStyle(e);
       if (cs.visibility === 'hidden' || +cs.opacity < 0.6) return;
       if (e.disabled || e.closest('[disabled]')) return;
+      if (e.tagName === 'INPUT' && /^(checkbox|radio)$/.test(e.type)) return;   // no text; their edges are checked as shapes (3:1)
       const own = [...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()) || ((e.tagName === 'INPUT' || e.tagName === 'SELECT') && String(e.value || '').trim());
       if (!own) return;
       const large = parseFloat(cs.fontSize) >= 24 || (parseFloat(cs.fontSize) >= 18.6 && +cs.fontWeight >= 700);
