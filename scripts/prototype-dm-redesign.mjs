@@ -64,14 +64,14 @@ const initiative = `
       <div class="rb-main"><span class="round"><span class="lab">Round</span><span class="rn">3</span></span>
       <button type="button" class="ui-button is-primary" title="Rolls for each Enemy that hasn't rolled; never re-rolls">${ROLL_ICON} Roll initiative for Enemies</button>
       <button type="button" class="ui-button is-secondary">Reset initiative</button>
-      <div class="f"><span class="lab">Extra attacks</span><div class="ui-tabs size-sm" role="group" aria-label="Extra attacks" data-try="xatk"><button type="button" class="is-active" aria-pressed="true" data-v="end">End of the order</button><button type="button" aria-pressed="false" data-v="turn">At their turn</button></div></div>
       <button type="button" class="ui-button is-primary">Next round ▸</button></div>
       <div class="apart"><button type="button" class="ui-button is-secondary is-danger">↺ Reset encounter</button></div>
     </div>
   </section>
 
   <section class="order size-sm">
-    <div class="sec-head"><h2 class="sec">Initiative order</h2><span class="hint">Lower acts first: roll + speed + bonuses</span></div>
+    <div class="sec-head"><h2 class="sec">Initiative order</h2><span class="hint">Lower acts first: roll + speed + bonuses</span>
+      <div class="f push"><span class="lab">Extra attacks</span><div class="ui-tabs size-sm" role="group" aria-label="Extra attacks" data-try="xatk"><button type="button" class="is-active" aria-pressed="true" data-v="end">End of the order</button><button type="button" aria-pressed="false" data-v="turn">At their turn</button></div></div></div>
     <div class="ohead"><span>Character</span><span>Speed</span><span>Init</span><span class="c">Act on</span></div>
     <div class="olist">${rows.map(orderRow).join('')}</div>
     <div class="xend at-end">
@@ -260,6 +260,8 @@ const page = `<!doctype html>
   .order { display: grid; gap: 8px; }
   .sec-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
   .sec-head h2.sec { margin: 0; }
+  .sec-head .push { margin-left: auto; }
+  .order > .sec-head { align-items: flex-end; }
   .olist { display: grid; gap: 8px; }
   .ohead { font: 600 11px/1.2 var(--font-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--color-text-muted); padding: 0 13px; }
   .orow { row-gap: 10px; }
