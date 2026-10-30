@@ -487,13 +487,6 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   label.f, div.f { display: inline-flex; flex-direction: column; }
   .line, .actions, .toolbar { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 14px; }
   /* Labelled fields and buttons in one row: the control boxes line up at the bottom */
-  /* Extra attacks, A: the label (13px) + 1px + an extra-small tab group (22px) = a medium control's 36px */
-  .xa-stack { display: inline-flex; flex-direction: column; justify-content: space-between; height: var(--ctl-md); }
-  .xa-stack > .lab { margin: 0; line-height: 13px; }
-  /* B: the label is the group's first segment, not a button */
-  .xa-seg .seg-lab { display: inline-flex; align-items: center; padding: 0 10px; font: 600 11px/1 var(--font-sans); letter-spacing: .08em; text-transform: uppercase;
-    color: var(--color-text-muted); background: var(--color-sunken); white-space: nowrap; }
-  body:not([data-xa="seg"]) .xa-seg, body[data-xa="seg"] .xa-stack { display: none !important; }   /* prototype only: over the tab group's own display */
   .try { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 18px; padding: 8px 12px; border: 1px dashed var(--color-border); border-radius: var(--radius-inner); }
   .try > .lab { align-self: center; margin: 0; }
   .card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; margin-bottom: 12px; }
@@ -546,6 +539,11 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .orow .mini .lab { display: inline; margin: 0 4px 0 0; }
   .orow .mini label.f { flex-direction: row; align-items: center; }
   .orow .detail { grid-column: 1 / -1; }
+  .xline { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--color-divider); }
+  .xline .lab { display: inline; margin-right: 6px; }
+  body[data-xatk="end"] .at-turn, body[data-xatk="turn"] .at-end { display: none; }
+  .xend { display: grid; gap: 8px; margin-top: 6px; }
+  h3.sub { margin: 0; font: 600 12px/1.3 var(--font-serif); letter-spacing: .12em; text-transform: uppercase; color: var(--color-text-muted); }
   .orow .act { grid-column: 4; grid-row: 1; }
   .orow .rm { grid-column: 5; grid-row: 1; justify-self: end; }
   .ui-button svg { width: 1.1em; height: 1.1em; }
@@ -598,7 +596,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   }
 </style>
 </head>
-<body>
+<body data-xatk="end">
 <div class="page">
   <header class="top"><h1>DM Helper</h1><span class="camp">The Gnoll Hills · Round 3</span>
     <span class="who">Sam <a class="ui-button is-secondary size-sm" href="../site/index.html">Your characters</a><span id="themeSlot"></span><button type="button" class="ui-button is-secondary size-sm">Sign out</button></span></header>
@@ -627,8 +625,6 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   </details>
   <nav class="ui-pagetabs" id="ptabs"><button type="button" data-p="Initiative" class="active">Initiative</button><button type="button" data-p="Proficiencies" class="">Proficiencies</button><button type="button" data-p="Saves" class="">Saves</button><button type="button" data-p="Reaction" class="">Reaction</button><button type="button" data-p="Config" class="">Config</button></nav>
   <div class="panel" data-panel="Initiative">
-  <div class="try"><span class="lab">Try</span><div class="f"><span class="lab">Extra attacks</span><div class="ui-tabs size-sm" data-try="xa"><button type="button" class="is-active" aria-pressed="true" data-v="stack">Label above, extra small</button><button type="button" aria-pressed="false" data-v="seg">Label inside the group</button></div></div></div>
-
   
     <section class="ui-card size-sm">
       <div class="card-head"><button type="button" class="ui-disclosure" aria-expanded="true"><span class="ui-disclosure-chev" aria-hidden="true"></span><h3>Surprise</h3></button><span class="hint">d10 each, 1–3 surprised</span></div>
@@ -644,8 +640,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       <div class="rb-main"><span class="round"><span class="lab">Round</span><span class="rn">3</span></span>
       <button type="button" class="ui-button is-primary" title="Rolls for each Enemy that hasn't rolled; never re-rolls"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 1.5 21.5 7v10L12 22.5 2.5 17V7Z"/><path d="M12 1.5 7 9.5h10Z M7 9.5 2.5 7 M17 9.5l4.5-2.5 M7 9.5l5 9 5-9 M12 18.5v4 M7 9.5 2.5 17l9.5 1.5 9.5-1.5-4.5-7.5" stroke-width="1.4"/></svg> Roll initiative for Enemies</button>
       <button type="button" class="ui-button is-secondary">Reset initiative</button>
-      <div class="xa xa-stack"><span class="lab">Extra attacks</span><div class="ui-tabs size-xs" role="group" aria-label="Extra attacks"><button type="button" class="is-active" aria-pressed="true">End of the order</button><button type="button" class="" aria-pressed="false">At their turn</button></div></div>
-      <div class="xa xa-seg ui-tabs" role="group" aria-label="Extra attacks"><span class="seg-lab" aria-hidden="true">Extra attacks</span><button type="button" class="is-active" aria-pressed="true">End of the order</button><button type="button" aria-pressed="false">At their turn</button></div>
+      <div class="f"><span class="lab">Extra attacks</span><div class="ui-tabs size-sm" role="group" aria-label="Extra attacks" data-try="xatk"><button type="button" class="is-active" aria-pressed="true" data-v="end">End of the order</button><button type="button" aria-pressed="false" data-v="turn">At their turn</button></div></div>
       <button type="button" class="ui-button is-primary">Next round ▸</button></div>
       <div class="apart"><button type="button" class="ui-button is-secondary is-danger">↺ Reset encounter</button></div>
     </div>
@@ -674,7 +669,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     <div class="who"><span class="nm">Jaque</span><span class="meta">5th</span></div>
     <label class="f"><span class="lab">Speed</span><select style="width:4.5rem"><option>—</option><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option></select></label><label class="f"><span class="lab">Init</span><select style="width:4.5rem"><option>—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option selected>7</option><option>8</option><option>9</option><option>10</option></select></label>
     <span class="act">9</span>
-    <div class="detail ui-well"><span class="lab">From the sheet</span> Dagger, melee · 3/2 attacks · rolled 10 to hit: hits AC 1 · 5 damage</div>
+    <div class="detail ui-well"><span class="lab">From the sheet</span> Dagger, melee · rolled 10 to hit: hits AC 1 · 5 damage<div class="xline at-turn"><span class="lab">Extra attack</span> Dagger, melee (2nd of 3/2) · rolled 15 to hit: hits AC −4 · 6 damage</div><div class="xline at-end"><span class="lab">Extra attack</span> at the end of the order</div></div>
   </div>
   <div class="orow ui-card is-compact is-ally">
     <div class="who"><span class="nm">Rifiyr</span><span class="meta">5th</span></div>
@@ -724,6 +719,10 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     <button type="button" class="ui-button is-primary size-sm roll"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 1.5 21.5 7v10L12 22.5 2.5 17V7Z"/><path d="M12 1.5 7 9.5h10Z M7 9.5 2.5 7 M17 9.5l4.5-2.5 M7 9.5l5 9 5-9 M12 18.5v4 M7 9.5 2.5 17l9.5 1.5 9.5-1.5-4.5-7.5" stroke-width="1.4"/></svg> Roll to hit</button></div><div class="ui-well hit"><span class="die"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M24 3 43 14v20L24 45 5 34V14Z" fill="currentColor" fill-opacity="0.08"/><path d="M24 3 14 19h20Z M14 19 5 14 M34 19l9-5 M14 19l10 18 10-18 M24 37v8 M14 19 5 34l19 3 19-3-9-15" stroke-opacity="0.55" stroke-width="1.4"/></svg><b>14</b></span><div><span class="lab">Hits AC</span><span class="big">5</span></div><div><span class="lab">vs Jaque, AC 4</span><span class="big miss">Miss</span></div></div>
 </div><button type="button" class="ui-button is-link size-sm">+ Add attack</button></div></div>
   </div></div>
+    <div class="xend at-end">
+      <div class="sec-head"><h3 class="sub">Extra attacks</h3><span class="hint">After everyone has acted, in order</span></div>
+      <div class="orow ui-card is-compact is-ally"><div class="who"><span class="nm">Jaque</span><span class="meta">extra attack</span></div><span class="act">9</span><div class="detail ui-well"><span class="lab">From the sheet</span> Dagger, melee (2nd of 3/2) · rolled 15 to hit: hits AC −4 · 6 damage</div></div>
+    </div>
     <div class="card-foot"><button type="button" class="ui-button is-primary">+ Add Enemy</button></div>
   </section>
 

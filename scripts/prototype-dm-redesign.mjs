@@ -12,7 +12,7 @@ const field = (label, ctl) => `<label class="f"><span class="lab">${label}</span
 
 // ── Initiative ──
 const party = [
-  { name: 'Jaque', act: 9, speed: 2, init: 7, from: 'Dagger, melee · 3/2 attacks · rolled 10 to hit: hits AC 1 · 5 damage', tag: '5th' },
+  { name: 'Jaque', act: 9, speed: 2, init: 7, from: 'Dagger, melee · rolled 10 to hit: hits AC 1 · 5 damage', extra: 'Dagger, melee (2nd of 3/2) · rolled 15 to hit: hits AC −4 · 6 damage', tag: '5th' },
   { name: 'Rifiyr', act: 11, speed: 5, init: 6, from: 'Long bow · 2 arrows · waiting for the roll', tag: '5th' },
   { name: 'Goroth', act: 13, speed: 4, init: 9, from: 'Cast: Cure Light Wounds (5) on Atteroak', tag: '3rd' },
   { name: 'Hanspeter', act: 15, speed: 7, init: 8, from: 'Not sent yet', tag: '5th', none: true },
@@ -34,7 +34,7 @@ const orderRow = r => r.pc ? `
     <div class="who"><span class="nm">${r.name}</span><span class="meta">${r.tag}</span></div>
     ${field('Speed', sel(['—', '1', '2', '3', '4', '5', '6', '7'], String(r.speed), '4.5rem'))}${field('Init', sel(['—', ...Array.from({ length: 10 }, (_, i) => String(i + 1))], String(r.init), '4.5rem'))}
     <span class="act${r.act == null ? ' none' : ''}">${r.act ?? '—'}</span>
-    <div class="detail ui-well${r.none ? ' is-none' : ''}"><span class="lab">From the sheet</span> ${r.from}</div>
+    <div class="detail ui-well${r.none ? ' is-none' : ''}"><span class="lab">From the sheet</span> ${r.from}${r.extra ? `<div class="xline at-turn"><span class="lab">Extra attack</span> ${r.extra}</div><div class="xline at-end"><span class="lab">Extra attack</span> at the end of the order</div>` : ''}</div>
   </div>` : `
   <div class="orow ui-card is-compact is-opponent is-enemy">
     <div class="who"><input type="checkbox" checked aria-label="${r.name} in the round"><span class="tag">${r.id}</span><input class="open-field nm-in" value="${r.name}" aria-label="Enemy name">
@@ -57,8 +57,6 @@ const surprise = `
       </div>
     </section>`;
 const initiative = `
-  <div class="try"><span class="lab">Try</span><div class="f"><span class="lab">Extra attacks</span><div class="ui-tabs size-sm" data-try="xa"><button type="button" class="is-active" aria-pressed="true" data-v="stack">Label above, extra small</button><button type="button" aria-pressed="false" data-v="seg">Label inside the group</button></div></div></div>
-
   ${surprise}
 
   <section class="ui-card is-featured">
@@ -66,8 +64,7 @@ const initiative = `
       <div class="rb-main"><span class="round"><span class="lab">Round</span><span class="rn">3</span></span>
       <button type="button" class="ui-button is-primary" title="Rolls for each Enemy that hasn't rolled; never re-rolls">${ROLL_ICON} Roll initiative for Enemies</button>
       <button type="button" class="ui-button is-secondary">Reset initiative</button>
-      <div class="xa xa-stack"><span class="lab">Extra attacks</span>${tabs(['End of the order', 'At their turn'], 'End of the order', 'Extra attacks', 'xs')}</div>
-      <div class="xa xa-seg ui-tabs" role="group" aria-label="Extra attacks"><span class="seg-lab" aria-hidden="true">Extra attacks</span><button type="button" class="is-active" aria-pressed="true">End of the order</button><button type="button" aria-pressed="false">At their turn</button></div>
+      <div class="f"><span class="lab">Extra attacks</span><div class="ui-tabs size-sm" role="group" aria-label="Extra attacks" data-try="xatk"><button type="button" class="is-active" aria-pressed="true" data-v="end">End of the order</button><button type="button" aria-pressed="false" data-v="turn">At their turn</button></div></div>
       <button type="button" class="ui-button is-primary">Next round ▸</button></div>
       <div class="apart"><button type="button" class="ui-button is-secondary is-danger">↺ Reset encounter</button></div>
     </div>
@@ -77,6 +74,10 @@ const initiative = `
     <div class="sec-head"><h2 class="sec">Initiative order</h2><span class="hint">Lower acts first: roll + speed + bonuses</span></div>
     <div class="ohead"><span>Character</span><span>Speed</span><span>Init</span><span class="c">Act on</span></div>
     <div class="olist">${rows.map(orderRow).join('')}</div>
+    <div class="xend at-end">
+      <div class="sec-head"><h3 class="sub">Extra attacks</h3><span class="hint">After everyone has acted, in order</span></div>
+      ${party.filter(p => p.extra).map(p => `<div class="orow ui-card is-compact is-ally"><div class="who"><span class="nm">${p.name}</span><span class="meta">extra attack</span></div><span class="act">${p.act}</span><div class="detail ui-well"><span class="lab">From the sheet</span> ${p.extra}</div></div>`).join('')}
+    </div>
     <div class="card-foot"><button type="button" class="ui-button is-primary">+ Add Enemy</button></div>
   </section>
 
@@ -219,13 +220,6 @@ const page = `<!doctype html>
   label.f, div.f { display: inline-flex; flex-direction: column; }
   .line, .actions, .toolbar { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 14px; }
   /* Labelled fields and buttons in one row: the control boxes line up at the bottom */
-  /* Extra attacks, A: the label (13px) + 1px + an extra-small tab group (22px) = a medium control's 36px */
-  .xa-stack { display: inline-flex; flex-direction: column; justify-content: space-between; height: var(--ctl-md); }
-  .xa-stack > .lab { margin: 0; line-height: 13px; }
-  /* B: the label is the group's first segment, not a button */
-  .xa-seg .seg-lab { display: inline-flex; align-items: center; padding: 0 10px; font: 600 11px/1 var(--font-sans); letter-spacing: .08em; text-transform: uppercase;
-    color: var(--color-text-muted); background: var(--color-sunken); white-space: nowrap; }
-  body:not([data-xa="seg"]) .xa-seg, body[data-xa="seg"] .xa-stack { display: none !important; }   /* prototype only: over the tab group's own display */
   .try { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 18px; padding: 8px 12px; border: 1px dashed var(--color-border); border-radius: var(--radius-inner); }
   .try > .lab { align-self: center; margin: 0; }
   .card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; margin-bottom: 12px; }
@@ -278,6 +272,11 @@ const page = `<!doctype html>
   .orow .mini .lab { display: inline; margin: 0 4px 0 0; }
   .orow .mini label.f { flex-direction: row; align-items: center; }
   .orow .detail { grid-column: 1 / -1; }
+  .xline { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--color-divider); }
+  .xline .lab { display: inline; margin-right: 6px; }
+  body[data-xatk="end"] .at-turn, body[data-xatk="turn"] .at-end { display: none; }
+  .xend { display: grid; gap: 8px; margin-top: 6px; }
+  h3.sub { margin: 0; font: 600 12px/1.3 var(--font-serif); letter-spacing: .12em; text-transform: uppercase; color: var(--color-text-muted); }
   .orow .act { grid-column: 4; grid-row: 1; }
   .orow .rm { grid-column: 5; grid-row: 1; justify-self: end; }
   .ui-button svg { width: 1.1em; height: 1.1em; }
@@ -330,7 +329,7 @@ const page = `<!doctype html>
   }
 </style>
 </head>
-<body>
+<body data-xatk="end">
 <div class="page">
   <header class="top"><h1>DM Helper</h1><span class="camp">The Gnoll Hills · Round 3</span>
     <span class="who">Sam <a class="ui-button is-secondary size-sm" href="../site/index.html">Your characters</a><span id="themeSlot"></span><button type="button" class="ui-button is-secondary size-sm">Sign out</button></span></header>
