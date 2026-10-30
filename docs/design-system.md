@@ -92,7 +92,10 @@ Where colour goes:
   small kicker labels ("In play"), the die's outline.
 - **Success green:** a hit, a good result. A **crit** is the same family,
   filled (a badge): a stronger hit.
-- **Red:** destructive actions and errors only.
+- **Red:** destructive actions, errors, and a **critical failure** (a
+  tinted cell or badge with `danger-text`, the counterpart of the crit's
+  filled green; decided 2026-10-29). Not for ordinary failures or
+  negative numbers.
 
 Theme steps for hover and pressing mix toward **black in light** and
 **white in dark**, so one rule serves both themes.

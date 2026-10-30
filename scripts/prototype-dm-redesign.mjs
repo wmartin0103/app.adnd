@@ -29,13 +29,13 @@ const attack = (n, extra = '') => `<div class="ui-item atk">
     <button type="button" class="ui-button is-primary size-sm roll">${DIE} Roll to hit</button></div>${extra}
 </div>`;
 const orderRow = r => r.pc ? `
-  <div class="orow${r.name === 'Jaque' ? ' is-now' : ''}">
+  <div class="orow ui-card is-compact">
     <span class="act">${r.act}</span>
-    <div class="who"><span class="nm">${r.name}</span><span class="meta">${r.tag}</span>${r.name === 'Jaque' ? '<span class="tag now">Acting</span>' : ''}</div>
+    <div class="who"><span class="nm">${r.name}</span><span class="meta">${r.tag}</span></div>
     ${field('Speed', sel(['—', '1', '2', '3', '4', '5', '6', '7'], String(r.speed), '4.5rem'))}${field('Init', sel(['—', ...Array.from({ length: 10 }, (_, i) => String(i + 1))], String(r.init), '4.5rem'))}
     <div class="detail ui-well${r.none ? ' is-none' : ''}"><span class="lab">From the sheet</span> ${r.from}</div>
   </div>` : `
-  <div class="orow is-enemy">
+  <div class="orow ui-card is-compact is-enemy">
     <span class="act">${r.act}</span>
     <div class="who"><input type="checkbox" checked aria-label="${r.name} in the round"><span class="tag">${r.id}</span><input class="open-field nm-in" value="${r.name}" aria-label="Enemy name">
       <span class="mini">${field('AC', sel(['3', '4', '5', '6'], String(r.ac), '4rem'))}${field('THAC0', sel(['17', '18', '19', '20'], String(r.thac0), '4.5rem'))}</span>
@@ -60,10 +60,10 @@ const initiative = `
     </div>
   </section>
 
-  <section class="ui-card is-featured order size-sm">
-    <div class="card-head"><h3>Initiative order</h3><span class="hint">Lower acts first: roll + speed + bonuses</span></div>
-    <div class="ohead"><span>Act on</span><span>Name</span><span>Speed</span><span>Init</span><span></span></div>
-    ${rows.map(orderRow).join('')}
+  <section class="order size-sm">
+    <div class="sec-head"><h2 class="sec">Initiative order</h2><span class="hint">Lower acts first: roll + speed + bonuses</span></div>
+    <div class="ohead"><span>Act on</span><span>Name</span><span>Speed</span><span>Init</span></div>
+    <div class="olist">${rows.map(orderRow).join('')}</div>
     <div class="card-foot"><button type="button" class="ui-button is-primary">+ Add Enemy</button></div>
   </section>
 
@@ -106,7 +106,7 @@ const profs = `
     </tbody></table>
   </section>
   <section class="ui-card size-sm collapsed"><div class="card-head"><button type="button" class="ui-disclosure" aria-expanded="false"><span class="ui-disclosure-chev" aria-hidden="true"></span><h3>Goroth</h3></button><span class="meta">3rd</span></div></section>
-  <p class="foot">Roll d20 at or under the target. Cells show the margin (target − roll): green succeeds; +15 or better is a critical success, −15 or worse a critical failure.</p>`;
+  <p class="foot">Roll d20 at or under the target. Cells show the margin (target − roll): green succeeds; +15 or better is a critical success (filled green), −15 or worse a critical failure (red).</p>`;
 
 // ── Saves ──
 const saves = `
@@ -188,8 +188,7 @@ const notes = `
       <div><h4>Goes</h4><ul>
         <li>Reset in the header: it moves to Config, as Start over.</li>
         <li>The hidden leftovers of the player tabs.</li>
-      </ul><h4>New (to decide)</h4><ul>
-        <li>The row acting now: the second accent and an "Acting" tag. Needs a way to move it along (Next turn), or it follows the players' sheets.</li>
+      </ul><h4>New</h4><ul>
         <li>Untrained shown as a tag in group checks (was "np").</li>
       </ul></div>
     </div>
@@ -247,8 +246,12 @@ const page = `<!doctype html>
 
   /* The order */
   .ohead, .orow { display: grid; grid-template-columns: 3.4rem minmax(12rem, 1fr) 5rem 5rem; column-gap: 12px; align-items: center; }
-  .ohead { font: 600 11px/1.2 var(--font-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--color-text-muted); padding: 0 10px 6px; border-bottom: 1px solid var(--color-divider); }
-  .orow { padding: 10px; border-bottom: 1px solid var(--color-divider); row-gap: 8px; }
+  .order { display: grid; gap: 8px; }
+  .sec-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+  .sec-head h2.sec { margin: 0; }
+  .olist { display: grid; gap: 8px; }
+  .ohead { font: 600 11px/1.2 var(--font-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--color-text-muted); padding: 0 13px; }
+  .orow { row-gap: 10px; }
   .orow .lab { display: none; }
   .orow .act { font: 700 22px/1 var(--font-serif); color: var(--color-accent-text); font-variant-numeric: lining-nums; text-align: center; }
   .orow .who { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; min-width: 0; }
@@ -261,10 +264,10 @@ const page = `<!doctype html>
   .orow .detail.ui-well { padding: 8px 12px; font-size: 14px; }
   .orow .detail .lab { display: inline; margin-right: 6px; }
   .orow .detail.is-none { color: var(--color-text-muted); }
-  .orow.is-now { box-shadow: inset 3px 0 0 var(--color-accent2); background: color-mix(in oklab, var(--color-accent2) 6%, transparent); }
   .atks { display: grid; gap: 10px; margin-top: 10px; justify-items: start; }
+  .atks[hidden] { display: none; }
   .atks > .ui-item { justify-self: stretch; }
-  .atk { padding: 10px 12px; display: grid; gap: 10px; }
+  .atk { padding: 10px 12px; display: grid; gap: 10px; background: var(--color-bg); }
   .atk .lab { display: block; }
   .atk-head { display: flex; align-items: center; gap: 10px; }
   .atk-head b { font: 600 15px/1.2 var(--font-serif); margin-right: auto; }
@@ -276,7 +279,7 @@ const page = `<!doctype html>
   .hit .die b { position: relative; font: 700 17px/1 var(--font-serif); color: var(--color-text); }
   .hit .big { font: 700 26px/1 var(--font-serif); color: var(--color-accent-text); }
   .hit .big.miss { color: var(--color-text-muted); }
-  .card-foot { padding-top: 4px; }
+  .card-foot { padding-top: 6px; }
 
   /* Tables */
   table.t { border-collapse: collapse; width: 100%; font-size: 14px; }
@@ -287,7 +290,7 @@ const page = `<!doctype html>
   .t .nm { font: 600 15px/1.2 var(--font-serif); }
   .t .ok { color: var(--color-success-text); font-weight: 600; }
   .t td.m.crit { background: var(--color-highlight); color: var(--color-on-highlight); font-weight: 700; border-radius: 4px; }
-  .t td.m.cfail { background: var(--color-sunken); font-weight: 700; }
+  .t td.m.cfail { background: color-mix(in oklab, var(--color-danger) 16%, var(--color-surface)); color: var(--color-danger-text); font-weight: 700; border-radius: 4px; }
   .t .rx { color: var(--color-accent-text); font-weight: 600; }
   .t tr.sum td { border-top: 1px solid var(--color-text-muted); font-weight: 700; }
 

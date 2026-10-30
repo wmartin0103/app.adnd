@@ -513,8 +513,12 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
 
   /* The order */
   .ohead, .orow { display: grid; grid-template-columns: 3.4rem minmax(12rem, 1fr) 5rem 5rem; column-gap: 12px; align-items: center; }
-  .ohead { font: 600 11px/1.2 var(--font-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--color-text-muted); padding: 0 10px 6px; border-bottom: 1px solid var(--color-divider); }
-  .orow { padding: 10px; border-bottom: 1px solid var(--color-divider); row-gap: 8px; }
+  .order { display: grid; gap: 8px; }
+  .sec-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+  .sec-head h2.sec { margin: 0; }
+  .olist { display: grid; gap: 8px; }
+  .ohead { font: 600 11px/1.2 var(--font-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--color-text-muted); padding: 0 13px; }
+  .orow { row-gap: 10px; }
   .orow .lab { display: none; }
   .orow .act { font: 700 22px/1 var(--font-serif); color: var(--color-accent-text); font-variant-numeric: lining-nums; text-align: center; }
   .orow .who { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; min-width: 0; }
@@ -527,10 +531,10 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .orow .detail.ui-well { padding: 8px 12px; font-size: 14px; }
   .orow .detail .lab { display: inline; margin-right: 6px; }
   .orow .detail.is-none { color: var(--color-text-muted); }
-  .orow.is-now { box-shadow: inset 3px 0 0 var(--color-accent2); background: color-mix(in oklab, var(--color-accent2) 6%, transparent); }
   .atks { display: grid; gap: 10px; margin-top: 10px; justify-items: start; }
+  .atks[hidden] { display: none; }
   .atks > .ui-item { justify-self: stretch; }
-  .atk { padding: 10px 12px; display: grid; gap: 10px; }
+  .atk { padding: 10px 12px; display: grid; gap: 10px; background: var(--color-bg); }
   .atk .lab { display: block; }
   .atk-head { display: flex; align-items: center; gap: 10px; }
   .atk-head b { font: 600 15px/1.2 var(--font-serif); margin-right: auto; }
@@ -542,7 +546,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .hit .die b { position: relative; font: 700 17px/1 var(--font-serif); color: var(--color-text); }
   .hit .big { font: 700 26px/1 var(--font-serif); color: var(--color-accent-text); }
   .hit .big.miss { color: var(--color-text-muted); }
-  .card-foot { padding-top: 4px; }
+  .card-foot { padding-top: 6px; }
 
   /* Tables */
   table.t { border-collapse: collapse; width: 100%; font-size: 14px; }
@@ -553,7 +557,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .t .nm { font: 600 15px/1.2 var(--font-serif); }
   .t .ok { color: var(--color-success-text); font-weight: 600; }
   .t td.m.crit { background: var(--color-highlight); color: var(--color-on-highlight); font-weight: 700; border-radius: 4px; }
-  .t td.m.cfail { background: var(--color-sunken); font-weight: 700; }
+  .t td.m.cfail { background: color-mix(in oklab, var(--color-danger) 16%, var(--color-surface)); color: var(--color-danger-text); font-weight: 700; border-radius: 4px; }
   .t .rx { color: var(--color-accent-text); font-weight: 600; }
   .t tr.sum td { border-top: 1px solid var(--color-text-muted); font-weight: 700; }
 
@@ -591,8 +595,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       <div><h4>Goes</h4><ul>
         <li>Reset in the header: it moves to Config, as Start over.</li>
         <li>The hidden leftovers of the player tabs.</li>
-      </ul><h4>New (to decide)</h4><ul>
-        <li>The row acting now: the second accent and an "Acting" tag. Needs a way to move it along (Next turn), or it follows the players' sheets.</li>
+      </ul><h4>New</h4><ul>
         <li>Untrained shown as a tag in group checks (was "np").</li>
       </ul></div>
     </div>
@@ -613,11 +616,11 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     </div>
   </section>
 
-  <section class="ui-card is-featured order size-sm">
-    <div class="card-head"><h3>Initiative order</h3><span class="hint">Lower acts first: roll + speed + bonuses</span></div>
-    <div class="ohead"><span>Act on</span><span>Name</span><span>Speed</span><span>Init</span><span></span></div>
-    
-  <div class="orow is-enemy">
+  <section class="order size-sm">
+    <div class="sec-head"><h2 class="sec">Initiative order</h2><span class="hint">Lower acts first: roll + speed + bonuses</span></div>
+    <div class="ohead"><span>Act on</span><span>Name</span><span>Speed</span><span>Init</span></div>
+    <div class="olist">
+  <div class="orow ui-card is-compact is-enemy">
     <span class="act">8</span>
     <div class="who"><input type="checkbox" checked aria-label="Gnoll 1 in the round"><span class="tag">E1</span><input class="open-field nm-in" value="Gnoll 1" aria-label="Enemy name">
       <span class="mini"><label class="f"><span class="lab">AC</span><select style="width:4rem"><option>3</option><option>4</option><option selected>5</option><option>6</option></select></label><label class="f"><span class="lab">THAC0</span><select style="width:4.5rem"><option>17</option><option>18</option><option selected>19</option><option>20</option></select></label></span>
@@ -631,19 +634,19 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     <button type="button" class="ui-button is-primary size-sm roll"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 2v20M3 7l9 5 9-5"/></svg> Roll to hit</button></div><div class="ui-well hit"><span class="die"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l9 5v10l-9 5-9-5V7z"/></svg><b>14</b></span><div><span class="lab">Hits AC</span><span class="big">5</span></div><div><span class="lab">vs Jaque, AC 4</span><span class="big miss">Miss</span></div></div>
 </div><button type="button" class="ui-button is-link size-sm">+ Add attack</button></div></div>
   </div>
-  <div class="orow is-now">
+  <div class="orow ui-card is-compact">
     <span class="act">9</span>
-    <div class="who"><span class="nm">Jaque</span><span class="meta">5th</span><span class="tag now">Acting</span></div>
+    <div class="who"><span class="nm">Jaque</span><span class="meta">5th</span></div>
     <label class="f"><span class="lab">Speed</span><select style="width:4.5rem"><option>—</option><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option></select></label><label class="f"><span class="lab">Init</span><select style="width:4.5rem"><option>—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option selected>7</option><option>8</option><option>9</option><option>10</option></select></label>
     <div class="detail ui-well"><span class="lab">From the sheet</span> Dagger, melee · 3/2 attacks · rolled 10 to hit: hits AC 1 · 5 damage</div>
   </div>
-  <div class="orow">
+  <div class="orow ui-card is-compact">
     <span class="act">11</span>
     <div class="who"><span class="nm">Rifiyr</span><span class="meta">5th</span></div>
     <label class="f"><span class="lab">Speed</span><select style="width:4.5rem"><option>—</option><option>1</option><option>2</option><option>3</option><option>4</option><option selected>5</option><option>6</option><option>7</option></select></label><label class="f"><span class="lab">Init</span><select style="width:4.5rem"><option>—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option selected>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></label>
     <div class="detail ui-well"><span class="lab">From the sheet</span> Long bow · 2 arrows · waiting for the roll</div>
   </div>
-  <div class="orow is-enemy">
+  <div class="orow ui-card is-compact is-enemy">
     <span class="act">12</span>
     <div class="who"><input type="checkbox" checked aria-label="Gnoll 2 in the round"><span class="tag">E2</span><input class="open-field nm-in" value="Gnoll 2" aria-label="Enemy name">
       <span class="mini"><label class="f"><span class="lab">AC</span><select style="width:4rem"><option>3</option><option>4</option><option selected>5</option><option>6</option></select></label><label class="f"><span class="lab">THAC0</span><select style="width:4.5rem"><option>17</option><option>18</option><option selected>19</option><option>20</option></select></label></span>
@@ -657,18 +660,18 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     <button type="button" class="ui-button is-primary size-sm roll"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 2v20M3 7l9 5 9-5"/></svg> Roll to hit</button></div><div class="ui-well hit"><span class="die"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l9 5v10l-9 5-9-5V7z"/></svg><b>14</b></span><div><span class="lab">Hits AC</span><span class="big">5</span></div><div><span class="lab">vs Jaque, AC 4</span><span class="big miss">Miss</span></div></div>
 </div><button type="button" class="ui-button is-link size-sm">+ Add attack</button></div></div>
   </div>
-  <div class="orow">
+  <div class="orow ui-card is-compact">
     <span class="act">13</span>
     <div class="who"><span class="nm">Goroth</span><span class="meta">3rd</span></div>
     <label class="f"><span class="lab">Speed</span><select style="width:4.5rem"><option>—</option><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option></select></label><label class="f"><span class="lab">Init</span><select style="width:4.5rem"><option>—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option selected>9</option><option>10</option></select></label>
     <div class="detail ui-well"><span class="lab">From the sheet</span> Cast: Cure Light Wounds (5) on Atteroak</div>
   </div>
-  <div class="orow">
+  <div class="orow ui-card is-compact">
     <span class="act">15</span>
     <div class="who"><span class="nm">Hanspeter</span><span class="meta">5th</span></div>
     <label class="f"><span class="lab">Speed</span><select style="width:4.5rem"><option>—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option selected>7</option></select></label><label class="f"><span class="lab">Init</span><select style="width:4.5rem"><option>—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option selected>8</option><option>9</option><option>10</option></select></label>
     <div class="detail ui-well is-none"><span class="lab">From the sheet</span> Not sent yet</div>
-  </div>
+  </div></div>
     <div class="card-foot"><button type="button" class="ui-button is-primary">+ Add Enemy</button></div>
   </section>
 
@@ -707,7 +710,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     </tbody></table>
   </section>
   <section class="ui-card size-sm collapsed"><div class="card-head"><button type="button" class="ui-disclosure" aria-expanded="false"><span class="ui-disclosure-chev" aria-hidden="true"></span><h3>Goroth</h3></button><span class="meta">3rd</span></div></section>
-  <p class="foot">Roll d20 at or under the target. Cells show the margin (target − roll): green succeeds; +15 or better is a critical success, −15 or worse a critical failure.</p></div>
+  <p class="foot">Roll d20 at or under the target. Cells show the margin (target − roll): green succeeds; +15 or better is a critical success (filled green), −15 or worse a critical failure (red).</p></div>
   <div class="panel" data-panel="Saves" hidden>
   <section class="open">
     <div class="toolbar"><label class="f"><span class="lab">Group save</span><select style="width:12rem"><option>— pick a save —</option><option selected>Poison</option><option>Spell</option></select></label><button type="button" class="ui-button is-primary">⟳ Roll all saves</button><button type="button" class="ui-button is-link">Clear</button></div>
