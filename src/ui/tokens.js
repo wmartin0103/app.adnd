@@ -91,7 +91,7 @@ export const CONSTANTS = {
   'ctl-ico-xs': '12px', 'ctl-ico-sm': '14px', 'ctl-ico-md': '16px', 'ctl-ico-lg': '20px',
   'ctl-pad-xs': '6px', 'ctl-pad-sm': '8px', 'ctl-pad-md': '12px', 'ctl-pad-lg': '16px',
   'radius-ctl': '6px', 'radius-inner': '8px', 'radius-card': '10px',
-  'page-max': '68rem', 'page-gutter': 'clamp(16px, 3vw, 40px)',
+  'page-max': '1280px', 'page-gutter': 'clamp(16px, 3vw, 40px)',
 };
 
 // The fonts: Barlow 400/500/600, Spectral 600/700 (docs/design-system.md, Type)
