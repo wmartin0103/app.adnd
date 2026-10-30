@@ -496,7 +496,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       gap: 1.5rem;
       margin-bottom: 2.5rem;
       padding-bottom: 1.5rem;
-      border-bottom: 2px solid var(--color-border);
+      border-bottom: 2px solid var(--accent);
     }
 
     .sheet-title {
@@ -681,7 +681,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       font-size: 0.75rem;
       letter-spacing: 0.18em;
       text-transform: uppercase;
-      color: var(--ink-muted);
+      color: var(--accent);
       border-bottom: 1px solid var(--rule);
       padding-bottom: 0.4rem;
       margin-bottom: 1.25rem;
@@ -793,7 +793,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       text-align: right;
     }
     .ability-mod-value.positive { color: var(--color-success-text); }
-    .ability-mod-value.negative { color: var(--ink); }   /* good is green; bad is just the number */
+    .ability-mod-value.negative { color: var(--accent); }
 
     /* ─── Combat Grid ───────────────────────────────────────── */
     .combat-grid {
@@ -837,7 +837,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     }
     .combat-value::-webkit-outer-spin-button,
     .combat-value::-webkit-inner-spin-button { -webkit-appearance: none; }
-    .combat-value[readonly] { color: var(--ink); }
+    .combat-value[readonly] { color: var(--accent); }
 
     .movement-label-row {
       display: flex;
@@ -1163,7 +1163,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
 
     /* Final value is highlighted when a modifier is active */
     .saves-value-modified {
-      color: var(--ink);
+      color: var(--accent);
     }
 
         /* ─── Weapons section ──────────────────────────────────── */
@@ -1214,7 +1214,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     .play-line > .play-label, .play-line > .play-need { line-height: var(--ctl-h); align-self: flex-end; }
     .round-init { display: flex; flex-direction: column; gap: 0.2rem; }
 
-    .round-value { font-family: var(--font-display); font-size: 1.5rem; color: var(--ink); line-height: 1; }
+    .round-value { font-family: var(--font-display); font-size: 1.5rem; color: var(--accent); line-height: 1; }
     .round-acton { margin-left: auto; }
     .round-pick { display: inline-flex; flex-direction: column; gap: 0.15rem; }
     .round-pick .scenario-select { width: auto; min-width: 4.5rem; }
@@ -1223,7 +1223,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     .round-btn:disabled { background: var(--rule); border-color: var(--rule); color: var(--ink-muted); cursor: not-allowed; }
     .round-note { font-size: 0.85rem; color: var(--ink-muted); }
     .round-queue { margin-top: 0.75rem; display: grid; gap: 0.5rem; }
-    .round-item { border: 1px solid var(--rule); border-radius: var(--radius); background: var(--surface); }   /* an item in the card */
+    .round-item { border: 1px solid var(--accent); border-radius: var(--radius); background: var(--surface); }
     .round-item-head { display: flex; align-items: baseline; gap: 0.6rem; padding: 0.5rem 0.7rem; flex-wrap: wrap; }
     .round-item-head { align-items: center; }
     .round-item-head .round-item-extra { margin-left: auto; display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.85rem; color: var(--ink-muted); cursor: pointer; }
@@ -1380,7 +1380,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     }
 
     .wpn-racial-heading strong {
-      color: var(--ink);
+      color: var(--accent);
       font-size: 0.65rem;
       font-weight: 700;
     }
@@ -2045,7 +2045,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       color: var(--ink);
     }
 
-    .thief-pool-value.thief-pool-over { color: var(--color-danger-text); }
+    .thief-pool-value.thief-pool-over { color: var(--accent); }
 
     .thief-pool-total {
       font-weight: 400;
@@ -2095,7 +2095,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
 
     .thief-center { text-align: center; }
     .thief-pos    { color: var(--color-success-text); }
-    .thief-neg    { color: var(--ink); }
+    .thief-neg    { color: var(--accent); }
 
     .thief-inp {
       font-family: var(--font-display);
@@ -2152,7 +2152,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     .thief-bs-mult {
       font-family: var(--font-display);
       font-size: 0.85rem;
-      color: var(--ink);
+      color: var(--accent);
     }
 
     .thief-bs-note {
@@ -2209,8 +2209,9 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       font-size: 0.7rem;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: var(--ink-muted);
+      color: var(--accent);
       font-weight: 400;
+      opacity: 0.75;
     }
 
     .racial-traits-list {
@@ -2378,7 +2379,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       font-family: var(--font-display);
       font-size: 0.75rem;
       font-weight: 700;
-      color: var(--ink);
+      color: var(--accent);
       white-space: nowrap;
       min-width: 5ch;
       text-align: right;
@@ -2420,12 +2421,12 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     .sr-spell a { color: var(--accent); }
     .stances { margin: 1rem 0 0.5rem; padding: 0.75rem 0.9rem; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--surface); }
     .stances-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.3rem 1rem; }
-    .stances-title { margin: 0; font-family: var(--font-display); font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted); }
+    .stances-title { margin: 0; font-family: var(--font-display); font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
     .stances-ac { font-family: var(--font-display); font-size: 0.85rem; font-weight: 600; }
     .stances-hint { margin: 0.3rem 0 0.6rem; font-size: 0.85rem; color: var(--ink-muted); }
     .stances-empty { margin: 0; font-size: 0.85rem; color: var(--ink-muted); }
     .stance-card { padding: 0.55rem 0.7rem; margin-top: 0.5rem; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--surface); }
-    .stance-card.is-on { border-color: var(--color-accent2-text); box-shadow: inset 3px 0 0 var(--color-accent2); }
+    .stance-card.is-on { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
     .stance-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.6rem; }
     .stance-name { font-weight: 600; margin-right: auto; }
     .stance-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; }
@@ -2436,7 +2437,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     .stance-del:hover { background: color-mix(in oklab, var(--accent) 8%, transparent); }
     .stance-ctl { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; margin-top: 0.45rem; }
     .stance-sum { font-family: var(--font-display); font-size: 0.8rem; color: var(--ink-muted); }
-    .stance-card.is-on .stance-sum { color: var(--color-accent2-text); }
+    .stance-card.is-on .stance-sum { color: var(--accent); }
     /* Segmented control, as in the Combat prototype's Bladesong row */
     .stance-seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden; background: var(--surface); }
     .stance-seg button { border: none; background: transparent; padding: 4px 11px; border-right: 1px solid var(--rule); font-family: var(--font-body); font-size: 0.93rem; line-height: 1.45; color: var(--ink); cursor: pointer; }
@@ -2529,20 +2530,19 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       font-weight: 700;
       color: var(--ink);
     }
-    .scenario-result-value.accent { color: var(--ink); }
+    .scenario-result-value.accent { color: var(--accent); }
     .scenario-result { display: grid; gap: 0.6rem; }
     .sr-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem 2rem; }
     .sr-cell { display: flex; flex-direction: column; gap: 0.15rem; }
     .sr-val { font-family: var(--font-display); font-size: 1.15rem; font-weight: 600; }
-    .sr-math summary { cursor: pointer; font-family: var(--font-display); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-muted); }
-    .sr-math summary:hover { color: var(--accent); }
+    .sr-math summary { cursor: pointer; font-family: var(--font-display); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
     .sr-math table { width: 100%; max-width: 34rem; border-collapse: collapse; margin-top: 0.4rem; font-size: 0.9rem; }
     .sr-math th, .sr-math td { padding: 0.2rem 0.5rem 0.2rem 0; text-align: left; border-bottom: 1px dotted var(--rule); }
     .sr-math thead th { font-family: var(--font-display); font-size: 0.6rem; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-muted); }
     .sr-math .n { text-align: left; font-variant-numeric: tabular-nums; white-space: nowrap; }
     .sr-math tfoot th, .sr-math tfoot td { border-bottom: none; border-top: 1px solid var(--ink-muted); font-weight: 700; }
-    .sr-math tfoot td { color: var(--ink); }
-    .sr-effect td:first-child { color: var(--ink); }
+    .sr-math tfoot td { color: var(--accent); }
+    .sr-effect td:first-child { color: var(--accent); }
     .stances-on { font-size: 0.85rem; color: var(--ink-muted); margin-right: auto; }
     .stances { margin: 0 0 1rem; }
 
@@ -2584,7 +2584,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
 
     .ac-matrix-table td.hit-easy  { color: var(--color-success-text); font-weight: 600; }
     .ac-matrix-table td.hit-mid   { color: var(--ink); font-weight: 600; }   /* not brass: brass is only for what you can press */
-    .ac-matrix-table td.hit-hard  { color: var(--ink-muted); font-weight: 600; }
+    .ac-matrix-table td.hit-hard  { color: var(--accent); font-weight: 600; }
     .ac-matrix-table td.hit-impossible { color: var(--ink-faint); }
 
     /* Below the attacks, centred */
@@ -2612,7 +2612,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     }
 
     .classes-effective-level strong {
-      color: var(--ink);
+      color: var(--accent);
       font-size: 0.78rem;
       font-weight: 700;
       letter-spacing: 0;
@@ -4756,7 +4756,7 @@ const {lineSay} = __m["rules/round"];
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-const STYLES = "/* Shared tokens: the character sheet's palette and type, under names of their\n   own (each tool keeps its own token names for the rest of its page) */\n:root { --ui-ink: var(--color-text); --ui-muted: var(--color-text-muted); --ui-faint: var(--color-text-faint); --ui-rule: var(--color-divider); --ui-accent: var(--color-accent-text); --ui-accent-dark: color-mix(in oklab, var(--color-accent-text) 82%, var(--toward));\n  --ui-surface: var(--color-surface); --ui-page: var(--color-bg); --ui-gold: var(--color-accent); --ui-radius: var(--radius-ctl); --ui-ctl-h: 2.1rem;\n  --ui-display: var(--font-serif); --ui-body: var(--font-sans); }\n/* A label over a control, the control, a button */\n.ui-field { display: inline-flex; flex-direction: column; gap: 0.15rem; }\n.ui-label { font-family: var(--ui-display); font-size: 0.65rem; letter-spacing: 0.13em; text-transform: uppercase; color: var(--ui-muted); }\n/* Looks like a field (src/ui/components.js): the select with checkboxes sits among selects */\n.ui-control { box-sizing: border-box; height: var(--field-h, var(--ui-ctl-h)); padding: 0 var(--field-px, 0.5rem); font: 500 var(--field-fs, 0.95rem) var(--ui-body); color: var(--ui-ink);\n  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--ui-radius); cursor: pointer; }\n.ui-control:hover { border-color: var(--color-text-muted); }\n.ui-control:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-color: var(--color-focus); }\n.ui-btn { box-sizing: border-box; height: var(--ui-ctl-h); display: inline-flex; align-items: center; gap: 0.4rem; padding: 0 0.8rem;\n  font-family: var(--ui-display); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap;\n  background: var(--ui-accent); color: var(--ui-surface); border: 1px solid var(--ui-accent); border-radius: var(--ui-radius); cursor: pointer; }\n.ui-btn:hover, .ui-btn:focus-visible { background: var(--ui-accent-dark); }\n/* A select with checkboxes in its list */\n.round-multi { position: relative; }\n.round-multi .round-multi-btn { width: auto; min-width: 9.5rem; max-width: 16rem; overflow: hidden; text-overflow: ellipsis; text-align: left; padding-right: 1.9rem; position: relative; white-space: nowrap; }\n.round-multi-btn::after { content: ''; position: absolute; right: 0.65rem; top: 50%; width: 0.4rem; height: 0.4rem; margin-top: -0.3rem;\n  border-right: 1.5px solid var(--ui-muted); border-bottom: 1.5px solid var(--ui-muted); transform: rotate(45deg); }\n.round-multi.is-open .round-multi-btn { border-color: var(--ui-accent); }\n.round-multi.is-open .round-multi-btn::after { transform: rotate(-135deg); margin-top: -0.1rem; }\n.round-multi-list { position: absolute; top: 100%; left: 0; z-index: 30; margin-top: 0.25rem; min-width: 100%; width: max-content; max-width: 18rem;\n  background: var(--color-raised); border: 1px solid var(--color-divider); border-radius: var(--radius-inner); box-shadow: var(--shadow-raised), inset 0 1px 0 var(--edge-top); padding: 0.3rem; }\n.round-multi-opt { display: flex; align-items: flex-start; gap: 0.55rem; padding: 0.45rem 0.55rem; border-radius: var(--ui-radius); cursor: pointer; font-size: 0.95rem; }\n.round-multi-opt:hover, .round-multi-opt:focus-within { background: var(--ui-page); }\n.round-multi-opt input { accent-color: var(--ui-accent); margin-top: 0.2rem; }\n.round-multi-opt small { display: block; font-size: 0.8rem; color: var(--ui-muted); }\n/* A read-only value in a line, the height of the controls beside it */\n.round-read-value { display: inline-flex; align-items: center; height: var(--ui-ctl-h); font-size: 0.95rem; color: var(--ui-ink); white-space: nowrap; }\n.round-read.is-key .round-read-value { font-family: var(--ui-display); font-weight: 700; font-size: 1.05rem; color: var(--ui-ink); }\n/* A rolled line: one strip, same type throughout, pieces split by dividers */\n.round-summary { display: flex; flex-wrap: wrap; align-items: center; min-height: var(--ui-ctl-h); font-size: 0.95rem; color: var(--ui-ink); }\n.round-summary > span { padding: 0 0.75rem; border-left: 1px solid var(--ui-rule); line-height: 1.3; }\n.round-summary > span:first-child { padding-left: 0; border-left: 0; }\n.round-summary > .is-key { font-family: var(--ui-display); font-weight: 700; color: var(--ui-ink); }\n/* The hit roll: the round's big moment */\n.roll-hit-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; padding: 0.4rem 0.85rem 0.4rem 0.6rem; box-shadow: 0 2px 0 color-mix(in oklab, var(--ui-accent) 55%, #000); }\n.roll-hit-btn svg { width: 1.15rem; height: 1.15rem; }\n.roll-hit-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 color-mix(in oklab, var(--ui-accent) 55%, #000); }\n.hit-rolls { flex-basis: 100%; display: grid; gap: 0.45rem; justify-items: start; }\n.hit-rolls > .hit-roll { width: 100%; box-sizing: border-box; }\n.hit-who { font-family: var(--ui-display); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ui-muted); min-width: 4.5rem; }\n.hit-roll { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1.5rem; padding: 0.55rem 0.9rem; border-radius: var(--ui-radius);\n  background: var(--color-sunken); border: 1px solid transparent; box-shadow: var(--shadow-well); }\n.hit-die { position: relative; width: 3.4rem; height: 3.4rem; flex: none; color: var(--color-accent2-text); }\n.hit-die svg { position: absolute; inset: 0; width: 100%; height: 100%; }\n.hit-die-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding-top: 0.15rem;\n  font-family: var(--ui-display); font-weight: 700; font-size: 1.35rem; color: var(--ui-ink); }\n.hit-stat { display: flex; flex-direction: column; line-height: 1; }\n.hit-stat-label { font-family: var(--ui-display); font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ui-muted); margin-bottom: 0.25rem; }\n.hit-stat-value { font-family: var(--ui-display); font-weight: 700; font-size: 2rem; color: var(--ui-ink); }\n.hit-stat-sub { font-size: 0.8rem; color: var(--ui-muted); margin-top: 0.15rem; }\n.hit-stat.is-dmg .hit-stat-value { color: var(--ui-ink); font-size: 1.6rem; }\n.hit-stat.is-miss .hit-stat-value { color: var(--ui-muted); }\n.hit-stat.is-updated .hit-stat-value { border-radius: var(--ui-radius); }\n@media (prefers-reduced-motion: no-preference) {\n  .hit-stat.is-updated .hit-stat-value { animation: hit-update 1.2s ease-out; }\n}\n@keyframes hit-update { 0% { background: color-mix(in oklab, var(--color-accent2) 30%, transparent); } 100% { background: transparent; } }\n.hit-nat { font-family: var(--ui-display); font-weight: 700; font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; padding: 0.25rem 0.55rem; border-radius: 999px; }\n.hit-roll.is-crit { background: linear-gradient(100deg, color-mix(in oklab, var(--color-highlight) 22%, var(--ui-surface)), var(--ui-surface) 75%); border-color: var(--color-success-text); box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); }\n.hit-roll.is-crit .hit-die { color: var(--color-success-text); }\n.hit-roll.is-crit .hit-nat { background: var(--color-highlight); color: var(--color-on-highlight); }\n.hit-roll.is-fumble { background: linear-gradient(100deg, color-mix(in oklab, var(--ui-muted) 12%, var(--ui-surface)), var(--ui-surface) 75%); border-color: var(--ui-faint); }\n.hit-roll.is-fumble .hit-die, .hit-roll.is-fumble .hit-stat-value { color: var(--ui-muted); }\n.hit-roll.is-fumble .hit-stat.is-miss .hit-stat-value { color: var(--ui-ink); }\n.hit-roll.is-fumble .hit-nat { background: var(--ui-ink); color: var(--ui-surface); }\n@media (prefers-reduced-motion: no-preference) {\n  .hit-roll.is-fresh .hit-die svg { animation: hit-tumble 0.55s cubic-bezier(.2,.8,.3,1); }\n  .hit-roll.is-fresh .hit-die-num, .hit-roll.is-fresh .hit-stat-value { animation: hit-pop 0.45s 0.3s cubic-bezier(.2,1.4,.4,1) both; }\n  .hit-roll.is-fresh.is-crit { animation: hit-glow 1.2s 0.5s ease-out; }\n}\n@keyframes hit-tumble { from { transform: rotate(-200deg) scale(0.6); } to { transform: none; } }\n@keyframes hit-pop { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: none; } }\n@keyframes hit-glow { 0% { box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); } 30% { box-shadow: 0 0 0 8px color-mix(in oklab, var(--color-highlight) 50%, transparent); } 100% { box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); } }";
+const STYLES = "/* Shared tokens: the character sheet's palette and type, under names of their\n   own (each tool keeps its own token names for the rest of its page) */\n:root { --ui-ink: var(--color-text); --ui-muted: var(--color-text-muted); --ui-faint: var(--color-text-faint); --ui-rule: var(--color-divider); --ui-accent: var(--color-accent-text); --ui-accent-dark: color-mix(in oklab, var(--color-accent-text) 82%, var(--toward));\n  --ui-surface: var(--color-surface); --ui-page: var(--color-bg); --ui-gold: var(--color-accent); --ui-radius: var(--radius-ctl); --ui-ctl-h: 2.1rem;\n  --ui-display: var(--font-serif); --ui-body: var(--font-sans); }\n/* A label over a control, the control, a button */\n.ui-field { display: inline-flex; flex-direction: column; gap: 0.15rem; }\n.ui-label { font-family: var(--ui-display); font-size: 0.65rem; letter-spacing: 0.13em; text-transform: uppercase; color: var(--ui-muted); }\n/* Looks like a field (src/ui/components.js): the select with checkboxes sits among selects */\n.ui-control { box-sizing: border-box; height: var(--field-h, var(--ui-ctl-h)); padding: 0 var(--field-px, 0.5rem); font: 500 var(--field-fs, 0.95rem) var(--ui-body); color: var(--ui-ink);\n  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--ui-radius); cursor: pointer; }\n.ui-control:hover { border-color: var(--color-text-muted); }\n.ui-control:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-color: var(--color-focus); }\n.ui-btn { box-sizing: border-box; height: var(--ui-ctl-h); display: inline-flex; align-items: center; gap: 0.4rem; padding: 0 0.8rem;\n  font-family: var(--ui-display); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap;\n  background: var(--ui-accent); color: var(--ui-surface); border: 1px solid var(--ui-accent); border-radius: var(--ui-radius); cursor: pointer; }\n.ui-btn:hover, .ui-btn:focus-visible { background: var(--ui-accent-dark); }\n/* A select with checkboxes in its list */\n.round-multi { position: relative; }\n.round-multi .round-multi-btn { width: auto; min-width: 9.5rem; max-width: 16rem; overflow: hidden; text-overflow: ellipsis; text-align: left; padding-right: 1.9rem; position: relative; white-space: nowrap; }\n.round-multi-btn::after { content: ''; position: absolute; right: 0.65rem; top: 50%; width: 0.4rem; height: 0.4rem; margin-top: -0.3rem;\n  border-right: 1.5px solid var(--ui-muted); border-bottom: 1.5px solid var(--ui-muted); transform: rotate(45deg); }\n.round-multi.is-open .round-multi-btn { border-color: var(--ui-accent); }\n.round-multi.is-open .round-multi-btn::after { transform: rotate(-135deg); margin-top: -0.1rem; }\n.round-multi-list { position: absolute; top: 100%; left: 0; z-index: 30; margin-top: 0.25rem; min-width: 100%; width: max-content; max-width: 18rem;\n  background: var(--color-raised); border: 1px solid var(--color-divider); border-radius: var(--radius-inner); box-shadow: var(--shadow-raised), inset 0 1px 0 var(--edge-top); padding: 0.3rem; }\n.round-multi-opt { display: flex; align-items: flex-start; gap: 0.55rem; padding: 0.45rem 0.55rem; border-radius: var(--ui-radius); cursor: pointer; font-size: 0.95rem; }\n.round-multi-opt:hover, .round-multi-opt:focus-within { background: var(--ui-page); }\n.round-multi-opt input { accent-color: var(--ui-accent); margin-top: 0.2rem; }\n.round-multi-opt small { display: block; font-size: 0.8rem; color: var(--ui-muted); }\n/* A read-only value in a line, the height of the controls beside it */\n.round-read-value { display: inline-flex; align-items: center; height: var(--ui-ctl-h); font-size: 0.95rem; color: var(--ui-ink); white-space: nowrap; }\n.round-read.is-key .round-read-value { font-family: var(--ui-display); font-weight: 700; font-size: 1.05rem; color: var(--ui-accent); }\n/* A rolled line: one strip, same type throughout, pieces split by dividers */\n.round-summary { display: flex; flex-wrap: wrap; align-items: center; min-height: var(--ui-ctl-h); font-size: 0.95rem; color: var(--ui-ink); }\n.round-summary > span { padding: 0 0.75rem; border-left: 1px solid var(--ui-rule); line-height: 1.3; }\n.round-summary > span:first-child { padding-left: 0; border-left: 0; }\n.round-summary > .is-key { font-family: var(--ui-display); font-weight: 700; color: var(--ui-accent); }\n/* The hit roll: the round's big moment */\n.roll-hit-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; padding: 0.4rem 0.85rem 0.4rem 0.6rem; box-shadow: 0 2px 0 color-mix(in oklab, var(--ui-accent) 55%, #000); }\n.roll-hit-btn svg { width: 1.15rem; height: 1.15rem; }\n.roll-hit-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 color-mix(in oklab, var(--ui-accent) 55%, #000); }\n.hit-rolls { flex-basis: 100%; display: grid; gap: 0.45rem; justify-items: start; }\n.hit-rolls > .hit-roll { width: 100%; box-sizing: border-box; }\n.hit-who { font-family: var(--ui-display); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ui-muted); min-width: 4.5rem; }\n.hit-roll { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1.5rem; padding: 0.55rem 0.9rem; border-radius: var(--ui-radius);\n  background: linear-gradient(100deg, color-mix(in oklab, var(--ui-accent) 8%, var(--ui-surface)), var(--ui-surface) 70%); border: 1px solid color-mix(in oklab, var(--ui-accent) 28%, var(--ui-surface)); }\n.hit-die { position: relative; width: 3.4rem; height: 3.4rem; flex: none; color: var(--ui-accent); }\n.hit-die svg { position: absolute; inset: 0; width: 100%; height: 100%; }\n.hit-die-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding-top: 0.15rem;\n  font-family: var(--ui-display); font-weight: 700; font-size: 1.35rem; color: var(--ui-ink); }\n.hit-stat { display: flex; flex-direction: column; line-height: 1; }\n.hit-stat-label { font-family: var(--ui-display); font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ui-muted); margin-bottom: 0.25rem; }\n.hit-stat-value { font-family: var(--ui-display); font-weight: 700; font-size: 2rem; color: var(--ui-accent); }\n.hit-stat-sub { font-size: 0.8rem; color: var(--ui-muted); margin-top: 0.15rem; }\n.hit-stat.is-dmg .hit-stat-value { color: var(--ui-ink); font-size: 1.6rem; }\n.hit-stat.is-miss .hit-stat-value { color: var(--ui-muted); }\n.hit-stat.is-updated .hit-stat-value { border-radius: var(--ui-radius); }\n@media (prefers-reduced-motion: no-preference) {\n  .hit-stat.is-updated .hit-stat-value { animation: hit-update 1.2s ease-out; }\n}\n@keyframes hit-update { 0% { background: color-mix(in oklab, var(--color-accent) 45%, transparent); } 100% { background: transparent; } }\n.hit-nat { font-family: var(--ui-display); font-weight: 700; font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; padding: 0.25rem 0.55rem; border-radius: 999px; }\n.hit-roll.is-crit { background: linear-gradient(100deg, color-mix(in oklab, var(--color-highlight) 22%, var(--ui-surface)), var(--ui-surface) 75%); border-color: var(--color-success-text); box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); }\n.hit-roll.is-crit .hit-die { color: var(--color-success-text); }\n.hit-roll.is-crit .hit-nat { background: var(--color-highlight); color: var(--color-on-highlight); }\n.hit-roll.is-fumble { background: linear-gradient(100deg, color-mix(in oklab, var(--ui-muted) 12%, var(--ui-surface)), var(--ui-surface) 75%); border-color: var(--ui-faint); }\n.hit-roll.is-fumble .hit-die, .hit-roll.is-fumble .hit-stat-value { color: var(--ui-muted); }\n.hit-roll.is-fumble .hit-stat.is-miss .hit-stat-value { color: var(--ui-ink); }\n.hit-roll.is-fumble .hit-nat { background: var(--ui-ink); color: var(--ui-surface); }\n@media (prefers-reduced-motion: no-preference) {\n  .hit-roll.is-fresh .hit-die svg { animation: hit-tumble 0.55s cubic-bezier(.2,.8,.3,1); }\n  .hit-roll.is-fresh .hit-die-num, .hit-roll.is-fresh .hit-stat-value { animation: hit-pop 0.45s 0.3s cubic-bezier(.2,1.4,.4,1) both; }\n  .hit-roll.is-fresh.is-crit { animation: hit-glow 1.2s 0.5s ease-out; }\n}\n@keyframes hit-tumble { from { transform: rotate(-200deg) scale(0.6); } to { transform: none; } }\n@keyframes hit-pop { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: none; } }\n@keyframes hit-glow { 0% { box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); } 30% { box-shadow: 0 0 0 8px color-mix(in oklab, var(--color-highlight) 50%, transparent); } 100% { box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); } }";
 function ensureStyles(doc = document) {
   if (doc.getElementById('round-ui-styles')) return;
   const st = doc.createElement('style'); st.id = 'round-ui-styles'; st.textContent = STYLES;

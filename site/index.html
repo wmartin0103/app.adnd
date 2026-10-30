@@ -466,7 +466,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     /* Signed out: the sign-in card, centred */
     .gate { min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; }
     .gate main { width: 100%; max-width: 24rem; display: grid; gap: 20px; }
-    .gate h1 { font-family: var(--font-display); font-weight: 600; letter-spacing: 0.04em; font-size: clamp(1.5rem, 5vw, 2rem); margin: 0; padding-bottom: 10px; border-bottom: 2px solid var(--color-border); text-align: center; }
+    .gate h1 { font-family: var(--font-display); font-weight: 600; letter-spacing: 0.04em; font-size: clamp(1.5rem, 5vw, 2rem); margin: 0; padding-bottom: 10px; border-bottom: 2px solid var(--accent); text-align: center; }
     /* Cards (docs/design-system.md: Sections and cards) */
     .card-form { background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-card); box-shadow: var(--shadow-card), inset 0 1px 0 var(--edge-top); padding: 22px 20px; display: grid; gap: 14px; }
     .card-form label { display: grid; gap: 4px; font-family: var(--font-display); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-muted); }
@@ -475,7 +475,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
 
     /* Signed in: your characters */
     .page { max-width: 60rem; margin: 0 auto; padding: 20px 16px 56px; display: grid; gap: 24px; }
-    .top { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding-bottom: 12px; border-bottom: 2px solid var(--color-border); }
+    .top { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding-bottom: 12px; border-bottom: 2px solid var(--accent); }
     .top h1 { font-family: var(--font-display); font-weight: 600; letter-spacing: 0.04em; font-size: clamp(1.3rem, 4vw, 1.7rem); margin: 0; }
     .top .who { margin-left: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--ink-muted); font-size: 0.95rem; }
     .top .who b { color: var(--ink); font-weight: 600; }
@@ -516,8 +516,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     .choice:hover, .choice:focus-visible { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
     .choice .t { font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; color: var(--accent); }
     .choice .d { color: var(--ink-muted); font-size: 0.98rem; }
-    /* A notice with an action: a card (the button carries the action colour) */
-    .found { background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-card); box-shadow: var(--shadow-card), inset 0 1px 0 var(--edge-top); padding: 14px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+    .found { background: color-mix(in oklab, var(--color-accent) 12%, var(--surface)); border: 1px solid color-mix(in oklab, var(--color-accent) 45%, var(--surface)); border-radius: var(--radius); padding: 14px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
     .found p { margin: 0; flex: 1 1 18rem; }
     /* Bringing a character into play while another is */
     dialog { border: 1px solid var(--color-divider); border-radius: var(--radius-card); padding: 22px 22px 18px; max-width: 27rem; width: calc(100% - 32px); box-shadow: var(--shadow-raised), inset 0 1px 0 var(--edge-top); background: var(--color-raised); color: var(--ink); }
