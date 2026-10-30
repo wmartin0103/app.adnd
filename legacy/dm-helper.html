@@ -601,9 +601,9 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .surrow{display:grid;grid-template-columns:110px 240px 1fr;gap:12px;padding:3px 0;border-top:1px solid var(--edge);align-items:baseline}
   .surname{font-family:var(--serif);font-size:1rem}
   .surroll{color:var(--muted)}
-  #lightBody > tr.act > td.name{font-size:1.05rem}
-  #lightBody > tr.act select.stat{width:auto; min-width:4.2rem}   /* fits a two-digit roll and the chevron */
-  #lightBody > tr.act .actson{font-size:1.1rem}
+  .ocard-t > tbody > tr.act > td.name{font-size:1.05rem}
+  .ocard-t > tbody > tr.act select.stat{width:auto; min-width:4.2rem}   /* fits a two-digit roll and the chevron */
+  .ocard-t > tbody > tr.act .actson{font-size:1.1rem}
   .lightdetail{font-size:.8rem;color:var(--muted);padding:0 4px 6px 4px;line-height:1.5}
   .lightdetail b{color:var(--brass);font-weight:600}
   .lightdetail .ldact{padding-left:14px}
@@ -613,10 +613,10 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .lightdetail .ldhead{margin-top:2px}
   tr.lightdetail-row td{border-bottom:1px solid var(--edge)}
   /* stays a table cell (flex here pulled its border out of line with the row); the Quickness button sits beside the name */
-  #lightBody > tr.act > td.name{vertical-align:middle;white-space:nowrap}
-  #lightBody > tr.act > td.name > span + span{margin-left:10px}
-  #lightBody > tr.baddycard-row > td{padding:6px 0 !important;border:none !important}
-  #lightBody > tr.baddycard-row .char{margin:0}
+  .ocard-t > tbody > tr.act > td.name{vertical-align:middle;white-space:nowrap}
+  .ocard-t > tbody > tr.act > td.name > span + span{margin-left:10px}
+  .ocard-t > tbody > tr.baddycard-row > td{padding:6px 0 !important;border:none !important}
+  .ocard-t > tbody > tr.baddycard-row .char{margin:0}
   .bdid{font-family:var(--sans);font-size:.72rem;font-weight:700;letter-spacing:.04em;color:var(--brass);border:1px solid var(--edge);border-radius:4px;padding:2px 7px;white-space:nowrap}
   .bnbtn{display:none}
   .char.inlight .bnbtn{display:inline-block;padding:2px 8px;font-size:.7rem;margin-left:6px}
@@ -773,8 +773,6 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .rxpickers .gclabel select{min-width:0}
   .rxpickers #rxStance{width:130px} .rxpickers #rxRep{width:80px} .rxpickers #rxRace{width:130px} .rxpickers #rxOcc{width:160px} .rxpickers #rxCulture{width:95px}
   .gcresults{margin-bottom:14px}
-  /* The initiative order is the live round: the featured card, like the sheet's This round */
-  #lightTracker,#tracker > .char{border-top:3px solid var(--color-accent2)}
   .gcresults table{margin:0}
   .gctable td.name{font-family:var(--serif)}
   .gctable td.tgt{font-family:var(--serif);font-size:1.15rem;font-weight:700}
@@ -891,51 +889,51 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     font-family:var(--serif); font-size:.6rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase;
     color:var(--muted); padding:.55rem 14px; border-bottom:1px solid var(--edge);
   }
-  #lightBody > tr.act > td{padding-top:.55rem; padding-bottom:.55rem; border-bottom:1px solid var(--edge)}
-  #lightBody > tr.act:has(+ tr.lightdetail-row) > td{border-bottom:0}
-  #lightBody > tr.lightdetail-row > td{padding:0 14px .6rem 2.25rem; border-bottom:1px solid var(--edge)}
-  #lightBody > tr:last-child > td{border-bottom:0}
+  .ocard-t > tbody > tr.act > td{padding-top:.55rem; padding-bottom:.55rem; border-bottom:1px solid var(--edge)}
+  .ocard-t > tbody > tr.act:has(+ tr.lightdetail-row) > td{border-bottom:0}
+  .ocard-t > tbody > tr.lightdetail-row > td{padding:0 14px .6rem 2.25rem; border-bottom:1px solid var(--edge)}
+  .ocard-t > tbody > tr:last-child > td{border-bottom:0}
   /* An Enemy: its row in the columns, its card's details below; both tinted, red edge */
-  #lightBody > tr.baddy-row > td, #lightBody > tr.baddycard-row > td{background:color-mix(in oklab, var(--brass) 5%, var(--panel))}
-  #lightBody > tr.baddy-row > td:first-child, #lightBody > tr.baddycard-row > td{box-shadow:inset 3px 0 0 var(--brass)}
-  #lightBody > tr.baddy-row > td{border-bottom:0}
-  #lightBody > tr.baddy-row .nameline{display:flex; align-items:center; gap:.5rem; flex-wrap:wrap}
-  #lightBody > tr.baddy-row .bname{flex:0 1 11rem; width:11rem}
+  .ocard-t > tbody > tr.baddy-row > td, .ocard-t > tbody > tr.baddycard-row > td{background:color-mix(in oklab, var(--brass) 5%, var(--panel))}
+  .ocard-t > tbody > tr.baddy-row > td:first-child, .ocard-t > tbody > tr.baddycard-row > td{box-shadow:inset 3px 0 0 var(--brass)}
+  .ocard-t > tbody > tr.baddy-row > td{border-bottom:0}
+  .ocard-t > tbody > tr.baddy-row .nameline{display:flex; align-items:center; gap:.5rem; flex-wrap:wrap}
+  .ocard-t > tbody > tr.baddy-row .bname{flex:0 1 11rem; width:11rem}
   /* What moved into the columns leaves no empty labels behind */
-  #lightBody [hidden]{display:none !important}
+  .ocard-t [hidden]{display:none !important}
   /* The details: AC and THAC0 side by side, then the attacks */
-  #lightBody .char.inlight .namecol{display:flex; flex-direction:row; flex-wrap:wrap; align-items:center; gap:.25rem 1.5rem; padding:.35rem 0}
-  #lightBody .char.inlight .namecol > *{margin:0}
-  #lightBody > tr.baddy-row .nameline .reroll{margin-left:0}
+  .ocard-t .char.inlight .namecol{display:flex; flex-direction:row; flex-wrap:wrap; align-items:center; gap:.25rem 1.5rem; padding:.35rem 0}
+  .ocard-t .char.inlight .namecol > *{margin:0}
+  .ocard-t > tbody > tr.baddy-row .nameline .reroll{margin-left:0}
   /* AC and THAC0 on the row, a small label before each; the details keep only the attacks */
-  #lightBody > tr.baddy-row .nameline .acw, #lightBody > tr.baddy-row .nameline .statw{display:inline-flex; align-items:center; gap:.3rem;
+  .ocard-t > tbody > tr.baddy-row .nameline .acw, .ocard-t > tbody > tr.baddy-row .nameline .statw{display:inline-flex; align-items:center; gap:.3rem;
     font-family:var(--serif); font-size:.6rem; letter-spacing:.12em; text-transform:uppercase; color:var(--muted)}
-  #lightBody > tr.baddy-row .nameline .acw select, #lightBody > tr.baddy-row .nameline .statw select{margin:0}
-  #lightBody > tr.baddy-row .nameline .acw b{margin-left:0}
-  #lightBody > tr.baddy-row .nameline .acw + .statw{margin-right:.25rem}
-  #lightBody .char.inlight .chead{display:none !important}
-  #lightBody > tr.baddycard-row .bd-attacks{padding-top:0}
+  .ocard-t > tbody > tr.baddy-row .nameline .acw select, .ocard-t > tbody > tr.baddy-row .nameline .statw select{margin:0}
+  .ocard-t > tbody > tr.baddy-row .nameline .acw b{margin-left:0}
+  .ocard-t > tbody > tr.baddy-row .nameline .acw + .statw{margin-right:.25rem}
+  .ocard-t .char.inlight .chead{display:none !important}
+  .ocard-t > tbody > tr.baddycard-row .bd-attacks{padding-top:0}
   /* Icon buttons */
   .iconbtn{display:inline-flex; align-items:center; justify-content:center; box-sizing:border-box; width:var(--ctl-h-sm); height:var(--ctl-h-sm); padding:0;
     background:transparent; border:1px solid var(--edge); border-radius:4px; color:var(--muted); cursor:pointer}
   .iconbtn svg{width:15px; height:15px}
   .iconbtn:hover, .iconbtn:focus-visible{border-color:var(--brass); color:var(--brass)}
   .iconbtn.rm:hover, .iconbtn.rm:focus-visible{border-color:var(--rust); color:var(--rust)}
-  #lightBody > tr.baddycard-row > td{padding:0 14px .6rem 2.25rem !important; border:none !important; border-bottom:1px solid var(--edge) !important}
-  #lightBody > tr.baddycard-row:last-child > td{border-bottom:0 !important}
-  #lightBody > tr.baddycard-row .char, #lightBody > tr.baddycard-row .char.first{border:0; border-radius:0; background:transparent; box-shadow:none}
-  #lightBody > tr.baddycard-row .char table.batk thead th{background:transparent}
+  .ocard-t > tbody > tr.baddycard-row > td{padding:0 14px .6rem 2.25rem !important; border:none !important; border-bottom:1px solid var(--edge) !important}
+  .ocard-t > tbody > tr.baddycard-row:last-child > td{border-bottom:0 !important}
+  .ocard-t > tbody > tr.baddycard-row .char, .ocard-t > tbody > tr.baddycard-row .char.first{border:0; border-radius:0; background:transparent; box-shadow:none}
+  .ocard-t > tbody > tr.baddycard-row .char table.batk thead th{background:transparent}
   /* Details inside their row: an Enemy's attacks have controls, so they're an
      item; a player's actions from their sheet are a read-out, so a well */
-  #lightBody > tr.baddycard-row .char.inlight, #lightBody .lightdetail:not(:empty){ padding:.45rem .75rem .55rem; }
-  #lightBody > tr.baddycard-row .char.inlight{
+  .ocard-t > tbody > tr.baddycard-row .char.inlight, .ocard-t .lightdetail:not(:empty){ padding:.45rem .75rem .55rem; }
+  .ocard-t > tbody > tr.baddycard-row .char.inlight{
     background:var(--color-surface); border:1px solid var(--color-divider); border-radius:var(--radius-inner); box-shadow:none;
   }
-  #lightBody .lightdetail:not(:empty){
+  .ocard-t .lightdetail:not(:empty){
     background:var(--color-sunken); border:0; border-radius:var(--radius-inner); box-shadow:var(--shadow-well);
   }
-  #lightBody > tr.baddycard-row .char.inlight table.batk th, #lightBody > tr.baddycard-row .char.inlight table.batk td{border-bottom-color:var(--edge)}
-  #lightBody > tr.baddycard-row .char.inlight table.batk tr:last-child td{border-bottom:0}
+  .ocard-t > tbody > tr.baddycard-row .char.inlight table.batk th, .ocard-t > tbody > tr.baddycard-row .char.inlight table.batk td{border-bottom-color:var(--edge)}
+  .ocard-t > tbody > tr.baddycard-row .char.inlight table.batk tr:last-child td{border-bottom:0}
   /* An Enemy's attacks: the sheet's attack lines */
   .bd-attacks{display:grid; gap:.55rem; padding-top:.4rem; justify-items:stretch}
   .bd-atk{display:grid; gap:.45rem; padding-top:.55rem; border-top:1px solid var(--edge)}
@@ -957,6 +955,62 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
      labelled controls sits in a card: an Enemy's attack lines, the crit box. */
   table, .char{--field-h:var(--ctl-sm); --field-fs:var(--ctl-fs-sm); --field-px:var(--ctl-pad-sm)}
   .bd-attacks, #lightCritBox{--field-h:var(--ctl-md); --field-fs:var(--ctl-fs-md); --field-px:var(--ctl-pad-md)}
+  /* ── The redesign (prototypes/dm-redesign.html) ── */
+  .card-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px}
+  .card-head h3{margin:0;font:600 18px/1.25 var(--font-serif);color:var(--color-text)}
+  .hint{color:var(--color-text-muted);font-size:13px}
+  #surpriseCard,#roundCard,#lightCritBox{display:grid;gap:12px;margin-bottom:16px}
+  .line{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 14px}
+  .line .gclabel{display:inline-flex;flex-direction:column;align-items:stretch;gap:4px;height:auto;font:600 11px/1.2 var(--font-sans);letter-spacing:.08em;text-transform:uppercase;color:var(--color-text-muted)}
+  .line .gclabel select{min-width:7.5rem;width:auto;letter-spacing:normal;text-transform:none}
+  .results{padding:10px 14px}
+  .roundbar{display:flex;align-items:stretch;gap:16px}
+  .rb-main{flex:1;display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 16px}
+  .round{display:inline-flex;flex-direction:column;margin-right:6px}
+  .round .rn{font:700 32px/1 var(--font-serif);color:var(--color-accent-text);font-variant-numeric:lining-nums}
+  .roundbar .apart{display:flex;align-items:flex-end;padding-left:16px;border-left:1px solid var(--color-divider)}
+  @media (max-width:640px){ .roundbar{flex-direction:column} .roundbar .apart{padding:12px 0 0;border-left:0;border-top:1px solid var(--color-divider)} }
+  .lab{display:block;font:600 11px/1.2 var(--font-sans);letter-spacing:.08em;text-transform:uppercase;color:var(--color-text-muted);margin-bottom:4px}
+  .order{display:grid;gap:8px;margin:28px 0 16px}
+  .sec-head{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px}
+  h2.sec{margin:0;font:600 14px/1.3 var(--font-serif);letter-spacing:.12em;text-transform:uppercase;color:var(--color-accent-text)}
+  .sec-head .push{margin-left:auto}
+  .inline-f{display:inline-flex;align-items:center;gap:8px}
+  .inline-f > .lab{margin:0}
+  .olist{display:grid;gap:8px}
+  .addrow{padding:6px 0 0}
+  /* A combatant's card: its rows, no table look; Speed, Init and Act on labelled inline */
+  .ocard-t{width:100%;border-collapse:collapse;table-layout:fixed}
+  .ocard-t > tbody > tr > td{padding:0 !important;border:0 !important;background:none !important;box-shadow:none !important;vertical-align:middle}
+  .ocard-t > tbody > tr + tr > td{padding-top:10px !important}
+  .ocard-t > tbody > tr.act > td:nth-child(2){width:7.75rem}
+  .ocard-t > tbody > tr.act > td:nth-child(3){width:6.75rem}
+  .ocard-t > tbody > tr.act > td:nth-child(4){width:7rem}
+  .ocard-t > tbody > tr.act > td:nth-child(2)::before{content:'Speed'}
+  .ocard-t > tbody > tr.act > td:nth-child(3)::before{content:'Init'}
+  .ocard-t > tbody > tr.act > td:nth-child(4)::before{content:'Act on'}
+  .ocard-t > tbody > tr.act > td:nth-child(n+2)::before{font:600 11px/1 var(--font-sans);letter-spacing:.08em;text-transform:uppercase;color:var(--color-text-muted);margin-right:6px;vertical-align:middle}
+  .ocard-t > tbody > tr.act > td:nth-child(n+2){text-align:right;white-space:nowrap}
+  .ocard-t > tbody > tr.act > td:nth-child(n+2) > select{display:inline-block;vertical-align:middle;width:4.25rem;min-width:0}
+  .ocard-t > tbody > tr.act > td.name{font:600 18px/1.2 var(--font-serif)}
+  .ocard .actson{display:inline-block;min-width:2ch;padding:0;font:700 22px/1 var(--font-serif);color:var(--color-accent-text);font-variant-numeric:lining-nums;text-align:right;vertical-align:middle}
+  .ocard .rm{margin-left:10px;vertical-align:middle}
+  .ocard .nameline{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+  .ocard .bname{font:600 18px/1.2 var(--font-serif);width:7.5rem;flex:0 1 7.5rem}
+  .ocard .bdid{color:var(--color-text-muted);border:0;border-radius:999px;background:var(--color-sunken);box-shadow:inset 0 0 0 1px var(--color-divider)}
+  .ocard .lightdetail{font-size:14px;color:var(--color-text)}
+  .ocard .lightdetail:not(:empty){padding:8px 12px;background:var(--color-sunken);border:0;border-radius:var(--radius-inner);box-shadow:var(--shadow-well)}
+  .ocard .lightdetail b{color:var(--color-text-muted);font:600 11px/1.2 var(--font-sans);letter-spacing:.08em;text-transform:uppercase}
+  .ocard .lightdetail .ldact{padding-left:0}
+  /* An Enemy's attacks: they fold; open, each is a tinted item; a roll's result is the well inside */
+  .ocard .atktoggle{margin:2px 0 0}
+  .ocard .char.inlight{border:0 !important;background:none !important;box-shadow:none !important;padding:10px 0 0 !important;margin:0}
+  .ocard .char.inlight[hidden]{display:none !important}
+  .ocard .bd-atk{padding:10px 12px !important;border:1px solid var(--color-divider) !important;border-radius:var(--radius-inner);background:color-mix(in oklab, var(--color-text) 4%, var(--color-surface));box-shadow:none}
+  .ocard .bd-attacks{gap:10px}
+  .ocard.is-extras .syncpanel{padding:0}
+  #lightCritBox .line .gclabel select{min-width:9rem}
+
 </style>
 </head>
 <body>
@@ -966,50 +1020,64 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     <span class="sub">AD&amp;D 2E</span>
     <span class="cloud-bar" id="cloudBar"></span>
     <span class="theme-slot" id="themeSlot"></span>
-    <button class="reset ui-button is-secondary is-danger size-sm" id="resetAll" title="Reset everything to the starting state">↺ Reset</button>
   </header>
 
   <div id="dmArea">
   <div class="partynote" id="partyNote" role="status" hidden><span id="partyNoteText"></span> <button class="reroll ui-button is-secondary size-sm" type="button" id="partyReload">Reload</button></div>
   <nav class="tabs ui-pagetabs">
-    <button class="tab" data-panel="react">Reaction</button>
     <button class="tab active" data-panel="combat">Initiative</button>
     <button class="tab" data-panel="skills">Proficiencies</button>
     <button class="tab" data-panel="saves">Saves</button>
+    <button class="tab" data-panel="react">Reaction</button>
     <button class="tab" data-panel="config">Config</button>
   </nav>
 
   <div class="panel" id="panel-combat">
-    <div class="toolbar left">
-      <span class="lockwrap surmods"><button class="reroll ui-button is-primary" id="surpriseBtn" title="d10 per character: 1–3 surprised; Dex reaction adjustment, Alertness and the situation modifiers apply">Surprise!</button>
+    <section class="ui-card size-sm" id="surpriseCard">
+      <div class="card-head"><h3>Surprise</h3><span class="hint">d10 each, 1–3 surprised; Dex reaction adjustment, Alertness and the situation apply</span></div>
+      <div class="line surline">
         <label class="gclabel">Party <select id="surParty" class="sursel"><option value="0" selected>Casual 0</option><option value="-1">Inattentive −1</option><option value="-2">Fleeing −2</option><option value="-2">Panicked −2</option><option value="1">Suspicious +1</option><option value="2">Anticipating attack +2</option></select></label>
         <label class="gclabel">Light <select id="surLight" class="sursel"><option value="0">Normal</option><option value="-1">Poor light −1</option><option value="-4">Darkness −4</option></select></label>
         <label class="gclabel">Weather <select id="surCond" class="sursel"><option value="0" selected>Clear 0</option><option value="-1">Rainy −1</option><option value="-2">Foggy −2</option><option value="-1">Extremely loud −1</option><option value="-3">Rainy and foggy −3</option><option value="-2">Rainy and loud −2</option><option value="-3">Foggy and loud −3</option><option value="-4">Rainy, foggy, and loud −4</option></select></label>
         <label class="gclabel">Foe <select id="surEnc" class="sursel"><option value="0" selected>—</option><option value="-1">Quiet −1</option><option value="-2">Silent −2</option><option value="-1">Camouflaged −1</option><option value="-2">Invisible −2</option><option value="-2">Quiet and camouflaged −2</option><option value="-3">Quiet and invisible −3</option><option value="-3">Silent and camouflaged −3</option><option value="-4">Silent and invisible −4</option></select></label>
         <label class="gclabel">Mod <select id="surMod" class="sursel"></select></label>
-        <button class="reroll ui-button is-secondary" id="surpriseClear">Clear</button></span>
-    </div>
-    <div class="char" id="surpriseBar" style="display:none"><div id="surpriseWrap"></div></div>
-    <div class="toolbar between">
-      <span class="lockwrap"><button class="reroll ui-button is-primary" id="rollInit" title="roll initiative for the Enemies in this round; players roll their own">⚄ Roll initiative for Enemies</button><label class="lock" title="locked: players can no longer roll their own initiative"><input type="checkbox" id="lockInit"> Lock</label></span>
-      <span class="lockwrap roundctl" title="players' sheets play this round and show here"><b id="roundNo">Round 1</b> <button class="reroll ui-button is-primary" id="nextRoundSync" title="start the next round: every player's sheet clears its round (initiative rolls stay for the encounter)">Next round ▸</button> <button class="reroll ui-button is-secondary" id="resetInitSync" title="a new encounter: every player rolls initiative again">Reset initiative</button> <label class="gclabel">Extra attacks <select id="extraTiming" class="sursel"><option value="end">End of the order</option><option value="turn">At their turn</option></select></label></span>
-      <span class="lockwrap"><button class="reroll ui-button is-secondary is-danger" id="newRoundLight" title="start the encounter over: round 1, everyone rolls initiative again, the party's speed, actions and conditions cleared, the Enemies removed">↺ Reset encounter</button></span>
-    </div>
-    <div class="tracker" id="tracker"></div>
-    <div class="char" id="lightTracker" style="display:none">
-      <table class="acts light"><thead><tr><th class="l">Name</th><th>Speed</th><th>Init roll</th><th>Act On</th></tr></thead><tbody id="lightBody"></tbody></table>
-    </div>
-    <div class="addrow"><button class="reroll ui-button is-primary" id="addBaddy">+ Add Enemy</button></div>
-    <footer>Order is by chosen action (roll + speed + init bonus/mods); lower acts first. THAC0: lower is better. An Enemy's attack rolls only when you press Roll to hit; it hits on a d20 of THAC0 − AC or more. Next round clears the rolls and keeps targets and conditions; Reset encounter starts over at round 1.</footer>
-    <div class="char" id="lightCritBox" style="display:none">
-      <div class="lightcrit">
-        <label class="gclabel">Weapon <select id="lcType"><option value="B">Blunt</option><option value="P">Piercing</option><option value="S">Slashing</option><option value="A">Animal</option></select></label>
-        <button class="reroll ui-button is-secondary" id="lcCrit">Crit</button>
-        <button class="reroll ui-button is-secondary" id="lcFumble">Fumble</button>
-        <button class="reroll ui-button is-secondary" id="lcClear">Clear</button>
+        <button class="ui-button is-primary" id="surpriseBtn" title="d10 per character: 1–3 surprised; Dex reaction adjustment, Alertness and the situation modifiers apply">Surprise!</button>
+        <button class="ui-button is-link" id="surpriseClear">Clear</button>
       </div>
-      <div class="critwrap" id="lcOut" style="display:none"></div>
-    </div>
+      <div class="ui-well results" id="surpriseBar" style="display:none"><div id="surpriseWrap"></div></div>
+    </section>
+
+    <section class="ui-card is-featured" id="roundCard" title="players' sheets play this round and show here">
+      <div class="roundbar">
+        <div class="rb-main">
+          <span class="round"><span class="lab">Round</span><b id="roundNo" class="rn">1</b></span>
+          <button class="ui-button is-primary" id="rollInit" title="Rolls for each Enemy in the round that hasn't rolled; never re-rolls">Roll initiative for Enemies</button>
+          <button class="ui-button is-secondary" id="resetInitSync" title="a new encounter: every player rolls initiative again, and the Enemies' rolls clear">Reset initiative</button>
+          <button class="ui-button is-primary" id="nextRoundSync" title="start the next round: every player's sheet clears its round (initiative rolls stay for the encounter)">Next round ▸</button>
+        </div>
+        <div class="apart"><button class="ui-button is-secondary is-danger" id="newRoundLight" title="start the encounter over: round 1, everyone rolls initiative again, the party's speed, actions and conditions cleared, the Enemies removed">↺ Reset encounter</button></div>
+      </div>
+    </section>
+
+    <div class="tracker" id="tracker"></div>
+    <section class="order" id="lightTracker" style="display:none">
+      <div class="sec-head"><h2 class="sec">Initiative order</h2><span class="hint">Lower acts first: roll + speed + bonuses</span>
+        <div class="inline-f push"><span class="lab">Extra attacks</span><div class="ui-tabs size-sm" role="group" aria-label="Extra attacks" id="extraTiming"><button type="button" data-v="end">End of the order</button><button type="button" data-v="turn">At their turn</button></div></div></div>
+      <div id="lightBody" class="olist"></div>
+      <div class="addrow"><button class="ui-button is-primary" id="addBaddy">+ Add Enemy</button></div>
+    </section>
+
+    <section class="ui-card size-sm" id="lightCritBox" style="display:none">
+      <div class="card-head"><h3>Crits &amp; fumbles</h3><span class="hint">Good Hits &amp; Bad Misses</span></div>
+      <div class="line">
+        <label class="gclabel">Weapon <select id="lcType"><option value="B">Blunt</option><option value="P">Piercing</option><option value="S">Slashing</option><option value="A">Animal</option></select></label>
+        <button class="ui-button is-primary" id="lcCrit">Crit</button>
+        <button class="ui-button is-secondary" id="lcFumble">Fumble</button>
+        <button class="ui-button is-link" id="lcClear">Clear</button>
+      </div>
+      <div class="ui-well results critwrap" id="lcOut" style="display:none"></div>
+    </section>
+    <footer>An Enemy's attack rolls only when you press Roll to hit; it hits on a d20 of THAC0 − AC or more. Next round clears the rolls and keeps targets and conditions; Reset encounter starts over at round 1.</footer>
   </div>
 
   <div class="panel hidden" id="panel-skills">
@@ -1087,6 +1155,10 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
         <div class="giverow"><label class="gclabel">Player <select id="givePlayer"></select></label><button class="reroll ui-button is-secondary" type="button" id="giveBtn">Upload sheet…</button><input type="file" id="giveFile" accept=".json,application/json" hidden></div>
         <div id="giveStatus" class="sheetimp-status" role="status"></div>
       </div>
+    </div>
+    <div class="char" id="startOver">
+      <div class="chead"><span class="cname">Start over</span><span class="svnote">Clears this browser's DM Helper: the encounter, rolls and settings. Characters and the campaign aren't touched.</span></div>
+      <div class="sheetimp"><div><button class="ui-button is-secondary is-danger" id="resetAll" title="Reset everything to the starting state">↺ Reset everything</button></div></div>
     </div>
     <div class="char" id="cfgSummary">
       <div class="chead"><span class="cname">Character summary</span><label class="gclabel"><span class="sr-only">Character</span><select id="cfgPick"></select></label><span class="svnote">Everything the tabs use for one character.</span></div>
@@ -5880,8 +5952,9 @@ function tellPlayers(){
   if(key!==lastFoes){ lastFoes=key; syncState = ROUND.sendDM({foes}); }
 }
 function showRound(){
-  document.getElementById('roundNo').textContent = `Round ${syncState ? syncState.round : 1}`;
-  document.getElementById('extraTiming').value = (syncState && syncState.timing) || 'end';
+  document.getElementById('roundNo').textContent = String(syncState ? syncState.round : 1);
+  const timing = (syncState && syncState.timing) || 'end';
+  document.querySelectorAll('#extraTiming > button').forEach(b=>{ const on=b.dataset.v===timing; b.classList.toggle('is-active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
 }
 connectRound(null, true);
 if(window.Theme) Theme.mountThemeToggle(document.getElementById('themeSlot'));
@@ -5922,13 +5995,16 @@ document.getElementById('nextRoundSync').addEventListener('click', ()=>{
 document.getElementById('resetInitSync').addEventListener('click', ()=>{
   if(!ROUND) return;
   syncState = ROUND.sendDM({resetInit:true});
+  Object.keys(blocks).forEach(n=>{ const b=blocks[n]; if(b.placeholder) b.initRoll.value='50'; });   // the Enemies roll again too
   showRound(); update();
 });
-document.getElementById('extraTiming').addEventListener('change', e=>{
-  if(!ROUND) return;
-  syncState = ROUND.sendDM({timing: e.target.value});
-  update();
+document.getElementById('extraTiming').addEventListener('click', e=>{
+  const b=e.target.closest('button'); if(!b || !ROUND) return;
+  syncState = ROUND.sendDM({timing: b.dataset.v});
+  showRound(); update();
 });
+// The Roll buttons' icon (the d20)
+if(window.RoundUI) document.getElementById('rollInit').insertAdjacentHTML('afterbegin', RoundUI.ROLL_ICON + ' ');
 
 function newRound(){
   Object.keys(blocks).forEach(name=>{ const b=blocks[name];
@@ -5945,20 +6021,26 @@ let reorderPending=false, lightSortPending=false;
 function sortByInitiative(){ reorderPending=true; update(); }
 function rollInitFor(name){                                  // one character's roll (same ingredients as the group roll)
   const b=blocks[name]; if(!b) return;
-  if(document.getElementById('lockInit').checked) return;      // initiative is locked
   if(b.initRolled) return;                                     // one roll each, until the DM resets
   b.initRolled=true;
   b.initRoll.value = String(Math.floor(Math.random()*10)+1);
   if(b.runRoll!==undefined)   b.runRoll=d20();
   update();
 }
-function rollInitiative(){                                    // the DM's button: Enemies only (players roll their own)
+function rollInitiative(){                                    // the DM's button: the Enemies that haven't rolled (players roll their own)
   reorderPending=true;
   Object.keys(CHARACTERS).forEach(name=>{
     const b=blocks[name];
     if(!b || !b.placeholder || !b.inRound.checked) return;     // not an Enemy, or not in this round yet
+    if(b.initRoll.value!=='50') return;                        // already rolled (or set by hand): never re-rolled here
     b.initRoll.value = String(Math.floor(Math.random()*10)+1);
   });
+  update();
+}
+function rollEnemyInit(name){                                  // one Enemy's own Roll init (one that joins mid-fight)
+  const b=blocks[name]; if(!b) return;
+  reorderPending=true;
+  b.initRoll.value = String(Math.floor(Math.random()*10)+1);
   update();
 }
 
@@ -6664,6 +6746,7 @@ function lightRowFor(name){
   b.lightRow={tr, detailTr, turnTr, nameTd, nameLabel, quickBtn, spSel, irSel, actSpan};
   return b.lightRow;
 }
+const orderCards=new Map();   // name → its card in the order
 function renderLight(){
   const full=isFull();
   document.getElementById('tracker').style.display = full ? '' : 'none';
@@ -6696,6 +6779,23 @@ function renderLight(){
         b.lightMoves=pieces.map(([n, cell, hideParent, before])=>({n, cell, before, parent:n.parentNode, next:n.nextSibling, hideParent:!!hideParent}));
       }
       b.lightMoves.forEach(m=>{ if(m.n.parentNode!==m.cell){ m.cell.insertBefore(m.n, m.before||null); if(m.hideParent) m.parent.hidden=true; } });
+      if(!b.initBtn){
+        const nl=b.lightCardTr.querySelector('.nameline'), rm=nl.querySelector('.rm');
+        b.initBtn=document.createElement('button'); b.initBtn.type='button'; b.initBtn.className='ui-button size-sm initbtn';
+        b.initBtn.addEventListener('click', ()=> rollEnemyInit(name));
+        nl.insertBefore(b.initBtn, rm);
+        rm.classList.add('is-remove'); rm.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+        b.lightCardTr.lastChild.appendChild(rm);           // the × at the row's end, like other cards
+        b.atkToggle=document.createElement('button'); b.atkToggle.type='button'; b.atkToggle.className='ui-disclosure atktoggle'; b.atkToggle.setAttribute('aria-expanded','true');
+        b.atkToggle.addEventListener('click', ()=>{ const open=b.atkToggle.getAttribute('aria-expanded')!=='true'; b.atkToggle.setAttribute('aria-expanded', String(open)); b.el.hidden=!open; update(); });
+        b.lightCardTd.appendChild(b.atkToggle);
+      }
+      const rolled = b.initRoll.value!=='50';
+      b.initBtn.classList.toggle('is-primary', !rolled); b.initBtn.classList.toggle('is-secondary', rolled);
+      b.initBtn.innerHTML = (window.RoundUI ? RoundUI.ROLL_ICON : '') + (rolled ? ' Re-roll init' : ' Roll init');
+      b.initBtn.title = `Roll initiative for ${b.nameInput.value||name}`;
+      { const n=b.attacks ? b.attacks.length : 0, open=b.atkToggle.getAttribute('aria-expanded')==='true';
+        b.atkToggle.innerHTML = '<span class="ui-disclosure-chev" aria-hidden="true"></span>' + (open ? 'Attacks' : `Attacks · ${n}`); }
       if(b.el.parentNode!==b.lightCardTd) b.lightCardTd.appendChild(b.el);
       b.el.classList.add('inlight');
       const v=parseFloat(b.actson.textContent);                // the card's own Act On (waiting Enemies sink to the bottom)
@@ -6761,9 +6861,18 @@ function renderLight(){
   }
   const xr = lightExtrasRow();
   if(xr) entries.push({name:'__extras', act:1e10, trs:[xr]});
-  const flat=entries.flatMap(e=>e.trs), current=[...body.children];
-  const same = current.length===flat.length && flat.every((tr,i)=> current[i]===tr);
-  if(!same){ flat.forEach(tr=> body.appendChild(tr)); current.forEach(tr=>{ if(!flat.includes(tr)) tr.remove(); }); }   // leave the DOM alone while typing
+  // Each combatant is a card holding its rows (an Enemy's red edge, the party's blue); the DOM is left alone while it's unchanged (typing)
+  const cards=entries.map(e=>{
+    let c=orderCards.get(e.name);
+    if(!c){ c=document.createElement('div'); const t=document.createElement('table'); t.className='acts light ocard-t'; c.tb=document.createElement('tbody'); t.appendChild(c.tb); c.appendChild(t); orderCards.set(e.name, c); }
+    c.className = 'ocard ui-card is-compact ' + (e.name==='__extras' ? 'is-extras' : blocks[e.name] && blocks[e.name].placeholder ? 'is-opponent' : 'is-ally');
+    const cur=[...c.tb.children];
+    if(!(cur.length===e.trs.length && e.trs.every((tr,i)=>cur[i]===tr))){ e.trs.forEach(tr=>c.tb.appendChild(tr)); cur.forEach(tr=>{ if(!e.trs.includes(tr)) tr.remove(); }); }
+    return c;
+  });
+  const current=[...body.children];
+  if(!(current.length===cards.length && cards.every((c,i)=>current[i]===c))){ cards.forEach(c=> body.appendChild(c)); current.forEach(c=>{ if(!cards.includes(c)) c.remove(); }); }
+  [...orderCards.keys()].forEach(k=>{ if(!entries.some(e=>e.name===k)) orderCards.delete(k); });
 }
 
 /* RANDOM ENCOUNTERS — focused on the Reach and the Starwater Valley.
@@ -7212,7 +7321,6 @@ function clearPlayerActions(){                                // the attack roll
 function resetEncounter(){
   resetPartyCombat();
   resetBaddies();
-  const lock=document.getElementById('lockInit'); lock.checked=false; applyLock();
   document.getElementById('surpriseBar').style.display='none';
   if(ROUND){ lastFoes=''; syncState = ROUND.sendDM({round:1, reset:true}); showRound(); }
   displayOrder=[]; reorderPending=false;
@@ -7251,7 +7359,6 @@ function resetPartyCombat(){
 function resetAll(){
   resetPartyCombat();
   Object.keys(CHARACTERS).forEach(name=>{ const b=blocks[name]; if(b && !b.placeholder) Object.keys(b.statsSel).forEach(k=> b.statsSel[k].value=b.statsBase[k]); });
-  const lock=document.getElementById('lockInit'); lock.checked=false; applyLock();
   document.getElementById('gcSkill').value=''; document.getElementById('svCat').value=''; document.getElementById('rxRep').value='0';
   try{ localStorage.removeItem(STORE_KEY); localStorage.removeItem(ORDER_KEY); }catch(e){}
   document.getElementById('surpriseBar').style.display='none';
@@ -7265,27 +7372,19 @@ function resetAll(){
 }
 (()=>{   // two-click reset: no native dialog to get blocked
   const btn=document.getElementById('resetAll'); let armed=null;
-  const disarm=()=>{ btn.classList.remove('armed'); btn.textContent='↺ Reset'; armed=null; };
+  const disarm=()=>{ btn.classList.remove('armed'); btn.textContent='↺ Reset everything'; armed=null; };
   btn.addEventListener('click', ()=>{
     if(armed){ clearTimeout(armed); disarm(); resetAll(); return; }
     btn.classList.add('armed'); btn.textContent='Confirm reset';
     armed=setTimeout(disarm, 4000);
   });
 })();
-function applyLock(){                                         // Lock: no more rolling, for the DM's button or any player's
-  const on=document.getElementById('lockInit').checked;
-  document.getElementById('rollInit').disabled = on;
-  refreshRollBtns();
-}
-function refreshRollBtns(){                                   // a player's Roll is off while locked, or once they have rolled
-  const on=document.getElementById('lockInit').checked;
+function refreshRollBtns(){                                   // a character's own Roll is off once they have rolled
   Object.keys(blocks).forEach(n=>{ const b=blocks[n]; if(!b.rollBtn) return;
-    b.rollBtn.disabled = on || !!b.initRolled;
-    b.rollBtn.title = on ? 'initiative is locked' : b.initRolled ? 'already rolled: the DM resets to roll again' : 'roll this character\'s initiative';
+    b.rollBtn.disabled = !!b.initRolled;
+    b.rollBtn.title = b.initRolled ? 'already rolled: the DM resets to roll again' : 'roll this character\'s initiative';
   });
 }
-document.getElementById('lockInit').addEventListener('change', applyLock);
-applyLock();
 
 Object.keys(CHARACTERS).forEach(buildChar);
 addBaddy();
