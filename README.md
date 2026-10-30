@@ -11,7 +11,7 @@ DM's combat helper, moving from two standalone HTML pages to one private site.
 
 | Folder | Contents |
 |---|---|
-| `legacy/` | The current character sheet and DM Helper (still the tools in use) |
+| `tools/` | The character sheet and DM Helper (published at `sheet/` and `dm/`) |
 | `src/rules/` | Game math as plain functions: attacks, saves, thief skills, proficiencies, old-save conversion |
 | `src/adapters/` | Converters between tools (sheet → DM Helper) |
 | `scripts/` | Command-line helpers |
@@ -62,7 +62,7 @@ The DM Helper carries its own copy of the converter so it still opens straight
 from disk. Refresh it with:
 
 ```
-node scripts/build-legacy.mjs
+node scripts/build-tools.mjs
 ```
 
 `npm test` fails if you forget.

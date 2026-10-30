@@ -1,6 +1,6 @@
 // ── COMPONENTS ──────────────────────────────────────────────────
 // The shared controls from docs/design-system.md, as CSS that every page
-// gets in its <head> with the tokens (scripts/build-legacy.mjs). They're
+// gets in its <head> with the tokens (scripts/build-tools.mjs). They're
 // written to win over a page's older styles for the same element; a page
 // that needs something different says why in a comment, with a more
 // specific rule (or class="ui-native" for the browser's own control).

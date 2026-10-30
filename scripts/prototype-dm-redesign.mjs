@@ -1,7 +1,7 @@
 // Writes prototypes/dm-redesign.html: the DM Helper redesigned on the design system (static, sample
 // data, for review before the real tool is rebuilt). Run: node scripts/prototype-dm-redesign.mjs
 import { writeFileSync } from 'node:fs';
-import { withHead } from './build-legacy.mjs';
+import { withHead } from './build-tools.mjs';
 import { ROLL_ICON } from '../src/ui/round-ui.js';
 
 const X = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';

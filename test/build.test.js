@@ -1,10 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { TARGETS, bundleFor, catalogScript, CATALOG_JS, CATALOG_TAG, PAGES, bundleForPage, headBlock } from '../scripts/build-legacy.mjs';
+import { TARGETS, bundleFor, catalogScript, CATALOG_JS, CATALOG_TAG, PAGES, bundleForPage, headBlock } from '../scripts/build-tools.mjs';
 
 for (const file of [...Object.keys(TARGETS), ...Object.keys(PAGES)]) {
-  test(`${file} carries the current design tokens (run scripts/build-legacy.mjs if this fails)`, () => {
+  test(`${file} carries the current design tokens (run scripts/build-tools.mjs if this fails)`, () => {
     const lf = t => t.replace(/\r\n/g, '\n');
     const html = lf(readFileSync(file, 'utf8'));
     assert.ok(html.includes(lf(headBlock())), `${file}'s tokens are out of date`);
@@ -13,14 +13,14 @@ for (const file of [...Object.keys(TARGETS), ...Object.keys(PAGES)]) {
 }
 
 for (const file of Object.keys(PAGES)) {
-  test(`${file} carries the current sign-in code (run scripts/build-legacy.mjs if this fails)`, () => {
+  test(`${file} carries the current sign-in code (run scripts/build-tools.mjs if this fails)`, () => {
     const lf = t => t.replace(/\r\n/g, '\n');
     assert.ok(lf(readFileSync(file, 'utf8')).includes(lf(bundleForPage(file))), `${file} is out of date`);
   });
 }
 
 for (const file of Object.keys(TARGETS)) {
-  test(`${file} carries the current rules code (run scripts/build-legacy.mjs if this fails)`, () => {
+  test(`${file} carries the current rules code (run scripts/build-tools.mjs if this fails)`, () => {
     // Line endings aside: an editor on Windows may save the page with CRLF
     const lf = t => t.replace(/\r\n/g, '\n');
     assert.ok(lf(readFileSync(file, 'utf8')).includes(lf(bundleFor(file))), `${file} is out of date`);

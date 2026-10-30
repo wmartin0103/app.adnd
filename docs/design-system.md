@@ -9,7 +9,7 @@ the owner on 2026-10-27, ahead of a dark theme.
 - Applied everywhere (the sheet, the DM Helper, the sign-in, Your
   characters and Account pages): the colour tokens in light and dark, the
   light/dark toggle in each header, Barlow and Spectral. The tokens live in
-  `src/ui/tokens.js`; `scripts/build-legacy.mjs` writes them into every
+  `src/ui/tokens.js`; `scripts/build-tools.mjs` writes them into every
   page's `<head>`. Each page's older variable names now point at the tokens.
 - Every page passes the contrast check in both themes
   (`scripts/contrast-scan.js`, run in the browser on a page served from the

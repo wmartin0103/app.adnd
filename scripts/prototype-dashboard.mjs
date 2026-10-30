@@ -2,7 +2,7 @@
 // and DMs (static, sample data, for review before site/index.html changes).
 // Run: node scripts/prototype-dashboard.mjs
 import { readFileSync, writeFileSync } from 'node:fs';
-import { withHead } from './build-legacy.mjs';
+import { withHead } from './build-tools.mjs';
 
 // The home page's own styles, as they are
 const home = readFileSync('site/index.html', 'utf8');

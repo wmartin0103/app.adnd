@@ -7,7 +7,7 @@
 
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { bundle, RULES_FILES } from './bundle.mjs';
-import { CATALOG_TAG } from './build-legacy.mjs';
+import { CATALOG_TAG } from './build-tools.mjs';
 
 const rules = bundle(RULES_FILES, {
   expose: {
@@ -37,8 +37,8 @@ if (bubble) current.__spells.push({ ...bubble, id: 'spl-90', isMemorized: true, 
 const asJsString = text => JSON.stringify(text).replace(/</g, '\\u003c');
 // The embedded tools borrow the page's spell catalog (data/spell-catalog.js,
 // published next to the page), so their own script tag for it comes out
-const sheetHtml = readFileSync('legacy/character-sheet.html', 'utf8').replace(CATALOG_TAG, '');
-const dmHtml = readFileSync('legacy/dm-helper.html', 'utf8').replace(CATALOG_TAG, '');
+const sheetHtml = readFileSync('tools/character-sheet.html', 'utf8').replace(CATALOG_TAG, '');
+const dmHtml = readFileSync('tools/dm-helper.html', 'utf8').replace(CATALOG_TAG, '');
 
 for (const file of readdirSync('prototypes').filter(f => f.endsWith('.template.html'))) {
   const html = readFileSync(`prototypes/${file}`, 'utf8')

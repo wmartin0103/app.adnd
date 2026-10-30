@@ -48,8 +48,8 @@ committed to the repo.
 
 | Upload | Repo path | What it is |
 | --- | --- | --- |
-| Character Sheet 2e Beta (index.html, ~7,000 lines) | `legacy/character-sheet.html` | The player sheet. Saves and loads through `gatherData()` / `applyData()`; has a `__version` + `migrateData()` upgrade step |
-| DM Helper (~3,200 lines) | `legacy/dm-helper.html` | Initiative, attacks, crits, saves, proficiencies, reactions. PCs were hand-typed in a config block; a DM tab plus one tab per PC |
+| Character Sheet 2e Beta (index.html, ~7,000 lines) | `tools/character-sheet.html` | The player sheet. Saves and loads through `gatherData()` / `applyData()`; has a `__version` + `migrateData()` upgrade step |
+| DM Helper (~3,200 lines) | `tools/dm-helper.html` | Initiative, attacks, crits, saves, proficiencies, reactions. PCs were hand-typed in a config block; a DM tab plus one tab per PC |
 | Jaque save, 09-23 | `samples/jaque_09-23.json` | Elf Blade Bard 5, rebuilt by hand in the sheet. Weapons: Superior, Leprechaun, Wave Dagger, Dagger x6 |
 | Atteroak save | `samples/atteroak.json` | Dwarf Cleric 4; converted from the Advanced D&D (Rev.) Excel sheet |
 | Hanspeter save | `samples/hanspeter.json` | Human Bard 2 / Druid 5; converted; spells typed wizard (open item) |
@@ -94,8 +94,8 @@ All work is on GitHub in the private repo `wmartin0103/app.adnd`, branch
 1. Install Node.js (LTS) and Claude Code: `npm install -g @anthropic-ai/claude-code`.
 2. `git clone https://github.com/wmartin0103/app.adnd.git`, `cd app.adnd`,
    `git checkout claude/vibrant-wozniak-gjkyjd`.
-3. Open `legacy/character-sheet.html` or `legacy/dm-helper.html` straight from
-   disk. Keep the `data/` folder beside `legacy/`: both load
+3. Open `tools/character-sheet.html` or `tools/dm-helper.html` straight from
+   disk. Keep the `data/` folder beside `tools/`: both load
    `../data/spell-catalog.js`.
 4. Continue with Claude: `claude --teleport` from that folder (in your own
    terminal, not in the chat), or a fresh `claude`.
@@ -103,7 +103,7 @@ All work is on GitHub in the private repo `wmartin0103/app.adnd`, branch
 **Build and test** (Node 20+, no install step)
 
 - `npm test` runs 81 tests (node --test).
-- `node scripts/build-legacy.mjs` copies `src/` into both legacy tools between
+- `node scripts/build-tools.mjs` copies `src/` into both legacy tools between
   the "sheet converter" markers and regenerates `data/spell-catalog.js`. Run
   after any change in `src/` or the catalog JSON; a test fails if you forget.
 - `node scripts/build-prototype.mjs` rebuilds `prototypes/*.html` from the
@@ -123,9 +123,9 @@ flowchart TD
   src["src/ (rules code)<br/>scenarios.js: THAC0, damage, effects, spells<br/>adapters/dm-helper.js: sheet save → DM Helper"]
   json["data/spell-catalog.json<br/>~4,443 spells, stat blocks + links"]
   samples["samples/*.json<br/>character saves"]
-  build["Build scripts<br/>build-legacy.mjs · build-prototype.mjs"]
-  sheet["legacy/character-sheet.html<br/>player sheet"]
-  dm["legacy/dm-helper.html<br/>DM tool; Import sheets"]
+  build["Build scripts<br/>build-tools.mjs · build-prototype.mjs"]
+  sheet["tools/character-sheet.html<br/>player sheet"]
+  dm["tools/dm-helper.html<br/>DM tool; Import sheets"]
   js["data/spell-catalog.js<br/>one shared catalog file"]
   preview["prototypes/app-shell.html<br/>Sheet + DM tabs; catalog loaded once"]
   src --> build
@@ -148,7 +148,7 @@ code between their "sheet converter" markers.
 | `src/adapters/dm-helper.js` | Turns a sheet save into DM Helper entries: attacks, extra-attack rows, cast actions, AC, saves, skills, thief skills, damage, crit types |
 | `src/rules/character.js`, `tables.js`, `spells.js` | AC, saving throws, thief skills, proficiency targets; PHB tables; catalog lookup by name or alias |
 | `src/rules/attacks.js`, `combat.js`, `migrate.js` | Older v2-model code from before "back to basics"; still used for saves and skills (via the v1→v2 migration) |
-| `scripts/bundle.mjs`, `build-legacy.mjs`, `build-prototype.mjs` | Bundle `src/` into the tools and the preview |
+| `scripts/bundle.mjs`, `build-tools.mjs`, `build-prototype.mjs` | Bundle `src/` into the tools and the preview |
 | `scripts/convert-jaque.mjs` | Rebuilds `samples/jaque_10-09.json` from the 09-23 save |
 | `scripts/import-wiki-spells.mjs` | Rebuilds the spell catalog from the wiki; keeps hand-entered entries |
 | `test/*.test.js` | 81 tests: rules, migration, importer, and that both tools and the catalog file are freshly built |
