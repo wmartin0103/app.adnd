@@ -151,6 +151,13 @@ Large is defined for touch-first or prominent actions (44px is the usual
 minimum touch target). Padding may be tightened where a row is short of
 room; height, type and icon may not.
 
+In a row, controls line up by their boxes (decided 2026-10-29): a row that
+mixes labelled fields with buttons aligns them at the bottom, so every box
+shares a line; controls in a row are one size (tab buttons beside medium
+buttons are medium too); a control that needs a label when its neighbours
+have none takes it inline, to its left; a link button and a switch take the
+row's control height, so they centre on it.
+
 Corners: controls 6px, wells and items 8px, cards 10px.
 
 ## Fields

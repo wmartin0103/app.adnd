@@ -134,7 +134,7 @@ ${BTN}.is-bare:is(:hover, :focus-visible):not(:disabled) { border-color: var(--c
 ${BTN}.is-bare.is-danger:is(:hover, :focus-visible):not(:disabled) { color: var(--color-danger-text); background-color: color-mix(in oklab, var(--color-danger-text) 9%, transparent); }
 ${BTN}.is-bare:is([aria-pressed="true"], .is-active) { color: var(--color-accent2-text); background-color: color-mix(in oklab, var(--color-accent2) 16%, transparent); }
 ${BTN}.is-remove svg { width: calc(var(--field-fs) * 1.15); height: calc(var(--field-fs) * 1.15); }
-${BTN}.is-link { height: auto; padding: 0.2em 0.1em; background-color: transparent; border-color: transparent; color: var(--color-accent-text);
+${BTN}.is-link { height: var(--field-h); padding: 0 0.1em; background-color: transparent; border-color: transparent; color: var(--color-accent-text);
   text-decoration: none; text-underline-offset: 0.2em; }
 ${BTN}.is-link:hover:not(:disabled) { color: color-mix(in oklab, var(--color-accent-text) 85%, var(--toward)); text-decoration: underline; text-decoration-thickness: 1px; }
 ${BTN}.is-link.is-danger { color: var(--color-danger-text); }

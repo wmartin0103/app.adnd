@@ -7,7 +7,7 @@ import { ROLL_ICON } from '../src/ui/round-ui.js';
 const X = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
 const COPY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>';
 const sel = (opts, cur, w = '') => `<select${w ? ` style="width:${w}"` : ''}>${opts.map(o => `<option${o === cur ? ' selected' : ''}>${o}</option>`).join('')}</select>`;
-const tabs = (opts, cur, label) => `<div class="ui-tabs size-sm" role="group" aria-label="${label}">${opts.map(o => `<button type="button" class="${o === cur ? 'is-active' : ''}" aria-pressed="${o === cur}">${o}</button>`).join('')}</div>`;
+const tabs = (opts, cur, label, size = 'sm') => `<div class="ui-tabs size-${size}" role="group" aria-label="${label}">${opts.map(o => `<button type="button" class="${o === cur ? 'is-active' : ''}" aria-pressed="${o === cur}">${o}</button>`).join('')}</div>`;
 const field = (label, ctl) => `<label class="f"><span class="lab">${label}</span>${ctl}</label>`;
 
 // ── Initiative ──
@@ -64,7 +64,7 @@ const initiative = `
       <div class="rb-main"><span class="round"><span class="lab">Round</span><span class="rn">3</span></span>
       <button type="button" class="ui-button is-primary" title="Rolls for each Enemy that hasn't rolled; never re-rolls">${ROLL_ICON} Roll initiative for Enemies</button>
       <button type="button" class="ui-button is-secondary">Reset initiative</button>
-      <div class="f"><span class="lab">Extra attacks</span>${tabs(['End of the order', 'At their turn'], 'End of the order', 'Extra attacks')}</div>
+      <div class="inline-f"><span class="lab">Extra attacks</span>${tabs(['End of the order', 'At their turn'], 'End of the order', 'Extra attacks', 'md')}</div>
       <button type="button" class="ui-button is-primary">Next round ▸</button></div>
       <div class="apart"><button type="button" class="ui-button is-secondary is-danger">↺ Reset encounter</button></div>
     </div>
@@ -215,7 +215,9 @@ const page = `<!doctype html>
   .lab { display: block; font: 600 11px/1.2 var(--font-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--color-text-muted); margin-bottom: 4px; }
   label.f, div.f { display: inline-flex; flex-direction: column; }
   .line, .actions, .toolbar { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 14px; }
-  .actions { align-items: center; }
+  /* Labelled fields and buttons in one row: the control boxes line up at the bottom */
+  .inline-f { display: inline-flex; align-items: center; gap: 8px; }
+  .inline-f > .lab { margin: 0; }
   .card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; margin-bottom: 12px; }
   .card-head h3 { margin: 0; font: 600 18px/1.25 var(--font-serif); }
   .card-head .ui-disclosure h3 { display: inline; }
@@ -238,7 +240,7 @@ const page = `<!doctype html>
   .verdict { color: var(--color-text-muted); font-size: 13px; }
   .verdict.bad { color: var(--color-accent-text); font-weight: 700; }
   .ok-line { margin: 0; color: var(--color-success-text); font-size: 14px; }
-  .sw { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; }
+  .sw { display: inline-flex; align-items: center; gap: 8px; height: var(--field-h); cursor: pointer; font-size: 14px; }   /* a control row's height, so it centres among them */
 
   /* The round */
   .roundbar { display: flex; align-items: stretch; gap: 16px; }
