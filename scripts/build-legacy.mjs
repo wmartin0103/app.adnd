@@ -69,7 +69,7 @@ export const PAGES = {
   'site/index.html': {
     Cloud: ['cloud', ['cloudClient', 'cloudSession']],
     Theme: ['ui/theme', ['mountThemeToggle', 'currentTheme', 'setTheme']],
-    Characters: ['characters', ['STATUS_LABEL', 'summary', 'isBlank', 'fileName', 'listCharacters', 'createCharacter', 'setStatus', 'saveSheet', 'deleteCharacter']],
+    Characters: ['characters', ['STATUS_LABEL', 'summary', 'isBlank', 'fileName', 'listCharacters', 'createCharacter', 'setStatus', 'saveSheet', 'deleteCharacter', 'listParty', 'listMembers', 'assignCharacter']],
   },
   'site/account.html': {
     Cloud: ['cloud', ['cloudClient', 'cloudSession']],

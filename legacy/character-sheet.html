@@ -544,6 +544,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     }
 
     /* ─── Header ────────────────────────────────────────────── */
+    .view-note { margin: -1.5rem 0 1.5rem; padding: 10px 14px; font-size: 14px; color: var(--color-text); }
     .sheet-header {
       display: grid;
       grid-template-columns: 1fr auto;
@@ -6476,6 +6477,14 @@ async function createCharacterFor(client, session, ownerId, data) {
   return { id: row.id, status: 'backup' };
 }
 
+// The DM gives one of their characters to a player: it becomes theirs, in
+// their Backups (so it never clashes with the one they have in play)
+async function assignCharacter(client, id, ownerId) {
+  const { data, error } = await client.from('characters').update({ owner_id: ownerId, status: 'backup' }).eq('id', id).select('id');
+  if (error) throw error;
+  if (!data || !data.length) throw new Error('That character couldn’t be assigned.');
+}
+
 // Moves a character; into play, the one in play now goes to `others` (dead
 // or backup) first, as only one may be in play
 async function setStatus(client, mine, id, status, others = 'backup') {
@@ -6510,7 +6519,7 @@ async function saveSheet(client, id, data) {
   if (error) throw error;
 }
 
-return { STATUSES, STATUS_LABEL, summary, isBlank, fileName, listCharacters, createCharacter, isSheetSave, listParty, listMembers, createCharacterFor, setStatus, deleteCharacter, loadCharacter, saveSheet };
+return { STATUSES, STATUS_LABEL, summary, isBlank, fileName, listCharacters, createCharacter, isSheetSave, listParty, listMembers, createCharacterFor, assignCharacter, setStatus, deleteCharacter, loadCharacter, saveSheet };
 })();
 window.SheetSpells = { findSpell: __m["rules/spells"].findSpell };
 window.SheetScenarios = { modNum: __m["rules/scenarios"].modNum, signed: __m["rules/scenarios"].signed, ATTACK_TYPES: __m["rules/scenarios"].ATTACK_TYPES, RATE_OPTIONS: __m["rules/scenarios"].RATE_OPTIONS, scenarioRate: __m["rules/scenarios"].scenarioRate, scenarioType: __m["rules/scenarios"].scenarioType, scenarioSpell: __m["rules/scenarios"].scenarioSpell, scenarioAbility: __m["rules/scenarios"].scenarioAbility, activeEffectsFor: __m["rules/scenarios"].activeEffectsFor, scenarioDamage: __m["rules/scenarios"].scenarioDamage, scenarioBreakdown: __m["rules/scenarios"].scenarioBreakdown, normalizeEffects: __m["rules/scenarios"].normalizeEffects, effectOption: __m["rules/scenarios"].effectOption, isBowcaster: __m["rules/scenarios"].isBowcaster, spellArrow: __m["rules/scenarios"].spellArrow, usesAmmo: __m["rules/scenarios"].usesAmmo, weaponAmmoType: __m["rules/scenarios"].weaponAmmoType, ammoType: __m["rules/scenarios"].ammoType, ammoFor: __m["rules/scenarios"].ammoFor, scenarioAmmo: __m["rules/scenarios"].scenarioAmmo, AMMO_TYPES: __m["rules/scenarios"].AMMO_TYPES };
@@ -8343,6 +8352,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
     var roundSyncObj = null;
     var cloudSess = null;
     function roundSync() {
+      if (isViewOnly()) return null;                 // viewing someone's sheet: never in the round
       if (!roundSyncObj) {
         const client = window.Cloud && Cloud.cloudClient();
         if (cloudSess && cloudSess.campaignId && client) roundSyncObj = Cloud.createCloudRoundSync({ client, campaignId: cloudSess.campaignId, userId: cloudSess.user.id, characterIds: CLOUD_ID ? { [charName()]: CLOUD_ID } : {} });
@@ -10706,6 +10716,10 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
     // at once and the sheet from before accounts ('adnd-sheet') is left alone.
     // With no id: this browser only, as before.
     const CLOUD_ID = (() => { try { return new URLSearchParams(location.search).get('id'); } catch (e) { return null; } })();
+    // View only (?view=1): the DM looking at a player's character from Your
+    // characters. Nothing is saved (not to the account, not to this browser),
+    // the sheet stays out of the round, and the page can't be changed.
+    function isViewOnly() { try { return new URLSearchParams(location.search).get('view') === '1'; } catch (e) { return false; } }
     const STORAGE_KEY = CLOUD_ID ? `adnd-sheet:${CLOUD_ID}` : 'adnd-sheet';
     let saveTimer = null;
     let cloudLoaded = false, cloudTimer = null;
@@ -10713,7 +10727,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
     // at the table, and the account keeps the last 30 versions
     function cloudSave() {
       const client = window.Cloud && Cloud.cloudClient();
-      if (!CLOUD_ID || !cloudLoaded || !client || !window.Characters) return;
+      if (!CLOUD_ID || !cloudLoaded || !client || !window.Characters || isViewOnly()) return;
       clearTimeout(cloudTimer);
       cloudTimer = setTimeout(() => { Characters.saveSheet(client, CLOUD_ID, gatherData()).catch(() => {}); }, 600);
     }
@@ -10726,6 +10740,12 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       try { row = await Characters.loadCharacter(client, CLOUD_ID); } catch (e) { return; }
       if (!row) return;
       cloudLoaded = true;
+      if (isViewOnly()) {
+        if (!Characters.isBlank(row.data)) { applyData(row.data); refreshAll(); }
+        showViewOnly(client, row);
+        document.title = `${charName()} · Character Sheet (view only)`;
+        return;
+      }
       if (!Characters.isBlank(row.data)) {
         applyData(row.data);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(gatherData()));
@@ -10855,6 +10875,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
     }
 
     function saveToItems() {
+      if (isViewOnly()) return;                      // viewing: nothing is kept
       localStorage.setItem(STORAGE_KEY, JSON.stringify(gatherData()));
       cloudSave();
 
@@ -11688,6 +11709,25 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         updateMovement();
       }
     });
+
+    // ── View only ──
+    // Everything that edits is inert (it reads at full contrast but can't be
+    // focused or changed); Import and Clear All go; Export stays (it reads).
+    function lockForViewing() {
+      document.body.classList.add('is-view-only');
+      document.querySelectorAll('main.sheet > :not(.sheet-header), .sheet-header .character-name-wrap, .sheet-header .header-player-row').forEach(e => { e.inert = true; });
+      document.getElementById('btn-clear').hidden = true;
+      document.getElementById('btn-import').closest('label').hidden = true;
+    }
+    async function showViewOnly(client, row) {
+      lockForViewing();
+      let owner = '';
+      try { const p = await client.from('profiles').select('display_name').eq('id', row.owner_id).maybeSingle(); owner = (p.data && p.data.display_name) || ''; } catch (e) { /* the note without a name */ }
+      let note = document.getElementById('view-note');
+      if (!note) { note = document.createElement('div'); note.id = 'view-note'; note.className = 'view-note ui-well'; note.setAttribute('role', 'status'); document.querySelector('.sheet-header').after(note); }
+      note.textContent = `Viewing ${owner ? owner + '’s' : 'a player’s'} character. Read-only: changes can’t be made here.`;
+    }
+    if (isViewOnly()) lockForViewing();   // at once, before the account answers
 
     // ── 10. INITIALIZATION ───────────────────────────────────────
     //

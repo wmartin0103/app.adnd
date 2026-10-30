@@ -109,6 +109,14 @@ export async function createCharacterFor(client, session, ownerId, data) {
   return { id: row.id, status: 'backup' };
 }
 
+// The DM gives one of their characters to a player: it becomes theirs, in
+// their Backups (so it never clashes with the one they have in play)
+export async function assignCharacter(client, id, ownerId) {
+  const { data, error } = await client.from('characters').update({ owner_id: ownerId, status: 'backup' }).eq('id', id).select('id');
+  if (error) throw error;
+  if (!data || !data.length) throw new Error('That character couldn’t be assigned.');
+}
+
 // Moves a character; into play, the one in play now goes to `others` (dead
 // or backup) first, as only one may be in play
 export async function setStatus(client, mine, id, status, others = 'backup') {

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { summary, isBlank, fileName, listCharacters, createCharacter, setStatus, loadCharacter, saveSheet, deleteCharacter, isSheetSave, listParty, listMembers, createCharacterFor } from '../src/characters.js';
+import { summary, isBlank, fileName, listCharacters, createCharacter, setStatus, loadCharacter, saveSheet, deleteCharacter, isSheetSave, listParty, listMembers, createCharacterFor, assignCharacter } from '../src/characters.js';
 
 // A stand-in for the Supabase client: the tables and calls used here, with
 // the database's one-in-play rule
@@ -26,9 +26,9 @@ function fakeClient(tables) {
       }
       if (op === 'update') {
         const before = rows.map(r => ({ ...r }));
-        rows.filter(hit).forEach(r => Object.assign(r, payload));
+        const changed = rows.filter(hit); changed.forEach(r => Object.assign(r, payload));
         if (onePlay()) { tables[table] = before; return { data: null, error: { message: 'one in play' } }; }
-        return { data: null, error: null };
+        return { data: changed.map(r => ({ id: r.id })), error: null };
       }
       if (op === 'delete') {
         // the database's rule: never the one in play
@@ -152,4 +152,16 @@ test('characters: a sheet save has a name and its classes', () => {
   assert.equal(isSheetSave({ name: 'Jaque' }), false);
   assert.equal(isSheetSave({ __classes: [] }), false);
   assert.equal(isSheetSave(null), false);
+});
+
+test('characters: the DM assigns a backup to a player (it lands in their Backups)', async () => {
+  const t = { characters: [
+    { id: 'n', campaign_id: 'k', owner_id: 'u-dm', name: 'Nebish', status: 'backup' },
+    { id: 'j', campaign_id: 'k', owner_id: 'u2', name: 'Jaque', status: 'play' },
+  ] };
+  const c = fakeClient(t);
+  await assignCharacter(c, 'n', 'u2');
+  assert.deepEqual([t.characters[0].owner_id, t.characters[0].status], ['u2', 'backup']);
+  assert.equal(t.characters[1].status, 'play');   // their one in play stays
+  await assert.rejects(assignCharacter(c, 'nope', 'u2'), /couldn.t be assigned/);
 });

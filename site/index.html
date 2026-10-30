@@ -565,6 +565,8 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     .welcome { display: grid; gap: 6px; text-align: center; }
     .choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 14px; }
     /* The first visit's two ways in: choice cards (the pattern, ui-choice) */
+    /* The DM's way into the DM Helper: a choice card on its own row */
+    .dm-entry { grid-template-columns: minmax(16rem, 24rem); }
     .found { background: color-mix(in oklab, var(--color-accent) 12%, var(--surface)); border: 1px solid color-mix(in oklab, var(--color-accent) 45%, var(--surface)); border-radius: var(--radius); padding: 14px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
     .found p { margin: 0; flex: 1 1 18rem; }
     /* Bringing a character into play while another is */
@@ -602,7 +604,6 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       <h1>AD&amp;D Campaign</h1>
       <div class="who">
         <span id="who"></span>
-        <a class="btn quiet small ui-button is-secondary size-sm" href="legacy/dm-helper.html" id="dm-link" hidden>DM Helper</a>
         <a class="btn quiet small ui-button is-secondary size-sm" href="account.html">Account</a>
         <button class="btn quiet small ui-button is-secondary size-sm" type="button" id="signout">Sign out</button>
       </div>
@@ -628,6 +629,17 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       <h3 id="del-title"></h3>
       <p id="del-text"></p>
       <div class="row"><button class="btn quiet ui-button is-secondary" value="cancel" autofocus>Cancel</button><button class="btn danger ui-button is-primary is-danger" value="ok" id="del-ok">Delete</button></div>
+    </form>
+  </dialog>
+  <dialog id="assign" aria-labelledby="assign-title" aria-describedby="assign-text">
+    <form method="dialog">
+      <h3 id="assign-title"></h3>
+      <p id="assign-text"></p>
+      <fieldset>
+        <legend>Player</legend>
+        <div id="assign-list"></div>
+      </fieldset>
+      <div class="row"><button class="btn quiet ui-button is-secondary" value="cancel">Cancel</button><button class="btn ui-button is-primary" value="ok" id="assign-ok">Assign</button></div>
     </form>
   </dialog>
   <div class="toast" id="toast" role="status"></div>
@@ -1156,6 +1168,14 @@ async function createCharacterFor(client, session, ownerId, data) {
   return { id: row.id, status: 'backup' };
 }
 
+// The DM gives one of their characters to a player: it becomes theirs, in
+// their Backups (so it never clashes with the one they have in play)
+async function assignCharacter(client, id, ownerId) {
+  const { data, error } = await client.from('characters').update({ owner_id: ownerId, status: 'backup' }).eq('id', id).select('id');
+  if (error) throw error;
+  if (!data || !data.length) throw new Error('That character couldn’t be assigned.');
+}
+
 // Moves a character; into play, the one in play now goes to `others` (dead
 // or backup) first, as only one may be in play
 async function setStatus(client, mine, id, status, others = 'backup') {
@@ -1190,11 +1210,11 @@ async function saveSheet(client, id, data) {
   if (error) throw error;
 }
 
-return { STATUSES, STATUS_LABEL, summary, isBlank, fileName, listCharacters, createCharacter, isSheetSave, listParty, listMembers, createCharacterFor, setStatus, deleteCharacter, loadCharacter, saveSheet };
+return { STATUSES, STATUS_LABEL, summary, isBlank, fileName, listCharacters, createCharacter, isSheetSave, listParty, listMembers, createCharacterFor, assignCharacter, setStatus, deleteCharacter, loadCharacter, saveSheet };
 })();
 window.Cloud = { cloudClient: __m["cloud"].cloudClient, cloudSession: __m["cloud"].cloudSession };
 window.Theme = { mountThemeToggle: __m["ui/theme"].mountThemeToggle, currentTheme: __m["ui/theme"].currentTheme, setTheme: __m["ui/theme"].setTheme };
-window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m["characters"].summary, isBlank: __m["characters"].isBlank, fileName: __m["characters"].fileName, listCharacters: __m["characters"].listCharacters, createCharacter: __m["characters"].createCharacter, setStatus: __m["characters"].setStatus, saveSheet: __m["characters"].saveSheet, deleteCharacter: __m["characters"].deleteCharacter };
+window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m["characters"].summary, isBlank: __m["characters"].isBlank, fileName: __m["characters"].fileName, listCharacters: __m["characters"].listCharacters, createCharacter: __m["characters"].createCharacter, setStatus: __m["characters"].setStatus, saveSheet: __m["characters"].saveSheet, deleteCharacter: __m["characters"].deleteCharacter, listParty: __m["characters"].listParty, listMembers: __m["characters"].listMembers, assignCharacter: __m["characters"].assignCharacter };
 })();
 /* ── end sheet converter ── */
 
@@ -1214,6 +1234,13 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
     const sheetUrl = id => `legacy/character-sheet.html?id=${encodeURIComponent(id)}`;
 
     let session = null, list = { mine: [], given: [] }, openMenu = null, loadError = '';
+    // The DM (or an admin) sees the DM Helper and the Party; a DM's own list is
+    // their Backups (characters they prepare and assign to players). An admin
+    // who plays keeps the player's sections too.
+    let party = [], members = [];
+    const asDM = () => !!session && (session.role === 'dm' || session.isAdmin);
+    const asPlayer = () => !!session && session.role !== 'dm';
+    const newStatus = () => (asPlayer() ? undefined : 'backup');      // a DM's characters start in Backups
     const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
     let toastT = 0;
     const say = t => { $('toast').textContent = t; clearTimeout(toastT); toastT = setTimeout(() => { $('toast').textContent = ''; }, 3500); };
@@ -1233,18 +1260,21 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
       $('who').innerHTML = '';
       const name = el('b', '', session.name);
       $('who').append('Signed in as ', name, session.campaignName ? ` · ${session.campaignName}` : '');
-      $('dm-link').hidden = !(session.role === 'dm' || session.isAdmin);
       await reload();
     }
     async function reload() {
       loadError = '';
       try { list = await Characters.listCharacters(client, session); } catch (e) { loadError = problem(e); }
+      if (asDM()) {
+        try { [party, members] = await Promise.all([Characters.listParty(client, session.campaignId), Characters.listMembers(client, session.campaignId)]); }
+        catch (e) { party = []; members = []; }
+      }
       render();
     }
 
     // ── Doing things ──
     async function newCharacter() {
-      try { const r = await Characters.createCharacter(client, session, { name: '' }, { mine: list.mine }); location.href = sheetUrl(r.id); }
+      try { const r = await Characters.createCharacter(client, session, { name: '' }, { mine: list.mine, status: newStatus() }); location.href = sheetUrl(r.id); }
       catch (e) { say(problem(e)); }
     }
     function importFile() { $('import-file').value = ''; $('import-file').click(); }
@@ -1256,7 +1286,7 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
       // Into the empty character with its name (made for it by add-player.sql), else a new one
       if (data.name && list.mine.some(c => c.blank && c.name === data.name)) { saveLocal(data, { keepLocal: true }); return; }
       try {
-        const r = await Characters.createCharacter(client, session, data, { mine: list.mine });
+        const r = await Characters.createCharacter(client, session, data, { mine: list.mine, status: newStatus() });
         await reload(); say(`${data.name || 'The character'} is saved to your account, ${placeText(r.status)}.`);
       } catch (err) { say(problem(err)); }
     });
@@ -1313,6 +1343,24 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
       };
       d.returnValue = ''; d.showModal();
     }
+    // The DM gives a backup to a player: it moves to their Backups
+    function assign(c) {
+      const d = $('assign'), host = $('assign-list');
+      const players = members.filter(m => m.role === 'player' && m.id !== session.user.id);
+      $('assign-title').textContent = `Assign ${c.name} to a player?`;
+      $('assign-text').textContent = players.length ? `${c.name} moves to their Backups, ready for them to bring into play. You won’t see it here any more.` : 'There are no players in this campaign yet.';
+      host.textContent = '';
+      players.forEach((m, i) => { const l = el('label'); const r = el('input'); r.type = 'radio'; r.name = 'to'; r.value = m.id; r.checked = i === 0; l.append(r, ' ', el('span', '', m.name)); host.appendChild(l); });
+      $('assign-ok').disabled = !players.length;
+      d.onclose = async () => {
+        if (d.returnValue !== 'ok') return;
+        const to = d.querySelector('input[name="to"]:checked'); if (!to) return;
+        const who = players.find(m => m.id === to.value);
+        try { await Characters.assignCharacter(client, c.id, to.value); await reload(); say(`${c.name} is in ${who ? who.name + '’s' : 'their'} Backups.`); }
+        catch (e) { say(problem(e)); }
+      };
+      d.returnValue = ''; d.showModal();
+    }
     async function copyOf(c) {
       const data = { ...(c.data || {}), name: `${c.name} (copy)` };
       try { await Characters.createCharacter(client, session, data, { mine: list.mine, status: 'backup' }); await reload(); say(`A copy of ${c.name} is in Backups.`); }
@@ -1325,23 +1373,28 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
     }
 
     // ── Drawing ──
-    function card(c, given) {
+    function card(c, given, opts = {}) {
       const k = el('article', 'card' + (c.status === 'play' && !given ? ' play' : c.status === 'dead' ? ' dead' : ''));
       const nid = 'n-' + c.id; k.setAttribute('aria-labelledby', nid);
       if (given) k.appendChild(el('span', 'badge given', `${c.ownerName || 'Someone'}’s · you can play`));
+      else if (opts.view && c.ownerName) k.appendChild(el('span', 'badge given', `${c.ownerName}’s`));
       else if (c.status === 'play') k.appendChild(el('span', 'badge play', 'In play'));
       else if (c.status === 'dead') k.appendChild(el('span', 'badge dead', 'Dead'));
       const n = el('h3', 'name', c.name); n.id = nid; k.appendChild(n);
       k.appendChild(el('p', 'what' + (c.summary ? '' : ' blank'), c.summary || (c.blank ? 'Not filled in yet' : '')));
       if (c.updatedAt) k.appendChild(el('p', 'meta', when(c.updatedAt)));
       const a = el('div', 'actions');
-      const open = el('a', 'btn small ui-button is-primary size-sm', 'Open sheet'); open.href = sheetUrl(c.id); open.setAttribute('aria-label', `Open ${c.name}’s sheet`);
+      const open = opts.view
+        ? el('a', 'btn small ui-button is-secondary size-sm', 'View sheet')
+        : el('a', 'btn small ui-button is-primary size-sm', 'Open sheet');
+      open.href = sheetUrl(c.id) + (opts.view ? '&view=1' : '');
+      open.setAttribute('aria-label', opts.view ? `View ${c.name}’s sheet (read only)` : `Open ${c.name}’s sheet`);
       a.appendChild(open);
-      if (!given && c.status !== 'play') {
+      if (!given && !opts.view && !opts.dm && c.status !== 'play') {   // a player's own; not a Party card or a DM's backup
         const b = el('button', 'btn quiet small ui-button is-secondary size-sm', c.status === 'dead' ? 'Return to play' : 'Bring into play'); b.type = 'button';
         b.addEventListener('click', () => bringIn(c)); a.appendChild(b);
       }
-      if (!given) {
+      if (!given && !opts.view) {                                       // a Party card is for looking only
         const m = el('button', 'btn quiet small more ui-button is-secondary is-icon size-sm', '⋯'); m.type = 'button';
         m.setAttribute('aria-label', `More for ${c.name}`); m.setAttribute('aria-haspopup', 'true'); m.setAttribute('aria-expanded', String(openMenu === c.id));
         m.addEventListener('click', e => { e.stopPropagation(); openMenu = openMenu === c.id ? null : c.id; render(); if (openMenu) document.querySelector('.menu button')?.focus(); });
@@ -1351,9 +1404,12 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
       if (openMenu === c.id) {
         const menu = el('div', 'menu ui-menu'); menu.setAttribute('role', 'menu');
         const item = (t, fn) => { const b = el('button', '', t); b.type = 'button'; b.setAttribute('role', 'menuitem'); b.addEventListener('click', () => { openMenu = null; render(); fn(); }); menu.appendChild(b); };
-        if (c.status !== 'play') item('Bring into play', () => bringIn(c));
-        if (c.status !== 'backup') item('Move to Backups', () => move(c, 'backup').then(ok => ok && say(`${c.name} moved to Backups.`)));
-        if (c.status !== 'dead') item('Mark as dead', () => move(c, 'dead').then(ok => ok && say(`${c.name} is marked as dead.`)));
+        if (opts.dm) item('Assign to player\u2026', () => assign(c));
+        else {
+          if (c.status !== 'play') item('Bring into play', () => bringIn(c));
+          if (c.status !== 'backup') item('Move to Backups', () => move(c, 'backup').then(ok => ok && say(`${c.name} moved to Backups.`)));
+          if (c.status !== 'dead') item('Mark as dead', () => move(c, 'dead').then(ok => ok && say(`${c.name} is marked as dead.`)));
+        }
         menu.appendChild(el('hr'));
         item('Make a copy', () => copyOf(c));
         item('Export file', () => exportFile(c));
@@ -1384,7 +1440,32 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
         f.append(p, b); wrap.appendChild(f);
       }
       const mine = list.mine;
-      if (!mine.length) {
+      if (asDM()) {
+        // The DM Helper: a choice card that goes there
+        const go = el('div', 'choices dm-entry');
+        const a = el('a', 'choice ui-choice'); a.href = 'legacy/dm-helper.html';
+        a.append(el('span', 't', 'DM Helper'), el('span', 'd', 'Run the round: initiative, attacks, checks, saves and encounters.'));
+        go.appendChild(a); wrap.appendChild(go);
+        // The Party: each player's character in play, view only
+        const ownerOf = id => (members.find(m => m.id === id) || {}).name || '';
+        const sp = section('Party', party.length, null, party.length ? 'Each player’s character in play. View only.' : 'No one has a character in play yet.');
+        if (party.length) {
+          const cp = el('div', 'cards');
+          party.forEach(p => cp.appendChild(card({ id: p.id, name: p.name, status: 'party', summary: Characters.summary(p.data), blank: Characters.isBlank(p.data), updatedAt: p.updatedAt, ownerName: ownerOf(p.ownerId) }, false, { view: true })));
+          sp.appendChild(cp);
+        }
+        wrap.appendChild(sp);
+      }
+      if (!asPlayer()) {
+        // A DM's own characters: their Backups, to assign to players
+        const add = el('div', 'actions');
+        const nb = el('button', 'btn quiet small ui-button is-secondary size-sm', 'New character'); nb.type = 'button'; nb.addEventListener('click', newCharacter);
+        const ib = el('button', 'btn quiet small ui-button is-secondary size-sm', 'Import file'); ib.type = 'button'; ib.addEventListener('click', importFile);
+        add.append(nb, ib);
+        const sb = section('Backups', mine.length, add, mine.length ? 'Characters you’ve prepared. Assign one to a player when they need it.' : 'None yet. Make or import a character, then assign it to a player.');
+        if (mine.length) { const cb = el('div', 'cards'); mine.forEach(c => cb.appendChild(card(c, false, { dm: true }))); sb.appendChild(cb); }
+        wrap.appendChild(sb);
+      } else if (!mine.length) {
         const w = el('div', 'welcome');
         w.append(el('h2', '', 'Your characters'), el('p', 'hint', 'You don’t have a character yet. Start one, or bring in a sheet you’ve already made.'));
         const ch = el('div', 'choices');
@@ -1411,7 +1492,7 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
         if (dead.length) { const s3 = section('Dead', dead.length, null, 'Still yours to edit. They could come back.'); const c3 = el('div', 'cards'); dead.forEach(c => c3.appendChild(card(c))); s3.appendChild(c3); wrap.appendChild(s3); }
       }
       if (list.given.length) {
-        const s4 = section('Characters you can play', list.given.length, null, 'Given to you by their owner, until they take it away.');
+        const s4 = section('Shared with you', list.given.length, null, 'Characters others have let you play, until they take them back.');
         const c4 = el('div', 'cards'); list.given.forEach(c => c4.appendChild(card(c, true))); s4.appendChild(c4); wrap.appendChild(s4);
       }
       main.appendChild(wrap);
