@@ -5504,9 +5504,11 @@ function renderEnemyAttacks(name){
     const nm=document.createElement('span'); nm.className='bd-atk-name'; nm.textContent=line.label; head.appendChild(nm);
     if(a.roll){                                                // rolled: settled, as on the sheet
       const m=document.createElement('span'); m.className='bd-atk-meta'; m.textContent=`Damage ${a.dice}${a.bonus?'+'+a.bonus:''}`; head.appendChild(m);
-    }else head.append(
+    }
+    // Dice and Bonus lead the line of fields (the header is just the attack's name and its buttons)
+    const dicePicks = a.roll ? [] : [
       uiPick(`${id}-dice`, 'Dice', BD_DICE.map(x=>[x,x]), a.dice, v=>{ a.dice=v; update(); }),
-      uiPick(`${id}-bonus`, 'Bonus', Array.from({length:11},(_,n)=>[String(n), n?'+'+n:'0']), String(a.bonus), v=>{ a.bonus=parseInt(v,10)||0; update(); }));
+      uiPick(`${id}-bonus`, 'Bonus', Array.from({length:11},(_,n)=>[String(n), n?'+'+n:'0']), String(a.bonus), v=>{ a.bonus=parseInt(v,10)||0; update(); })];
     const btns=document.createElement('span'); btns.className='bd-atk-btns';
     btns.appendChild(btn('Duplicate', 'another attack with the same dice, targets and conditions (not rolled)', ()=>{ b.attacks.splice(i+1, 0, newEnemyAttack(a)); update(); }));
     if(b.attacks.length>1) btns.appendChild(btn('Remove', 'remove this attack', ()=>{ b.attacks.splice(i, 1); update(); }));
@@ -5539,6 +5541,7 @@ function renderEnemyAttacks(name){
       });
     }else{
       const chosen=st.targets.map(t=>t.id);
+      row.append(...dicePicks);
       row.appendChild(RoundUI.multi(`${id}-targets`, 'Targets', [
         ...party.map(n=>({key:'pc:'+n, label:n, on:chosen.includes('pc:'+n)})),
         {key:'other', label:'Other', note:'pick its AC', on:chosen.includes('other')},
