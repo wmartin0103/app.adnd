@@ -779,6 +779,9 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .gcresults table{margin:0}
   .gctable td.name{font-family:var(--serif)}
   .gctable td.tgt{font-family:var(--serif);font-size:1.15rem;font-weight:700}
+  /* A group check or save: the roll green when it succeeds, red when it fails, to read the party at a glance */
+  .gctable td.tgt.pass{color:var(--color-success-text)}
+  .gctable td.tgt.fail{color:var(--color-danger-text)}
   .src{margin-left:8px;font-family:var(--sans);font-size:.62rem;color:var(--muted);border:1px solid var(--edge);border-radius:3px;padding:0 4px;vertical-align:middle;cursor:default;letter-spacing:.02em}
   .src.kit{color:var(--brass);border-color:color-mix(in oklab, var(--brass) 55%, transparent)}
   .src.int{color:var(--verdigris);border-color:color-mix(in oklab, var(--verdigris) 50%, transparent)}
@@ -6122,7 +6125,7 @@ function buildSkills(){
     skillBlocks[name]=block;
     const head=document.createElement('div'); head.className='chead';
     const cn=nameEl(name);
-    const btn=document.createElement('button'); btn.className='reroll small ui-button is-bare is-icon size-sm'; btn.innerHTML=window.RoundUI ? RoundUI.ROLL_ICON : '⟳'; btn.setAttribute('aria-label', 'Re-roll the d20s');
+    const btn=document.createElement('button'); btn.className='reroll small ui-button is-secondary is-icon size-sm'; btn.innerHTML=window.RoundUI ? RoundUI.ROLL_ICON : '⟳'; btn.setAttribute('aria-label', 'Re-roll the d20s');
     btn.addEventListener('click', ()=>rollSkillsFor(name));
     head.append(cn, btn); block.appendChild(head);
 
@@ -6346,7 +6349,7 @@ function renderSaves(){
     const cn=nameEl(name);
     head.appendChild(cn);
     if(sv.note){ const nt=document.createElement('span'); nt.className='svnote'; nt.textContent=sv.note; head.appendChild(nt); }
-    const btn=document.createElement('button'); btn.className='reroll small ui-button is-bare is-icon size-sm'; btn.innerHTML=window.RoundUI ? RoundUI.ROLL_ICON : '⟳'; btn.setAttribute('aria-label', 'Re-roll the d20s');
+    const btn=document.createElement('button'); btn.className='reroll small ui-button is-secondary is-icon size-sm'; btn.innerHTML=window.RoundUI ? RoundUI.ROLL_ICON : '⟳'; btn.setAttribute('aria-label', 'Re-roll the d20s');
     btn.addEventListener('click', ()=>{ rollSavesFor(name); renderSaves(); });
     head.appendChild(btn); block.appendChild(head);
     let html='<table class="acts svtable"><thead><tr><th class="l">Save vs</th><th>Base</th><th>Mod</th><th>Target</th><th>d20</th></tr></thead><tbody>';
