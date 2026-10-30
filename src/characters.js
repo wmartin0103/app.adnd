@@ -4,8 +4,9 @@
 // save. A character's data is exactly what the sheet saves and exports. Each
 // call takes the Supabase client; the database's rules decide what's allowed.
 
-export const STATUSES = ['play', 'backup', 'dead'];
-export const STATUS_LABEL = { play: 'In play', backup: 'Backups', dead: 'Dead' };
+// unassigned: made by the DM, not given to a player yet (the DM's Backups)
+export const STATUSES = ['play', 'backup', 'dead', 'unassigned'];
+export const STATUS_LABEL = { play: 'In play', backup: 'Backups', dead: 'Dead', unassigned: 'Backups' };
 
 const RACES = { human: 'Human', dwarf: 'Dwarf', gnome: 'Gnome', halfling: 'Halfling', 'half-elf': 'Half-Elf', elf: 'Elf', 'half-orc': 'Half-Orc' };
 // "Elf · Blade Bard 5", from a sheet's data ('' when there's nothing yet)

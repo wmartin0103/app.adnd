@@ -1071,8 +1071,9 @@ __m["characters"] = (() => {
 // save. A character's data is exactly what the sheet saves and exports. Each
 // call takes the Supabase client; the database's rules decide what's allowed.
 
-const STATUSES = ['play', 'backup', 'dead'];
-const STATUS_LABEL = { play: 'In play', backup: 'Backups', dead: 'Dead' };
+// unassigned: made by the DM, not given to a player yet (the DM's Backups)
+const STATUSES = ['play', 'backup', 'dead', 'unassigned'];
+const STATUS_LABEL = { play: 'In play', backup: 'Backups', dead: 'Dead', unassigned: 'Backups' };
 
 const RACES = { human: 'Human', dwarf: 'Dwarf', gnome: 'Gnome', halfling: 'Halfling', 'half-elf': 'Half-Elf', elf: 'Elf', 'half-orc': 'Half-Orc' };
 // "Elf · Blade Bard 5", from a sheet's data ('' when there's nothing yet)
@@ -1239,7 +1240,7 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
     const LOCAL = 'adnd-sheet', MOVED = 'adnd-sheet-moved';
     const localSheet = () => { try { const d = JSON.parse(localStorage.getItem(LOCAL) || 'null'); return d && typeof d === 'object' ? d : null; } catch (e) { return null; } };
     const moved = () => { try { return !!localStorage.getItem(MOVED); } catch (e) { return true; } };
-    const placeText = st => (st === 'play' ? 'in play' : st === 'dead' ? 'with the dead' : 'in Backups');
+    const placeText = st => (st === 'play' ? 'in play' : st === 'dead' ? 'with the dead' : st === 'unassigned' ? 'in Backups, ready to assign' : 'in Backups');
     const sheetUrl = id => `legacy/character-sheet.html?id=${encodeURIComponent(id)}`;
 
     let session = null, list = { mine: [], given: [] }, openMenu = null, loadError = '';
@@ -1250,7 +1251,6 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
     let party = [], members = [];
     const asDM = () => !!session && !!session.isDM;
     const asPlayer = () => !!session && !!session.isPlayer;
-    const newStatus = () => (asPlayer() ? undefined : 'backup');      // a DM's characters start in Backups
     // Both roles: a Player tab and a DM tab (remembered in this browser)
     const TAB_KEY = 'adnd-home-tab';
     let tab = (() => { try { return localStorage.getItem(TAB_KEY) === 'dm' ? 'dm' : 'player'; } catch (e) { return 'player'; } })();
@@ -1287,20 +1287,22 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
     }
 
     // ── Doing things ──
-    async function newCharacter() {
-      try { const r = await Characters.createCharacter(client, session, { name: '' }, { mine: list.mine, status: newStatus() }); location.href = sheetUrl(r.id); }
+    // forDM: a character for a player, not given to one yet (the DM's Backups)
+    async function newCharacter(forDM) {
+      try { const r = await Characters.createCharacter(client, session, { name: '' }, { mine: list.mine, status: forDM ? 'unassigned' : undefined }); location.href = sheetUrl(r.id); }
       catch (e) { say(problem(e)); }
     }
-    function importFile() { $('import-file').value = ''; $('import-file').click(); }
+    let importForDM = false;
+    function importFile(forDM) { importForDM = !!forDM; $('import-file').value = ''; $('import-file').click(); }
     $('import-file').addEventListener('change', async e => {
       const file = e.target.files[0]; if (!file) return;
       let data;
       try { data = JSON.parse(await file.text()); if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error(); }
       catch (err) { say('That file isn’t a character sheet. Use a .json file exported from the sheet.'); return; }
       // Into the empty character with its name (made for it by add-player.sql), else a new one
-      if (data.name && list.mine.some(c => c.blank && c.name === data.name)) { saveLocal(data, { keepLocal: true }); return; }
+      if (!importForDM && data.name && list.mine.some(c => c.blank && c.name === data.name)) { saveLocal(data, { keepLocal: true }); return; }
       try {
-        const r = await Characters.createCharacter(client, session, data, { mine: list.mine, status: newStatus() });
+        const r = await Characters.createCharacter(client, session, data, { mine: list.mine, status: importForDM ? 'unassigned' : undefined });
         await reload(); say(`${data.name || 'The character'} is saved to your account, ${placeText(r.status)}.`);
       } catch (err) { say(problem(err)); }
     });
@@ -1377,7 +1379,8 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
     }
     async function copyOf(c) {
       const data = { ...(c.data || {}), name: `${c.name} (copy)` };
-      try { await Characters.createCharacter(client, session, data, { mine: list.mine, status: 'backup' }); await reload(); say(`A copy of ${c.name} is in Backups.`); }
+      const st = c.status === 'unassigned' ? 'unassigned' : 'backup';
+      try { await Characters.createCharacter(client, session, data, { mine: list.mine, status: st }); await reload(); say(`A copy of ${c.name} is ${placeText(st)}.`); }
       catch (e) { say(problem(e)); }
     }
     function exportFile(c) {
@@ -1418,7 +1421,7 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
       if (openMenu === c.id) {
         const menu = el('div', 'menu ui-menu'); menu.setAttribute('role', 'menu');
         const item = (t, fn) => { const b = el('button', '', t); b.type = 'button'; b.setAttribute('role', 'menuitem'); b.addEventListener('click', () => { openMenu = null; render(); fn(); }); menu.appendChild(b); };
-        if (asDM() && c.status !== 'play') item('Assign to player\u2026', () => assign(c));
+        if (asDM() && (opts.dm || c.status !== 'play')) item('Assign to player\u2026', () => assign(c));
         if (!opts.dm) {
           if (c.status !== 'play') item('Bring into play', () => bringIn(c));
           if (c.status !== 'backup') item('Move to Backups', () => move(c, 'backup').then(ok => ok && say(`${c.name} moved to Backups.`)));
@@ -1427,7 +1430,7 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
         menu.appendChild(el('hr'));
         item('Make a copy', () => copyOf(c));
         item('Export file', () => exportFile(c));
-        if (c.status !== 'play') { menu.appendChild(el('hr')); item('Delete\u2026', () => remove(c)); menu.lastChild.classList.add('danger'); }
+        if (c.status !== 'play' || opts.dm) { menu.appendChild(el('hr')); item('Delete\u2026', () => remove(c)); menu.lastChild.classList.add('danger'); }
         k.appendChild(menu);
       }
       return k;
@@ -1482,30 +1485,31 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
           sp.appendChild(cp);
         }
         wrap.appendChild(sp);
-      }
-      if (!showPlayer) {
-        if (asPlayer()) { main.appendChild(wrap); return; }   // both roles, on the DM tab
-        // A DM's own characters: their Backups, to assign to players
+        // Backups: characters made for players, not given to one yet. A DM who
+        // doesn't play sees all of theirs here (any from before 'unassigned')
+        const prep = mine.filter(c => !asPlayer() || c.status === 'unassigned');
         const add = el('div', 'actions');
-        const nb = el('button', 'btn quiet small ui-button is-secondary size-sm', 'New character'); nb.type = 'button'; nb.addEventListener('click', newCharacter);
-        const ib = el('button', 'btn quiet small ui-button is-secondary size-sm', 'Import file'); ib.type = 'button'; ib.addEventListener('click', importFile);
+        const nb = el('button', 'btn quiet small ui-button is-secondary size-sm', 'New character'); nb.type = 'button'; nb.addEventListener('click', () => newCharacter(true));
+        const ib = el('button', 'btn quiet small ui-button is-secondary size-sm', 'Import file'); ib.type = 'button'; ib.addEventListener('click', () => importFile(true));
         add.append(nb, ib);
-        const sb = section('Backups', mine.length, add, mine.length ? 'Characters you’ve prepared. Assign one to a player when they need it.' : 'None yet. Make or import a character, then assign it to a player.');
-        if (mine.length) { const cb = el('div', 'cards'); mine.forEach(c => cb.appendChild(card(c, false, { dm: true }))); sb.appendChild(cb); }
+        const sb = section('Backups', prep.length, add, prep.length ? 'Characters you’ve made for players. Assign one when a player needs it.' : 'None yet. Make or import a character, then assign it to a player.');
+        if (prep.length) { const cb = el('div', 'cards'); prep.forEach(c => cb.appendChild(card(c, false, { dm: true }))); sb.appendChild(cb); }
         wrap.appendChild(sb);
-      } else if (!mine.length) {
+      }
+      if (!showPlayer) { main.appendChild(wrap); return; }
+      if (!mine.some(c => c.status !== 'unassigned')) {
         const w = el('div', 'welcome');
         w.append(el('h2', '', 'Your characters'), el('p', 'hint', 'You don’t have a character yet. Start one, or bring in a sheet you’ve already made.'));
         const ch = el('div', 'choices');
         const choice = (t, d, fn) => { const b = el('button', 'choice ui-choice'); b.type = 'button'; b.append(el('span', 't', t), el('span', 'd', d)); b.addEventListener('click', fn); return b; };
         ch.append(
-          choice('Create a new character', 'A blank sheet, saved to your account as you fill it in.', newCharacter),
-          choice('Import a character file', 'A .json file exported from the character sheet.', importFile));
+          choice('Create a new character', 'A blank sheet, saved to your account as you fill it in.', () => newCharacter()),
+          choice('Import a character file', 'A .json file exported from the character sheet.', () => importFile()));
         wrap.append(w, ch);
       } else {
         const add = el('div', 'actions');
-        const nb = el('button', 'btn quiet small ui-button is-secondary size-sm', 'New character'); nb.type = 'button'; nb.addEventListener('click', newCharacter);
-        const ib = el('button', 'btn quiet small ui-button is-secondary size-sm', 'Import file'); ib.type = 'button'; ib.addEventListener('click', importFile);
+        const nb = el('button', 'btn quiet small ui-button is-secondary size-sm', 'New character'); nb.type = 'button'; nb.addEventListener('click', () => newCharacter());
+        const ib = el('button', 'btn quiet small ui-button is-secondary size-sm', 'Import file'); ib.type = 'button'; ib.addEventListener('click', () => importFile());
         add.append(nb, ib);
         const play = mine.filter(c => c.status === 'play');
         const s1 = section('In play', 0, add), c1 = el('div', 'cards');
