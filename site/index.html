@@ -534,6 +534,8 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     .top h1 { font-family: var(--font-display); font-weight: 600; letter-spacing: 0.04em; font-size: clamp(1.3rem, 4vw, 1.7rem); margin: 0; }
     .top .who { margin-left: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--ink-muted); font-size: 0.95rem; }
     .top .who b { color: var(--ink); font-weight: 600; }
+    /* Clear the theme toggle in the corner when the page reaches it */
+    @media (max-width: 66rem) { .top .who { margin-right: 44px; } }
     h2 { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-muted); margin: 0; }
     h2 .count { font-family: var(--font-body); letter-spacing: 0; text-transform: none; font-weight: 400; color: var(--ink-faint); margin-left: 6px; }
     section { display: grid; gap: 10px; }
@@ -1249,6 +1251,10 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
     const asDM = () => !!session && !!session.isDM;
     const asPlayer = () => !!session && !!session.isPlayer;
     const newStatus = () => (asPlayer() ? undefined : 'backup');      // a DM's characters start in Backups
+    // Both roles: a Player tab and a DM tab (remembered in this browser)
+    const TAB_KEY = 'adnd-home-tab';
+    let tab = (() => { try { return localStorage.getItem(TAB_KEY) === 'dm' ? 'dm' : 'player'; } catch (e) { return 'player'; } })();
+    const setTab = t => { tab = t; try { localStorage.setItem(TAB_KEY, t); } catch (e) { /* this visit only */ } render(); document.getElementById('tab-' + t)?.focus(); };
     const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
     let toastT = 0;
     const say = t => { $('toast').textContent = t; clearTimeout(toastT); toastT = setTimeout(() => { $('toast').textContent = ''; }, 3500); };
@@ -1448,7 +1454,20 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
         f.append(p, b); wrap.appendChild(f);
       }
       const mine = list.mine;
-      if (asDM()) {
+      const both = asDM() && asPlayer();
+      const showDM = asDM() && (!both || tab === 'dm'), showPlayer = asPlayer() && (!both || tab === 'player');
+      if (both) {
+        const nav = el('div', 'ui-pagetabs home-tabs'); nav.setAttribute('role', 'tablist'); nav.setAttribute('aria-label', 'Home');
+        [['player', 'Player'], ['dm', 'DM']].forEach(([v, label]) => {
+          const b = el('button', '', label); b.type = 'button'; b.id = 'tab-' + v;
+          b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', String(tab === v)); b.tabIndex = tab === v ? 0 : -1;
+          b.addEventListener('click', () => setTab(v));
+          b.addEventListener('keydown', e => { if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); setTab(v === 'dm' ? 'player' : 'dm'); } });
+          nav.appendChild(b);
+        });
+        wrap.prepend(nav);
+      }
+      if (showDM) {
         // The DM Helper: a choice card that goes there
         const go = el('div', 'choices dm-entry');
         const a = el('a', 'choice ui-choice'); a.href = 'legacy/dm-helper.html';
@@ -1464,7 +1483,8 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
         }
         wrap.appendChild(sp);
       }
-      if (!asPlayer()) {
+      if (!showPlayer) {
+        if (asPlayer()) { main.appendChild(wrap); return; }   // both roles, on the DM tab
         // A DM's own characters: their Backups, to assign to players
         const add = el('div', 'actions');
         const nb = el('button', 'btn quiet small ui-button is-secondary size-sm', 'New character'); nb.type = 'button'; nb.addEventListener('click', newCharacter);
@@ -1499,7 +1519,7 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
         const dead = mine.filter(c => c.status === 'dead');
         if (dead.length) { const s3 = section('Dead', dead.length, null, 'Still yours to edit. They could come back.'); const c3 = el('div', 'cards'); dead.forEach(c => c3.appendChild(card(c))); s3.appendChild(c3); wrap.appendChild(s3); }
       }
-      if (list.given.length) {
+      if (showPlayer && list.given.length) {
         const s4 = section('Shared with you', list.given.length, null, 'Characters others have let you play, until they take them back.');
         const c4 = el('div', 'cards'); list.given.forEach(c => c4.appendChild(card(c, true))); s4.appendChild(c4); wrap.appendChild(s4);
       }
