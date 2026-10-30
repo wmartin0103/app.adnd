@@ -2782,6 +2782,8 @@ const D20_SVG = '<svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke=
 // The icon on every Roll button (decided 2026-10-29): the d20 above, drawn at
 // icon size (it takes the button's text colour and 1.1em)
 const ROLL_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 1.5 21.5 7v10L12 22.5 2.5 17V7Z"/><path d="M12 1.5 7 9.5h10Z M7 9.5 2.5 7 M17 9.5l4.5-2.5 M7 9.5l5 9 5-9 M12 18.5v4 M7 9.5 2.5 17l9.5 1.5 9.5-1.5-4.5-7.5" stroke-width="1.4"/></svg>';
+// The icon on every Duplicate button (decided 2026-10-30): a copy with a + in it
+const DUPLICATE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="14" height="14" rx="2"/><path d="M4 16a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2"/><path d="M15 12v6M12 15h6"/></svg>';
 const shownRolls = {};
 function hitRoll(line, fresh, onReroll, judge) {
   const roll = line.roll;
@@ -2844,7 +2846,7 @@ function hitRoll(line, fresh, onReroll, judge) {
   return wrap;
 }
 
-return { STYLES, ensureStyles, multi, readField, D20_SVG, ROLL_ICON, hitRoll };
+return { STYLES, ensureStyles, multi, readField, D20_SVG, ROLL_ICON, DUPLICATE_ICON, hitRoll };
 })();
 // ── ui/tokens ──
 __m["ui/tokens"] = (() => {
@@ -4397,7 +4399,7 @@ return { STATUSES, STATUS_LABEL, summary, isBlank, fileName, listCharacters, cre
 window.SheetConverter = { toDMHelper: __m["adapters/dm-helper"].toDMHelper };
 window.SheetRound = { ROUND_MODS: __m["rules/round"].ROUND_MODS, MOVE_MULTS: __m["rules/round"].MOVE_MULTS, newRound: __m["rules/round"].newRound, roundQueue: __m["rules/round"].roundQueue, queueAttack: __m["rules/round"].queueAttack, unqueueAttack: __m["rules/round"].unqueueAttack, roundLines: __m["rules/round"].roundLines, lineToHit: __m["rules/round"].lineToHit, roundACPenalty: __m["rules/round"].roundACPenalty, lineTHAC0: __m["rules/round"].lineTHAC0, judgeRoll: __m["rules/round"].judgeRoll, actOn: __m["rules/round"].actOn, attackSpeed: __m["rules/round"].attackSpeed, rollLine: __m["rules/round"].rollLine, scoreRoll: __m["rules/round"].scoreRoll, rerollDamage: __m["rules/round"].rerollDamage, lineKind: __m["rules/round"].lineKind, hasRoll: __m["rules/round"].hasRoll, isHealing: __m["rules/round"].isHealing, lineSay: __m["rules/round"].lineSay, plainAttack: __m["rules/round"].plainAttack };
 window.RoundSync = { createRoundSync: __m["round-sync"].createRoundSync };
-window.RoundUI = { STYLES: __m["ui/round-ui"].STYLES, ensureStyles: __m["ui/round-ui"].ensureStyles, multi: __m["ui/round-ui"].multi, readField: __m["ui/round-ui"].readField, hitRoll: __m["ui/round-ui"].hitRoll, D20_SVG: __m["ui/round-ui"].D20_SVG, ROLL_ICON: __m["ui/round-ui"].ROLL_ICON };
+window.RoundUI = { STYLES: __m["ui/round-ui"].STYLES, ensureStyles: __m["ui/round-ui"].ensureStyles, multi: __m["ui/round-ui"].multi, readField: __m["ui/round-ui"].readField, hitRoll: __m["ui/round-ui"].hitRoll, D20_SVG: __m["ui/round-ui"].D20_SVG, ROLL_ICON: __m["ui/round-ui"].ROLL_ICON, DUPLICATE_ICON: __m["ui/round-ui"].DUPLICATE_ICON };
 window.Cloud = { cloudClient: __m["cloud"].cloudClient, cloudSession: __m["cloud"].cloudSession, createCloudRoundSync: __m["cloud"].createCloudRoundSync, mountCloud: __m["cloud"].mountCloud };
 window.Theme = { mountThemeToggle: __m["ui/theme"].mountThemeToggle, currentTheme: __m["ui/theme"].currentTheme, setTheme: __m["ui/theme"].setTheme };
 window.Characters = { isBlank: __m["characters"].isBlank, isSheetSave: __m["characters"].isSheetSave, listParty: __m["characters"].listParty, listMembers: __m["characters"].listMembers, createCharacterFor: __m["characters"].createCharacterFor };
@@ -5118,8 +5120,7 @@ function buildChar(name){
     const nameInput=document.createElement('input'); nameInput.type='text'; nameInput.className='bname open-field'; nameInput.value=name; nameInput.title='rename this creature';
     // Icons, to leave room on the row for AC and THAC0
     const iconBtn=(cls, tip, svg)=>{ const x=document.createElement('button'); x.type='button'; x.className='iconbtn ui-button is-bare is-icon size-sm '+cls; x.title=tip; x.setAttribute('aria-label', tip); x.innerHTML=svg; return x; };
-    const dupBtn=iconBtn('bdup', 'Duplicate: another Enemy with the same stats',
-      '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="14" height="14" rx="2"/><path d="M4 16a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2"/><path d="M15 12v6M12 15h6"/></svg>');
+    const dupBtn=iconBtn('bdup', 'Duplicate: another Enemy with the same stats', RoundUI.DUPLICATE_ICON);
     const rmBtn=iconBtn('rm is-danger', 'Remove this Enemy',
       '<svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 4h11M6.5 4V2.5h3V4M4 4l.7 9.2a1 1 0 0 0 1 .8h4.6a1 1 0 0 0 1-.8L12 4M6.8 6.5v5M9.2 6.5v5"/></svg>');
     const bdBadge=document.createElement('span'); bdBadge.className='bdid'; bdBadge.textContent=c.bdId||''; bdBadge.title='fixed ID: the only name players ever see';
@@ -5519,7 +5520,8 @@ function renderEnemyAttacks(name){
       uiPick(`${id}-dice`, 'Dice', BD_DICE.map(x=>[x,x]), a.dice, v=>{ a.dice=v; update(); }),
       uiPick(`${id}-bonus`, 'Bonus', Array.from({length:11},(_,n)=>[String(n), n?'+'+n:'0']), String(a.bonus), v=>{ a.bonus=parseInt(v,10)||0; update(); })];
     const btns=document.createElement('span'); btns.className='bd-atk-btns';
-    btns.appendChild(btn('Duplicate', 'another attack with the same dice, targets and conditions (not rolled)', ()=>{ b.attacks.splice(i+1, 0, newEnemyAttack(a)); update(); }));
+    { const d=btn('Duplicate', 'another attack with the same dice, targets and conditions (not rolled)', ()=>{ b.attacks.splice(i+1, 0, newEnemyAttack(a)); update(); });
+      d.innerHTML=RoundUI.DUPLICATE_ICON+'<span>Duplicate</span>'; btns.appendChild(d); }
     if(b.attacks.length>1) btns.appendChild(btn('Remove', 'remove this attack', ()=>{ b.attacks.splice(i, 1); update(); }));
     head.appendChild(btns);
     item.appendChild(head);
@@ -6770,7 +6772,7 @@ function lightRowFor(name){
   nameTd.appendChild(nameLabel);
   if(quickBtn) nameTd.appendChild(quickBtn);                      // after the name, so names line up
   if(b.placeholder){
-    const dupBtn=document.createElement('button'); dupBtn.className='reroll small quick ui-button is-secondary size-sm'; dupBtn.textContent='Duplicate'; dupBtn.title='another Enemy with the same stats';
+    const dupBtn=document.createElement('button'); dupBtn.className='reroll small quick ui-button is-secondary size-sm'; dupBtn.innerHTML=RoundUI.DUPLICATE_ICON+'<span>Duplicate</span>'; dupBtn.title='another Enemy with the same stats';
     dupBtn.addEventListener('click', ()=>{ duplicateBaddy(name); update(); });
     nameTd.appendChild(dupBtn);
     const rmBtn=document.createElement('button'); rmBtn.className='reroll small quick rm ui-button is-secondary is-danger size-sm'; rmBtn.textContent='Remove'; rmBtn.title='remove this Enemy from the line-up';

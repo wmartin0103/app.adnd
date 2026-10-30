@@ -248,6 +248,9 @@ action colour. Every tag's text passes 4.5:1 on its fill in both themes.
   `src/ui/round-ui.js`), whatever the die: Roll to hit, Roll init, Roll all
   proficiencies, Roll for all (decided 2026-10-29). A re-roll icon button is
   the same icon.
+- **Duplicate buttons** carry the duplicate icon (a copy with a + in it;
+  `DUPLICATE_ICON` in `src/ui/round-ui.js`): on its own as an icon button,
+  or before the label (decided 2026-10-30).
 - **Link buttons** (`is-link`): look like a link (`accent-text`, no
   underline or box at rest) but do a button's job on the page. For a quiet action that sits
   apart from the controls, such as Add Scenario below the attacks. Hover

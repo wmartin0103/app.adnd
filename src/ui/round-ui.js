@@ -105,6 +105,8 @@ export const D20_SVG = '<svg viewBox="0 0 48 48" aria-hidden="true" fill="none" 
 // The icon on every Roll button (decided 2026-10-29): the d20 above, drawn at
 // icon size (it takes the button's text colour and 1.1em)
 export const ROLL_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 1.5 21.5 7v10L12 22.5 2.5 17V7Z"/><path d="M12 1.5 7 9.5h10Z M7 9.5 2.5 7 M17 9.5l4.5-2.5 M7 9.5l5 9 5-9 M12 18.5v4 M7 9.5 2.5 17l9.5 1.5 9.5-1.5-4.5-7.5" stroke-width="1.4"/></svg>';
+// The icon on every Duplicate button (decided 2026-10-30): a copy with a + in it
+export const DUPLICATE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="14" height="14" rx="2"/><path d="M4 16a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2"/><path d="M15 12v6M12 15h6"/></svg>';
 const shownRolls = {};
 export function hitRoll(line, fresh, onReroll, judge) {
   const roll = line.roll;
