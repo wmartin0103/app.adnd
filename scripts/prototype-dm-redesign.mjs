@@ -55,8 +55,6 @@ const surprise = `
       </div>
     </section>`;
 const initiative = `
-  <div class="try"><span class="lab">Try</span><div class="f"><span class="lab">Party edge</span><div class="ui-tabs size-sm" data-try="ally"><button type="button" class="is-active" aria-pressed="true" data-v="blue">Blue (second accent)</button><button type="button" aria-pressed="false" data-v="bronze">Bronze (brass)</button></div></div></div>
-
   ${surprise}
 
   <section class="ui-card is-featured">
@@ -183,7 +181,7 @@ const notes = `
         <li>Round controls are an open section; the order is the featured card.</li>
         <li>Act on is the first column, in brass: the order reads top-down.</li>
         <li>Lock initiative is a switch; Extra attacks, the party's stance, Culture, Time and the crit's weapon are tab buttons; Creatures is a switch.</li>
-        <li>The order is a section; each combatant a card. An Enemy's card has a red left edge (is-opponent); its attacks fold away, and open each is a tinted item holding its controls and the roll's well.</li>
+        <li>The order is a section; each combatant a card. An Enemy's card has a red left edge (is-opponent), a player's a blue one (is-ally); its attacks fold away, and open each is a tinted item holding its controls and the roll's well.</li>
         <li>A player's action from their sheet is a well under their row.</li>
         <li>Surprise and Crits &amp; fumbles are cards beside each other.</li>
         <li>Proficiencies and Saves: the group check first, then a card per character (folding).</li>
@@ -286,11 +284,6 @@ const page = `<!doctype html>
   .hit .big { font: 700 26px/1 var(--font-serif); color: var(--color-accent-text); }
   .hit .big.miss { color: var(--color-text-muted); }
   .card-foot { padding-top: 6px; }
-  .try { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 18px; padding: 8px 12px; border: 1px dashed var(--color-border); border-radius: var(--radius-inner); }
-  .try > .lab { align-self: center; margin: 0; }
-  body { --ally-edge: var(--color-accent2); }
-  body[data-ally="bronze"] { --ally-edge: var(--color-accent); }
-  div.orow.ui-card.is-ally:not(#\\#) { border-left: 3px solid var(--ally-edge); }
 
   /* Tables */
   table.t { border-collapse: collapse; width: 100%; font-size: 14px; }
@@ -337,7 +330,7 @@ const page = `<!doctype html>
   document.addEventListener('click', e => {
     const d = e.target.closest('.ui-disclosure'); if (d) { const open = d.getAttribute('aria-expanded') !== 'true'; d.setAttribute('aria-expanded', open); const body = d.closest('.detail')?.querySelector('.atks'); if (body) body.hidden = !open; }
     const s = e.target.closest('.ui-switch'); if (s) s.setAttribute('aria-checked', s.getAttribute('aria-checked') !== 'true');
-    const t = e.target.closest('.ui-tabs > button'); if (t) { t.parentNode.querySelectorAll('button').forEach(x => { x.classList.toggle('is-active', x === t); x.setAttribute('aria-pressed', x === t); }); if (t.parentNode.dataset.try) document.body.dataset[t.parentNode.dataset.try] = t.dataset.v; }
+    const t = e.target.closest('.ui-tabs > button'); if (t) { t.parentNode.querySelectorAll('button').forEach(x => { x.classList.toggle('is-active', x === t); x.setAttribute('aria-pressed', x === t); }); }
   });
   (function(){ const b=document.createElement('button'); b.className='ui-button is-secondary is-icon size-sm'; b.type='button'; b.setAttribute('aria-label','Light or dark');
     const cur=()=>document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');

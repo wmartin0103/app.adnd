@@ -353,8 +353,8 @@ each character and each Account section is a card.
 | Overlay | dialogs, the page dimmed behind | `raised`, the strongest shadow | same |
 
 In code (`src/ui/components.js`): `ui-card` (`is-compact`, `is-featured`),
-`ui-well`, `ui-item` (`is-tinted`), `ui-raised`, `dialog.ui-overlay`; `ui-card is-opponent` for an
-opponent's card. A section needs no
+`ui-well`, `ui-item` (`is-tinted`), `ui-raised`, `dialog.ui-overlay`; `ui-card is-opponent` and `is-ally`
+for the sides in the initiative order. A section needs no
 class: it's the absence of a box.
 
 Rules:
@@ -374,8 +374,9 @@ Rules:
 6. A **tinted item** looks close to a well, so it never takes an inner
    shadow: the shadow is what makes a well (decided 2026-10-29). It holds
    controls; a well holds a read-out.
-7. An **opponent's card** (an Enemy in the initiative order) has a 3px
-   `danger` left edge (decided 2026-10-29).
+7. **Sides** in the initiative order: an opponent's card (an Enemy) has a
+   3px `danger` left edge (`is-opponent`), an ally's (a player's
+   character) a 3px `accent2` one (`is-ally`) (decided 2026-10-29).
 
 Shadows (light): card `0 1px 2px rgb(20 16 12 / .06), 0 1px 3px rgb(20 16 12 /
 .10)`; raised `0 12px 30px rgb(20 16 12 / .16), 0 2px 6px rgb(20 16 12 / .08)`.

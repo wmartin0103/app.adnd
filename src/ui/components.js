@@ -244,8 +244,10 @@ export const SURFACES_CSS = `/* Surfaces (docs/design-system.md: Surfaces and de
 :is(section, article, aside, div, form, header).ui-card.is-featured:not(#\\#) { border-top: 3px solid var(--color-accent2); }
 /* A small card among siblings (an ability score, a spell): less padding */
 :is(section, article, aside, div, form, header).ui-card.is-compact:not(#\\#) { --card-pad: 12px; }
-/* An opponent's card (an Enemy in the initiative order): a red left edge */
+/* Sides in the initiative order: an opponent's card (an Enemy) has a red
+   left edge, an ally's (a player's character) the second accent's */
 :is(section, article, aside, div, form, header).ui-card.is-opponent:not(#\\#) { border-left: 3px solid var(--color-danger); }
+:is(section, article, aside, div, form, header).ui-card.is-ally:not(#\\#) { border-left: 3px solid var(--color-accent2); }
 :is(div, section, span, output, figure, dl).ui-well:not(#\\#) {
   background: var(--color-sunken); border: 0; border-radius: var(--radius-inner); box-shadow: var(--shadow-well);
 }
