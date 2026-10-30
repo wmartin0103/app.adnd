@@ -538,11 +538,9 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   header.top .reset.armed{border-color:var(--rust);color:var(--parchment);background:color-mix(in oklab, var(--rust) 30%, transparent)}
   header.top .reset:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
   .hidden{display:none}
-  .rollbtn{display:none}
   .moveafter{display:flex;align-items:center;gap:6px;padding:7px 14px;font-family:var(--serif);font-size:.82rem;border-top:1px solid var(--edge)}
   .rbtn,.res{display:none}
   .rbtn:disabled{opacity:.35;cursor:default}
-  .mhead{display:none}
   .parrytgt,.acmod{font-size:13px;padding:1px 3px;width:auto}
   .char.synced .cfields,.char.synced .mods,.char.synced table.acts,.char.synced .moveafter{display:none !important}
   .syncpanel{padding:8px 12px 10px;font-family:var(--sans);font-size:.85rem;display:grid;gap:4px}
@@ -1091,14 +1089,14 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     </section>
 
     <div class="tracker" id="tracker"></div>
-    <section class="order" id="lightTracker" style="display:none">
+    <section class="order" id="lightTracker">
       <div class="sec-head"><h2 class="sec">Initiative order</h2><span class="hint">Lower acts first: roll + speed + bonuses</span>
         <div class="inline-f push"><span class="lab">Extra attacks</span><div class="ui-tabs size-sm" role="group" aria-label="Extra attacks" id="extraTiming"><button type="button" data-v="end">End of the order</button><button type="button" data-v="turn">At their turn</button></div></div></div>
       <div id="lightBody" class="olist"></div>
       <div class="addrow"><button class="ui-button is-link" id="addBaddy"><span aria-hidden="true">＋</span> Add Enemy</button></div>
     </section>
 
-    <section class="ui-card size-sm" id="lightCritBox" style="display:none">
+    <section class="ui-card size-sm" id="lightCritBox">
       <div class="card-head"><h3>Crits &amp; fumbles</h3><span class="hint">Good Hits &amp; Bad Misses</span></div>
       <div class="line">
         <label class="gclabel">Weapon <select id="lcType"><option value="B">Blunt</option><option value="P">Piercing</option><option value="S">Slashing</option><option value="A">Animal</option></select></label>
@@ -5234,11 +5232,6 @@ function buildChar(name){
   tsize.append(opt('sm','S-M'), opt('l','L')); tsize.value = st.tsize==='l' ? 'l' : 'sm';
   const sizeLbl=document.createElement('label'); sizeLbl.className='psize'; sizeLbl.textContent='Size'; sizeLbl.appendChild(tsize); sizeLbl.title='target size for damage when attacking a plain AC; an Enemy target uses its own size';
   fields.append(sizeLbl);
-  const initHead=document.createElement('div'); initHead.className='mhead inithead'; initHead.textContent='Init roll';
-  fields.prepend(initHead);
-  const rollBtn=document.createElement('button'); rollBtn.className='reroll small rollbtn ui-button is-primary'; rollBtn.textContent='Roll'; rollBtn.title='roll this character\'s initiative';
-  rollBtn.addEventListener('click', ()=> rollInitFor(name));
-  fields.insertBefore(rollBtn, initLbl);                  // hidden: from the player tabs (removed)
 
   // stats under the name (±5 dropdowns, for magical adjustment)
   const namecol=document.createElement('div'); namecol.className='namecol';
@@ -5447,8 +5440,6 @@ function buildChar(name){
   table.appendChild(tbody);
 
   const fullNote=document.createElement('div'); fullNote.className='fullnote'; fullNote.style.display='none';
-  const conHead=document.createElement('div'); conHead.className='mhead conhead'; conHead.textContent='Combat Conditions';   // hidden: from the player tabs (removed)
-  const actHead=document.createElement('div'); actHead.className='mhead acthead'; actHead.textContent='Actions';
   let quickBtn=null;
   if(c.quickness){                                              // manual: click to roll, click again to clear
     quickBtn=document.createElement('button'); quickBtn.type='button'; quickBtn.className='reroll small quick ui-button is-secondary size-sm'; quickBtn.textContent='⚄ Quickness';
@@ -5456,7 +5447,6 @@ function buildChar(name){
     mods.insertBefore(qw, mods.children[2]);
     quickBtn.addEventListener('click', ()=>{ const b=blocks[name]; b.quickRoll = (b.quickRoll==null) ? d20() : null; update(); });
   }
-  mods.append(conHead, actHead);
   const moveAfterBox=document.createElement('input'); moveAfterBox.type='checkbox'; if(st.moveAfter) moveAfterBox.checked=true;
   const maLbl=document.createElement('label'); maLbl.className='moveafter'; maLbl.append(moveAfterBox,' Move after');
   maLbl.title='act first, then move: no initiative penalty (Move 1st is the slow one)';
@@ -5473,7 +5463,7 @@ function buildChar(name){
   tracker.appendChild(el);
   [initRoll,tsize,moving,flanking,ground,charging,set4,other].forEach(c2=>c2.addEventListener('input',update));
   blocks[name]={el, actson, initRoll, tsize, sizeLbl, fields, mods, rowTargets, resetTargets:()=>{ rowTargets.forEach(rt=>{ rt.userSet=false; }); applyTarget({bd:null, value:''}); }, virtueSel, statsBox, fullNote, moving, moveMult, flanking, ground, charging, set4, other, rows, table, statsSel, statsBase, acVals, armorBox, shlBox, surBox, parryBox, parrySel, acModSel,
-    quickRoll: c.quickness ? null : undefined, quickBtn, runRoll: d20(), moveAfter:moveAfterBox, maLbl, rollBtn, initRolled: !!st.initRolled};
+    quickRoll: c.quickness ? null : undefined, quickBtn, runRoll: d20(), moveAfter:moveAfterBox, maLbl, initRolled: !!st.initRolled};
   wireMoveLinks({moving, moveMult, charging}, ()=>{ if(parseFloat(moveMult.value)>=3) blocks[name].runRoll=d20(); });   // fresh Str check on 3x/4x
 }
 
@@ -5640,7 +5630,6 @@ function effectiveAC(name){
   return {ac:c.armor[state]-bonus-parry+charge-virtueAC-acMod, state, bonus, parry, parryVs, parryVsAmt:parryAll, charge, virtueAC, acMod};
 }
 function update(){
-  if(typeof refreshRollBtns==='function') refreshRollBtns();
   const store=loadStore();
   const order=[];
   const effAC={}; PCS.forEach(n=>{ const e=effectiveAC(n); if(e) effAC[n]=e; });
@@ -5892,8 +5881,7 @@ function update(){
   // The list only re-sorts on demand (⚄ Roll initiative or ↕ Order); otherwise it keeps its last order,
   // with anything new falling in set-up order (players as listed, then Enemies in creation order).
   const setupRank = n => { const i=SETUP_ORDER.indexOf(n); return i>=0 ? i : (SETUP_ORDER.length + baddies.indexOf(n)); };
-  const lightMode = typeof isFull==='function' && !isFull();
-  if(lightMode && reorderPending){ lightSortPending=true; reorderPending=false; }        // the light table sorts by its own Act On
+  if(reorderPending){ lightSortPending=true; reorderPending=false; }                   // the order sorts by its own Act On
   if(reorderPending){ order.sort((a,b)=> a.sortInit - b.sortInit); reorderPending=false; }
   else{ const rank = n => { const i=displayOrder.indexOf(n); return i>=0 ? i : 10000+setupRank(n); }; order.sort((a,b)=> rank(a.name)-rank(b.name)); }
   if(!lightSortPending){ displayOrder=order.map(o=>o.name); try{ localStorage.setItem(ORDER_KEY, JSON.stringify(displayOrder)); }catch(e){} }
@@ -6091,14 +6079,6 @@ const ORDER_KEY='adnd-order';
 let displayOrder=[]; try{ const v=JSON.parse(localStorage.getItem(ORDER_KEY)); if(Array.isArray(v)) displayOrder=v; }catch(e){}
 let reorderPending=false, lightSortPending=false;
 function sortByInitiative(){ reorderPending=true; update(); }
-function rollInitFor(name){                                  // one character's roll (same ingredients as the group roll)
-  const b=blocks[name]; if(!b) return;
-  if(b.initRolled) return;                                     // one roll each, until the DM resets
-  b.initRolled=true;
-  b.initRoll.value = String(Math.floor(Math.random()*10)+1);
-  if(b.runRoll!==undefined)   b.runRoll=d20();
-  update();
-}
 function rollInitiative(){                                    // the DM's button: the Enemies that haven't rolled (players roll their own)
   reorderPending=true;
   Object.keys(CHARACTERS).forEach(name=>{
@@ -6782,7 +6762,6 @@ document.getElementById('lcClear').addEventListener('click', ()=>{ const o=docum
 /* ---------------- Light tracker ---------------- */
 /* default Speed in the light tracker: the weapon each usually leads with */
 const DEX_REACT = dex => dex<=3 ? 3 : dex===4 ? 2 : dex===5 ? 1 : dex<=15 ? 0 : dex===16 ? -1 : dex<=18 ? -2 : dex<=20 ? -3 : dex<=23 ? -4 : -5;   // Dex reaction adjustment (surprise only)
-function isFull(){ return false; }                          // the simple view is the only Initiative view now
 function lightRowFor(name){
   const b=blocks[name]; if(b.lightRow) return b.lightRow;
   const tr=document.createElement('tr'); tr.className='act';
@@ -6820,19 +6799,8 @@ function lightRowFor(name){
 }
 const orderCards=new Map();   // name → its card in the order
 function renderLight(){
-  const full=isFull();
-  document.getElementById('tracker').style.display = full ? '' : 'none';
-  document.getElementById('lightTracker').style.display = full ? 'none' : '';
-  document.getElementById('newRoundLight').style.display = full ? 'none' : '';  // the simple view's own Reset encounter
-  document.getElementById('lightCritBox').style.display = full ? 'none' : '';
-  if(full){                                                  // back to the full view: the Enemy cards go home
-    Object.keys(blocks).forEach(n=>{ const b=blocks[n]; if(b.placeholder && b.lightCardTd && b.el.parentNode===b.lightCardTd){
-      // the pieces moved into the columns go back into the card, in reverse order
-      (b.lightMoves||[]).slice().reverse().forEach(m=>{ m.parent.insertBefore(m.n, m.next && m.next.parentNode===m.parent ? m.next : null); m.parent.hidden=false; });
-      b.el.classList.remove('inlight'); tracker.appendChild(b.el); b.lightCardTr.remove(); if(b.lightCardDetail) b.lightCardDetail.remove();
-    } });
-    return;
-  }
+  // The hidden tracker builds each combatant's pieces; the order shows them
+  document.getElementById('tracker').style.display = 'none';
   const body=document.getElementById('lightBody');
   const entries=[];
   Object.keys(blocks).forEach(name=>{
@@ -7451,12 +7419,6 @@ function resetAll(){
     armed=setTimeout(disarm, 4000);
   });
 })();
-function refreshRollBtns(){                                   // a character's own Roll is off once they have rolled
-  Object.keys(blocks).forEach(n=>{ const b=blocks[n]; if(!b.rollBtn) return;
-    b.rollBtn.disabled = !!b.initRolled;
-    b.rollBtn.title = b.initRolled ? 'already rolled: the DM resets to roll again' : 'roll this character\'s initiative';
-  });
-}
 
 Object.keys(CHARACTERS).forEach(buildChar);
 addBaddy();
