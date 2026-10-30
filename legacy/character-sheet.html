@@ -984,14 +984,14 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     [role="progressbar"] {
       height: 6px;
       background: var(--rule);
-      border-radius: 3px;
+      border-radius: 999px;
       overflow: hidden;
       margin-top: 0.25rem;
     }
 
     .hp-bar-fill {
       height: 100%;
-      border-radius: 3px;
+      border-radius: 999px;
       background: var(--accent);
       transition: width 0.3s ease, background 0.3s ease;
     }
@@ -1496,7 +1496,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       transition: border-color 0.15s;
     }
     .nwp-card:hover, .item-card:hover { border-color: var(--accent); }
-    .item-card.item-magic { border-color: color-mix(in srgb, #9c6fe4 40%, var(--rule)); }
+    .item-card.item-magic { border-color: color-mix(in srgb, var(--tag-magic-text) 40%, var(--rule)); }
 
     .nwp-card-top, .item-card-top {
       display: flex;
@@ -1630,7 +1630,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       display: flex; align-items: center; gap: 0.25rem;
       margin-left: auto; cursor: pointer;
     }
-    .item-magic-chk { accent-color: #9c6fe4; width: 0.75rem; height: 0.75rem; }
+    .item-magic-chk { width: 0.75rem; height: 0.75rem; }
     .item-magic-fields {
       display: flex; flex-direction: column; gap: 0.3rem;
       padding-top: 0.25rem; border-top: 1px solid var(--rule);
@@ -2466,7 +2466,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     .stance-name { font-weight: 600; margin-right: auto; }
     .stance-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; }
     .stance-tags:empty { display: none; }
-    .stance-tag { font-size: 0.7rem; padding: 0 0.4rem; border: 1px solid var(--rule); border-radius: 3px; color: var(--ink-muted); }
+    .stance-tag { display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border: 0; border-radius: 999px; font: 600 11px/1 var(--font-sans); color: var(--color-text-muted); background: var(--color-sunken); box-shadow: inset 0 0 0 1px var(--color-divider); }   /* a neutral tag */
     .stance-btn { background: none; border: 1px solid var(--rule); border-radius: var(--radius); padding: 0.1rem 0.6rem; font-family: var(--font-display); font-size: 0.7rem; color: var(--ink-muted); cursor: pointer; }
     .stance-btn:hover { color: var(--accent); border-color: var(--accent); }
     .stance-del:hover { background: color-mix(in oklab, var(--accent) 8%, transparent); }
@@ -2826,7 +2826,6 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       margin-top: 0.5rem;
       transition: background 0.15s, border-color 0.15s;
     }
-    .add-class-btn:hover { background: #6e2410; border-color: #6e2410; }
     .add-class-btn:focus-visible { outline: 2px solid var(--theme-primary); outline-offset: 2px; }
     /* add-class-btn is hidden (not disabled) when at MAX_CLASSES */
 
@@ -10613,7 +10612,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       bar.setAttribute('aria-valuenow', pct);
 
       // Color shift: green → amber → red as HP drops
-      if (pct > 50)      fill.style.background = '#2a6e2a';
+      if (pct > 50)      fill.style.background = 'var(--color-success-text)';
       else if (pct > 25) fill.style.background = 'var(--gold)';
       else               fill.style.background = 'var(--accent)';
     }

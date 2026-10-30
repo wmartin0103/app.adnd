@@ -764,8 +764,8 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   td.tgt.pass{color:var(--verdigris)}
   td.tgt.fail{color:var(--color-text)}   /* an ordinary failure is plain; red is for a critical failure */
   /* A critical success is the success colour filled; a critical failure red (docs/design-system.md: Colour) */
-  td.tgt.crit{background:var(--color-highlight);color:var(--color-on-highlight);font-weight:800;border-radius:3px}
-  td.tgt.critfail{background:color-mix(in oklab, var(--color-danger) 16%, var(--color-surface));color:var(--color-danger-text);font-weight:800;border-radius:3px}
+  td.tgt.crit{background:var(--color-highlight);color:var(--color-on-highlight);font-weight:800;border-radius:var(--radius-ctl)}
+  td.tgt.critfail{background:color-mix(in oklab, var(--color-danger) 16%, var(--color-surface));color:var(--color-danger-text);font-weight:800;border-radius:var(--radius-ctl)}
 
   .reroll.small{padding:3px 9px;font-size:.78rem;margin-left:auto}
   .groupcheck{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}
@@ -782,11 +782,11 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   /* A group check or save, and each character's saves: the roll green when it succeeds, red when it fails, to read at a glance */
   .gctable td.tgt.pass,.svtable td.tgt.pass{color:var(--color-success-text)}
   .gctable td.tgt.fail,.svtable td.tgt.fail{color:var(--color-danger-text)}   /* and each character's saves */
-  .src{margin-left:8px;font-family:var(--sans);font-size:.62rem;color:var(--muted);border:1px solid var(--edge);border-radius:3px;padding:0 4px;vertical-align:middle;cursor:default;letter-spacing:.02em}
-  .src.kit{color:var(--brass);border-color:color-mix(in oklab, var(--brass) 55%, transparent)}
-  .src.int{color:var(--verdigris);border-color:color-mix(in oklab, var(--verdigris) 50%, transparent)}
-  .src.lvl{color:var(--parchment);border-color:color-mix(in oklab, var(--parchment) 40%, transparent)}
-  .src.pov{color:color-mix(in oklab, #6b4a8a 70%, var(--parchment));border-color:color-mix(in oklab, #6b4a8a 50%, transparent)}
+  /* A proficiency's source: a tag (docs/design-system.md: Tags), its kind from the tag palette */
+  .src{display:inline-flex;align-items:center;height:18px;padding:0 7px;margin-left:8px;border:0;border-radius:999px;vertical-align:middle;cursor:default;font:600 11px/1 var(--font-sans);letter-spacing:0;background:var(--tag-bg, var(--color-sunken));color:var(--tag-text, var(--color-text-muted));box-shadow:inset 0 0 0 1px var(--tag-edge, var(--color-divider))}
+  .src.kit{--tag-bg:var(--tag-l9-bg);--tag-text:var(--tag-l9-text);--tag-edge:var(--tag-l9-edge)}
+  .src.int{--tag-bg:var(--tag-roll-bg);--tag-text:var(--tag-roll-text);--tag-edge:var(--tag-roll-edge)}
+  .src.pov{--tag-bg:var(--tag-magic-bg);--tag-text:var(--tag-magic-text);--tag-edge:var(--tag-magic-edge)}
   .svnote{font-size:.74rem;color:var(--muted);line-height:1.3;max-width:60%}
   .svtable td.basecell{color:var(--muted);font-family:var(--serif)}
   .svtable td.modcell{color:var(--verdigris);font-family:var(--serif)}
@@ -794,7 +794,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   #svBlocks .char{margin-bottom:12px}
   td.rxres{font-family:var(--serif);font-weight:700;font-size:1.05rem}
   .rx-friendly{color:var(--verdigris)} .rx-indiff{color:var(--parchment)} .rx-caut{color:var(--brass)}
-  .rx-threat{color:color-mix(in oklab, #c0621f 72%, var(--parchment))} .rx-host{color:var(--rust)} .rx-flight{color:color-mix(in oklab, #2f5d8a 65%, var(--parchment))}
+  .rx-threat{color:color-mix(in oklab, var(--color-danger-text) 55%, var(--color-accent-text))} .rx-host{color:var(--rust)} .rx-flight{color:var(--color-accent2-text)}
   .encbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
   #encOut{margin-top:4px} #encWrap{padding:12px 16px}
   .enccheck{font-size:.9rem;margin-bottom:8px}
@@ -837,7 +837,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .effects-on{margin:0;padding:6px 14px;font-size:.78rem;color:var(--muted);border-bottom:1px solid var(--edge)}
 
 
-  .np{margin-left:8px;font-family:var(--sans);font-size:.66rem;color:var(--muted);border:1px solid var(--edge);border-radius:3px;padding:0 4px;vertical-align:middle;cursor:default}
+  .np{display:inline-flex;align-items:center;height:18px;padding:0 7px;margin-left:8px;border:0;border-radius:999px;vertical-align:middle;cursor:default;font:600 11px/1 var(--font-sans);letter-spacing:0;background:var(--tag-bg, var(--color-sunken));color:var(--tag-text, var(--color-text-muted));box-shadow:inset 0 0 0 1px var(--tag-edge, var(--color-divider))}   /* non-proficient: a neutral tag */
   footer{color:var(--muted);font-size:.75rem;margin-top:16px;text-align:center;line-height:1.6}
 
   /* ── One control system, as on the character sheet ─────────────────
@@ -851,13 +851,6 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     font-family:var(--serif); font-size:.7rem; font-weight:600; letter-spacing:.08em; text-transform:uppercase; line-height:1; white-space:nowrap;
   }
   .reroll:hover, .reset:hover{border-color:var(--brass); color:var(--brass); background:var(--panel)}
-  /* The main action on each tab */
-  #surpriseBtn, #rollInit, #nextRoundSync, #newRoundLight, #rollProfs, #rollSavesAll, #rxRoll, #encCheck, #encRoll{
-    background:var(--brass); border-color:var(--brass); color:var(--panel); box-shadow:0 2px 0 color-mix(in oklab, var(--brass) 55%, #000);
-  }
-  #surpriseBtn:hover, #rollInit:hover, #nextRoundSync:hover, #newRoundLight:hover, #rollProfs:hover, #rollSavesAll:hover, #rxRoll:hover, #encCheck:hover, #encRoll:hover{
-    background:color-mix(in oklab, var(--brass) 82%, var(--toward)); border-color:color-mix(in oklab, var(--brass) 82%, var(--toward)); color:var(--panel);
-  }
   /* Small buttons inside rows (Duplicate, Remove, per-character rolls) */
   .reroll.small, .reroll.bnbtn{height:var(--ctl-h-sm); padding:0 .55rem; font-size:.6rem}
   .reset{height:var(--ctl-h-sm); font-size:.62rem}

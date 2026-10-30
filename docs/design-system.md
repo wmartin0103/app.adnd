@@ -14,6 +14,10 @@ the owner on 2026-10-27, ahead of a dark theme.
 - Every page passes the contrast check in both themes
   (`scripts/contrast-scan.js`, run in the browser on a page served from the
   repo).
+- Every page passes the design audit in both themes (`scripts/design-audit.js`,
+  run the same way): fields and buttons are components at the S/M/L/XS
+  heights, corners are 6/8/10px (or round), colours come from the tokens,
+  fonts are Barlow and Spectral, checkboxes are ours, no card in a card.
 - Fields (4a), buttons (4b), surfaces (4c) and choices (4e: checkboxes,
   radios, switches, page tabs) are applied. New work should follow this
   document, and anything that looks different from it should say why in a
