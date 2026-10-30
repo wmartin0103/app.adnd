@@ -814,7 +814,8 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .sheetimp-row .err{flex-basis:100%;font-size:.82rem;color:var(--rust)}
   .sheetimp-status{font-size:.85rem;color:var(--verdigris)}
   .giverow{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px}
-  #cfgSummary{margin-top:12px}
+  #giveSheet,#startOver{margin-bottom:16px}   /* cards in a stack: 16px apart */
+  #cfgSummary{margin-top:0}
   #cfgSummary .chead select{width:auto;min-width:12rem}
   #cfgReview:empty{display:none}
   #cfgReview .cfgblock{border:0;border-radius:0;box-shadow:none}
@@ -1181,7 +1182,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
 
   <div class="panel hidden" id="panel-config">
     <div class="char" id="giveSheet">
-      <div class="chead"><span class="cname">Give a player a character</span><span class="svnote">Upload a character sheet save (.json) to a player's Backups, ready for when they need it.</span></div>
+      <div class="chead"><span class="cname">Import character</span><span class="svnote">Upload a character sheet save (.json) to a player's Backups, ready for when they need it.</span></div>
       <div class="sheetimp">
         <div class="giverow"><label class="gclabel">Player <select id="givePlayer"></select></label><button class="reroll ui-button is-secondary" type="button" id="giveBtn">Upload sheet…</button><input type="file" id="giveFile" accept=".json,application/json" hidden></div>
         <div id="giveStatus" class="sheetimp-status" role="status"></div>
@@ -1192,7 +1193,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       <div class="sheetimp"><div><button class="ui-button is-secondary is-danger" id="resetAll" title="Reset everything to the starting state">↺ Reset everything</button></div></div>
     </div>
     <div class="char" id="cfgSummary">
-      <div class="chead"><span class="cname">Character summary</span><label class="gclabel"><span class="sr-only">Character</span><select id="cfgPick"></select></label><span class="svnote">Everything the tabs use for one character.</span></div>
+      <div class="chead"><span class="cname">Character summary</span><label class="gclabel"><span class="sr-only">Character</span><select id="cfgPick"></select></label><span class="svnote">Quick reference for current character sheets</span></div>
       <div id="cfgReview"></div>
     </div>
   </div>
@@ -6521,7 +6522,7 @@ function applyActive(){
   if(typeof renderSaves==='function') renderSaves();
   if(typeof renderReaction==='function') renderReaction();
 }
-/* ---------------- Config: give a player a character ---------------- */
+/* ---------------- Config: import a character (into a player's Backups) ---------------- */
 var giveSession=null;   // var: the sign-in callback can run before this line
 async function renderGive(sess){
   giveSession=sess;
@@ -6530,7 +6531,7 @@ async function renderGive(sess){
   const client=window.Cloud && Cloud.cloudClient();
   if(!sess || !sess.campaignId || !client || !window.Characters){
     sel.disabled=true; btn.disabled=true; sel.appendChild(new Option('—',''));
-    status.className='sheetimp-status muted'; status.textContent='Sign in as the DM to give a player a character.';
+    status.className='sheetimp-status muted'; status.textContent='Sign in as the DM to import a character.';
     return;
   }
   let members=[];
@@ -6556,7 +6557,7 @@ document.getElementById('giveFile').addEventListener('change',async e=>{
     status.textContent=`${String(save.name).trim()} is in ${who}'s Backups.`;
   }catch(err){
     status.className='sheetimp-status err';
-    status.textContent = /row-level security|permission/i.test(String(err.message||'')) ? 'Only the DM or an admin can give a player a character.' : `Couldn't upload it: ${err.message||err}`;
+    status.textContent = /row-level security|permission/i.test(String(err.message||'')) ? 'Only the DM or an admin can import a character for a player.' : `Couldn't upload it: ${err.message||err}`;
   }
 });
 
