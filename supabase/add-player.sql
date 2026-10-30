@@ -28,7 +28,8 @@
 -- named (the campaign's character with that name if there is one, else a
 -- new, empty one). A name must match the name on its sheet exactly; the
 -- table at the end shows everyone and their characters.
--- With more than one campaign, put its name on the v_campaign line.
+-- v_campaign: leave it empty for your campaign (the first one made). Only
+-- for another one (a test campaign, say) put its name there.
 -- ════════════════════════════════════════════════════════════════════════
 
 do $$
@@ -37,10 +38,9 @@ declare
   v_name       text := 'PERSON_NAME';
   v_role       text := 'player';          -- 'player', 'dm' or 'both'
   v_characters text := '';                -- optional: 'Goroth, Tig'
-  v_campaign   text := '';                -- empty: the only campaign
+  v_campaign   text := '';                -- empty: your campaign (the first one made)
   v_user uuid;
   v_camp uuid;
-  v_count int;
   v_names text[];
   ch text;
 begin
@@ -56,11 +56,8 @@ begin
     raise exception 'Put their name on the v_name line.';
   end if;
   if trim(v_campaign) = '' then
-    select count(*) into v_count from public.campaigns;
-    if v_count <> 1 then
-      raise exception 'There are % campaigns: put the name on the v_campaign line. The names: select name from campaigns;', v_count;
-    end if;
-    select id into v_camp from public.campaigns limit 1;
+    select id into v_camp from public.campaigns order by created_at limit 1;   -- the first: the real campaign
+    if v_camp is null then raise exception 'There are no campaigns yet (supabase/setup-first-admin.sql makes the first).'; end if;
   else
     select id into v_camp from public.campaigns where name = v_campaign order by created_at limit 1;
     if v_camp is null then raise exception 'No campaign named %. The names: select name from campaigns;', v_campaign; end if;

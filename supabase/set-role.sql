@@ -15,9 +15,8 @@
 -- - v_admin: null leaves admin as it is (the usual). true makes them an
 --   admin; false takes it away. An admin can change anyone's access,
 --   including yours, so keep it to people you'd trust with the database.
--- - v_campaign: leave it empty while there's one campaign. With more than
---   one, put the campaign's name here (the script stops and asks if it's
---   needed).
+-- - v_campaign: leave it empty for your campaign (the first one made).
+--   Only for another one (a test campaign, say) put its name here.
 --
 -- The person must already be in the campaign: add them with
 -- supabase/add-player.sql first. The table at the end shows everyone after
@@ -29,10 +28,9 @@ declare
   v_email    text    := 'PERSON_EMAIL';
   v_role     text    := 'player';         -- 'player', 'dm' or 'both'
   v_admin    boolean := null;             -- null (leave it), true or false
-  v_campaign text    := '';               -- empty: the only campaign
+  v_campaign text    := '';               -- empty: your campaign (the first one made)
   v_user uuid;
   v_camp uuid;
-  v_count int;
 begin
   v_role := lower(trim(v_role));
   if v_role not in ('dm', 'player', 'both') then
@@ -41,11 +39,8 @@ begin
   select id into v_user from auth.users where lower(email) = lower(trim(v_email));
   if v_user is null then raise exception 'No account with the email %', v_email; end if;
   if trim(v_campaign) = '' then
-    select count(*) into v_count from public.campaigns;
-    if v_count <> 1 then
-      raise exception 'There are % campaigns: put the name on the v_campaign line. The names: select name from campaigns;', v_count;
-    end if;
-    select id into v_camp from public.campaigns limit 1;
+    select id into v_camp from public.campaigns order by created_at limit 1;   -- the first: the real campaign
+    if v_camp is null then raise exception 'There are no campaigns yet (supabase/setup-first-admin.sql makes the first).'; end if;
   else
     select id into v_camp from public.campaigns where name = v_campaign order by created_at limit 1;
     if v_camp is null then raise exception 'No campaign named %. The names: select name from campaigns;', v_campaign; end if;
