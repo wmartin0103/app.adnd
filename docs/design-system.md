@@ -95,8 +95,9 @@ Where colour goes:
 - **Red:** destructive actions, errors, and a **critical failure** (a
   tinted cell or badge with `danger-text`, the counterpart of the crit's
   filled green; decided 2026-10-29). Not for ordinary failures or
-  negative numbers, except in a group check or save's results, where each
-  roll is green or red so the party reads at a glance (decided 2026-10-30).
+  negative numbers, except in a group check or save's results and each
+  character's saves, where each roll is green or red so they read at a
+  glance (decided 2026-10-30).
 
 Theme steps for hover and pressing mix toward **black in light** and
 **white in dark**, so one rule serves both themes.
