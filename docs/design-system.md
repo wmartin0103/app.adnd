@@ -15,10 +15,9 @@ the owner on 2026-10-27, ahead of a dark theme.
   (`scripts/contrast-scan.js`, run in the browser on a page served from the
   repo).
 - Fields (4a), buttons (4b) and surfaces (4c) are applied. Not yet:
-  moving non-interactive text off the action colour (section
-  titles, the round number and such are still brass). Until then, new work
-  should follow this document, and anything that looks different from it
-  should say why in a comment next to it.
+  checkboxes, radios, switches and page tabs (4e). New work should follow
+  this document, and anything that looks different from it should say why
+  in a comment next to it.
 
 Live references (prototypes, not wired to the app):
 
@@ -32,8 +31,11 @@ Live references (prototypes, not wired to the app):
 
 1. **Usable first, then attractive.** Contrast meets WCAG AA everywhere and
    AAA for body text (see Accessibility).
-2. **The action colour is only for what you can press.** Buttons, the focus
-   ring, links. Never results, labels or decoration.
+2. **Brass is the primary colour: actions and high-hierarchy information.**
+   Buttons, the focus ring and links, and also what matters most to read:
+   section titles, key values (THAC0, the round, Act On), results (decided
+   2026-10-29). Not for destructive actions, and not as decoration on
+   lesser text.
 3. **Destructive never borrows the action colour**, not even an edge.
 4. **One component per kind of control.** Every select box is the same
    select; every button is one of two styles. A deviation needs a stated
@@ -83,8 +85,9 @@ accent.
 
 Where colour goes:
 
-- **Brass** (`accent`): primary buttons, secondary buttons' text, the focus
-  ring, links. Only things you can press.
+- **Brass** (`accent`, as text `accent-text`): primary buttons, secondary
+  buttons' text, the focus ring, links; and high-hierarchy information:
+  section titles, key values and results.
 - **Second accent:** the selected tab button, a featured card's top edge,
   small kicker labels ("In play"), the die's outline.
 - **Success green:** a hit, a good result. A **crit** is the same family,
