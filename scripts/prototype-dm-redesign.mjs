@@ -33,7 +33,7 @@ const orderRow = r => r.pc ? `
   <div class="orow ui-card is-compact is-ally">
     <div class="who"><span class="nm">${r.name}</span><span class="meta">${r.tag}</span></div>
     ${field('Speed', sel(['—', '1', '2', '3', '4', '5', '6', '7'], String(r.speed), '4.5rem'))}${field('Init', sel(['—', ...Array.from({ length: 10 }, (_, i) => String(i + 1))], String(r.init), '4.5rem'))}
-    <span class="act${r.act == null ? ' none' : ''}">${r.act ?? '—'}</span>
+    <span class="act${r.act == null ? ' none' : ''}"><span class="lab">Act on</span>${r.act ?? '—'}</span>
     <div class="detail ui-well${r.none ? ' is-none' : ''}"><span class="lab">From the sheet</span> ${r.from}${r.extra ? `<div class="xline at-turn"><span class="lab">Extra attack</span> ${r.extra}</div><div class="xline at-end"><span class="lab">Extra attack</span> at the end of the order</div>` : ''}</div>
   </div>` : `
   <div class="orow ui-card is-compact is-opponent is-enemy">
@@ -41,7 +41,7 @@ const orderRow = r => r.pc ? `
       <span class="mini">${field('AC', sel(['3', '4', '5', '6'], String(r.ac), '4rem'))}${field('THAC0', sel(['17', '18', '19', '20'], String(r.thac0), '4.5rem'))}</span>
       <button type="button" class="ui-button is-bare is-icon size-sm" aria-label="Duplicate ${r.name}">${COPY}</button><button type="button" class="ui-button ${r.init == null ? 'is-primary' : 'is-secondary'} size-sm" title="Roll initiative for ${r.name}">${ROLL_ICON} ${r.init == null ? 'Roll init' : 'Re-roll init'}</button></div>
     ${field('Speed', sel(['1', '2', '3', '4', '5'], String(r.speed), '4.5rem'))}<label class="f"><span class="lab">Init</span>${sel(['—', ...Array.from({ length: 10 }, (_, i) => String(i + 1))], r.init == null ? '—' : String(r.init), '4.5rem')}</label>
-    <span class="act${r.act == null ? ' none' : ''}">${r.act ?? '—'}</span>
+    <span class="act${r.act == null ? ' none' : ''}"><span class="lab">Act on</span>${r.act ?? '—'}</span>
     <button type="button" class="ui-button is-bare is-icon is-danger is-remove size-sm rm" aria-label="Remove ${r.name}">${X}</button>
     <div class="detail"><button type="button" class="ui-disclosure" aria-expanded="${!!r.open}"><span class="ui-disclosure-chev" aria-hidden="true"></span>${r.open ? 'Attacks' : 'Attacks · 1 · 2d4, THAC0 19'}</button>
       <div class="atks"${r.open ? '' : ' hidden'}>${attack(1, `<div class="ui-well hit"><span class="die"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M24 3 43 14v20L24 45 5 34V14Z" fill="currentColor" fill-opacity="0.08"/><path d="M24 3 14 19h20Z M14 19 5 14 M34 19l9-5 M14 19l10 18 10-18 M24 37v8 M14 19 5 34l19 3 19-3-9-15" stroke-opacity="0.55" stroke-width="1.4"/></svg><b>14</b></span><div><span class="lab">Hits AC</span><span class="big">5</span></div><div><span class="lab">vs Jaque, AC 4</span><span class="big miss">Miss</span></div></div>`)}<button type="button" class="ui-button is-link size-sm">+ Add attack</button></div></div>
@@ -72,11 +72,10 @@ const initiative = `
   <section class="order size-sm">
     <div class="sec-head"><h2 class="sec">Initiative order</h2><span class="hint">Lower acts first: roll + speed + bonuses</span>
       <div class="inline-f push"><span class="lab">Extra attacks</span><div class="ui-tabs size-sm" role="group" aria-label="Extra attacks" data-try="xatk"><button type="button" class="is-active" aria-pressed="true" data-v="end">End of the order</button><button type="button" aria-pressed="false" data-v="turn">At their turn</button></div></div></div>
-    <div class="ohead"><span>Character</span><span>Speed</span><span>Init</span><span class="c">Act on</span></div>
     <div class="olist">${rows.map(orderRow).join('')}</div>
     <div class="xend at-end">
       <div class="sec-head"><h3 class="sub">Extra attacks</h3><span class="hint">After everyone has acted, in order</span></div>
-      ${party.filter(p => p.extra).map(p => `<div class="orow ui-card is-compact is-ally"><div class="who"><span class="nm">${p.name}</span><span class="meta">extra attack</span></div><span class="act">${p.act}</span><div class="detail ui-well"><span class="lab">From the sheet</span> ${p.extra}</div></div>`).join('')}
+      ${party.filter(p => p.extra).map(p => `<div class="orow ui-card is-compact is-ally"><div class="who"><span class="nm">${p.name}</span><span class="meta">extra attack</span></div><span class="act"><span class="lab">Act on</span>${p.act}</span><div class="detail ui-well"><span class="lab">From the sheet</span> ${p.extra}</div></div>`).join('')}
     </div>
     <div class="card-foot"><button type="button" class="ui-button is-primary">+ Add Enemy</button></div>
   </section>
@@ -256,7 +255,7 @@ const page = `<!doctype html>
   .round .rn { font: 700 32px/1 var(--font-serif); color: var(--color-accent-text); font-variant-numeric: lining-nums; }
 
   /* The order */
-  .ohead, .orow { display: grid; grid-template-columns: minmax(12rem, 1fr) 5rem 5rem 4rem 28px; column-gap: 12px; align-items: center; }
+  .orow { display: grid; grid-template-columns: minmax(12rem, 1fr) auto auto 6.5rem 28px; column-gap: 18px; align-items: center; }
   /* An open section starts 28px below what comes before it (cards in a stack are 16px apart) */
   .order { display: grid; gap: 8px; margin-top: 12px; }
   .sec-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
@@ -266,9 +265,12 @@ const page = `<!doctype html>
   .inline-f { display: inline-flex; align-items: center; gap: 8px; }
   .inline-f > .lab { margin: 0; }
   .olist { display: grid; gap: 8px; }
-  .ohead { font: 600 11px/1.2 var(--font-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--color-text-muted); padding: 0 13px; }
   .orow { row-gap: 10px; }
-  .orow .lab { display: none; }
+  /* Each card labels its own Speed, Init and Act on, inline (no column titles: these are cards, not rows) */
+  .orow > label.f { flex-direction: row; align-items: center; }
+  .orow > label.f > .lab, .orow .act > .lab { display: inline; margin: 0 6px 0 0; }
+  .orow .act { display: inline-flex; align-items: baseline; justify-content: flex-end; }
+  .orow .act > .lab { align-self: center; }
   .orow .act { font: 700 22px/1 var(--font-serif); color: var(--color-accent-text); font-variant-numeric: lining-nums; text-align: center; }
   .orow .who { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; min-width: 0; }
   .orow .nm { font: 600 18px/1.2 var(--font-serif); }
@@ -286,7 +288,6 @@ const page = `<!doctype html>
   .orow .rm { grid-column: 5; grid-row: 1; justify-self: end; }
   .ui-button svg { width: 1.1em; height: 1.1em; }
   .orow .act.none { color: var(--color-text-muted); }
-  .ohead .c { text-align: center; }
   .orow .detail.ui-well { padding: 8px 12px; font-size: 14px; }
   .orow .detail .lab { display: inline; margin-right: 6px; }
   .orow .detail.is-none { color: var(--color-text-muted); }
@@ -325,12 +326,10 @@ const page = `<!doctype html>
   .notes h4 { margin: 10px 0 4px; font: 600 14px/1.3 var(--font-serif); }
   .notes ul { margin: 0; padding-left: 1.1em; }
   @media (max-width: 640px) {
-    .ohead { display: none; }
-    .orow { grid-template-columns: 1fr 1fr 3rem; }
+    .orow { grid-template-columns: auto auto 1fr; }
     .orow .who { grid-column: 1 / 3; grid-row: 1; }
-    .orow .act { grid-column: 3; grid-row: 2; }
+    .orow .act { grid-column: 3; grid-row: 2; justify-content: flex-end; }
     .orow .rm { grid-column: 3; grid-row: 1; }
-    .orow .lab { display: block; }
   }
 </style>
 </head>
