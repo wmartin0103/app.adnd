@@ -31,51 +31,57 @@ const attack = (n, extra = '') => `<div class="ui-item atk">
 const orderRow = r => r.pc ? `
   <div class="orow ui-card is-compact">
     <div class="who"><span class="nm">${r.name}</span><span class="meta">${r.tag}</span></div>
-    <span class="act">${r.act}</span>
     ${field('Speed', sel(['—', '1', '2', '3', '4', '5', '6', '7'], String(r.speed), '4.5rem'))}${field('Init', sel(['—', ...Array.from({ length: 10 }, (_, i) => String(i + 1))], String(r.init), '4.5rem'))}
+    <span class="act">${r.act}</span>
     <div class="detail ui-well${r.none ? ' is-none' : ''}"><span class="lab">From the sheet</span> ${r.from}</div>
   </div>` : `
   <div class="orow ui-card is-compact is-enemy">
     <div class="who"><input type="checkbox" checked aria-label="${r.name} in the round"><span class="tag">${r.id}</span><input class="open-field nm-in" value="${r.name}" aria-label="Enemy name">
       <span class="mini">${field('AC', sel(['3', '4', '5', '6'], String(r.ac), '4rem'))}${field('THAC0', sel(['17', '18', '19', '20'], String(r.thac0), '4.5rem'))}</span>
       <button type="button" class="ui-button is-bare is-icon size-sm" aria-label="Duplicate ${r.name}">${COPY}</button><button type="button" class="ui-button is-bare is-icon is-danger is-remove size-sm" aria-label="Remove ${r.name}">${X}</button></div>
-    <span class="act">${r.act}</span>
     ${field('Speed', sel(['1', '2', '3', '4', '5'], String(r.speed), '4.5rem'))}${field('Init', sel(['—', ...Array.from({ length: 10 }, (_, i) => String(i + 1))], String(r.init), '4.5rem'))}
+    <span class="act">${r.act}</span>
     <div class="detail"><button type="button" class="ui-disclosure" aria-expanded="${!!r.open}"><span class="ui-disclosure-chev" aria-hidden="true"></span>${r.open ? 'Attacks' : 'Attacks · 1 · 2d4, THAC0 19'}</button>
       <div class="atks"${r.open ? '' : ' hidden'}>${attack(1, `<div class="ui-well hit"><span class="die"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l9 5v10l-9 5-9-5V7z"/></svg><b>14</b></span><div><span class="lab">Hits AC</span><span class="big">5</span></div><div><span class="lab">vs Jaque, AC 4</span><span class="big miss">Miss</span></div></div>`)}<button type="button" class="ui-button is-link size-sm">+ Add attack</button></div></div>
   </div>`;
 
+const surprise = `
+    <section class="ui-card size-sm">
+      <div class="card-head"><button type="button" class="ui-disclosure" aria-expanded="true"><span class="ui-disclosure-chev" aria-hidden="true"></span><h3>Surprise</h3></button><span class="hint">d10 each, 1–3 surprised</span></div>
+      <div class="line">${field('Party', sel(['Casual 0', 'Suspicious +1'], 'Casual 0', '8rem'))}${field('Light', sel(['Normal', 'Poor −1', 'Darkness −4'], 'Normal', '7rem'))}${field('Weather', sel(['Clear 0', 'Rainy −1'], 'Clear 0', '7rem'))}${field('Foe', sel(['—', 'Quiet −1', 'Silent −2'], 'Silent −2', '7rem'))}${field('Mod', sel(['0', '+1', '−1'], '0', '4rem'))}
+        <button type="button" class="ui-button is-primary size-sm">Surprise!</button><button type="button" class="ui-button is-link size-sm">Clear</button></div>
+      <div class="ui-well results">
+        ${[['Jaque', 'd10 1, Dex +3 = 4', false], ['Rifiyr', 'd10 3, Dex +1, Alertness +1 = 5', false], ['Goroth', 'd10 2 · Danger Sense d20 9 vs 13: senses it', false], ['Hanspeter', 'd10 2 = 2', true]].map(([n, d, x]) => `<div class="res"><span class="nm">${n}</span><span class="meta">${d}</span><span class="verdict${x ? ' bad' : ''}">${x ? 'Surprised' : 'Not surprised'}</span></div>`).join('')}
+      </div>
+    </section>`;
 const initiative = `
+  <div class="try"><span class="lab">Try</span>
+    <div class="f"><span class="lab">Enemy edge</span><div class="ui-tabs size-sm" data-try="edge"><button type="button" class="is-active" aria-pressed="true" data-v="accent2">Second accent</button><button type="button" aria-pressed="false" data-v="red">Red</button></div></div>
+    <div class="f"><span class="lab">Attack</span><div class="ui-tabs size-sm" data-try="atk"><button type="button" class="is-active" aria-pressed="true" data-v="outline">Outlined, header rule</button><button type="button" aria-pressed="false" data-v="tint">Tinted</button><button type="button" aria-pressed="false" data-v="rule">Left rule, no box</button></div></div>
+  </div>
+
+  ${surprise}
+
   <section class="ui-card is-featured">
     <div class="roundbar">
       <div class="rb-main"><span class="round"><span class="lab">Round</span><span class="rn">3</span></span>
-        <button type="button" class="ui-button is-primary">Next round ▸</button>
-        <button type="button" class="ui-button is-primary">⚄ Roll initiative for Enemies</button></div>
-      <div class="rb-set">
-        <label class="sw"><button type="button" class="ui-switch" role="switch" aria-checked="true" aria-label="Lock initiative"></button> Lock initiative</label>
-        <div class="f"><span class="lab">Extra attacks</span>${tabs(['End of the order', 'At their turn'], 'End of the order', 'Extra attacks')}</div>
-        <button type="button" class="ui-button is-secondary size-sm">Reset initiative</button>
-        <button type="button" class="ui-button is-secondary is-danger size-sm">↺ Reset encounter</button>
-      </div>
+      <button type="button" class="ui-button is-primary">⚄ Roll initiative for Enemies</button>
+      <label class="sw"><button type="button" class="ui-switch" role="switch" aria-checked="true" aria-label="Lock initiative"></button> Lock initiative</label>
+      <button type="button" class="ui-button is-secondary">Reset initiative</button>
+      <div class="f"><span class="lab">Extra attacks</span>${tabs(['End of the order', 'At their turn'], 'End of the order', 'Extra attacks')}</div>
+      <button type="button" class="ui-button is-primary">Next round ▸</button></div>
+      <div class="apart"><button type="button" class="ui-button is-secondary is-danger">↺ Reset encounter</button></div>
     </div>
   </section>
 
   <section class="order size-sm">
     <div class="sec-head"><h2 class="sec">Initiative order</h2><span class="hint">Lower acts first: roll + speed + bonuses</span></div>
-    <div class="ohead"><span>Character</span><span class="c">Act on</span><span>Speed</span><span>Init</span></div>
+    <div class="ohead"><span>Character</span><span>Speed</span><span>Init</span><span class="c">Act on</span></div>
     <div class="olist">${rows.map(orderRow).join('')}</div>
     <div class="card-foot"><button type="button" class="ui-button is-primary">+ Add Enemy</button></div>
   </section>
 
   <div class="two">
-    <section class="ui-card size-sm">
-      <div class="card-head"><button type="button" class="ui-disclosure" aria-expanded="true"><span class="ui-disclosure-chev" aria-hidden="true"></span><h3>Surprise</h3></button><span class="hint">d10 each, 1–3 surprised</span></div>
-      <div class="line">${field('Party', sel(['Casual 0', 'Suspicious +1'], 'Casual 0', '8rem'))}${field('Light', sel(['Normal', 'Poor −1', 'Darkness −4'], 'Normal', '7rem'))}${field('Weather', sel(['Clear 0', 'Rainy −1'], 'Clear 0', '7rem'))}${field('Foe', sel(['—', 'Quiet −1', 'Silent −2'], 'Silent −2', '7rem'))}${field('Mod', sel(['0', '+1', '−1'], '0', '4rem'))}</div>
-      <div class="actions"><button type="button" class="ui-button is-primary size-sm">Surprise!</button><button type="button" class="ui-button is-link size-sm">Clear</button></div>
-      <div class="ui-well results">
-        ${[['Jaque', 'd10 1, Dex +3 = 4', false], ['Rifiyr', 'd10 3, Dex +1, Alertness +1 = 5', false], ['Goroth', 'd10 2 · Danger Sense d20 9 vs 13: senses it', false], ['Hanspeter', 'd10 2 = 2', true]].map(([n, d, s]) => `<div class="res"><span class="nm">${n}</span><span class="meta">${d}</span><span class="verdict${s ? ' bad' : ''}">${s ? 'Surprised' : 'Not surprised'}</span></div>`).join('')}
-      </div>
-    </section>
     <section class="ui-card size-sm">
       <div class="card-head"><h3>Crits &amp; fumbles</h3></div>
       <div class="line"><div class="f"><span class="lab">Weapon</span>${tabs(['Blunt', 'Piercing', 'Slashing', 'Animal'], 'Blunt', 'Weapon type')}</div></div>
@@ -238,14 +244,21 @@ const page = `<!doctype html>
   .sw { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; }
 
   /* The round */
-  .roundbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px 24px; }
-  .rb-main, .rb-set { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
-  .rb-set { align-items: flex-end; }
+  .roundbar { display: flex; align-items: stretch; gap: 16px; }
+  .rb-main { flex: 1; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 16px; }
   .round { display: inline-flex; flex-direction: column; margin-right: 6px; }
+  .roundbar .sw { height: var(--field-h); }
+  .roundbar .apart { display: flex; align-items: flex-end; padding-left: 16px; border-left: 1px solid var(--color-divider); }
+  @media (max-width: 640px) { .roundbar { flex-direction: column; } .roundbar .apart { padding: 12px 0 0; border-left: 0; border-top: 1px solid var(--color-divider); } }
+  .try { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 18px; padding: 8px 12px; border: 1px dashed var(--color-border); border-radius: var(--radius-inner); }
+  .try > .lab { align-self: center; margin: 0; }
+  body { --enemy-edge: var(--color-accent2); }
+  body[data-edge="red"] { --enemy-edge: var(--color-danger); }
+  div.orow.ui-card.is-enemy:not(#\\#) { border-left: 3px solid var(--enemy-edge); }
   .round .rn { font: 700 32px/1 var(--font-serif); color: var(--color-accent-text); font-variant-numeric: lining-nums; }
 
   /* The order */
-  .ohead, .orow { display: grid; grid-template-columns: minmax(12rem, 1fr) 4rem 5rem 5rem; column-gap: 12px; align-items: center; }
+  .ohead, .orow { display: grid; grid-template-columns: minmax(12rem, 1fr) 5rem 5rem 4rem; column-gap: 12px; align-items: center; }
   .order { display: grid; gap: 8px; }
   .sec-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
   .sec-head h2.sec { margin: 0; }
@@ -268,7 +281,10 @@ const page = `<!doctype html>
   .atks { display: grid; gap: 10px; margin-top: 10px; justify-items: start; }
   .atks[hidden] { display: none; }
   .atks > .ui-item { justify-self: stretch; }
-  .atk { padding: 10px 12px; display: grid; gap: 10px; background: var(--color-bg); }
+  .atk { padding: 10px 12px; display: grid; gap: 10px; }
+  body[data-atk="outline"] .atk-head { padding-bottom: 8px; border-bottom: 1px solid var(--color-divider); }
+  body[data-atk="tint"] div.atk.ui-item:not(#\\#) { background: color-mix(in oklab, var(--color-text) 4%, var(--color-surface)); }
+  body[data-atk="rule"] div.atk.ui-item:not(#\\#) { border: 0; border-left: 2px solid var(--color-border); border-radius: 0; background: transparent; padding: 2px 0 2px 14px; }
   .atk .lab { display: block; }
   .atk-head { display: flex; align-items: center; gap: 10px; }
   .atk-head b { font: 600 15px/1.2 var(--font-serif); margin-right: auto; }
@@ -302,13 +318,13 @@ const page = `<!doctype html>
   @media (max-width: 640px) {
     .ohead { display: none; }
     .orow { grid-template-columns: 1fr 1fr 3rem; }
-    .orow .who { grid-column: 1 / 3; }
+    .orow .who { grid-column: 1 / 3; grid-row: 1; }
     .orow .act { grid-column: 3; grid-row: 1; }
     .orow .lab { display: block; }
   }
 </style>
 </head>
-<body>
+<body data-edge="accent2" data-atk="outline">
 <div class="page">
   <header class="top"><h1>DM Helper</h1><span class="camp">The Gnoll Hills · Round 3</span>
     <span class="who">Sam <a class="ui-button is-secondary size-sm" href="../site/index.html">Your characters</a><span id="themeSlot"></span><button type="button" class="ui-button is-secondary size-sm">Sign out</button></span></header>
@@ -327,7 +343,7 @@ const page = `<!doctype html>
   document.addEventListener('click', e => {
     const d = e.target.closest('.ui-disclosure'); if (d) { const open = d.getAttribute('aria-expanded') !== 'true'; d.setAttribute('aria-expanded', open); const body = d.closest('.detail')?.querySelector('.atks'); if (body) body.hidden = !open; }
     const s = e.target.closest('.ui-switch'); if (s) s.setAttribute('aria-checked', s.getAttribute('aria-checked') !== 'true');
-    const t = e.target.closest('.ui-tabs > button'); if (t) t.parentNode.querySelectorAll('button').forEach(x => { x.classList.toggle('is-active', x === t); x.setAttribute('aria-pressed', x === t); });
+    const t = e.target.closest('.ui-tabs > button'); if (t) { t.parentNode.querySelectorAll('button').forEach(x => { x.classList.toggle('is-active', x === t); x.setAttribute('aria-pressed', x === t); }); if (t.parentNode.dataset.try) document.body.dataset[t.parentNode.dataset.try] = t.dataset.v; }
   });
   (function(){ const b=document.createElement('button'); b.className='ui-button is-secondary is-icon size-sm'; b.type='button'; b.setAttribute('aria-label','Light or dark');
     const cur=()=>document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');

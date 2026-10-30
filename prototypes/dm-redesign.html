@@ -505,14 +505,21 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .sw { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; }
 
   /* The round */
-  .roundbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px 24px; }
-  .rb-main, .rb-set { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
-  .rb-set { align-items: flex-end; }
+  .roundbar { display: flex; align-items: stretch; gap: 16px; }
+  .rb-main { flex: 1; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 16px; }
   .round { display: inline-flex; flex-direction: column; margin-right: 6px; }
+  .roundbar .sw { height: var(--field-h); }
+  .roundbar .apart { display: flex; align-items: flex-end; padding-left: 16px; border-left: 1px solid var(--color-divider); }
+  @media (max-width: 640px) { .roundbar { flex-direction: column; } .roundbar .apart { padding: 12px 0 0; border-left: 0; border-top: 1px solid var(--color-divider); } }
+  .try { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 18px; padding: 8px 12px; border: 1px dashed var(--color-border); border-radius: var(--radius-inner); }
+  .try > .lab { align-self: center; margin: 0; }
+  body { --enemy-edge: var(--color-accent2); }
+  body[data-edge="red"] { --enemy-edge: var(--color-danger); }
+  div.orow.ui-card.is-enemy:not(#\#) { border-left: 3px solid var(--enemy-edge); }
   .round .rn { font: 700 32px/1 var(--font-serif); color: var(--color-accent-text); font-variant-numeric: lining-nums; }
 
   /* The order */
-  .ohead, .orow { display: grid; grid-template-columns: minmax(12rem, 1fr) 4rem 5rem 5rem; column-gap: 12px; align-items: center; }
+  .ohead, .orow { display: grid; grid-template-columns: minmax(12rem, 1fr) 5rem 5rem 4rem; column-gap: 12px; align-items: center; }
   .order { display: grid; gap: 8px; }
   .sec-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
   .sec-head h2.sec { margin: 0; }
@@ -535,7 +542,10 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .atks { display: grid; gap: 10px; margin-top: 10px; justify-items: start; }
   .atks[hidden] { display: none; }
   .atks > .ui-item { justify-self: stretch; }
-  .atk { padding: 10px 12px; display: grid; gap: 10px; background: var(--color-bg); }
+  .atk { padding: 10px 12px; display: grid; gap: 10px; }
+  body[data-atk="outline"] .atk-head { padding-bottom: 8px; border-bottom: 1px solid var(--color-divider); }
+  body[data-atk="tint"] div.atk.ui-item:not(#\#) { background: color-mix(in oklab, var(--color-text) 4%, var(--color-surface)); }
+  body[data-atk="rule"] div.atk.ui-item:not(#\#) { border: 0; border-left: 2px solid var(--color-border); border-radius: 0; background: transparent; padding: 2px 0 2px 14px; }
   .atk .lab { display: block; }
   .atk-head { display: flex; align-items: center; gap: 10px; }
   .atk-head b { font: 600 15px/1.2 var(--font-serif); margin-right: auto; }
@@ -569,13 +579,13 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   @media (max-width: 640px) {
     .ohead { display: none; }
     .orow { grid-template-columns: 1fr 1fr 3rem; }
-    .orow .who { grid-column: 1 / 3; }
+    .orow .who { grid-column: 1 / 3; grid-row: 1; }
     .orow .act { grid-column: 3; grid-row: 1; }
     .orow .lab { display: block; }
   }
 </style>
 </head>
-<body>
+<body data-edge="accent2" data-atk="outline">
 <div class="page">
   <header class="top"><h1>DM Helper</h1><span class="camp">The Gnoll Hills · Round 3</span>
     <span class="who">Sam <a class="ui-button is-secondary size-sm" href="../site/index.html">Your characters</a><span id="themeSlot"></span><button type="button" class="ui-button is-secondary size-sm">Sign out</button></span></header>
@@ -603,30 +613,43 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   </details>
   <nav class="ui-pagetabs" id="ptabs"><button type="button" data-p="Initiative" class="active">Initiative</button><button type="button" data-p="Proficiencies" class="">Proficiencies</button><button type="button" data-p="Saves" class="">Saves</button><button type="button" data-p="Reaction" class="">Reaction</button><button type="button" data-p="Config" class="">Config</button></nav>
   <div class="panel" data-panel="Initiative">
+  <div class="try"><span class="lab">Try</span>
+    <div class="f"><span class="lab">Enemy edge</span><div class="ui-tabs size-sm" data-try="edge"><button type="button" class="is-active" aria-pressed="true" data-v="accent2">Second accent</button><button type="button" aria-pressed="false" data-v="red">Red</button></div></div>
+    <div class="f"><span class="lab">Attack</span><div class="ui-tabs size-sm" data-try="atk"><button type="button" class="is-active" aria-pressed="true" data-v="outline">Outlined, header rule</button><button type="button" aria-pressed="false" data-v="tint">Tinted</button><button type="button" aria-pressed="false" data-v="rule">Left rule, no box</button></div></div>
+  </div>
+
+  
+    <section class="ui-card size-sm">
+      <div class="card-head"><button type="button" class="ui-disclosure" aria-expanded="true"><span class="ui-disclosure-chev" aria-hidden="true"></span><h3>Surprise</h3></button><span class="hint">d10 each, 1–3 surprised</span></div>
+      <div class="line"><label class="f"><span class="lab">Party</span><select style="width:8rem"><option selected>Casual 0</option><option>Suspicious +1</option></select></label><label class="f"><span class="lab">Light</span><select style="width:7rem"><option selected>Normal</option><option>Poor −1</option><option>Darkness −4</option></select></label><label class="f"><span class="lab">Weather</span><select style="width:7rem"><option selected>Clear 0</option><option>Rainy −1</option></select></label><label class="f"><span class="lab">Foe</span><select style="width:7rem"><option>—</option><option>Quiet −1</option><option selected>Silent −2</option></select></label><label class="f"><span class="lab">Mod</span><select style="width:4rem"><option selected>0</option><option>+1</option><option>−1</option></select></label>
+        <button type="button" class="ui-button is-primary size-sm">Surprise!</button><button type="button" class="ui-button is-link size-sm">Clear</button></div>
+      <div class="ui-well results">
+        <div class="res"><span class="nm">Jaque</span><span class="meta">d10 1, Dex +3 = 4</span><span class="verdict">Not surprised</span></div><div class="res"><span class="nm">Rifiyr</span><span class="meta">d10 3, Dex +1, Alertness +1 = 5</span><span class="verdict">Not surprised</span></div><div class="res"><span class="nm">Goroth</span><span class="meta">d10 2 · Danger Sense d20 9 vs 13: senses it</span><span class="verdict">Not surprised</span></div><div class="res"><span class="nm">Hanspeter</span><span class="meta">d10 2 = 2</span><span class="verdict bad">Surprised</span></div>
+      </div>
+    </section>
+
   <section class="ui-card is-featured">
     <div class="roundbar">
       <div class="rb-main"><span class="round"><span class="lab">Round</span><span class="rn">3</span></span>
-        <button type="button" class="ui-button is-primary">Next round ▸</button>
-        <button type="button" class="ui-button is-primary">⚄ Roll initiative for Enemies</button></div>
-      <div class="rb-set">
-        <label class="sw"><button type="button" class="ui-switch" role="switch" aria-checked="true" aria-label="Lock initiative"></button> Lock initiative</label>
-        <div class="f"><span class="lab">Extra attacks</span><div class="ui-tabs size-sm" role="group" aria-label="Extra attacks"><button type="button" class="is-active" aria-pressed="true">End of the order</button><button type="button" class="" aria-pressed="false">At their turn</button></div></div>
-        <button type="button" class="ui-button is-secondary size-sm">Reset initiative</button>
-        <button type="button" class="ui-button is-secondary is-danger size-sm">↺ Reset encounter</button>
-      </div>
+      <button type="button" class="ui-button is-primary">⚄ Roll initiative for Enemies</button>
+      <label class="sw"><button type="button" class="ui-switch" role="switch" aria-checked="true" aria-label="Lock initiative"></button> Lock initiative</label>
+      <button type="button" class="ui-button is-secondary">Reset initiative</button>
+      <div class="f"><span class="lab">Extra attacks</span><div class="ui-tabs size-sm" role="group" aria-label="Extra attacks"><button type="button" class="is-active" aria-pressed="true">End of the order</button><button type="button" class="" aria-pressed="false">At their turn</button></div></div>
+      <button type="button" class="ui-button is-primary">Next round ▸</button></div>
+      <div class="apart"><button type="button" class="ui-button is-secondary is-danger">↺ Reset encounter</button></div>
     </div>
   </section>
 
   <section class="order size-sm">
     <div class="sec-head"><h2 class="sec">Initiative order</h2><span class="hint">Lower acts first: roll + speed + bonuses</span></div>
-    <div class="ohead"><span>Character</span><span class="c">Act on</span><span>Speed</span><span>Init</span></div>
+    <div class="ohead"><span>Character</span><span>Speed</span><span>Init</span><span class="c">Act on</span></div>
     <div class="olist">
   <div class="orow ui-card is-compact is-enemy">
     <div class="who"><input type="checkbox" checked aria-label="Gnoll 1 in the round"><span class="tag">E1</span><input class="open-field nm-in" value="Gnoll 1" aria-label="Enemy name">
       <span class="mini"><label class="f"><span class="lab">AC</span><select style="width:4rem"><option>3</option><option>4</option><option selected>5</option><option>6</option></select></label><label class="f"><span class="lab">THAC0</span><select style="width:4.5rem"><option>17</option><option>18</option><option selected>19</option><option>20</option></select></label></span>
       <button type="button" class="ui-button is-bare is-icon size-sm" aria-label="Duplicate Gnoll 1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button><button type="button" class="ui-button is-bare is-icon is-danger is-remove size-sm" aria-label="Remove Gnoll 1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
-    <span class="act">8</span>
     <label class="f"><span class="lab">Speed</span><select style="width:4.5rem"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label><label class="f"><span class="lab">Init</span><select style="width:4.5rem"><option>—</option><option>1</option><option>2</option><option>3</option><option>4</option><option selected>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></label>
+    <span class="act">8</span>
     <div class="detail"><button type="button" class="ui-disclosure" aria-expanded="true"><span class="ui-disclosure-chev" aria-hidden="true"></span>Attacks</button>
       <div class="atks"><div class="ui-item atk">
   <div class="atk-head"><b>Attack 1</b><button type="button" class="ui-button is-secondary size-sm">Duplicate</button></div>
@@ -637,22 +660,22 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   </div>
   <div class="orow ui-card is-compact">
     <div class="who"><span class="nm">Jaque</span><span class="meta">5th</span></div>
-    <span class="act">9</span>
     <label class="f"><span class="lab">Speed</span><select style="width:4.5rem"><option>—</option><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option></select></label><label class="f"><span class="lab">Init</span><select style="width:4.5rem"><option>—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option selected>7</option><option>8</option><option>9</option><option>10</option></select></label>
+    <span class="act">9</span>
     <div class="detail ui-well"><span class="lab">From the sheet</span> Dagger, melee · 3/2 attacks · rolled 10 to hit: hits AC 1 · 5 damage</div>
   </div>
   <div class="orow ui-card is-compact">
     <div class="who"><span class="nm">Rifiyr</span><span class="meta">5th</span></div>
-    <span class="act">11</span>
     <label class="f"><span class="lab">Speed</span><select style="width:4.5rem"><option>—</option><option>1</option><option>2</option><option>3</option><option>4</option><option selected>5</option><option>6</option><option>7</option></select></label><label class="f"><span class="lab">Init</span><select style="width:4.5rem"><option>—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option selected>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></label>
+    <span class="act">11</span>
     <div class="detail ui-well"><span class="lab">From the sheet</span> Long bow · 2 arrows · waiting for the roll</div>
   </div>
   <div class="orow ui-card is-compact is-enemy">
     <div class="who"><input type="checkbox" checked aria-label="Gnoll 2 in the round"><span class="tag">E2</span><input class="open-field nm-in" value="Gnoll 2" aria-label="Enemy name">
       <span class="mini"><label class="f"><span class="lab">AC</span><select style="width:4rem"><option>3</option><option>4</option><option selected>5</option><option>6</option></select></label><label class="f"><span class="lab">THAC0</span><select style="width:4.5rem"><option>17</option><option>18</option><option selected>19</option><option>20</option></select></label></span>
       <button type="button" class="ui-button is-bare is-icon size-sm" aria-label="Duplicate Gnoll 2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button><button type="button" class="ui-button is-bare is-icon is-danger is-remove size-sm" aria-label="Remove Gnoll 2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
-    <span class="act">12</span>
     <label class="f"><span class="lab">Speed</span><select style="width:4.5rem"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label><label class="f"><span class="lab">Init</span><select style="width:4.5rem"><option>—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option selected>9</option><option>10</option></select></label>
+    <span class="act">12</span>
     <div class="detail"><button type="button" class="ui-disclosure" aria-expanded="false"><span class="ui-disclosure-chev" aria-hidden="true"></span>Attacks · 1 · 2d4, THAC0 19</button>
       <div class="atks" hidden><div class="ui-item atk">
   <div class="atk-head"><b>Attack 1</b><button type="button" class="ui-button is-secondary size-sm">Duplicate</button></div>
@@ -663,28 +686,20 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   </div>
   <div class="orow ui-card is-compact">
     <div class="who"><span class="nm">Goroth</span><span class="meta">3rd</span></div>
-    <span class="act">13</span>
     <label class="f"><span class="lab">Speed</span><select style="width:4.5rem"><option>—</option><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option></select></label><label class="f"><span class="lab">Init</span><select style="width:4.5rem"><option>—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option selected>9</option><option>10</option></select></label>
+    <span class="act">13</span>
     <div class="detail ui-well"><span class="lab">From the sheet</span> Cast: Cure Light Wounds (5) on Atteroak</div>
   </div>
   <div class="orow ui-card is-compact">
     <div class="who"><span class="nm">Hanspeter</span><span class="meta">5th</span></div>
-    <span class="act">15</span>
     <label class="f"><span class="lab">Speed</span><select style="width:4.5rem"><option>—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option selected>7</option></select></label><label class="f"><span class="lab">Init</span><select style="width:4.5rem"><option>—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option selected>8</option><option>9</option><option>10</option></select></label>
+    <span class="act">15</span>
     <div class="detail ui-well is-none"><span class="lab">From the sheet</span> Not sent yet</div>
   </div></div>
     <div class="card-foot"><button type="button" class="ui-button is-primary">+ Add Enemy</button></div>
   </section>
 
   <div class="two">
-    <section class="ui-card size-sm">
-      <div class="card-head"><button type="button" class="ui-disclosure" aria-expanded="true"><span class="ui-disclosure-chev" aria-hidden="true"></span><h3>Surprise</h3></button><span class="hint">d10 each, 1–3 surprised</span></div>
-      <div class="line"><label class="f"><span class="lab">Party</span><select style="width:8rem"><option selected>Casual 0</option><option>Suspicious +1</option></select></label><label class="f"><span class="lab">Light</span><select style="width:7rem"><option selected>Normal</option><option>Poor −1</option><option>Darkness −4</option></select></label><label class="f"><span class="lab">Weather</span><select style="width:7rem"><option selected>Clear 0</option><option>Rainy −1</option></select></label><label class="f"><span class="lab">Foe</span><select style="width:7rem"><option>—</option><option>Quiet −1</option><option selected>Silent −2</option></select></label><label class="f"><span class="lab">Mod</span><select style="width:4rem"><option selected>0</option><option>+1</option><option>−1</option></select></label></div>
-      <div class="actions"><button type="button" class="ui-button is-primary size-sm">Surprise!</button><button type="button" class="ui-button is-link size-sm">Clear</button></div>
-      <div class="ui-well results">
-        <div class="res"><span class="nm">Jaque</span><span class="meta">d10 1, Dex +3 = 4</span><span class="verdict">Not surprised</span></div><div class="res"><span class="nm">Rifiyr</span><span class="meta">d10 3, Dex +1, Alertness +1 = 5</span><span class="verdict">Not surprised</span></div><div class="res"><span class="nm">Goroth</span><span class="meta">d10 2 · Danger Sense d20 9 vs 13: senses it</span><span class="verdict">Not surprised</span></div><div class="res"><span class="nm">Hanspeter</span><span class="meta">d10 2 = 2</span><span class="verdict bad">Surprised</span></div>
-      </div>
-    </section>
     <section class="ui-card size-sm">
       <div class="card-head"><h3>Crits &amp; fumbles</h3></div>
       <div class="line"><div class="f"><span class="lab">Weapon</span><div class="ui-tabs size-sm" role="group" aria-label="Weapon type"><button type="button" class="is-active" aria-pressed="true">Blunt</button><button type="button" class="" aria-pressed="false">Piercing</button><button type="button" class="" aria-pressed="false">Slashing</button><button type="button" class="" aria-pressed="false">Animal</button></div></div></div>
@@ -777,7 +792,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   document.addEventListener('click', e => {
     const d = e.target.closest('.ui-disclosure'); if (d) { const open = d.getAttribute('aria-expanded') !== 'true'; d.setAttribute('aria-expanded', open); const body = d.closest('.detail')?.querySelector('.atks'); if (body) body.hidden = !open; }
     const s = e.target.closest('.ui-switch'); if (s) s.setAttribute('aria-checked', s.getAttribute('aria-checked') !== 'true');
-    const t = e.target.closest('.ui-tabs > button'); if (t) t.parentNode.querySelectorAll('button').forEach(x => { x.classList.toggle('is-active', x === t); x.setAttribute('aria-pressed', x === t); });
+    const t = e.target.closest('.ui-tabs > button'); if (t) { t.parentNode.querySelectorAll('button').forEach(x => { x.classList.toggle('is-active', x === t); x.setAttribute('aria-pressed', x === t); }); if (t.parentNode.dataset.try) document.body.dataset[t.parentNode.dataset.try] = t.dataset.v; }
   });
   (function(){ const b=document.createElement('button'); b.className='ui-button is-secondary is-icon size-sm'; b.type='button'; b.setAttribute('aria-label','Light or dark');
     const cur=()=>document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
