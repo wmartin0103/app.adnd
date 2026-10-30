@@ -6,7 +6,8 @@ import { withHead } from './build-legacy.mjs';
 const X = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
 const COPY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>';
 const D10 = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 22 10.5 12 22 2 10.5z"/><path d="M12 2 8 12.5l4 2.5 4-2.5zM2 10.5l6 2M22 10.5l-6 2M12 15v7"/></svg>';
-const DIE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 2v20M3 7l9 5 9-5"/></svg>';
+// A d20 (the hit roll's die): the tool's own drawing (src/ui/round-ui.js D20_SVG), at icon size
+const DIE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 1.5 21.5 7v10L12 22.5 2.5 17V7Z"/><path d="M12 1.5 7 9.5h10Z M7 9.5 2.5 7 M17 9.5l4.5-2.5 M7 9.5l5 9 5-9 M12 18.5v4 M7 9.5 2.5 17l9.5 1.5 9.5-1.5-4.5-7.5" stroke-width="1.4"/></svg>';
 const sel = (opts, cur, w = '') => `<select${w ? ` style="width:${w}"` : ''}>${opts.map(o => `<option${o === cur ? ' selected' : ''}>${o}</option>`).join('')}</select>`;
 const tabs = (opts, cur, label) => `<div class="ui-tabs size-sm" role="group" aria-label="${label}">${opts.map(o => `<button type="button" class="${o === cur ? 'is-active' : ''}" aria-pressed="${o === cur}">${o}</button>`).join('')}</div>`;
 const field = (label, ctl) => `<label class="f"><span class="lab">${label}</span>${ctl}</label>`;
@@ -45,7 +46,7 @@ const orderRow = r => r.pc ? `
     <span class="act${r.act == null ? ' none' : ''}">${r.act ?? '—'}</span>
     <button type="button" class="ui-button is-bare is-icon is-danger is-remove size-sm rm" aria-label="Remove ${r.name}">${X}</button>
     <div class="detail"><button type="button" class="ui-disclosure" aria-expanded="${!!r.open}"><span class="ui-disclosure-chev" aria-hidden="true"></span>${r.open ? 'Attacks' : 'Attacks · 1 · 2d4, THAC0 19'}</button>
-      <div class="atks"${r.open ? '' : ' hidden'}>${attack(1, `<div class="ui-well hit"><span class="die"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l9 5v10l-9 5-9-5V7z"/></svg><b>14</b></span><div><span class="lab">Hits AC</span><span class="big">5</span></div><div><span class="lab">vs Jaque, AC 4</span><span class="big miss">Miss</span></div></div>`)}<button type="button" class="ui-button is-link size-sm">+ Add attack</button></div></div>
+      <div class="atks"${r.open ? '' : ' hidden'}>${attack(1, `<div class="ui-well hit"><span class="die"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M24 3 43 14v20L24 45 5 34V14Z" fill="currentColor" fill-opacity="0.08"/><path d="M24 3 14 19h20Z M14 19 5 14 M34 19l9-5 M14 19l10 18 10-18 M24 37v8 M14 19 5 34l19 3 19-3-9-15" stroke-opacity="0.55" stroke-width="1.4"/></svg><b>14</b></span><div><span class="lab">Hits AC</span><span class="big">5</span></div><div><span class="lab">vs Jaque, AC 4</span><span class="big miss">Miss</span></div></div>`)}<button type="button" class="ui-button is-link size-sm">+ Add attack</button></div></div>
   </div>`;
 
 const surprise = `
