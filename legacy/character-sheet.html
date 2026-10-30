@@ -2677,7 +2677,9 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     }
 
     /* House-rule kit: a gear beside the class label opens the choice */
-    .class-label-row { display: flex; align-items: center; }
+    /* The label row is a label's height: the gear overflows it evenly, so Primary Class's field lines up with Group, Level and XP */
+    .class-label-row { display: flex; align-items: center; height: 16px; }
+    .class-label-row .class-settings-btn { margin-block: -6px; }
     .class-settings-btn { padding: 0 0.2rem; }
     .class-kit-panel {
       margin: 0.35rem 0 0;
