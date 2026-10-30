@@ -30,23 +30,23 @@ const attack = (n, extra = '') => `<div class="ui-item atk">
 </div>`;
 const orderRow = r => r.pc ? `
   <div class="orow ui-card is-compact">
-    <span class="act">${r.act}</span>
     <div class="who"><span class="nm">${r.name}</span><span class="meta">${r.tag}</span></div>
+    <span class="act">${r.act}</span>
     ${field('Speed', sel(['—', '1', '2', '3', '4', '5', '6', '7'], String(r.speed), '4.5rem'))}${field('Init', sel(['—', ...Array.from({ length: 10 }, (_, i) => String(i + 1))], String(r.init), '4.5rem'))}
     <div class="detail ui-well${r.none ? ' is-none' : ''}"><span class="lab">From the sheet</span> ${r.from}</div>
   </div>` : `
   <div class="orow ui-card is-compact is-enemy">
-    <span class="act">${r.act}</span>
     <div class="who"><input type="checkbox" checked aria-label="${r.name} in the round"><span class="tag">${r.id}</span><input class="open-field nm-in" value="${r.name}" aria-label="Enemy name">
       <span class="mini">${field('AC', sel(['3', '4', '5', '6'], String(r.ac), '4rem'))}${field('THAC0', sel(['17', '18', '19', '20'], String(r.thac0), '4.5rem'))}</span>
       <button type="button" class="ui-button is-bare is-icon size-sm" aria-label="Duplicate ${r.name}">${COPY}</button><button type="button" class="ui-button is-bare is-icon is-danger is-remove size-sm" aria-label="Remove ${r.name}">${X}</button></div>
+    <span class="act">${r.act}</span>
     ${field('Speed', sel(['1', '2', '3', '4', '5'], String(r.speed), '4.5rem'))}${field('Init', sel(['—', ...Array.from({ length: 10 }, (_, i) => String(i + 1))], String(r.init), '4.5rem'))}
     <div class="detail"><button type="button" class="ui-disclosure" aria-expanded="${!!r.open}"><span class="ui-disclosure-chev" aria-hidden="true"></span>${r.open ? 'Attacks' : 'Attacks · 1 · 2d4, THAC0 19'}</button>
       <div class="atks"${r.open ? '' : ' hidden'}>${attack(1, `<div class="ui-well hit"><span class="die"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l9 5v10l-9 5-9-5V7z"/></svg><b>14</b></span><div><span class="lab">Hits AC</span><span class="big">5</span></div><div><span class="lab">vs Jaque, AC 4</span><span class="big miss">Miss</span></div></div>`)}<button type="button" class="ui-button is-link size-sm">+ Add attack</button></div></div>
   </div>`;
 
 const initiative = `
-  <section class="open">
+  <section class="ui-card is-featured">
     <div class="roundbar">
       <div class="rb-main"><span class="round"><span class="lab">Round</span><span class="rn">3</span></span>
         <button type="button" class="ui-button is-primary">Next round ▸</button>
@@ -62,7 +62,7 @@ const initiative = `
 
   <section class="order size-sm">
     <div class="sec-head"><h2 class="sec">Initiative order</h2><span class="hint">Lower acts first: roll + speed + bonuses</span></div>
-    <div class="ohead"><span>Act on</span><span>Name</span><span>Speed</span><span>Init</span></div>
+    <div class="ohead"><span>Character</span><span class="c">Act on</span><span>Speed</span><span>Init</span></div>
     <div class="olist">${rows.map(orderRow).join('')}</div>
     <div class="card-foot"><button type="button" class="ui-button is-primary">+ Add Enemy</button></div>
   </section>
@@ -245,7 +245,7 @@ const page = `<!doctype html>
   .round .rn { font: 700 32px/1 var(--font-serif); color: var(--color-accent-text); font-variant-numeric: lining-nums; }
 
   /* The order */
-  .ohead, .orow { display: grid; grid-template-columns: 3.4rem minmax(12rem, 1fr) 5rem 5rem; column-gap: 12px; align-items: center; }
+  .ohead, .orow { display: grid; grid-template-columns: minmax(12rem, 1fr) 4rem 5rem 5rem; column-gap: 12px; align-items: center; }
   .order { display: grid; gap: 8px; }
   .sec-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
   .sec-head h2.sec { margin: 0; }
@@ -260,7 +260,8 @@ const page = `<!doctype html>
   .orow .mini { display: inline-flex; gap: 8px; align-items: center; }
   .orow .mini .lab { display: inline; margin: 0 4px 0 0; }
   .orow .mini label.f { flex-direction: row; align-items: center; }
-  .orow .detail { grid-column: 2 / -1; }
+  .orow .detail { grid-column: 1 / -1; }
+  .ohead .c { text-align: center; }
   .orow .detail.ui-well { padding: 8px 12px; font-size: 14px; }
   .orow .detail .lab { display: inline; margin-right: 6px; }
   .orow .detail.is-none { color: var(--color-text-muted); }
@@ -300,9 +301,9 @@ const page = `<!doctype html>
   .notes ul { margin: 0; padding-left: 1.1em; }
   @media (max-width: 640px) {
     .ohead { display: none; }
-    .orow { grid-template-columns: 2.6rem 1fr 1fr; }
-    .orow .who { grid-column: 2 / -1; }
-    .orow > label.f:nth-of-type(1) { grid-column: 2; }
+    .orow { grid-template-columns: 1fr 1fr 3rem; }
+    .orow .who { grid-column: 1 / 3; }
+    .orow .act { grid-column: 3; grid-row: 1; }
     .orow .lab { display: block; }
   }
 </style>
