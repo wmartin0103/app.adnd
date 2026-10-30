@@ -4874,6 +4874,9 @@ function readField(label, value, cls = '') {
 // judge(r, i), on the DM's page, which knows each target's AC: { hit, need, ac,
 // crit } for that target, and the panel says Hit or Miss.
 const D20_SVG = '<svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M24 3 43 14v20L24 45 5 34V14Z" fill="currentColor" fill-opacity="0.08"/><path d="M24 3 14 19h20Z M14 19 5 14 M34 19l9-5 M14 19l10 18 10-18 M24 37v8 M14 19 5 34l19 3 19-3-9-15" stroke-opacity="0.55" stroke-width="1.4"/></svg>';
+// The icon on every Roll button (decided 2026-10-29): the d20 above, drawn at
+// icon size (it takes the button's text colour and 1.1em)
+const ROLL_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 1.5 21.5 7v10L12 22.5 2.5 17V7Z"/><path d="M12 1.5 7 9.5h10Z M7 9.5 2.5 7 M17 9.5l4.5-2.5 M7 9.5l5 9 5-9 M12 18.5v4 M7 9.5 2.5 17l9.5 1.5 9.5-1.5-4.5-7.5" stroke-width="1.4"/></svg>';
 const shownRolls = {};
 function hitRoll(line, fresh, onReroll, judge) {
   const roll = line.roll;
@@ -4936,7 +4939,7 @@ function hitRoll(line, fresh, onReroll, judge) {
   return wrap;
 }
 
-return { STYLES, ensureStyles, multi, readField, D20_SVG, hitRoll };
+return { STYLES, ensureStyles, multi, readField, D20_SVG, ROLL_ICON, hitRoll };
 })();
 // ── ui/tokens ──
 __m["ui/tokens"] = (() => {
@@ -6490,7 +6493,7 @@ window.SheetScenarios = { modNum: __m["rules/scenarios"].modNum, signed: __m["ru
 window.SheetKits = { HOUSE_KITS: __m["rules/kits"].HOUSE_KITS, classKit: __m["rules/kits"].classKit };
 window.SheetRound = { ROUND_MODS: __m["rules/round"].ROUND_MODS, MOVE_MULTS: __m["rules/round"].MOVE_MULTS, newRound: __m["rules/round"].newRound, roundQueue: __m["rules/round"].roundQueue, queueAttack: __m["rules/round"].queueAttack, unqueueAttack: __m["rules/round"].unqueueAttack, roundLines: __m["rules/round"].roundLines, lineToHit: __m["rules/round"].lineToHit, roundACPenalty: __m["rules/round"].roundACPenalty, lineTHAC0: __m["rules/round"].lineTHAC0, judgeRoll: __m["rules/round"].judgeRoll, actOn: __m["rules/round"].actOn, attackSpeed: __m["rules/round"].attackSpeed, rollLine: __m["rules/round"].rollLine, scoreRoll: __m["rules/round"].scoreRoll, rerollDamage: __m["rules/round"].rerollDamage, lineKind: __m["rules/round"].lineKind, hasRoll: __m["rules/round"].hasRoll, isHealing: __m["rules/round"].isHealing, lineSay: __m["rules/round"].lineSay };
 window.RoundSync = { createRoundSync: __m["round-sync"].createRoundSync };
-window.RoundUI = { STYLES: __m["ui/round-ui"].STYLES, ensureStyles: __m["ui/round-ui"].ensureStyles, multi: __m["ui/round-ui"].multi, readField: __m["ui/round-ui"].readField, hitRoll: __m["ui/round-ui"].hitRoll, D20_SVG: __m["ui/round-ui"].D20_SVG };
+window.RoundUI = { STYLES: __m["ui/round-ui"].STYLES, ensureStyles: __m["ui/round-ui"].ensureStyles, multi: __m["ui/round-ui"].multi, readField: __m["ui/round-ui"].readField, hitRoll: __m["ui/round-ui"].hitRoll, D20_SVG: __m["ui/round-ui"].D20_SVG, ROLL_ICON: __m["ui/round-ui"].ROLL_ICON };
 window.Cloud = { cloudClient: __m["cloud"].cloudClient, cloudSession: __m["cloud"].cloudSession, createCloudRoundSync: __m["cloud"].createCloudRoundSync, mountCloud: __m["cloud"].mountCloud };
 window.SheetRules = { PHB_WEAPONS: __m["rules/weapons"].PHB_WEAPONS };
 window.SheetGuess = { guessCategory: __m["rules/migrate"].guessCategory };
@@ -8451,7 +8454,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
     const escR = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     // Shared with the DM Helper (src/ui/round-ui.js): the select with checkboxes,
     // read-only values, the roll result panel, and their styles
-    const { multi, readField, hitRoll, D20_SVG } = RoundUI;
+    const { multi, readField, hitRoll, ROLL_ICON } = RoundUI;
     RoundUI.ensureStyles();
     let freshRoll = null;
     const pick = (id, label, pairs, value, onChange) => {
@@ -8481,7 +8484,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       init.appendChild(il);
       const initRow = document.createElement('div'); initRow.className = 'round-chips';
       if (rec.init.roll == null) {
-        const roll = document.createElement('button'); roll.type = 'button'; roll.className = 'round-btn ui-button is-primary'; roll.textContent = 'Roll d10';
+        const roll = document.createElement('button'); roll.type = 'button'; roll.className = 'round-btn ui-button is-primary'; roll.innerHTML = `${ROLL_ICON}<span>Roll d10</span>`;
         roll.addEventListener('click', () => { rec.init.roll = 1 + Math.floor(Math.random() * 10); saveRound(rec); });
         initRow.append(roll);
       } else {
@@ -8644,7 +8647,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         } else row.appendChild(n);
         if (!line.roll && canRoll) {
           const b = document.createElement('button'); b.type = 'button'; b.className = 'round-btn roll-hit-btn ui-button is-primary';
-          b.innerHTML = `${D20_SVG}<span>${thac0 != null ? 'Roll to hit' : 'Roll'}</span>`;
+          b.innerHTML = `${ROLL_ICON}<span>${thac0 != null ? 'Roll to hit' : 'Roll'}</span>`;
           b.addEventListener('click', () => {
             // The card keeps what it was rolled with (no longer "same as above")
             rec.lines[line.key] = { ...own(line.key), ...line.set, target: null, roll: SheetRound.rollLine(ctx, line) };

@@ -2,12 +2,10 @@
 // data, for review before the real tool is rebuilt). Run: node scripts/prototype-dm-redesign.mjs
 import { writeFileSync } from 'node:fs';
 import { withHead } from './build-legacy.mjs';
+import { ROLL_ICON } from '../src/ui/round-ui.js';
 
 const X = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
 const COPY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>';
-const D10 = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 22 10.5 12 22 2 10.5z"/><path d="M12 2 8 12.5l4 2.5 4-2.5zM2 10.5l6 2M22 10.5l-6 2M12 15v7"/></svg>';
-// A d20 (the hit roll's die): the tool's own drawing (src/ui/round-ui.js D20_SVG), at icon size
-const DIE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 1.5 21.5 7v10L12 22.5 2.5 17V7Z"/><path d="M12 1.5 7 9.5h10Z M7 9.5 2.5 7 M17 9.5l4.5-2.5 M7 9.5l5 9 5-9 M12 18.5v4 M7 9.5 2.5 17l9.5 1.5 9.5-1.5-4.5-7.5" stroke-width="1.4"/></svg>';
 const sel = (opts, cur, w = '') => `<select${w ? ` style="width:${w}"` : ''}>${opts.map(o => `<option${o === cur ? ' selected' : ''}>${o}</option>`).join('')}</select>`;
 const tabs = (opts, cur, label) => `<div class="ui-tabs size-sm" role="group" aria-label="${label}">${opts.map(o => `<button type="button" class="${o === cur ? 'is-active' : ''}" aria-pressed="${o === cur}">${o}</button>`).join('')}</div>`;
 const field = (label, ctl) => `<label class="f"><span class="lab">${label}</span>${ctl}</label>`;
@@ -29,7 +27,7 @@ const attack = (n, extra = '') => `<div class="ui-item is-tinted atk">
   <div class="atk-head"><b>Attack ${n}</b><button type="button" class="ui-button is-secondary size-sm">Duplicate</button>${n > 1 ? `<button type="button" class="ui-button is-bare is-icon is-danger is-remove size-sm" aria-label="Remove attack ${n}">${X}</button>` : ''}</div>
   <div class="line">${field('Dice', sel(['d4', 'd6', 'd8', '2d4'], n === 1 ? '2d4' : 'd6', '5rem'))}${field('Bonus', sel(['0', '+1', '+2'], '0', '4.5rem'))}${field('Targets', sel(['Jaque', 'Rifiyr', 'Goroth', 'Hanspeter', 'None'], n === 1 ? 'Jaque' : 'None', '9rem'))}${field('Ground', sel(['Level', 'Higher', 'Lower'], 'Level', '6rem'))}${field('Conditions', sel(['None', 'Flanking', 'Charging'], 'None', '8rem'))}${field('Other', sel(['0', '+1', '+2', '−1'], '0', '4.5rem'))}
     <div class="readout"><span class="lab">THAC0</span><span class="num">19</span></div>
-    <button type="button" class="ui-button is-primary size-sm roll">${DIE} Roll to hit</button></div>${extra}
+    <button type="button" class="ui-button is-primary size-sm roll">${ROLL_ICON} Roll to hit</button></div>${extra}
 </div>`;
 const orderRow = r => r.pc ? `
   <div class="orow ui-card is-compact is-ally">
@@ -41,7 +39,7 @@ const orderRow = r => r.pc ? `
   <div class="orow ui-card is-compact is-opponent is-enemy">
     <div class="who"><input type="checkbox" checked aria-label="${r.name} in the round"><span class="tag">${r.id}</span><input class="open-field nm-in" value="${r.name}" aria-label="Enemy name">
       <span class="mini">${field('AC', sel(['3', '4', '5', '6'], String(r.ac), '4rem'))}${field('THAC0', sel(['17', '18', '19', '20'], String(r.thac0), '4.5rem'))}</span>
-      <button type="button" class="ui-button is-bare is-icon size-sm" aria-label="Duplicate ${r.name}">${COPY}</button><button type="button" class="ui-button ${r.init == null ? 'is-primary' : 'is-secondary'} size-sm" title="Roll initiative for ${r.name}">${D10} ${r.init == null ? 'Roll init' : 'Re-roll init'}</button></div>
+      <button type="button" class="ui-button is-bare is-icon size-sm" aria-label="Duplicate ${r.name}">${COPY}</button><button type="button" class="ui-button ${r.init == null ? 'is-primary' : 'is-secondary'} size-sm" title="Roll initiative for ${r.name}">${ROLL_ICON} ${r.init == null ? 'Roll init' : 'Re-roll init'}</button></div>
     ${field('Speed', sel(['1', '2', '3', '4', '5'], String(r.speed), '4.5rem'))}<label class="f"><span class="lab">Init</span>${sel(['—', ...Array.from({ length: 10 }, (_, i) => String(i + 1))], r.init == null ? '—' : String(r.init), '4.5rem')}</label>
     <span class="act${r.act == null ? ' none' : ''}">${r.act ?? '—'}</span>
     <button type="button" class="ui-button is-bare is-icon is-danger is-remove size-sm rm" aria-label="Remove ${r.name}">${X}</button>
@@ -64,7 +62,7 @@ const initiative = `
   <section class="ui-card is-featured">
     <div class="roundbar">
       <div class="rb-main"><span class="round"><span class="lab">Round</span><span class="rn">3</span></span>
-      <button type="button" class="ui-button is-primary" title="Rolls for each Enemy that hasn't rolled; never re-rolls">${D10} Roll initiative for Enemies</button>
+      <button type="button" class="ui-button is-primary" title="Rolls for each Enemy that hasn't rolled; never re-rolls">${ROLL_ICON} Roll initiative for Enemies</button>
       <button type="button" class="ui-button is-secondary">Reset initiative</button>
       <div class="f"><span class="lab">Extra attacks</span>${tabs(['End of the order', 'At their turn'], 'End of the order', 'Extra attacks')}</div>
       <button type="button" class="ui-button is-primary">Next round ▸</button></div>
@@ -94,7 +92,7 @@ const skills = [['Animal Handling', 'Int', 16, 3], ['Armorer', 'Int + Cleric', 1
 const cell = m => `<td class="m${m >= 15 ? ' crit' : m >= 0 ? ' ok' : m <= -15 ? ' cfail' : ''}">${m > 0 ? '+' : m < 0 ? '−' : ''}${Math.abs(m)}</td>`;
 const profs = `
   <section class="open">
-    <div class="toolbar">${field('Group check', sel(['— pick a proficiency —', 'Observation', 'Tracking'], 'Observation', '14rem'))}<button type="button" class="ui-button is-primary">⟳ Roll all proficiencies</button><button type="button" class="ui-button is-link">Clear</button></div>
+    <div class="toolbar">${field('Group check', sel(['— pick a proficiency —', 'Observation', 'Tracking'], 'Observation', '14rem'))}<button type="button" class="ui-button is-primary">${ROLL_ICON} Roll all proficiencies</button><button type="button" class="ui-button is-link">Clear</button></div>
   </section>
   <section class="ui-card size-sm">
     <div class="card-head"><h3>Observation</h3><span class="hint">d20 at or under the target</span></div>
@@ -104,7 +102,7 @@ const profs = `
   </section>
   <h2 class="sec">Party</h2>
   <section class="ui-card size-sm">
-    <div class="card-head"><h3>Atteroak</h3><span class="meta">5th</span><span class="hint">Str 14 · Dex 13 · Con 16 · Int 11 · Wis 18 · Cha 11</span><button type="button" class="ui-button is-bare is-icon size-sm push" aria-label="Re-roll Atteroak's d20s">⟳</button></div>
+    <div class="card-head"><h3>Atteroak</h3><span class="meta">5th</span><span class="hint">Str 14 · Dex 13 · Con 16 · Int 11 · Wis 18 · Cha 11</span><button type="button" class="ui-button is-bare is-icon size-sm push" aria-label="Re-roll Atteroak's d20s">${ROLL_ICON}</button></div>
     <table class="t"><thead><tr><th class="l">Proficiency</th><th>Target</th><th>d20</th><th>Easy +5</th><th>Moderate 0</th><th>Hard −5</th><th>Very hard −10</th><th>Impossible −15</th></tr></thead><tbody>
       ${skills.map(([n, src, t, d]) => `<tr><td class="l nm">${n} <span class="tag">${src}</span></td><td>${t}</td><td>${d}</td>${[5, 0, -5, -10, -15].map(k => cell(t + k - d)).join('')}</tr>`).join('')}
     </tbody></table>
@@ -115,7 +113,7 @@ const profs = `
 // ── Saves ──
 const saves = `
   <section class="open">
-    <div class="toolbar">${field('Group save', sel(['— pick a save —', 'Poison', 'Spell'], 'Poison', '12rem'))}<button type="button" class="ui-button is-primary">⟳ Roll all saves</button><button type="button" class="ui-button is-link">Clear</button></div>
+    <div class="toolbar">${field('Group save', sel(['— pick a save —', 'Poison', 'Spell'], 'Poison', '12rem'))}<button type="button" class="ui-button is-primary">${ROLL_ICON} Roll all saves</button><button type="button" class="ui-button is-link">Clear</button></div>
   </section>
   <section class="ui-card size-sm">
     <div class="card-head"><h3>Poison</h3><span class="hint">d20 at or above the target</span></div>
@@ -125,7 +123,7 @@ const saves = `
   </section>
   <h2 class="sec">Party</h2>
   <section class="ui-card size-sm">
-    <div class="card-head"><h3>Atteroak</h3><span class="meta">5th</span><span class="hint">Dwarf: +4 vs poison, rod/staff/wand, spell; +8 vs charm, fear, suggestion</span><button type="button" class="ui-button is-bare is-icon size-sm push" aria-label="Re-roll Atteroak's saves">⟳</button></div>
+    <div class="card-head"><h3>Atteroak</h3><span class="meta">5th</span><span class="hint">Dwarf: +4 vs poison, rod/staff/wand, spell; +8 vs charm, fear, suggestion</span><button type="button" class="ui-button is-bare is-icon size-sm push" aria-label="Re-roll Atteroak's saves">${ROLL_ICON}</button></div>
     <table class="t"><thead><tr><th class="l">Save vs</th><th>Base</th><th>Mod</th><th>Target</th><th>d20</th></tr></thead><tbody>
       ${[['Paralysis', 10, '—', 10, 7], ['Poison', 10, '+4', 6, 12], ['Death Magic', 10, '—', 10, 16], ['Rod, Staff, or Wand', 14, '+4', 10, 10], ['Petrification or Polymorph', 13, '—', 13, 19], ['Breath Weapon', 16, '—', 16, 13], ['Spell', 15, '+4', 11, 17]].map(([n, b, m, t, d]) => `<tr><td class="l nm">${n}</td><td>${b}</td><td>${m}</td><td>${t}</td><td class="${d >= t ? 'ok' : ''}">${d}</td></tr>`).join('')}
     </tbody></table>
@@ -139,7 +137,7 @@ const reaction = `
     <div class="card-head"><h3>Reaction</h3><span class="hint">2d10, lower is friendlier</span></div>
     <div class="line"><div class="f"><span class="lab">Party is acting</span>${tabs(['Friendly', 'Indifferent', 'Threatening', 'Hostile'], 'Indifferent', 'Party is acting')}</div>${field('Reputation', sel(['0', '+1', '−1'], '0', '4.5rem'))}</div>
     <div class="line">${field('NPC race', sel(['Human', 'Elf', 'Dwarf'], 'Human', '7rem'))}${field('Occupation', sel(['Commoners', 'Nobles', 'Soldiers & guards'], 'Commoners', '9rem'))}<div class="f"><span class="lab">Culture</span>${tabs(['Own', 'Foreign'], 'Own', 'Culture')}</div></div>
-    <div class="actions"><button type="button" class="ui-button is-primary size-sm">⟳ Roll for all</button><button type="button" class="ui-button is-link size-sm">Clear</button></div>
+    <div class="actions"><button type="button" class="ui-button is-primary size-sm">${ROLL_ICON} Roll for all</button><button type="button" class="ui-button is-link size-sm">Clear</button></div>
     <div class="kicker">Human commoners, own culture · 2d10 = 6</div>
     <table class="t"><thead><tr><th class="l">Character</th><th>Cha</th><th>Mod</th><th>Result</th><th class="l">Reaction</th></tr></thead><tbody>
       ${[['Atteroak', '—', '—', 6, 'Friendly'], ['Goroth', '−2', '−4', 12, 'Cautious'], ['Hanspeter', '+3', '+1', 2, 'Friendly'], ['Jaque', '+3', '—', 3, 'Friendly'], ['Rifiyr', '—', '—', 6, 'Friendly']].map(([n, c, m, r, x]) => `<tr><td class="l nm">${n}</td><td>${c}</td><td>${m}</td><td>${r}</td><td class="l rx">${x}</td></tr>`).join('')}
@@ -150,7 +148,7 @@ const reaction = `
     <div class="card-head"><h3>Encounter</h3><span class="hint">DMG Table 59</span></div>
     <div class="line">${field('Setting', sel(['Road / Farm', 'Forest', 'City'], 'Road / Farm', '9rem'))}<div class="f"><span class="lab">Time</span>${tabs(['Day', 'Night'], 'Day', 'Time')}</div>${field('Chance', sel(['1 in 6', '2 in 6'], '2 in 6', '6rem'))}
       <label class="sw"><button type="button" class="ui-switch" role="switch" aria-checked="true" aria-label="Creatures"></button> Creatures</label></div>
-    <div class="actions"><button type="button" class="ui-button is-primary size-sm">Check for encounter</button><button type="button" class="ui-button is-secondary size-sm">Roll encounter</button><button type="button" class="ui-button is-link size-sm">Clear</button></div>
+    <div class="actions"><button type="button" class="ui-button is-primary size-sm">Check for encounter</button><button type="button" class="ui-button is-secondary size-sm">${ROLL_ICON} Roll encounter</button><button type="button" class="ui-button is-link size-sm">Clear</button></div>
     <div class="ui-well results"><div class="kicker">Road / Farm · Day · d20 18 · d% 91: no creature</div><div class="big-line">A wandering minstrel or storyteller</div><p class="desc">He trades a rumor for a meal. The rumor may be true, and he is careless about who overhears.</p></div>
   </section>
   </div>`;

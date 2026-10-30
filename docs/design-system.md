@@ -231,6 +231,10 @@ action colour. Every tag's text passes 4.5:1 on its fill in both themes.
   button with one × icon (`REMOVE_ICON` on the sheet), a little larger than
   other icons. It stays in line with what it removes: at the end of a card's
   header row, centred on the heading, or at the end of a table row.
+- **Roll buttons** carry the d20 icon before their label (`ROLL_ICON` in
+  `src/ui/round-ui.js`), whatever the die: Roll to hit, Roll init, Roll all
+  proficiencies, Roll for all (decided 2026-10-29). A re-roll icon button is
+  the same icon.
 - **Link buttons** (`is-link`): look like a link (`accent-text`, no
   underline or box at rest) but do a button's job on the page. For a quiet action that sits
   apart from the controls, such as Add Scenario below the attacks. Hover
