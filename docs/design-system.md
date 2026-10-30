@@ -338,8 +338,8 @@ In code (`src/ui/components.js`): every `input[type=checkbox|radio]` unless
 Standard, reusable arrangements of the pieces above (decided 2026-10-30, as
 first made on Your characters). In code: `ui-choice`, `ui-menu`.
 
-- **Choice card** (`ui-choice` on a `<button>`): a whole card that is the
-  button, for a few big choices side by side ("Create a new character",
+- **Choice card** (`ui-choice` on a `<button>`, or an `<a>` when it goes to
+  another page): a whole card that is the button, for a few big choices side by side ("Create a new character",
   "Import a character file"). A card at rest (surface, divider hairline,
   card corners and shadow, 22px 20px padding); hover and focus give it a
   brass edge (border and a 1px inner ring), focus the ring too. Inside:
