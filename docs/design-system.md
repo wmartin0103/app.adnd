@@ -340,6 +340,10 @@ On the sheet:
 |---|---|
 | Ability Scores, Character Details, Spells, Weapon Proficiencies, Non-Weapon Proficiencies, Abilities | Class & Experience, Saving Throws, Weapons, Thieving Abilities, Racial Traits, Equipment, Items; in Combat: Effects, This round (featured), each attack |
 
+Spacing: cards in a stack are 16px apart; an open section's heading starts
+28px below what comes before it, so a section reads as a new group
+(decided 2026-10-29).
+
 Notes is an open section (a single text box). Combat is an open section whose
 parts are cards.
 
