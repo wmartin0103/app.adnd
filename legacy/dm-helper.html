@@ -948,16 +948,15 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .bd-atk-btns .reroll.small, .bd-attacks .bd-add{margin-left:0}
   .bd-attacks .bd-add{justify-self:start}
   .bd-attacks .play-line{display:flex; flex-wrap:wrap; align-items:flex-end; gap:.4rem .9rem}
-  .bd-attacks select.ui-control{height:var(--ui-ctl-h); font-size:.95rem; padding:0 .5rem}   /* full height, like Targets and Conditions beside them */
+  .bd-attacks .ui-control{height:var(--field-h); font-size:var(--field-fs); padding:0 var(--field-px)}   /* Targets: the fields' size beside them */
   .bd-attacks .roll-hit-btn:disabled{opacity:.45; cursor:not-allowed; box-shadow:none}
   .bd-crit{flex-basis:100%; font-size:.9rem; line-height:1.4}
   #newRoundLight.armed{outline:2px solid var(--rust); outline-offset:2px}   /* waiting for the second click */
   .char.placeholder, #lightTracker{overflow:visible}          /* the Targets and Conditions lists open past the card */
-  /* Fields are the shared component (src/ui/components.js). Small in dense rows: the
-     round's table, an Enemy's row, a player's card. Medium again where a row of
-     labelled controls sits in a card: an Enemy's attack lines, the crit box. */
+  /* Fields are the shared component (src/ui/components.js). Small throughout the
+     initiative order and its cards (as in prototypes/dm-redesign.html): the rows,
+     an Enemy's attacks, the crit box (size-sm on its card). */
   table, .char{--field-h:var(--ctl-sm); --field-fs:var(--ctl-fs-sm); --field-px:var(--ctl-pad-sm)}
-  .bd-attacks, #lightCritBox{--field-h:var(--ctl-md); --field-fs:var(--ctl-fs-md); --field-px:var(--ctl-pad-md)}
   /* ── The redesign (prototypes/dm-redesign.html) ── */
   .card-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px}
   .card-head h3{margin:0;font:600 18px/1.25 var(--font-serif);color:var(--color-text)}
