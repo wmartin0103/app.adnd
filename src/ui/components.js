@@ -167,6 +167,46 @@ ${BTN}:is(:disabled, [aria-disabled="true"]) { opacity: .45; cursor: not-allowed
 // Cards don't nest; wells don't nest. Depth comes from the shadow in light and
 // the lighter surface in dark. :not(#\#) lifts these over a page's older box
 // styles; a page that needs something different says why.
+// ── Choices ──
+// Checkboxes and radios (every one, unless class="ui-native"), the switch
+// (class="ui-switch" on a <button role="switch" aria-checked>) and page tabs
+// (class="ui-pagetabs" on the row, aria-selected or .active on the current
+// tab). "On" is the second accent, like a selected tab button; page tabs are
+// brass. Sized from the fields: half a control's height (14 / 18 / 22px).
+const CHOICE = ':is(input[type=checkbox], input[type=radio]):not(.ui-native):not(#\\#)';
+export const CHOICES_CSS = `/* Checkboxes, radios, switches, page tabs (docs/design-system.md: Choices) */
+${CHOICE} { appearance: none; -webkit-appearance: none; box-sizing: border-box; flex: none; margin: 0; padding: 0;
+  width: calc(var(--field-h) * .5); height: calc(var(--field-h) * .5); min-width: 0; min-height: 0;
+  display: inline-grid; place-content: center; vertical-align: middle; cursor: pointer;
+  background: var(--color-surface); border: 1.5px solid var(--color-border); box-shadow: none; transition: background-color .12s, border-color .12s; }
+:is(input[type=checkbox]):not(.ui-native):not(#\\#) { border-radius: 4px; }
+:is(input[type=radio]):not(.ui-native):not(#\\#) { border-radius: 50%; }
+:is(input[type=checkbox]):not(.ui-native):not(#\\#)::before { content: ''; width: calc(var(--field-h) * .31); height: calc(var(--field-h) * .31); background: var(--color-on-accent2);
+  clip-path: polygon(12% 50%, 0 64%, 40% 100%, 100% 22%, 87% 9%, 40% 72%); transform: scale(0); transition: transform .1s; }
+:is(input[type=radio]):not(.ui-native):not(#\\#)::before { content: ''; width: calc(var(--field-h) * .21); height: calc(var(--field-h) * .21); border-radius: 50%; background: var(--color-on-accent2); transform: scale(0); transition: transform .1s; }
+${CHOICE}:checked { background: var(--color-accent2); border-color: var(--color-accent2); }
+${CHOICE}:checked::before { transform: scale(1); }
+${CHOICE}:hover:not(:disabled):not(:checked) { border-color: var(--color-text-muted); }
+${CHOICE}:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+${CHOICE}:disabled { opacity: .45; cursor: not-allowed; }
+button.ui-switch:not(#\\#) { box-sizing: border-box; flex: none; position: relative; margin: 0; padding: 0; cursor: pointer;
+  width: calc(var(--field-h) * .95); height: calc(var(--field-h) * .5); border-radius: 999px;
+  background: var(--color-sunken); border: 1.5px solid var(--color-border); box-shadow: none; transition: background-color .12s, border-color .12s; }
+button.ui-switch:not(#\\#)::after { content: ''; position: absolute; top: 50%; left: 2px; width: calc(var(--field-h) * .5 - 7px); height: calc(var(--field-h) * .5 - 7px);
+  border-radius: 50%; background: var(--color-text-muted); transform: translateY(-50%); transition: left .15s, background-color .12s; }
+button.ui-switch:not(#\\#)[aria-checked="true"] { background: var(--color-accent2); border-color: var(--color-accent2); }
+button.ui-switch:not(#\\#)[aria-checked="true"]::after { left: calc(100% - var(--field-h) * .5 + 5px); background: var(--color-on-accent2); }
+button.ui-switch:not(#\\#):hover:not(:disabled):not([aria-checked="true"]) { border-color: var(--color-text-muted); }
+button.ui-switch:not(#\\#):focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+button.ui-switch:not(#\\#):disabled { opacity: .45; cursor: not-allowed; }
+:is(nav, div, [role=tablist]).ui-pagetabs:not(#\\#) { display: flex; gap: 2px; border-bottom: 0; box-shadow: inset 0 -1px 0 var(--color-divider); overflow-x: auto; }
+.ui-pagetabs:not(#\\#) > :is(button, a) { flex: none; background: none; border: 0; border-bottom: 2px solid transparent; border-radius: 0; margin: 0; padding: 8px 12px;
+  cursor: pointer; font: 600 15px/1.2 var(--font-serif); letter-spacing: normal; text-transform: none; text-decoration: none; color: var(--color-text-muted); box-shadow: none; }
+.ui-pagetabs:not(#\\#) > :is(button, a):hover { color: var(--color-text); }
+.ui-pagetabs:not(#\\#) > :is(button, a):is([aria-selected="true"], [aria-current="page"], .active) { color: var(--color-accent-text); border-bottom-color: var(--color-accent); }
+.ui-pagetabs:not(#\\#) > :is(button, a):focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
+`;
+
 // A disclosure (accordion) toggle: a button holding the chevron and the title.
 // It is the whole hit area, so other controls in the same header (a select, an
 // Add button, a field) don't light it up or toggle it. Hover is the bare

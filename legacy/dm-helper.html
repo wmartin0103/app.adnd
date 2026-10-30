@@ -394,6 +394,38 @@ select.open-field { -webkit-appearance: none; appearance: none; cursor: pointer;
 :is(div, span, fieldset, [role=group]).ui-tabs:not(#\#) > button:is([aria-pressed="true"], .is-active):hover { background: color-mix(in oklab, var(--color-accent2) 88%, var(--toward)); }
 :is(div, span, fieldset, [role=group]).ui-tabs:not(#\#) > button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -3px; }
 
+/* Checkboxes, radios, switches, page tabs (docs/design-system.md: Choices) */
+:is(input[type=checkbox], input[type=radio]):not(.ui-native):not(#\#) { appearance: none; -webkit-appearance: none; box-sizing: border-box; flex: none; margin: 0; padding: 0;
+  width: calc(var(--field-h) * .5); height: calc(var(--field-h) * .5); min-width: 0; min-height: 0;
+  display: inline-grid; place-content: center; vertical-align: middle; cursor: pointer;
+  background: var(--color-surface); border: 1.5px solid var(--color-border); box-shadow: none; transition: background-color .12s, border-color .12s; }
+:is(input[type=checkbox]):not(.ui-native):not(#\#) { border-radius: 4px; }
+:is(input[type=radio]):not(.ui-native):not(#\#) { border-radius: 50%; }
+:is(input[type=checkbox]):not(.ui-native):not(#\#)::before { content: ''; width: calc(var(--field-h) * .31); height: calc(var(--field-h) * .31); background: var(--color-on-accent2);
+  clip-path: polygon(12% 50%, 0 64%, 40% 100%, 100% 22%, 87% 9%, 40% 72%); transform: scale(0); transition: transform .1s; }
+:is(input[type=radio]):not(.ui-native):not(#\#)::before { content: ''; width: calc(var(--field-h) * .21); height: calc(var(--field-h) * .21); border-radius: 50%; background: var(--color-on-accent2); transform: scale(0); transition: transform .1s; }
+:is(input[type=checkbox], input[type=radio]):not(.ui-native):not(#\#):checked { background: var(--color-accent2); border-color: var(--color-accent2); }
+:is(input[type=checkbox], input[type=radio]):not(.ui-native):not(#\#):checked::before { transform: scale(1); }
+:is(input[type=checkbox], input[type=radio]):not(.ui-native):not(#\#):hover:not(:disabled):not(:checked) { border-color: var(--color-text-muted); }
+:is(input[type=checkbox], input[type=radio]):not(.ui-native):not(#\#):focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+:is(input[type=checkbox], input[type=radio]):not(.ui-native):not(#\#):disabled { opacity: .45; cursor: not-allowed; }
+button.ui-switch:not(#\#) { box-sizing: border-box; flex: none; position: relative; margin: 0; padding: 0; cursor: pointer;
+  width: calc(var(--field-h) * .95); height: calc(var(--field-h) * .5); border-radius: 999px;
+  background: var(--color-sunken); border: 1.5px solid var(--color-border); box-shadow: none; transition: background-color .12s, border-color .12s; }
+button.ui-switch:not(#\#)::after { content: ''; position: absolute; top: 50%; left: 2px; width: calc(var(--field-h) * .5 - 7px); height: calc(var(--field-h) * .5 - 7px);
+  border-radius: 50%; background: var(--color-text-muted); transform: translateY(-50%); transition: left .15s, background-color .12s; }
+button.ui-switch:not(#\#)[aria-checked="true"] { background: var(--color-accent2); border-color: var(--color-accent2); }
+button.ui-switch:not(#\#)[aria-checked="true"]::after { left: calc(100% - var(--field-h) * .5 + 5px); background: var(--color-on-accent2); }
+button.ui-switch:not(#\#):hover:not(:disabled):not([aria-checked="true"]) { border-color: var(--color-text-muted); }
+button.ui-switch:not(#\#):focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+button.ui-switch:not(#\#):disabled { opacity: .45; cursor: not-allowed; }
+:is(nav, div, [role=tablist]).ui-pagetabs:not(#\#) { display: flex; gap: 2px; border-bottom: 0; box-shadow: inset 0 -1px 0 var(--color-divider); overflow-x: auto; }
+.ui-pagetabs:not(#\#) > :is(button, a) { flex: none; background: none; border: 0; border-bottom: 2px solid transparent; border-radius: 0; margin: 0; padding: 8px 12px;
+  cursor: pointer; font: 600 15px/1.2 var(--font-serif); letter-spacing: normal; text-transform: none; text-decoration: none; color: var(--color-text-muted); box-shadow: none; }
+.ui-pagetabs:not(#\#) > :is(button, a):hover { color: var(--color-text); }
+.ui-pagetabs:not(#\#) > :is(button, a):is([aria-selected="true"], [aria-current="page"], .active) { color: var(--color-accent-text); border-bottom-color: var(--color-accent); }
+.ui-pagetabs:not(#\#) > :is(button, a):focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
+
 
 button.ui-disclosure:not(#\#) { display: inline-flex; align-items: center; gap: 0.45em; padding: 0.2em 0.45em; margin: -0.2em -0.45em; background: none; border: 0; border-radius: var(--radius-ctl); font: inherit; color: inherit; letter-spacing: inherit; text-transform: inherit; text-align: left; cursor: pointer; }
 button.ui-disclosure:not(#\#):hover { color: var(--color-accent-text); background: color-mix(in oklab, var(--color-accent-text) 9%, transparent); }
@@ -932,7 +964,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
 
   <div id="dmArea">
   <div class="partynote" id="partyNote" role="status" hidden><span id="partyNoteText"></span> <button class="reroll ui-button is-secondary size-sm" type="button" id="partyReload">Reload</button></div>
-  <nav class="tabs">
+  <nav class="tabs ui-pagetabs">
     <button class="tab" data-panel="react">Reaction</button>
     <button class="tab active" data-panel="combat">Initiative</button>
     <button class="tab" data-panel="skills">Proficiencies</button>

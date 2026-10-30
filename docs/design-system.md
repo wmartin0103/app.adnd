@@ -14,10 +14,10 @@ the owner on 2026-10-27, ahead of a dark theme.
 - Every page passes the contrast check in both themes
   (`scripts/contrast-scan.js`, run in the browser on a page served from the
   repo).
-- Fields (4a), buttons (4b) and surfaces (4c) are applied. Not yet:
-  checkboxes, radios, switches and page tabs (4e). New work should follow
-  this document, and anything that looks different from it should say why
-  in a comment next to it.
+- Fields (4a), buttons (4b), surfaces (4c) and choices (4e: checkboxes,
+  radios, switches, page tabs) are applied. New work should follow this
+  document, and anything that looks different from it should say why in a
+  comment next to it.
 
 Live references (prototypes, not wired to the app):
 
@@ -276,6 +276,34 @@ Decided 2026-10-28:
 - An error message says what to do ("Use a number, like +2 or −1"), not
   only what's wrong.
 
+## Choices
+
+Checkboxes, radios and switches are drawn by us (the same in every
+browser), sized from the fields: half a control's height, so 14px small,
+18px medium, 22px large. The whole label is clickable. Unchecked: the
+surface with the `border` colour; hover darkens the edge to `text-muted`.
+**On is the second accent** (`accent2` fill, the `on-accent2` mark),
+like a selected tab button (decided 2026-10-29). Disabled: 45% opacity.
+
+- **Checkbox**: marks or picks items, often several: MEM, Extra attack,
+  a trait that applies, options in a list.
+- **Switch** (`ui-switch`, a `<button role="switch" aria-checked>`): turns
+  one thing on or off right away: an effect, a setting.
+- **Radio**: one choice of a few, listed (Dead or Backups).
+
+A switch, a radio group and tab buttons all make one choice among options
+(an "or"). Each is valid depending on the context: a switch for on/off, tab
+buttons for a few short options in a row (Main / Off), radios for a listed
+choice with longer labels. Pick by what reads best where it sits.
+
+**Page tabs** (`ui-pagetabs` on the row) switch between views of a page
+(the DM Helper's Reaction, Initiative, …). Spectral 600 15px, muted; the
+current tab is **brass**, its label `accent-text` with a 2px `accent`
+underline (decided 2026-10-29); hover brings a tab to the text colour.
+
+In code (`src/ui/components.js`): every `input[type=checkbox|radio]` unless
+`ui-native`; `ui-switch`; `ui-pagetabs`. Options: `prototypes/controls.html`.
+
 ## Sections and cards
 
 Two ways of grouping (decided 2026-10-29):
@@ -361,9 +389,5 @@ Measured for every pairing in both themes (the prototypes check them live):
 
 ## Open
 
-- The page-navigation tab style is only sketched (the header's underlined
-  tabs); its states aren't specified yet.
-- Checkboxes, radio buttons, switches and the select with checkboxes' open
-  list need their entries here once they're restyled.
 - Moving the tools onto the system: tokens first, then controls by kind
   (selects, buttons, fields), then surfaces, page by page.
