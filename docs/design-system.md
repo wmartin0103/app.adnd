@@ -158,6 +158,11 @@ buttons are medium too); a control that needs a label when its neighbours
 have none takes it inline, to its left; a link button and a switch take the
 row's control height, so they centre on it.
 
+Page width: up to 1440px (`--page-max`), with side margins of
+`clamp(16px, 3vw, 40px)` (`--page-gutter`) (decided 2026-10-29). The DM Helper
+uses it; the character sheet and the site pages keep their own narrower
+widths for now.
+
 Corners: controls 6px, wells and items 8px, cards 10px.
 
 ## Fields
