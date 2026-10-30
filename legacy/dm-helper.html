@@ -608,7 +608,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .lightdetail b{color:var(--brass);font-weight:600}
   .lightdetail .ldact{padding-left:14px}
   .lightdetail .ldcrit{padding-left:28px;margin:1px 0 5px;line-height:1.45}
-  .lightdetail .ldact.fail{color:var(--rust);font-weight:600}
+  .lightdetail .ldact.fail{color:var(--color-text-muted);font-weight:600}
   .lightdetail .ldact.hit{color:var(--verdigris);font-weight:600}
   .lightdetail .ldhead{margin-top:2px}
   tr.lightdetail-row td{border-bottom:1px solid var(--edge)}
@@ -670,7 +670,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .bcur{font-family:var(--serif);color:var(--rust);margin-left:6px;font-size:.95rem}
   .bd20s{display:flex;gap:8px;padding:5px 0}
   .bd20{font-family:var(--serif);font-size:1.05rem;min-width:24px;text-align:center;cursor:default}
-  .bd20.hit{color:var(--verdigris)} .bd20.miss{color:var(--rust)} .bd20.na{color:var(--muted)}
+  .bd20.hit{color:var(--verdigris)} .bd20.miss{color:var(--color-text-muted)} .bd20.na{color:var(--muted)}
   .cfields .broll{margin-left:0;align-self:flex-end;padding:4px 9px}
   .cfields label.chk{flex-direction:row;align-items:center;gap:6px;font-family:var(--serif);font-size:.9rem;color:var(--parchment)}
   .cfields label.chk input{width:17px;height:17px}
@@ -746,7 +746,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   /* d20 result cells */
   td.d20 .n{font-family:var(--serif);font-size:1.05rem;cursor:default}
   td.d20.hit .n{color:var(--verdigris)}
-  td.d20.miss .n{color:var(--rust)}
+  td.d20.miss .n{color:var(--color-text-muted)}
   td.d20.na .n{color:var(--muted)}
 
   /* skills */
@@ -757,12 +757,13 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .abilities .ab .val{font-weight:700;color:var(--parchment)}
   .abilities .ab .roll{cursor:default}
   .abilities .ab .roll.pass{color:var(--verdigris)}
-  .abilities .ab .roll.fail{color:var(--rust)}
+  .abilities .ab .roll.fail{color:var(--color-text)}
   table.skills td.tgt{font-family:var(--serif);font-size:1.05rem;cursor:default}
   td.tgt.pass{color:var(--verdigris)}
-  td.tgt.fail{color:var(--rust)}
-  td.tgt.crit{background:color-mix(in oklab, var(--verdigris) 20%, transparent);font-weight:800;border-radius:3px}
-  td.tgt.critfail{background:color-mix(in oklab, var(--rust) 20%, transparent);font-weight:800;border-radius:3px}
+  td.tgt.fail{color:var(--color-text)}   /* an ordinary failure is plain; red is for a critical failure */
+  /* A critical success is the success colour filled; a critical failure red (docs/design-system.md: Colour) */
+  td.tgt.crit{background:var(--color-highlight);color:var(--color-on-highlight);font-weight:800;border-radius:3px}
+  td.tgt.critfail{background:color-mix(in oklab, var(--color-danger) 16%, var(--color-surface));color:var(--color-danger-text);font-weight:800;border-radius:3px}
 
   .reroll.small{padding:3px 9px;font-size:.78rem;margin-left:auto}
   .groupcheck{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}
@@ -1010,6 +1011,17 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .ocard .bd-attacks{gap:10px}
   .ocard.is-extras .syncpanel{padding:0}
   #lightCritBox .line .gclabel select{min-width:9rem}
+  /* Proficiencies, Saves, Reaction */
+  .groupcheck.line{margin-bottom:16px}
+  .groupcheck .gclabel select{min-width:14rem}
+  .groupcheck #rollProfs,.groupcheck #rollSavesAll{margin-left:0}
+  h2.sec.party-head{margin:28px 0 10px}
+  .two{display:grid;grid-template-columns:repeat(auto-fit,minmax(24rem,1fr));gap:16px;align-items:start;margin-bottom:16px}
+  #rxCard,#encCard{display:grid;gap:12px;margin:0;overflow:visible}
+  #rxCard .gcresults{margin:0;box-shadow:none;border:0;border-top:1px solid var(--color-divider);border-radius:0}
+  .line .ui-tabs{height:var(--field-h)}
+  .sw{display:inline-flex;align-items:center;gap:8px;height:var(--field-h);cursor:pointer;font-size:14px;color:var(--color-text)}
+  .rollbtn-all svg{width:1.1em;height:1.1em}
 
 </style>
 </head>
@@ -1081,69 +1093,77 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   </div>
 
   <div class="panel hidden" id="panel-skills">
-    <div class="groupcheck">
+    <div class="groupcheck line">
       <label class="gclabel">Group check
         <select id="gcSkill"></select>
       </label>
-      <button class="reroll ui-button is-secondary" id="gcClear">Clear</button>
-      <button class="reroll ui-button is-primary" id="rollProfs" title="re-roll every character's ability and proficiency d20s">⟳ Roll all profs</button>
+      <button class="ui-button is-primary rollbtn-all" id="rollProfs" title="re-roll every character's ability and proficiency d20s">Roll all proficiencies</button>
+      <button class="ui-button is-link" id="gcClear">Clear</button>
     </div>
     <div id="gcResults" class="gcresults hidden"></div>
+    <h2 class="sec party-head">Party</h2>
     <div id="skills"></div>
-    <footer>Proficiency check: roll d20 at or under the target. Cells show the margin (target − roll): green succeeds, rust fails; +15 or better is a critical success, −15 or worse a critical failure.</footer>
+    <footer>Proficiency check: roll d20 at or under the target. Cells show the margin (target − roll): green succeeds; +15 or better is a critical success (filled green), −15 or worse a critical failure (red).</footer>
   </div>
 
   <div class="panel hidden" id="panel-saves">
-    <div class="groupcheck">
+    <div class="groupcheck line">
       <label class="gclabel">Group save
         <select id="svCat"></select>
       </label>
-      <button class="reroll ui-button is-secondary" id="svClear">Clear</button>
-      <button class="reroll ui-button is-primary" id="rollSavesAll" title="re-roll every character's saving throw d20s">⟳ Roll all saves</button>
+      <button class="ui-button is-primary rollbtn-all" id="rollSavesAll" title="re-roll every character's saving throw d20s">Roll all saves</button>
+      <button class="ui-button is-link" id="svClear">Clear</button>
     </div>
     <div id="svResults" class="gcresults hidden"></div>
+    <h2 class="sec party-head">Party</h2>
     <div id="svBlocks"></div>
     <footer>Saving throw: roll d20 at or above the target. Modifiers are applied to the target (a +2 bonus lowers it by 2).</footer>
   </div>
 
   <div class="panel hidden" id="panel-react">
-    <h2 class="sechead">Reaction</h2>
-    <div class="groupcheck rxpickers">
-      <label class="gclabel">Party is acting
-        <select id="rxStance"><option value="Friendly">Friendly</option><option value="Indifferent" selected>Indifferent</option><option value="Threatening">Threatening</option><option value="Hostile">Hostile</option></select>
-      </label>
-      <label class="gclabel" title="party-wide reputation with these folk: a bonus lowers the roll">Reputation
-        <select id="rxRep"></select>
-      </label>
-    </div>
-    <div class="groupcheck rxpickers">
-      <label class="gclabel">NPC race
-        <select id="rxRace"></select>
-      </label>
-      <label class="gclabel">NPC occupation
-        <select id="rxOcc"></select>
-      </label>
-      <label class="gclabel">Culture
-        <select id="rxCulture"><option value="own">Own</option><option value="foreign">Foreign</option></select>
-      </label>
-    </div>
-    <div class="groupcheck">
-      <button class="reroll ui-button is-primary" id="rxRoll">⟳ Roll for all</button>
-      <button class="reroll ui-button is-secondary" id="rxClear">Clear</button>
-    </div>
-    <div id="rxResults" class="gcresults hidden"></div>
-    <h2 class="sechead enc">Encounter</h2>
-    <div class="char" id="encCard">
-      <div class="encbar" style="padding:10px 14px">
-        <label class="gclabel">Setting <select id="encSetting"></select></label>
-        <label class="gclabel">Time <select id="encTime"><option value="day">Day</option><option value="night">Night</option></select></label>
-        <label class="gclabel" title="mix creatures into the rolls"><input type="checkbox" id="encCreatures" checked> Creatures</label>
-        <label class="gclabel" title="chance of an encounter per check; resets to the setting's default when the setting or time changes">Chance <select id="encChance"></select></label>
-        <button class="reroll ui-button is-primary" id="encCheck" title="roll d6 against the chance; on a hit, roll the encounter too">Check for encounter</button>
-        <button class="reroll ui-button is-primary" id="encRoll" title="roll the encounter straight away, no check">Roll encounter</button>
-        <button class="reroll ui-button is-secondary" id="encClear">Clear</button>
+    <div class="two">
+    <section class="ui-card size-sm" id="rxCard">
+      <div class="card-head"><h3>Reaction</h3><span class="hint">2d10, lower is friendlier</span></div>
+      <div class="line">
+        <label class="gclabel">Party is acting
+          <select id="rxStance" class="as-tabs"><option value="Friendly">Friendly</option><option value="Indifferent" selected>Indifferent</option><option value="Threatening">Threatening</option><option value="Hostile">Hostile</option></select>
+        </label>
+        <label class="gclabel" title="party-wide reputation with these folk: a bonus lowers the roll">Reputation
+          <select id="rxRep"></select>
+        </label>
       </div>
-      <div id="encOut" style="display:none"><div id="encWrap"></div></div>
+      <div class="line">
+        <label class="gclabel">NPC race
+          <select id="rxRace"></select>
+        </label>
+        <label class="gclabel">Occupation
+          <select id="rxOcc"></select>
+        </label>
+        <label class="gclabel">Culture
+          <select id="rxCulture" class="as-tabs"><option value="own">Own</option><option value="foreign">Foreign</option></select>
+        </label>
+      </div>
+      <div class="line">
+        <button class="ui-button is-primary size-sm rollbtn-all" id="rxRoll">Roll for all</button>
+        <button class="ui-button is-link size-sm" id="rxClear">Clear</button>
+      </div>
+      <div id="rxResults" class="gcresults hidden"></div>
+    </section>
+    <section class="ui-card size-sm" id="encCard">
+      <div class="card-head"><h3>Encounter</h3><span class="hint">DMG Table 59</span></div>
+      <div class="line">
+        <label class="gclabel">Setting <select id="encSetting"></select></label>
+        <label class="gclabel">Time <select id="encTime" class="as-tabs"><option value="day">Day</option><option value="night">Night</option></select></label>
+        <label class="gclabel" title="chance of an encounter per check; resets to the setting's default when the setting or time changes">Chance <select id="encChance"></select></label>
+        <label class="sw" title="mix creatures into the rolls"><input type="checkbox" id="encCreatures" class="as-switch" checked> Creatures</label>
+      </div>
+      <div class="line">
+        <button class="ui-button is-primary size-sm" id="encCheck" title="roll d6 against the chance; on a hit, roll the encounter too">Check for encounter</button>
+        <button class="ui-button is-secondary size-sm rollbtn-all" id="encRoll" title="roll the encounter straight away, no check">Roll encounter</button>
+        <button class="ui-button is-link size-sm" id="encClear">Clear</button>
+      </div>
+      <div id="encOut" class="ui-well results" style="display:none"><div id="encWrap"></div></div>
+    </section>
     </div>
     <footer>DMG Table 59: 2d10, minus Charisma reaction adjustment and situational modifiers (lower is friendlier), read in the column for how the party is behaving.</footer>
   </div>
@@ -6077,7 +6097,7 @@ function buildSkills(){
     skillBlocks[name]=block;
     const head=document.createElement('div'); head.className='chead';
     const cn=nameEl(name);
-    const btn=document.createElement('button'); btn.className='reroll small ui-button is-secondary size-sm'; btn.textContent='⟳ d20';
+    const btn=document.createElement('button'); btn.className='reroll small ui-button is-bare is-icon size-sm'; btn.innerHTML=window.RoundUI ? RoundUI.ROLL_ICON : '⟳'; btn.setAttribute('aria-label', 'Re-roll the d20s');
     btn.addEventListener('click', ()=>rollSkillsFor(name));
     head.append(cn, btn); block.appendChild(head);
 
@@ -6301,7 +6321,7 @@ function renderSaves(){
     const cn=nameEl(name);
     head.appendChild(cn);
     if(sv.note){ const nt=document.createElement('span'); nt.className='svnote'; nt.textContent=sv.note; head.appendChild(nt); }
-    const btn=document.createElement('button'); btn.className='reroll small ui-button is-secondary size-sm'; btn.textContent='⟳ d20';
+    const btn=document.createElement('button'); btn.className='reroll small ui-button is-bare is-icon size-sm'; btn.innerHTML=window.RoundUI ? RoundUI.ROLL_ICON : '⟳'; btn.setAttribute('aria-label', 'Re-roll the d20s');
     btn.addEventListener('click', ()=>{ rollSavesFor(name); renderSaves(); });
     head.appendChild(btn); block.appendChild(head);
     let html='<table class="acts svtable"><thead><tr><th class="l">Save vs</th><th>Base</th><th>Mod</th><th>Target</th><th>d20</th></tr></thead><tbody>';
@@ -7395,6 +7415,25 @@ buildReaction();
 buildConfigReview();
 applyActive();
 setTab((()=>{try{return localStorage.getItem(TAB_KEY)||'combat';}catch(e){return 'combat';}})());
+// A few short choices read better as tab buttons (docs/design-system.md: Choices): the select stays, hidden,
+// and its tab buttons set it (the same input event its code listens for)
+document.querySelectorAll('select.as-tabs').forEach(sel=>{
+  const g=document.createElement('div'); g.className='ui-tabs size-sm'; g.setAttribute('role','group');
+  const sync=()=> g.querySelectorAll('button').forEach(b=>{ const on=b.dataset.v===sel.value; b.classList.toggle('is-active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+  [...sel.options].forEach(o=>{ const b=document.createElement('button'); b.type='button'; b.dataset.v=o.value; b.textContent=o.textContent;
+    b.addEventListener('click', ()=>{ sel.value=o.value; sel.dispatchEvent(new Event('input', {bubbles:true})); sync(); }); g.appendChild(b); });
+  sel.hidden=true; sel.after(g); sel.addEventListener('input', sync); sync();
+});
+// On/off right away: a switch over the checkbox its code reads
+document.querySelectorAll('input.as-switch').forEach(box=>{
+  const sw=document.createElement('button'); sw.type='button'; sw.className='ui-switch'; sw.setAttribute('role','switch');
+  const sync=()=> sw.setAttribute('aria-checked', box.checked ? 'true' : 'false');
+  sw.setAttribute('aria-label', box.parentNode.textContent.trim());
+  sw.addEventListener('click', e=>{ e.preventDefault(); box.checked=!box.checked; box.dispatchEvent(new Event('input', {bubbles:true})); box.dispatchEvent(new Event('change', {bubbles:true})); sync(); });
+  box.addEventListener('change', sync);   // its label's text toggles it too
+  box.style.display='none'; box.after(sw); sync();   // (hidden alone loses to the checkbox's own display)
+});
+if(window.RoundUI) document.querySelectorAll('.rollbtn-all').forEach(b=> b.insertAdjacentHTML('afterbegin', RoundUI.ROLL_ICON + ' '));
 </script>
 </body>
 </html>
