@@ -5119,7 +5119,7 @@ function buildChar(name){
     // Icons, to leave room on the row for AC and THAC0
     const iconBtn=(cls, tip, svg)=>{ const x=document.createElement('button'); x.type='button'; x.className='iconbtn ui-button is-bare is-icon size-sm '+cls; x.title=tip; x.setAttribute('aria-label', tip); x.innerHTML=svg; return x; };
     const dupBtn=iconBtn('bdup', 'Duplicate: another Enemy with the same stats',
-      '<svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><rect x="5.5" y="5.5" width="8" height="8" rx="1.2"/><path d="M3.5 10.5h-.8a1.2 1.2 0 0 1-1.2-1.2V2.7a1.2 1.2 0 0 1 1.2-1.2h6.6a1.2 1.2 0 0 1 1.2 1.2v.8"/></svg>');
+      '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="14" height="14" rx="2"/><path d="M4 16a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2"/><path d="M15 12v6M12 15h6"/></svg>');
     const rmBtn=iconBtn('rm is-danger', 'Remove this Enemy',
       '<svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 4h11M6.5 4V2.5h3V4M4 4l.7 9.2a1 1 0 0 0 1 .8h4.6a1 1 0 0 0 1-.8L12 4M6.8 6.5v5M9.2 6.5v5"/></svg>');
     const bdBadge=document.createElement('span'); bdBadge.className='bdid'; bdBadge.textContent=c.bdId||''; bdBadge.title='fixed ID: the only name players ever see';
