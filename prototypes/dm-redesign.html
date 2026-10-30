@@ -521,7 +521,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .round .rn { font: 700 32px/1 var(--font-serif); color: var(--color-accent-text); font-variant-numeric: lining-nums; }
 
   /* The order */
-  .ohead, .orow { display: grid; grid-template-columns: minmax(12rem, 1fr) 5rem 5rem 4rem; column-gap: 12px; align-items: center; }
+  .ohead, .orow { display: grid; grid-template-columns: minmax(12rem, 1fr) 5rem 7rem 4rem; column-gap: 12px; align-items: center; }
   .order { display: grid; gap: 8px; }
   .sec-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
   .sec-head h2.sec { margin: 0; }
@@ -537,6 +537,8 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .orow .mini .lab { display: inline; margin: 0 4px 0 0; }
   .orow .mini label.f { flex-direction: row; align-items: center; }
   .orow .detail { grid-column: 1 / -1; }
+  .init-roll { display: inline-flex; align-items: center; gap: 4px; }
+  .orow .act.none { color: var(--color-text-muted); }
   .ohead .c { text-align: center; }
   .orow .detail.ui-well { padding: 8px 12px; font-size: 14px; }
   .orow .detail .lab { display: inline; margin-right: 6px; }
@@ -596,7 +598,8 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
         <li>Tabs: Initiative first (the default), Reaction moves after Saves.</li>
         <li>Round controls are an open section; the order is the featured card.</li>
         <li>Act on is the first column, in brass: the order reads top-down.</li>
-        <li>Lock initiative is a switch; Extra attacks, the party's stance, Culture, Time and the crit's weapon are tab buttons; Creatures is a switch.</li>
+        <li>Lock initiative goes: Roll initiative for Enemies rolls only the Enemies that haven't rolled (never re-rolls), and each Enemy has its own Roll beside its Init (one that joins mid-fight). Reset initiative clears the rolls.</li>
+        <li>Extra attacks, the party's stance, Culture, Time and the crit's weapon are tab buttons; Creatures is a switch.</li>
         <li>The order is a section; each combatant a card. An Enemy's card has a red left edge (is-opponent), a player's a blue one (is-ally); its attacks fold away, and open each is a tinted item holding its controls and the roll's well.</li>
         <li>A player's action from their sheet is a well under their row.</li>
         <li>Surprise and Crits &amp; fumbles are cards beside each other.</li>
@@ -625,8 +628,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   <section class="ui-card is-featured">
     <div class="roundbar">
       <div class="rb-main"><span class="round"><span class="lab">Round</span><span class="rn">3</span></span>
-      <button type="button" class="ui-button is-primary">⚄ Roll initiative for Enemies</button>
-      <label class="sw"><button type="button" class="ui-switch" role="switch" aria-checked="true" aria-label="Lock initiative"></button> Lock initiative</label>
+      <button type="button" class="ui-button is-primary" title="Rolls for each Enemy that hasn't rolled; never re-rolls">⚄ Roll initiative for Enemies</button>
       <button type="button" class="ui-button is-secondary">Reset initiative</button>
       <div class="f"><span class="lab">Extra attacks</span><div class="ui-tabs size-sm" role="group" aria-label="Extra attacks"><button type="button" class="is-active" aria-pressed="true">End of the order</button><button type="button" class="" aria-pressed="false">At their turn</button></div></div>
       <button type="button" class="ui-button is-primary">Next round ▸</button></div>
@@ -642,7 +644,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     <div class="who"><input type="checkbox" checked aria-label="Gnoll 1 in the round"><span class="tag">E1</span><input class="open-field nm-in" value="Gnoll 1" aria-label="Enemy name">
       <span class="mini"><label class="f"><span class="lab">AC</span><select style="width:4rem"><option>3</option><option>4</option><option selected>5</option><option>6</option></select></label><label class="f"><span class="lab">THAC0</span><select style="width:4.5rem"><option>17</option><option>18</option><option selected>19</option><option>20</option></select></label></span>
       <button type="button" class="ui-button is-bare is-icon size-sm" aria-label="Duplicate Gnoll 1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button><button type="button" class="ui-button is-bare is-icon is-danger is-remove size-sm" aria-label="Remove Gnoll 1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
-    <label class="f"><span class="lab">Speed</span><select style="width:4.5rem"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label><label class="f"><span class="lab">Init</span><select style="width:4.5rem"><option>—</option><option>1</option><option>2</option><option>3</option><option>4</option><option selected>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></label>
+    <label class="f"><span class="lab">Speed</span><select style="width:4.5rem"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label><label class="f"><span class="lab">Init</span><span class="init-roll"><select style="width:4.5rem"><option>—</option><option>1</option><option>2</option><option>3</option><option>4</option><option selected>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select><button type="button" class="ui-button is-bare is-icon size-sm" aria-label="Roll initiative for Gnoll 1" title="Roll initiative for Gnoll 1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 2v20M3 7l9 5 9-5"/></svg></button></span></label>
     <span class="act">8</span>
     <div class="detail"><button type="button" class="ui-disclosure" aria-expanded="true"><span class="ui-disclosure-chev" aria-hidden="true"></span>Attacks</button>
       <div class="atks"><div class="ui-item is-tinted atk">
@@ -668,7 +670,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     <div class="who"><input type="checkbox" checked aria-label="Gnoll 2 in the round"><span class="tag">E2</span><input class="open-field nm-in" value="Gnoll 2" aria-label="Enemy name">
       <span class="mini"><label class="f"><span class="lab">AC</span><select style="width:4rem"><option>3</option><option>4</option><option selected>5</option><option>6</option></select></label><label class="f"><span class="lab">THAC0</span><select style="width:4.5rem"><option>17</option><option>18</option><option selected>19</option><option>20</option></select></label></span>
       <button type="button" class="ui-button is-bare is-icon size-sm" aria-label="Duplicate Gnoll 2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button><button type="button" class="ui-button is-bare is-icon is-danger is-remove size-sm" aria-label="Remove Gnoll 2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
-    <label class="f"><span class="lab">Speed</span><select style="width:4.5rem"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label><label class="f"><span class="lab">Init</span><select style="width:4.5rem"><option>—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option selected>9</option><option>10</option></select></label>
+    <label class="f"><span class="lab">Speed</span><select style="width:4.5rem"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label><label class="f"><span class="lab">Init</span><span class="init-roll"><select style="width:4.5rem"><option>—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option selected>9</option><option>10</option></select><button type="button" class="ui-button is-bare is-icon size-sm" aria-label="Roll initiative for Gnoll 2" title="Roll initiative for Gnoll 2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 2v20M3 7l9 5 9-5"/></svg></button></span></label>
     <span class="act">12</span>
     <div class="detail"><button type="button" class="ui-disclosure" aria-expanded="false"><span class="ui-disclosure-chev" aria-hidden="true"></span>Attacks · 1 · 2d4, THAC0 19</button>
       <div class="atks" hidden><div class="ui-item is-tinted atk">
@@ -689,6 +691,20 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     <label class="f"><span class="lab">Speed</span><select style="width:4.5rem"><option>—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option selected>7</option></select></label><label class="f"><span class="lab">Init</span><select style="width:4.5rem"><option>—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option selected>8</option><option>9</option><option>10</option></select></label>
     <span class="act">15</span>
     <div class="detail ui-well is-none"><span class="lab">From the sheet</span> Not sent yet</div>
+  </div>
+  <div class="orow ui-card is-compact is-opponent is-enemy">
+    <div class="who"><input type="checkbox" checked aria-label="Gnoll 3 in the round"><span class="tag">E3</span><input class="open-field nm-in" value="Gnoll 3" aria-label="Enemy name">
+      <span class="mini"><label class="f"><span class="lab">AC</span><select style="width:4rem"><option>3</option><option>4</option><option selected>5</option><option>6</option></select></label><label class="f"><span class="lab">THAC0</span><select style="width:4.5rem"><option>17</option><option>18</option><option selected>19</option><option>20</option></select></label></span>
+      <button type="button" class="ui-button is-bare is-icon size-sm" aria-label="Duplicate Gnoll 3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button><button type="button" class="ui-button is-bare is-icon is-danger is-remove size-sm" aria-label="Remove Gnoll 3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <label class="f"><span class="lab">Speed</span><select style="width:4.5rem"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label><label class="f"><span class="lab">Init</span><span class="init-roll"><select style="width:4.5rem"><option selected>—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select><button type="button" class="ui-button is-primary is-icon size-sm" aria-label="Roll initiative for Gnoll 3" title="Roll initiative for Gnoll 3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 2v20M3 7l9 5 9-5"/></svg></button></span></label>
+    <span class="act none">—</span>
+    <div class="detail"><button type="button" class="ui-disclosure" aria-expanded="false"><span class="ui-disclosure-chev" aria-hidden="true"></span>Attacks · 1 · 2d4, THAC0 19</button>
+      <div class="atks" hidden><div class="ui-item is-tinted atk">
+  <div class="atk-head"><b>Attack 1</b><button type="button" class="ui-button is-secondary size-sm">Duplicate</button></div>
+  <div class="line"><label class="f"><span class="lab">Dice</span><select style="width:5rem"><option>d4</option><option>d6</option><option>d8</option><option selected>2d4</option></select></label><label class="f"><span class="lab">Bonus</span><select style="width:4.5rem"><option selected>0</option><option>+1</option><option>+2</option></select></label><label class="f"><span class="lab">Targets</span><select style="width:9rem"><option selected>Jaque</option><option>Rifiyr</option><option>Goroth</option><option>Hanspeter</option><option>None</option></select></label><label class="f"><span class="lab">Ground</span><select style="width:6rem"><option selected>Level</option><option>Higher</option><option>Lower</option></select></label><label class="f"><span class="lab">Conditions</span><select style="width:8rem"><option selected>None</option><option>Flanking</option><option>Charging</option></select></label><label class="f"><span class="lab">Other</span><select style="width:4.5rem"><option selected>0</option><option>+1</option><option>+2</option><option>−1</option></select></label>
+    <div class="readout"><span class="lab">THAC0</span><span class="num">19</span></div>
+    <button type="button" class="ui-button is-primary size-sm roll"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 2v20M3 7l9 5 9-5"/></svg> Roll to hit</button></div><div class="ui-well hit"><span class="die"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l9 5v10l-9 5-9-5V7z"/></svg><b>14</b></span><div><span class="lab">Hits AC</span><span class="big">5</span></div><div><span class="lab">vs Jaque, AC 4</span><span class="big miss">Miss</span></div></div>
+</div><button type="button" class="ui-button is-link size-sm">+ Add attack</button></div></div>
   </div></div>
     <div class="card-foot"><button type="button" class="ui-button is-primary">+ Add Enemy</button></div>
   </section>

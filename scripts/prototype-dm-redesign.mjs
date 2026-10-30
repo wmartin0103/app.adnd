@@ -20,8 +20,9 @@ const party = [
 const enemies = [
   { id: 'E1', name: 'Gnoll 1', act: 8, speed: 3, init: 5, ac: 5, thac0: 19, open: true },
   { id: 'E2', name: 'Gnoll 2', act: 12, speed: 3, init: 9, ac: 5, thac0: 19 },
+  { id: 'E3', name: 'Gnoll 3', act: null, speed: 3, init: null, ac: 5, thac0: 19, joined: true },
 ];
-const rows = [...party.map(p => ({ ...p, pc: true })), ...enemies].sort((a, b) => a.act - b.act);
+const rows = [...party.map(p => ({ ...p, pc: true })), ...enemies].sort((a, b) => (a.act ?? 99) - (b.act ?? 99));   // not rolled yet: last
 const attack = (n, extra = '') => `<div class="ui-item is-tinted atk">
   <div class="atk-head"><b>Attack ${n}</b><button type="button" class="ui-button is-secondary size-sm">Duplicate</button>${n > 1 ? `<button type="button" class="ui-button is-bare is-icon is-danger is-remove size-sm" aria-label="Remove attack ${n}">${X}</button>` : ''}</div>
   <div class="line">${field('Dice', sel(['d4', 'd6', 'd8', '2d4'], n === 1 ? '2d4' : 'd6', '5rem'))}${field('Bonus', sel(['0', '+1', '+2'], '0', '4.5rem'))}${field('Targets', sel(['Jaque', 'Rifiyr', 'Goroth', 'Hanspeter', 'None'], n === 1 ? 'Jaque' : 'None', '9rem'))}${field('Ground', sel(['Level', 'Higher', 'Lower'], 'Level', '6rem'))}${field('Conditions', sel(['None', 'Flanking', 'Charging'], 'None', '8rem'))}${field('Other', sel(['0', '+1', '+2', '−1'], '0', '4.5rem'))}
@@ -32,15 +33,15 @@ const orderRow = r => r.pc ? `
   <div class="orow ui-card is-compact is-ally">
     <div class="who"><span class="nm">${r.name}</span><span class="meta">${r.tag}</span></div>
     ${field('Speed', sel(['—', '1', '2', '3', '4', '5', '6', '7'], String(r.speed), '4.5rem'))}${field('Init', sel(['—', ...Array.from({ length: 10 }, (_, i) => String(i + 1))], String(r.init), '4.5rem'))}
-    <span class="act">${r.act}</span>
+    <span class="act${r.act == null ? ' none' : ''}">${r.act ?? '—'}</span>
     <div class="detail ui-well${r.none ? ' is-none' : ''}"><span class="lab">From the sheet</span> ${r.from}</div>
   </div>` : `
   <div class="orow ui-card is-compact is-opponent is-enemy">
     <div class="who"><input type="checkbox" checked aria-label="${r.name} in the round"><span class="tag">${r.id}</span><input class="open-field nm-in" value="${r.name}" aria-label="Enemy name">
       <span class="mini">${field('AC', sel(['3', '4', '5', '6'], String(r.ac), '4rem'))}${field('THAC0', sel(['17', '18', '19', '20'], String(r.thac0), '4.5rem'))}</span>
       <button type="button" class="ui-button is-bare is-icon size-sm" aria-label="Duplicate ${r.name}">${COPY}</button><button type="button" class="ui-button is-bare is-icon is-danger is-remove size-sm" aria-label="Remove ${r.name}">${X}</button></div>
-    ${field('Speed', sel(['1', '2', '3', '4', '5'], String(r.speed), '4.5rem'))}${field('Init', sel(['—', ...Array.from({ length: 10 }, (_, i) => String(i + 1))], String(r.init), '4.5rem'))}
-    <span class="act">${r.act}</span>
+    ${field('Speed', sel(['1', '2', '3', '4', '5'], String(r.speed), '4.5rem'))}<label class="f"><span class="lab">Init</span><span class="init-roll">${sel(['—', ...Array.from({ length: 10 }, (_, i) => String(i + 1))], r.init == null ? '—' : String(r.init), '4.5rem')}<button type="button" class="ui-button ${r.init == null ? 'is-primary' : 'is-bare'} is-icon size-sm" aria-label="Roll initiative for ${r.name}" title="Roll initiative for ${r.name}">${DIE}</button></span></label>
+    <span class="act${r.act == null ? ' none' : ''}">${r.act ?? '—'}</span>
     <div class="detail"><button type="button" class="ui-disclosure" aria-expanded="${!!r.open}"><span class="ui-disclosure-chev" aria-hidden="true"></span>${r.open ? 'Attacks' : 'Attacks · 1 · 2d4, THAC0 19'}</button>
       <div class="atks"${r.open ? '' : ' hidden'}>${attack(1, `<div class="ui-well hit"><span class="die"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l9 5v10l-9 5-9-5V7z"/></svg><b>14</b></span><div><span class="lab">Hits AC</span><span class="big">5</span></div><div><span class="lab">vs Jaque, AC 4</span><span class="big miss">Miss</span></div></div>`)}<button type="button" class="ui-button is-link size-sm">+ Add attack</button></div></div>
   </div>`;
@@ -60,8 +61,7 @@ const initiative = `
   <section class="ui-card is-featured">
     <div class="roundbar">
       <div class="rb-main"><span class="round"><span class="lab">Round</span><span class="rn">3</span></span>
-      <button type="button" class="ui-button is-primary">⚄ Roll initiative for Enemies</button>
-      <label class="sw"><button type="button" class="ui-switch" role="switch" aria-checked="true" aria-label="Lock initiative"></button> Lock initiative</label>
+      <button type="button" class="ui-button is-primary" title="Rolls for each Enemy that hasn't rolled; never re-rolls">⚄ Roll initiative for Enemies</button>
       <button type="button" class="ui-button is-secondary">Reset initiative</button>
       <div class="f"><span class="lab">Extra attacks</span>${tabs(['End of the order', 'At their turn'], 'End of the order', 'Extra attacks')}</div>
       <button type="button" class="ui-button is-primary">Next round ▸</button></div>
@@ -180,7 +180,8 @@ const notes = `
         <li>Tabs: Initiative first (the default), Reaction moves after Saves.</li>
         <li>Round controls are an open section; the order is the featured card.</li>
         <li>Act on is the first column, in brass: the order reads top-down.</li>
-        <li>Lock initiative is a switch; Extra attacks, the party's stance, Culture, Time and the crit's weapon are tab buttons; Creatures is a switch.</li>
+        <li>Lock initiative goes: Roll initiative for Enemies rolls only the Enemies that haven't rolled (never re-rolls), and each Enemy has its own Roll beside its Init (one that joins mid-fight). Reset initiative clears the rolls.</li>
+        <li>Extra attacks, the party's stance, Culture, Time and the crit's weapon are tab buttons; Creatures is a switch.</li>
         <li>The order is a section; each combatant a card. An Enemy's card has a red left edge (is-opponent), a player's a blue one (is-ally); its attacks fold away, and open each is a tinted item holding its controls and the roll's well.</li>
         <li>A player's action from their sheet is a well under their row.</li>
         <li>Surprise and Crits &amp; fumbles are cards beside each other.</li>
@@ -248,7 +249,7 @@ const page = `<!doctype html>
   .round .rn { font: 700 32px/1 var(--font-serif); color: var(--color-accent-text); font-variant-numeric: lining-nums; }
 
   /* The order */
-  .ohead, .orow { display: grid; grid-template-columns: minmax(12rem, 1fr) 5rem 5rem 4rem; column-gap: 12px; align-items: center; }
+  .ohead, .orow { display: grid; grid-template-columns: minmax(12rem, 1fr) 5rem 7rem 4rem; column-gap: 12px; align-items: center; }
   .order { display: grid; gap: 8px; }
   .sec-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
   .sec-head h2.sec { margin: 0; }
@@ -264,6 +265,8 @@ const page = `<!doctype html>
   .orow .mini .lab { display: inline; margin: 0 4px 0 0; }
   .orow .mini label.f { flex-direction: row; align-items: center; }
   .orow .detail { grid-column: 1 / -1; }
+  .init-roll { display: inline-flex; align-items: center; gap: 4px; }
+  .orow .act.none { color: var(--color-text-muted); }
   .ohead .c { text-align: center; }
   .orow .detail.ui-well { padding: 8px 12px; font-size: 14px; }
   .orow .detail .lab { display: inline; margin-right: 6px; }
