@@ -1007,7 +1007,10 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .ocard .lightdetail b{color:var(--color-text-muted);font:600 11px/1.2 var(--font-sans);letter-spacing:.08em;text-transform:uppercase}
   .ocard .lightdetail .ldact{padding-left:0}
   /* An Enemy's attacks: they fold; open, each is a tinted item; a roll's result is the well inside */
-  .ocard .atktoggle{margin:2px 0 0}
+  /* An Enemy's attacks start 12px below its row (over the old rows' padding and the toggle's own margin) */
+  .ocard .ocard-t > tbody > tr.baddycard-row > td{padding:12px 0 0 !important}
+  .cardbody{display:grid;gap:12px}
+  .cardbody[hidden]{display:none}
   .ocard .char.inlight{border:0 !important;background:none !important;box-shadow:none !important;padding:10px 0 0 !important;margin:0}
   .ocard .char.inlight[hidden]{display:none !important}
   .ocard .bd-atk{padding:10px 12px !important;border:1px solid var(--color-divider) !important;border-radius:var(--radius-inner);background:color-mix(in oklab, var(--color-text) 4%, var(--color-surface));box-shadow:none}
@@ -1049,7 +1052,8 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
 
   <div class="panel" id="panel-combat">
     <section class="ui-card size-sm" id="surpriseCard">
-      <div class="card-head"><h3>Surprise</h3><span class="hint">d10 each, 1–3 surprised; Dex reaction adjustment, Alertness and the situation apply</span></div>
+      <div class="card-head"><h3><button type="button" class="ui-disclosure" id="surpriseToggle" aria-expanded="true" aria-controls="surpriseBody"><span class="ui-disclosure-chev" aria-hidden="true"></span>Surprise</button></h3><span class="hint">d10 each, 1–3 surprised; Dex reaction adjustment, Alertness and the situation apply</span></div>
+      <div id="surpriseBody" class="cardbody">
       <div class="line surline">
         <label class="gclabel">Party <select id="surParty" class="sursel"><option value="0" selected>Casual 0</option><option value="-1">Inattentive −1</option><option value="-2">Fleeing −2</option><option value="-2">Panicked −2</option><option value="1">Suspicious +1</option><option value="2">Anticipating attack +2</option></select></label>
         <label class="gclabel">Light <select id="surLight" class="sursel"><option value="0">Normal</option><option value="-1">Poor light −1</option><option value="-4">Darkness −4</option></select></label>
@@ -1060,6 +1064,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
         <button class="ui-button is-link" id="surpriseClear">Clear</button>
       </div>
       <div class="ui-well results" id="surpriseBar" style="display:none"><div id="surpriseWrap"></div></div>
+      </div>
     </section>
 
     <section class="ui-card is-featured" id="roundCard" title="players' sheets play this round and show here">
@@ -6034,6 +6039,13 @@ document.getElementById('extraTiming').addEventListener('click', e=>{
   syncState = ROUND.sendDM({timing: b.dataset.v});
   showRound(); update();
 });
+// Surprise folds (an accordion card); remembered in this browser
+(()=>{ const t=document.getElementById('surpriseToggle'), body=document.getElementById('surpriseBody'), KEY='adnd-dm-surprise';
+  const set=open=>{ t.setAttribute('aria-expanded', open ? 'true' : 'false'); body.hidden=!open; try{ localStorage.setItem(KEY, open ? 'open' : 'closed'); }catch(e){} };
+  let saved=null; try{ saved=localStorage.getItem(KEY); }catch(e){}
+  set(saved!=='closed');
+  t.addEventListener('click', ()=> set(t.getAttribute('aria-expanded')!=='true'));
+})();
 // The Roll buttons' icon (the d20)
 if(window.RoundUI) document.getElementById('rollInit').insertAdjacentHTML('afterbegin', RoundUI.ROLL_ICON + ' ');
 
