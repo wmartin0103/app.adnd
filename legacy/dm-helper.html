@@ -3987,14 +3987,20 @@ const cloudSession = async (client = cloudClient()) => {
     const { data } = await client.auth.getSession();
     const user = data && data.session && data.session.user;
     if (!user) return null;
-    const [{ data: prof }, { data: rows }] = await Promise.all([
+    const memberRows = cols => client.from('campaign_members').select(cols).eq('user_id', user.id);
+    const [{ data: prof }, mine] = await Promise.all([
       client.from('profiles').select('display_name, is_admin').eq('id', user.id).maybeSingle(),
-      client.from('campaign_members').select('campaign_id, role, campaigns(name)').eq('user_id', user.id),
+      memberRows('campaign_id, role, also_plays, campaigns(name)'),
     ]);
+    // Before supabase/migrations/20261030120000_also_plays.sql: no also_plays yet
+    const { data: rows } = mine.error ? await memberRows('campaign_id, role, campaigns(name)') : mine;
     const m = (rows || [])[0] || null;
+    const role = m ? m.role : null;
     return {
       user, name: (prof && prof.display_name) || user.email, isAdmin: !!(prof && prof.is_admin), newPassword: needsNewPassword(user),
-      campaignId: m ? m.campaign_id : null, campaignName: m && m.campaigns ? m.campaigns.name : '', role: m ? m.role : null,
+      campaignId: m ? m.campaign_id : null, campaignName: m && m.campaigns ? m.campaigns.name : '', role,
+      // Roles add up: the DM role runs the game; the player role (or a DM who also plays) has characters
+      isDM: role === 'dm', isPlayer: role === 'player' || !!(m && m.also_plays),
     };
   } catch (e) { return null; }
 };
@@ -4348,7 +4354,8 @@ async function listParty(client, campaignId) {
 // Who's in the campaign, by name: for the DM giving a player a character
 async function listMembers(client, campaignId) {
   if (!campaignId) return [];
-  const m = await client.from('campaign_members').select('user_id, role').eq('campaign_id', campaignId);
+  let m = await client.from('campaign_members').select('user_id, role, also_plays').eq('campaign_id', campaignId);
+  if (m.error) m = await client.from('campaign_members').select('user_id, role').eq('campaign_id', campaignId);   // before also_plays
   if (m.error) throw m.error;
   const ids = (m.data || []).map(r => r.user_id);
   if (!ids.length) return [];
@@ -4356,7 +4363,7 @@ async function listMembers(client, campaignId) {
   if (p.error) throw p.error;
   const names = {};
   (p.data || []).forEach(x => { names[x.id] = x.display_name; });
-  return (m.data || []).map(r => ({ id: r.user_id, name: names[r.user_id] || 'Someone', role: r.role }))
+  return (m.data || []).map(r => ({ id: r.user_id, name: names[r.user_id] || 'Someone', role: r.role, plays: r.role === 'player' || !!r.also_plays }))
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 

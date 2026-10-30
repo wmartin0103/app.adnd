@@ -86,7 +86,8 @@ export async function listParty(client, campaignId) {
 // Who's in the campaign, by name: for the DM giving a player a character
 export async function listMembers(client, campaignId) {
   if (!campaignId) return [];
-  const m = await client.from('campaign_members').select('user_id, role').eq('campaign_id', campaignId);
+  let m = await client.from('campaign_members').select('user_id, role, also_plays').eq('campaign_id', campaignId);
+  if (m.error) m = await client.from('campaign_members').select('user_id, role').eq('campaign_id', campaignId);   // before also_plays
   if (m.error) throw m.error;
   const ids = (m.data || []).map(r => r.user_id);
   if (!ids.length) return [];
@@ -94,7 +95,7 @@ export async function listMembers(client, campaignId) {
   if (p.error) throw p.error;
   const names = {};
   (p.data || []).forEach(x => { names[x.id] = x.display_name; });
-  return (m.data || []).map(r => ({ id: r.user_id, name: names[r.user_id] || 'Someone', role: r.role }))
+  return (m.data || []).map(r => ({ id: r.user_id, name: names[r.user_id] || 'Someone', role: r.role, plays: r.role === 'player' || !!r.also_plays }))
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 

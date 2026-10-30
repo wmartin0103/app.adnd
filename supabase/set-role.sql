@@ -1,12 +1,15 @@
 -- ════════════════════════════════════════════════════════════════════════
--- Change someone's access: their role in a campaign ('dm' or 'player') and,
--- optionally, admin. Run in the Supabase SQL editor. Safe to run again.
+-- Change someone's access: their role in a campaign ('dm', 'player' or
+-- 'both') and, optionally, admin. Run in the Supabase SQL editor. Safe to run
+-- again. 'both' needs supabase/migrations/20261030120000_also_plays.sql.
 --
 -- - A DM gets the DM Helper and can run the round, see and edit every
 --   character in the campaign, and give edit access; they keep their own
 --   characters on "Your characters" too.
 -- - A player sees the party and edits only their own characters (and any
 --   they're given).
+-- - Both: a DM who also plays (has characters of their own, on "Your
+--   characters", beside the DM Helper and the Party).
 -- - An admin can also manage accounts and campaigns: make or remove admins,
 --   add and remove members, edit or delete any character in any campaign.
 --
@@ -20,18 +23,20 @@
 do $$
 declare
   v_email    text    := 'PERSON_EMAIL';
-  v_role     text    := 'dm';             -- 'dm' or 'player'
+  v_role     text    := 'dm';             -- 'dm', 'player' or 'both'
   v_admin    boolean := true;             -- true, false, or null to leave it as it is
   v_campaign text    := 'CAMPAIGN_NAME';
   v_user uuid;
   v_camp uuid;
 begin
-  if v_role not in ('dm', 'player') then raise exception 'The role is dm or player, not %', v_role; end if;
+  if v_role not in ('dm', 'player', 'both') then raise exception 'The role is dm, player or both, not %', v_role; end if;
   select id into v_user from auth.users where lower(email) = lower(v_email);
   if v_user is null then raise exception 'No account with the email %', v_email; end if;
   select id into v_camp from public.campaigns where name = v_campaign order by created_at limit 1;
   if v_camp is null then raise exception 'No campaign named %. The names: select name from campaigns;', v_campaign; end if;
-  update public.campaign_members set role = v_role where campaign_id = v_camp and user_id = v_user;
+  update public.campaign_members
+    set role = case when v_role = 'player' then 'player' else 'dm' end, also_plays = (v_role = 'both')
+    where campaign_id = v_camp and user_id = v_user;
   if not found then raise exception '% is not in % yet: add them first (supabase/add-player.sql)', v_email, v_campaign; end if;
   if v_admin is not null then
     update public.profiles set is_admin = v_admin where id = v_user;
@@ -39,7 +44,7 @@ begin
 end $$;
 
 -- Check: everyone in the campaign, their role, and who's an admin
-select p.display_name, m.role, p.is_admin, c.name as campaign
+select p.display_name, m.role, m.also_plays, p.is_admin, c.name as campaign
 from public.campaign_members m
 join public.profiles p on p.id = m.user_id
 join public.campaigns c on c.id = m.campaign_id

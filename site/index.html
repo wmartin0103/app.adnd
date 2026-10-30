@@ -860,14 +860,20 @@ const cloudSession = async (client = cloudClient()) => {
     const { data } = await client.auth.getSession();
     const user = data && data.session && data.session.user;
     if (!user) return null;
-    const [{ data: prof }, { data: rows }] = await Promise.all([
+    const memberRows = cols => client.from('campaign_members').select(cols).eq('user_id', user.id);
+    const [{ data: prof }, mine] = await Promise.all([
       client.from('profiles').select('display_name, is_admin').eq('id', user.id).maybeSingle(),
-      client.from('campaign_members').select('campaign_id, role, campaigns(name)').eq('user_id', user.id),
+      memberRows('campaign_id, role, also_plays, campaigns(name)'),
     ]);
+    // Before supabase/migrations/20261030120000_also_plays.sql: no also_plays yet
+    const { data: rows } = mine.error ? await memberRows('campaign_id, role, campaigns(name)') : mine;
     const m = (rows || [])[0] || null;
+    const role = m ? m.role : null;
     return {
       user, name: (prof && prof.display_name) || user.email, isAdmin: !!(prof && prof.is_admin), newPassword: needsNewPassword(user),
-      campaignId: m ? m.campaign_id : null, campaignName: m && m.campaigns ? m.campaigns.name : '', role: m ? m.role : null,
+      campaignId: m ? m.campaign_id : null, campaignName: m && m.campaigns ? m.campaigns.name : '', role,
+      // Roles add up: the DM role runs the game; the player role (or a DM who also plays) has characters
+      isDM: role === 'dm', isPlayer: role === 'player' || !!(m && m.also_plays),
     };
   } catch (e) { return null; }
 };
@@ -1145,7 +1151,8 @@ async function listParty(client, campaignId) {
 // Who's in the campaign, by name: for the DM giving a player a character
 async function listMembers(client, campaignId) {
   if (!campaignId) return [];
-  const m = await client.from('campaign_members').select('user_id, role').eq('campaign_id', campaignId);
+  let m = await client.from('campaign_members').select('user_id, role, also_plays').eq('campaign_id', campaignId);
+  if (m.error) m = await client.from('campaign_members').select('user_id, role').eq('campaign_id', campaignId);   // before also_plays
   if (m.error) throw m.error;
   const ids = (m.data || []).map(r => r.user_id);
   if (!ids.length) return [];
@@ -1153,7 +1160,7 @@ async function listMembers(client, campaignId) {
   if (p.error) throw p.error;
   const names = {};
   (p.data || []).forEach(x => { names[x.id] = x.display_name; });
-  return (m.data || []).map(r => ({ id: r.user_id, name: names[r.user_id] || 'Someone', role: r.role }))
+  return (m.data || []).map(r => ({ id: r.user_id, name: names[r.user_id] || 'Someone', role: r.role, plays: r.role === 'player' || !!r.also_plays }))
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
@@ -1234,12 +1241,13 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
     const sheetUrl = id => `legacy/character-sheet.html?id=${encodeURIComponent(id)}`;
 
     let session = null, list = { mine: [], given: [] }, openMenu = null, loadError = '';
-    // The DM (or an admin) sees the DM Helper and the Party; a DM's own list is
-    // their Backups (characters they prepare and assign to players). An admin
-    // who plays keeps the player's sections too.
+    // Roles add up (decided 2026-10-30): the DM role sees the DM Helper and the
+    // Party, and can assign a backup to a player; the player role (or a DM who
+    // also plays) has characters. Both: both. A DM who doesn't play keeps only
+    // Backups: characters they prepare to assign.
     let party = [], members = [];
-    const asDM = () => !!session && (session.role === 'dm' || session.isAdmin);
-    const asPlayer = () => !!session && session.role !== 'dm';
+    const asDM = () => !!session && !!session.isDM;
+    const asPlayer = () => !!session && !!session.isPlayer;
     const newStatus = () => (asPlayer() ? undefined : 'backup');      // a DM's characters start in Backups
     const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
     let toastT = 0;
@@ -1346,7 +1354,7 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
     // The DM gives a backup to a player: it moves to their Backups
     function assign(c) {
       const d = $('assign'), host = $('assign-list');
-      const players = members.filter(m => m.role === 'player' && m.id !== session.user.id);
+      const players = members.filter(m => m.plays && m.id !== session.user.id);
       $('assign-title').textContent = `Assign ${c.name} to a player?`;
       $('assign-text').textContent = players.length ? `${c.name} moves to their Backups, ready for them to bring into play. You won’t see it here any more.` : 'There are no players in this campaign yet.';
       host.textContent = '';
@@ -1404,8 +1412,8 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
       if (openMenu === c.id) {
         const menu = el('div', 'menu ui-menu'); menu.setAttribute('role', 'menu');
         const item = (t, fn) => { const b = el('button', '', t); b.type = 'button'; b.setAttribute('role', 'menuitem'); b.addEventListener('click', () => { openMenu = null; render(); fn(); }); menu.appendChild(b); };
-        if (opts.dm) item('Assign to player\u2026', () => assign(c));
-        else {
+        if (asDM() && c.status !== 'play') item('Assign to player\u2026', () => assign(c));
+        if (!opts.dm) {
           if (c.status !== 'play') item('Bring into play', () => bringIn(c));
           if (c.status !== 'backup') item('Move to Backups', () => move(c, 'backup').then(ok => ok && say(`${c.name} moved to Backups.`)));
           if (c.status !== 'dead') item('Mark as dead', () => move(c, 'dead').then(ok => ok && say(`${c.name} is marked as dead.`)));

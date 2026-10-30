@@ -139,7 +139,7 @@ test("characters: the campaign's members by name, and the DM giving one a backup
     characters: [{ id: 'a', campaign_id: 'k', owner_id: 'u2', name: 'Jaque', status: 'play' }],
   };
   const c = fakeClient(t);
-  assert.deepEqual(await listMembers(c, 'k'), [{ id: 'u2', name: 'Alex', role: 'player' }, { id: 'u1', name: 'Will', role: 'dm' }]);
+  assert.deepEqual(await listMembers(c, 'k'), [{ id: 'u2', name: 'Alex', role: 'player', plays: true }, { id: 'u1', name: 'Will', role: 'dm', plays: false }]);
   const r = await createCharacterFor(c, { campaignId: 'k', user: { id: 'u1' } }, 'u2', sheet('Tig'));
   assert.equal(r.status, 'backup');
   const row = t.characters.find(x => x.id === r.id);
