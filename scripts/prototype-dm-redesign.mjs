@@ -57,6 +57,8 @@ const surprise = `
       </div>
     </section>`;
 const initiative = `
+  <div class="try"><span class="lab">Try</span><div class="f"><span class="lab">Extra attacks</span><div class="ui-tabs size-sm" data-try="xa"><button type="button" class="is-active" aria-pressed="true" data-v="stack">Label above, extra small</button><button type="button" aria-pressed="false" data-v="seg">Label inside the group</button></div></div></div>
+
   ${surprise}
 
   <section class="ui-card is-featured">
@@ -64,7 +66,8 @@ const initiative = `
       <div class="rb-main"><span class="round"><span class="lab">Round</span><span class="rn">3</span></span>
       <button type="button" class="ui-button is-primary" title="Rolls for each Enemy that hasn't rolled; never re-rolls">${ROLL_ICON} Roll initiative for Enemies</button>
       <button type="button" class="ui-button is-secondary">Reset initiative</button>
-      <div class="inline-f"><span class="lab">Extra attacks</span>${tabs(['End of the order', 'At their turn'], 'End of the order', 'Extra attacks', 'md')}</div>
+      <div class="xa xa-stack"><span class="lab">Extra attacks</span>${tabs(['End of the order', 'At their turn'], 'End of the order', 'Extra attacks', 'xs')}</div>
+      <div class="xa xa-seg ui-tabs" role="group" aria-label="Extra attacks"><span class="seg-lab" aria-hidden="true">Extra attacks</span><button type="button" class="is-active" aria-pressed="true">End of the order</button><button type="button" aria-pressed="false">At their turn</button></div>
       <button type="button" class="ui-button is-primary">Next round ▸</button></div>
       <div class="apart"><button type="button" class="ui-button is-secondary is-danger">↺ Reset encounter</button></div>
     </div>
@@ -216,8 +219,15 @@ const page = `<!doctype html>
   label.f, div.f { display: inline-flex; flex-direction: column; }
   .line, .actions, .toolbar { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 14px; }
   /* Labelled fields and buttons in one row: the control boxes line up at the bottom */
-  .inline-f { display: inline-flex; align-items: center; gap: 8px; }
-  .inline-f > .lab { margin: 0; }
+  /* Extra attacks, A: the label (13px) + 1px + an extra-small tab group (22px) = a medium control's 36px */
+  .xa-stack { display: inline-flex; flex-direction: column; justify-content: space-between; height: var(--ctl-md); }
+  .xa-stack > .lab { margin: 0; line-height: 13px; }
+  /* B: the label is the group's first segment, not a button */
+  .xa-seg .seg-lab { display: inline-flex; align-items: center; padding: 0 10px; font: 600 11px/1 var(--font-sans); letter-spacing: .08em; text-transform: uppercase;
+    color: var(--color-text-muted); background: var(--color-sunken); white-space: nowrap; }
+  body:not([data-xa="seg"]) .xa-seg, body[data-xa="seg"] .xa-stack { display: none !important; }   /* prototype only: over the tab group's own display */
+  .try { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 18px; padding: 8px 12px; border: 1px dashed var(--color-border); border-radius: var(--radius-inner); }
+  .try > .lab { align-self: center; margin: 0; }
   .card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; margin-bottom: 12px; }
   .card-head h3 { margin: 0; font: 600 18px/1.25 var(--font-serif); }
   .card-head .ui-disclosure h3 { display: inline; }
@@ -339,7 +349,7 @@ const page = `<!doctype html>
   document.addEventListener('click', e => {
     const d = e.target.closest('.ui-disclosure'); if (d) { const open = d.getAttribute('aria-expanded') !== 'true'; d.setAttribute('aria-expanded', open); const body = d.closest('.detail')?.querySelector('.atks'); if (body) body.hidden = !open; }
     const s = e.target.closest('.ui-switch'); if (s) s.setAttribute('aria-checked', s.getAttribute('aria-checked') !== 'true');
-    const t = e.target.closest('.ui-tabs > button'); if (t) { t.parentNode.querySelectorAll('button').forEach(x => { x.classList.toggle('is-active', x === t); x.setAttribute('aria-pressed', x === t); }); }
+    const t = e.target.closest('.ui-tabs > button'); if (t) { t.parentNode.querySelectorAll('button').forEach(x => { x.classList.toggle('is-active', x === t); x.setAttribute('aria-pressed', x === t); }); if (t.parentNode.dataset.try) document.body.dataset[t.parentNode.dataset.try] = t.dataset.v; }
   });
   (function(){ const b=document.createElement('button'); b.className='ui-button is-secondary is-icon size-sm'; b.type='button'; b.setAttribute('aria-label','Light or dark');
     const cur=()=>document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
