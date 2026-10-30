@@ -635,3 +635,4 @@ can grow over time.
 - [ ] Saves from the other active players
 - [ ] Answers to section 8
 - [ ] Accounts: Netlify or Cloudflare, Supabase (free; owned by you)
+- [ ] **Must do: Sharing (noted 2026-10-30).** Letting someone else play your character isn't built as a working feature yet. Account has its section ("Who can play your characters", `#access`, backed by the `character_editors` table), and Home has "Shared with you", but sharing hasn't been built out or tested end to end. Next session: build it, decide whether Share also belongs on a character's card on Home, and test it on the real database.
