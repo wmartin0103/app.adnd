@@ -1845,7 +1845,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     /* Collapsed: level, type, name, effect, saving throw, Mem, × */
     .spell-card.is-roomy.is-collapsed { max-height: none; }
     .spell-card.is-collapsed > :is(.spell-card-notes, .spell-card-url-row, .spell-ref-facts, .spell-card-bottom),
-    .spell-card.is-collapsed .spell-ref :is(.spell-ref-facts, .spell-ref-desc, .spell-ref-more, .spell-ref-credit, .spell-ref-minor) { display: none; }
+    .spell-card.is-collapsed .spell-ref :is(.spell-ref-facts, .spell-ref-desc, .spell-ref-more, .spell-ref-minor) { display: none; }
     .spell-card.is-collapsed > .spell-ref { grid-row: 1 / span 2; overflow: visible; }
     .spell-card-corner { position: absolute !important; top: 0.55rem; right: 0.7rem; display: flex; align-items: center; gap: 0.5rem; }
     .spell-card.is-roomy > .spell-ref { grid-column: 2; grid-row: 1 / span 7; overflow-y: auto; min-height: 0; padding-right: 5.5rem; }
@@ -1867,7 +1867,6 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     .spell-ref-desc { line-height: 1.5; white-space: pre-line; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 8; line-clamp: 8; overflow: hidden; }
     .spell-ref-desc.is-open { display: block; -webkit-line-clamp: unset; line-clamp: unset; }
     .spell-ref-more { align-self: flex-start; background: none; border: none; padding: 0; cursor: pointer; color: var(--accent); font: inherit; }
-    .spell-ref-credit { font-size: 11px; color: var(--ink-muted); }
 
     .spell-card-grid {
       display: grid;
@@ -9619,46 +9618,8 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
 
     // ── Spellbook reference text ──
-    // The roomy card shows the spell's description, read from the wiki page its
-    // link points to (cached in this browser), and the attack roll and saving
-    // throw from the spell catalog
-    const spellDescCache = {};
-    function wikiTitleFromUrl(url) {
-      const m = /adnd2e\.fandom\.com\/wiki\/([^?#]+)/.exec(url || '');
-      if (!m) return null;
-      try { return decodeURIComponent(m[1]).replace(/_/g, ' '); } catch (e) { return null; }
-    }
-    function wikitextToPlain(w) {
-      let t = String(w || '');
-      let out = '', depth = 0;               // drop {{templates}}, even nested (the infobox)
-      for (let i = 0; i < t.length; i++) {
-        if (t.startsWith('{{', i)) { depth++; i++; continue; }
-        if (t.startsWith('}}', i) && depth) { depth--; i++; continue; }
-        if (!depth) out += t[i];
-      }
-      out = out.split(/^==/m)[0];            // the intro only, before the first heading
-      return out
-        .replace(/<ref[^>]*>[\s\S]*?<\/ref>|<ref[^>]*\/>/g, '')
-        .replace(/\[\[(?:File|Image|Category):[^\]]*\]\]/gi, '')
-        .replace(/\[\[[^\]|]*\|([^\]]*)\]\]/g, '$1').replace(/\[\[([^\]]*)\]\]/g, '$1')
-        .replace(/<[^>]+>/g, '').replace(/'{2,}/g, '')
-        .replace(/\n{3,}/g, '\n\n').trim();
-    }
-    // Resolves to the plain description, or '' when it can't be had (offline, no wiki link)
-    function fetchSpellDescription(url) {
-      const title = wikiTitleFromUrl(url);
-      if (!title) return Promise.resolve('');
-      const key = 'adnd-spell-desc:' + title;
-      if (spellDescCache[title] !== undefined) return spellDescCache[title];
-      try { const hit = localStorage.getItem(key); if (hit) return (spellDescCache[title] = Promise.resolve(hit)); } catch (e) { /* storage blocked */ }
-      const api = 'https://adnd2e.fandom.com/api.php?action=parse&prop=wikitext&format=json&formatversion=2&origin=*&redirects=1&page=' + encodeURIComponent(title);
-      return (spellDescCache[title] = fetch(api).then(r => r.json()).then(j => {
-        const text = wikitextToPlain(j && j.parse && j.parse.wikitext);
-        if (text) { try { localStorage.setItem(key, text); } catch (e) { /* full */ } }
-        else delete spellDescCache[title];
-        return text;
-      }).catch(() => { delete spellDescCache[title]; return ''; }));
-    }
+    // The roomy card reads everything from the spell catalog (data/spell-catalog.json):
+    // the facts, the attack roll and saving throw, and the summary text
     // The attack and save lines for a spell: [{label, text, unsure}]
     function spellCombatLines(e, desc) {
       if (!e) return [];
@@ -9785,8 +9746,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         const open = desc.classList.toggle('is-open');
         more.textContent = open ? 'Show less' : 'Show more';
       });
-      const credit = document.createElement('div');
-      credit.className = 'spell-ref-credit';
       const paintCombat = text => {
         combat.innerHTML = '';
         const lines = spellCombatLines(e, text);
@@ -9804,25 +9763,14 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       ref.appendChild(combat);
       ref.appendChild(desc);
       ref.appendChild(more);
-      ref.appendChild(credit);
 
-      const url = spl.url || (e && e.link) || '';
-      if (e && e.summary) desc.textContent = e.summary;
-      if (wikiTitleFromUrl(url)) {
-        if (!desc.textContent) desc.textContent = 'Loading description…';
-        fetchSpellDescription(url).then(text => {
-          if (text) {
-            desc.textContent = text;
-            credit.textContent = 'Description: AD&D 2e wiki (CC BY-SA)';
-            paintCombat(text);
-            more.hidden = desc.scrollHeight <= desc.clientHeight + 1;
-          } else if (desc.textContent === 'Loading description…') {
-            desc.textContent = 'Description unavailable offline. Use the Info link.';
-          }
-        });
-      } else if (!desc.textContent) {
-        desc.textContent = 'No description yet. Add a reference link to see it here.';
-      }
+      // The catalog's own summary; spells without one say so (Override can add text)
+      const summary = (e && e.summary) || '';
+      desc.textContent = summary || 'No summary in the spell catalog yet. Use Override to write your own, or open the Info link.';
+      if (!summary) desc.classList.add('spell-ref-unsure');
+      paintCombat(summary);
+      more.hidden = true;
+      requestAnimationFrame(() => { more.hidden = desc.scrollHeight <= desc.clientHeight + 1; });
       card.appendChild(ref);
     }
 
@@ -10188,7 +10136,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
               if (!spl.override) {   // start from what the card shows now
                 const e = (spl.catalogId && window.SheetSpellCatalog && SheetSpellCatalog.spells.find(x => x.id === spl.catalogId)) || catalogEntryByName(spl.name, spl.type) || {};
                 const shown = card.querySelector('.spell-ref-desc');
-                const dtext = shown && shown.textContent && !/^(Loading description|Description unavailable|No description yet)/.test(shown.textContent) ? shown.textContent : '';
+                const dtext = shown && shown.textContent && !shown.classList.contains('spell-ref-unsure') ? shown.textContent : '';
                 spl.override = { school: e.school || '', castTime: e.castTime || '', range: e.range || '', duration: e.duration || '', area: e.area || '', source: e.source || '',
                                  attack: e.attack || 'none', dice: e.dice || '', diceKind: e.diceKind === 'heal' ? 'heal' : 'damage', save: e.save || '', description: dtext };
               }
