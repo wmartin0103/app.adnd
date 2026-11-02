@@ -1831,6 +1831,13 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     .spell-card.drop-after  { box-shadow: 4px 0 0 var(--accent); }
     .spell-card.is-roomy.drop-before { box-shadow: 0 -4px 0 var(--accent); }
     .spell-card.is-roomy.drop-after  { box-shadow: 0 4px 0 var(--accent); }
+    .spell-ov-inp { flex: 1; min-width: 0; font-family: var(--font-sans); font-size: 13px; color: var(--ink); background: transparent; border: none; border-bottom: 1px solid var(--rule); padding: 0.1rem 0.2rem; }
+    .spell-ov-inp:focus { border-bottom-color: var(--accent); outline: none; }
+    .spell-ov-controls { display: flex; flex-wrap: wrap; gap: 0.5rem 0.9rem; align-items: end; }
+    .spell-ov-field { display: flex; flex-direction: column; gap: 0.1rem; font-family: var(--font-display); font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted); }
+    .spell-ov-field .spell-ov-inp { width: 8rem; flex: none; }
+    .spell-ov-desc { width: 100%; box-sizing: border-box; min-height: 7rem; resize: vertical; font-family: var(--font-sans); font-size: 13px; line-height: 1.5; color: var(--ink); background: transparent; border: 1px solid var(--rule); border-radius: 4px; padding: 0.4rem 0.5rem; }
+    .spell-card.is-collapsed .spell-ref :is(.spell-ov-controls, .spell-ov-desc) { display: none; }
     .spell-fold-btn svg { transition: transform 0.15s; }
     .spell-fold-btn.is-folded svg { transform: rotate(-90deg); }
     /* Collapsed: level, type, name, effect, saving throw, Mem, × */
@@ -9676,8 +9683,76 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       }
       return lines;
     }
+    // With Override checked, the reference block is the player's own: every field is
+    // editable and nothing is refreshed from the catalog or the wiki until Override is unchecked
+    const OVERRIDE_FACTS = [['school', 'School'], ['castTime', 'Cast time'], ['range', 'Range'], ['duration', 'Duration'], ['area', 'Area'], ['source', 'Source']];
+    function appendOverrideReference(card, spl) {
+      const ov = spl.override || (spl.override = {});
+      const facts = document.createElement('div');
+      facts.className = 'spell-ref-facts';
+      OVERRIDE_FACTS.forEach(([k, label]) => {
+        const row = document.createElement('span'); row.className = 'spell-ref-fact';
+        const b = document.createElement('b'); b.textContent = label;
+        const inp = document.createElement('input');
+        inp.type = 'text'; inp.className = 'spell-ov-inp open-field'; inp.value = ov[k] || '';
+        inp.setAttribute('aria-label', label);
+        inp.addEventListener('input', () => { ov[k] = inp.value; });
+        inp.addEventListener('change', () => saveToItems());
+        row.appendChild(b); row.appendChild(inp); facts.appendChild(row);
+      });
+      card.appendChild(facts);
+
+      const ref = document.createElement('div');
+      ref.className = 'spell-ref';
+      const combat = document.createElement('div');
+      const paintCombat = () => {
+        combat.innerHTML = '';
+        const lines = spellCombatLines({ attack: ov.attack || 'none', dice: ov.dice, diceKind: ov.diceKind, save: ov.save, check: [] }, ov.description);
+        combat.className = lines.length ? 'spell-ref-combat' : '';
+        lines.forEach(l => {
+          const row = document.createElement('div');
+          if (l.label === 'Attack roll' || l.label === 'On a miss') row.className = 'spell-ref-minor';
+          const b = document.createElement('b'); b.textContent = l.label + ': ';
+          row.appendChild(b); row.appendChild(document.createTextNode(l.text));
+          combat.appendChild(row);
+        });
+      };
+      paintCombat();
+      ref.appendChild(combat);
+
+      const controls = document.createElement('div');
+      controls.className = 'spell-ov-controls';
+      const field = (label, el) => { const w = document.createElement('label'); w.className = 'spell-ov-field'; const t = document.createElement('span'); t.textContent = label; w.appendChild(t); w.appendChild(el); controls.appendChild(w); return el; };
+      const sel = (opts, val, key) => {
+        const el = document.createElement('select'); el.className = 'spell-card-select';
+        opts.forEach(([v, l]) => { const o = document.createElement('option'); o.value = v; o.textContent = l; if (v === val) o.selected = true; el.appendChild(o); });
+        el.addEventListener('change', () => { ov[key] = el.value; paintCombat(); saveToItems(); });
+        return el;
+      };
+      const txt = (val, key, ph) => {
+        const el = document.createElement('input'); el.type = 'text'; el.className = 'spell-ov-inp open-field'; el.value = val || ''; el.placeholder = ph || '';
+        el.addEventListener('input', () => { ov[key] = el.value; paintCombat(); });
+        el.addEventListener('change', () => saveToItems());
+        return el;
+      };
+      field('Attack', sel([['none', 'None'], ['touch', 'Touch'], ['ranged', 'Ranged']], ov.attack || 'none', 'attack'));
+      field('Dice', txt(ov.dice, 'dice', 'e.g. 1d6'));
+      field('Is', sel([['damage', 'Damage'], ['heal', 'Healing']], ov.diceKind === 'heal' ? 'heal' : 'damage', 'diceKind'));
+      field('Save', txt(ov.save, 'save', 'None, ½, Neg.…'));
+      ref.appendChild(controls);
+
+      const ta = document.createElement('textarea');
+      ta.className = 'spell-ov-desc open-field';
+      ta.rows = 6; ta.value = ov.description || ''; ta.placeholder = 'Description…';
+      ta.setAttribute('aria-label', 'Spell description');
+      ta.addEventListener('input', () => { ov.description = ta.value; });
+      ta.addEventListener('change', () => { paintCombat(); saveToItems(); });
+      ref.appendChild(ta);
+      card.appendChild(ref);
+    }
     // Adds the roomy card's reference block (facts, attack/save, description) to a card
     function appendSpellReference(card, spl) {
+      if (spl.overridden) { appendOverrideReference(card, spl); return; }
       const e = (spl.catalogId && window.SheetSpellCatalog && SheetSpellCatalog.spells.find(x => x.id === spl.catalogId)) || catalogEntryByName(spl.name, spl.type);
       const ref = document.createElement('div');
       ref.className = 'spell-ref';
@@ -10000,7 +10075,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           spl.name = nameInp.value;
           const e = catalogEntryByName(spl.name, spl.type);
           spl.catalogId = e ? e.id : null;
-          if (e) {
+          if (e && !spl.overridden) {
             if (e.level >= 1 && e.level <= 9) spl.level = e.level;
             // A priest spell picked on a wizard entry becomes a priest spell (bards keep "Bard")
             if (e.class === 'priest' && spl.type !== 'priest') spl.type = 'priest';
@@ -10096,6 +10171,39 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           saveToItems();
         });
         bottomBar.appendChild(typeSel);
+        if (section === 'spellbook' && spellbookView === 'roomy') {
+          // Override: edit the reference text by hand; it then stays as typed
+          const ovWrap = document.createElement('label');
+          ovWrap.className = 'spell-mem-wrap spell-ov-wrap';
+          ovWrap.title = 'Edit this spell\'s details by hand. They stop updating from the catalog and wiki until you uncheck this.';
+          const ovChk = document.createElement('input');
+          ovChk.type = 'checkbox';
+          ovChk.className = 'spell-mem-chk';
+          ovChk.checked = !!spl.overridden;
+          ovChk.setAttribute('aria-label', 'Override details');
+          ovChk.addEventListener('change', () => {
+            if (ovChk.checked) {
+              if (!spl.override) {   // start from what the card shows now
+                const e = (spl.catalogId && window.SheetSpellCatalog && SheetSpellCatalog.spells.find(x => x.id === spl.catalogId)) || catalogEntryByName(spl.name, spl.type) || {};
+                const shown = card.querySelector('.spell-ref-desc');
+                const dtext = shown && shown.textContent && !/^(Loading description|Description unavailable|No description yet)/.test(shown.textContent) ? shown.textContent : '';
+                spl.override = { school: e.school || '', castTime: e.castTime || '', range: e.range || '', duration: e.duration || '', area: e.area || '', source: e.source || '',
+                                 attack: e.attack || 'none', dice: e.dice || '', diceKind: e.diceKind === 'heal' ? 'heal' : 'damage', save: e.save || '', description: dtext };
+              }
+              spl.overridden = true;
+            } else {
+              spl.overridden = false;   // back to automatic; the edits are kept in case it is checked again
+            }
+            renderSpellCards();
+            saveToItems();
+          });
+          const ovLabel = document.createElement('span');
+          ovLabel.className = 'spell-mem-label';
+          ovLabel.textContent = 'Override';
+          ovWrap.appendChild(ovChk); ovWrap.appendChild(ovLabel);
+          ovWrap.style.marginLeft = 'auto';
+          bottomBar.appendChild(ovWrap);
+        }
         card.appendChild(bottomBar);
         return card;
       }
