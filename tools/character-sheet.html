@@ -1834,7 +1834,13 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     .spell-sum { display: flex; flex-direction: column; gap: 0.25rem; }
     .spell-sum-head { display: flex; align-items: baseline; gap: 0.6rem; font-family: var(--font-display); font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted); }
     .spell-sum-head .spell-ref-more { margin-left: auto; font-family: var(--font-sans); font-size: 12px; letter-spacing: normal; text-transform: none; }
-    .spell-sum-text { width: 100%; box-sizing: border-box; min-height: 7rem; resize: vertical; font-family: var(--font-sans); font-size: 13px; line-height: 1.5; color: var(--ink); background: transparent; border: 1px solid var(--rule); border-radius: 4px; padding: 0.4rem 0.5rem; }
+    .spell-sum-view { font-family: var(--font-sans); font-size: 13px; line-height: 1.5; color: var(--ink); white-space: pre-line; cursor: text; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 6; line-clamp: 6; overflow: hidden; border-radius: 4px; }
+    .spell-sum-view:hover, .spell-sum-view:focus-visible { background: color-mix(in srgb, var(--accent) 7%, transparent); outline: none; }
+    .spell-sum-view.is-open { display: block; -webkit-line-clamp: unset; line-clamp: unset; }
+    .spell-sum-view.is-empty { color: var(--ink-muted); font-style: italic; }
+    .spell-sum-view[hidden], .spell-sum-text[hidden], .spell-sum .spell-ref-more[hidden] { display: none; }
+    .spell-sum .spell-ref-more { align-self: flex-start; }
+    .spell-sum-text { width: 100%; box-sizing: border-box; resize: none; overflow-y: auto; max-height: 15rem; font-family: var(--font-sans); font-size: 13px; line-height: 1.5; color: var(--ink); background: transparent; border: 1px solid var(--accent); border-radius: 4px; padding: 0.3rem 0.5rem; }
     .spell-fold-btn svg { transition: transform 0.15s; }
     .spell-fold-btn.is-folded svg { transform: rotate(-90deg); }
     /* Collapsed: level, type, name, effect, saving throw, Mem, × */
@@ -9729,28 +9735,59 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       const status = document.createElement('span');
       status.className = 'spell-ref-unsure';
       head.appendChild(label); head.appendChild(status); head.appendChild(wikiBtn);
+      // Resting state: the text, clamped to a few lines with Show more. Click it to edit.
+      const view = document.createElement('div');
+      view.className = 'spell-sum-view';
+      view.tabIndex = 0;
+      view.title = 'Click to edit';
+      const more = document.createElement('button');
+      more.type = 'button';
+      more.className = 'spell-ref-more';
+      more.textContent = 'Show more';
+      more.hidden = true;
+      more.addEventListener('click', () => {
+        const open = view.classList.toggle('is-open');
+        more.textContent = open ? 'Show less' : 'Show more';
+      });
       const ta = document.createElement('textarea');
       ta.className = 'spell-sum-text open-field';
-      ta.rows = 6;
-      ta.value = spellSummaryText(spl, e);
-      ta.placeholder = 'Summary… type your own, or Load from wiki';
+      ta.hidden = true;
+      ta.placeholder = 'Summary…';
       ta.setAttribute('aria-label', 'Spell summary');
-      ta.addEventListener('input', () => { spl.summary = ta.value; });
-      ta.addEventListener('change', () => { spl.summary = ta.value; paintCombat(); saveToItems(); });
+      const showView = () => {
+        const text = spellSummaryText(spl, e);
+        view.textContent = text || 'No summary yet. Click to write one, or Load from wiki.';
+        view.classList.toggle('is-empty', !text);
+        view.hidden = false; ta.hidden = true;
+        more.hidden = true;
+        requestAnimationFrame(() => { more.hidden = view.classList.contains('is-open') ? false : view.scrollHeight <= view.clientHeight + 1; });
+      };
+      const edit = () => {
+        view.hidden = true; more.hidden = true; ta.hidden = false;
+        ta.value = spellSummaryText(spl, e);
+        ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight + 4, 240) + 'px';
+        ta.focus();
+      };
+      view.addEventListener('click', edit);
+      view.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); edit(); } });
+      ta.addEventListener('input', () => { spl.summary = ta.value; ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight + 4, 240) + 'px'; });
+      ta.addEventListener('blur', () => { spl.summary = ta.value; paintCombat(); showView(); saveToItems(); });
       wikiBtn.addEventListener('click', () => {
         const url = [spl.url, e && e.link].find(u => wikiTitleFromUrl(u));
         if (!url) { status.textContent = 'No wiki link on this spell'; return; }
-        if (ta.value.trim() && ta.value !== ((e && e.summary) || '') && !confirm('Replace the summary you have with the wiki text?')) return;
+        if (spl.summary && spl.summary.trim() && spl.summary !== ((e && e.summary) || '') && !confirm('Replace the summary you have with the wiki text?')) return;
         wikiBtn.disabled = true; status.textContent = 'Loading…';
         fetchSpellDescription(url).then(text => {
           wikiBtn.disabled = false;
           if (!text) { status.textContent = 'Couldn\'t reach the wiki'; return; }
           status.textContent = '';
-          ta.value = spl.summary = text;
-          paintCombat(); saveToItems();
+          spl.summary = text;
+          view.classList.remove('is-open'); more.textContent = 'Show more';
+          paintCombat(); showView(); saveToItems();
         });
       });
-      sum.appendChild(head); sum.appendChild(ta);
+      showView();
+      sum.appendChild(head); sum.appendChild(view); sum.appendChild(more); sum.appendChild(ta);
       ref.appendChild(sum);
       card.appendChild(ref);
     }
