@@ -1824,6 +1824,13 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     }
     .spell-card.is-roomy > * { grid-column: 1; }
     .spell-card.is-roomy { position: relative; }
+    .spell-grip { cursor: grab; color: var(--ink-muted); display: inline-flex; align-items: center; padding: 0 0.15rem; margin-left: -0.15rem; }
+    .spell-grip:hover { color: var(--accent); }
+    .spell-card.is-dragging { opacity: 0.4; }
+    .spell-card.drop-before { box-shadow: -4px 0 0 var(--accent); }
+    .spell-card.drop-after  { box-shadow: 4px 0 0 var(--accent); }
+    .spell-card.is-roomy.drop-before { box-shadow: 0 -4px 0 var(--accent); }
+    .spell-card.is-roomy.drop-after  { box-shadow: 0 4px 0 var(--accent); }
     .spell-fold-btn svg { transition: transform 0.15s; }
     .spell-fold-btn.is-folded svg { transform: rotate(-90deg); }
     /* Collapsed: level, type, name, effect, saving throw, Mem, × */
@@ -9742,6 +9749,18 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       card.appendChild(ref);
     }
 
+    // Moves a spellbook entry next to another one (drag and drop)
+    let dragSpellId = null;
+    function moveSpell(id, targetId, after) {
+      const from = spells.findIndex(s => s.id === id);
+      if (from < 0 || id === targetId) return false;
+      const [m] = spells.splice(from, 1);
+      let to = spells.findIndex(s => s.id === targetId);
+      if (to < 0) { spells.splice(from, 0, m); return false; }
+      spells.splice(after ? to + 1 : to, 0, m);
+      return true;
+    }
+
     // Redraws the spell cards, then the combat scenarios, so a scenario's
     // "Spell" list always matches what is memorized
     function renderSpells() {
@@ -9778,6 +9797,46 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         const lvlBadge = document.createElement('span');
         lvlBadge.className = `spell-level-badge tag tag-l${spl.level || 1}`;
         lvlBadge.textContent = ordinals[spl.level] || `${spl.level}th`;
+        if (section === 'spellbook') {
+          // Drag the grip to reorder the spellbook (the whole card isn't draggable, so its fields stay selectable)
+          const grip = document.createElement('span');
+          grip.className = 'spell-grip';
+          grip.draggable = true;
+          grip.title = 'Drag to reorder';
+          grip.setAttribute('aria-hidden', 'true');
+          grip.innerHTML = '<svg viewBox="0 0 10 16" width="10" height="14" fill="currentColor"><circle cx="2.5" cy="3" r="1.3"/><circle cx="7.5" cy="3" r="1.3"/><circle cx="2.5" cy="8" r="1.3"/><circle cx="7.5" cy="8" r="1.3"/><circle cx="2.5" cy="13" r="1.3"/><circle cx="7.5" cy="13" r="1.3"/></svg>';
+          grip.addEventListener('dragstart', ev => {
+            dragSpellId = spl.id;
+            ev.dataTransfer.effectAllowed = 'move';
+            ev.dataTransfer.setData('text/plain', spl.id);
+            ev.dataTransfer.setDragImage(card, 16, 16);
+            card.classList.add('is-dragging');
+          });
+          grip.addEventListener('dragend', () => {
+            dragSpellId = null;
+            document.querySelectorAll('.is-dragging, .drop-before, .drop-after').forEach(el => el.classList.remove('is-dragging', 'drop-before', 'drop-after'));
+          });
+          topBar.appendChild(grip);
+          const roomy = spellbookView === 'roomy';
+          const side = ev => {
+            const r = card.getBoundingClientRect();
+            return roomy ? ev.clientY > r.top + r.height / 2 : ev.clientX > r.left + r.width / 2;
+          };
+          card.addEventListener('dragover', ev => {
+            if (!dragSpellId || dragSpellId === spl.id) return;
+            ev.preventDefault();
+            ev.dataTransfer.dropEffect = 'move';
+            const after = side(ev);
+            card.classList.toggle('drop-after', after);
+            card.classList.toggle('drop-before', !after);
+          });
+          card.addEventListener('dragleave', ev => { if (!card.contains(ev.relatedTarget)) card.classList.remove('drop-before', 'drop-after'); });
+          card.addEventListener('drop', ev => {
+            if (!dragSpellId) return;
+            ev.preventDefault();
+            if (moveSpell(dragSpellId, spl.id, side(ev))) { renderSpells(); saveToItems(); }
+          });
+        }
         topBar.appendChild(lvlBadge);
 
         // Type badge
