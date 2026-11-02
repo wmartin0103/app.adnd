@@ -10201,8 +10201,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           ovLabel.className = 'spell-mem-label';
           ovLabel.textContent = 'Override';
           ovWrap.appendChild(ovChk); ovWrap.appendChild(ovLabel);
-          ovWrap.style.marginLeft = 'auto';
-          bottomBar.appendChild(ovWrap);
+          topBar.appendChild(ovWrap);   // right end of the header row, beside the level and type
         }
         card.appendChild(bottomBar);
         return card;
