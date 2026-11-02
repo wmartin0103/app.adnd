@@ -1824,6 +1824,13 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     }
     .spell-card.is-roomy > * { grid-column: 1; }
     .spell-card.is-roomy { position: relative; }
+    .spell-fold-btn svg { transition: transform 0.15s; }
+    .spell-fold-btn.is-folded svg { transform: rotate(-90deg); }
+    /* Collapsed: level, type, name, effect, saving throw, Mem, × */
+    .spell-card.is-roomy.is-collapsed { max-height: none; }
+    .spell-card.is-collapsed > :is(.spell-card-notes, .spell-card-url-row, .spell-ref-facts, .spell-card-bottom),
+    .spell-card.is-collapsed .spell-ref :is(.spell-ref-facts, .spell-ref-desc, .spell-ref-more, .spell-ref-credit, .spell-ref-minor) { display: none; }
+    .spell-card.is-collapsed > .spell-ref { grid-row: 1 / span 2; overflow: visible; }
     .spell-card-corner { position: absolute !important; top: 0.55rem; right: 0.7rem; display: flex; align-items: center; gap: 0.5rem; }
     .spell-card.is-roomy > .spell-ref { grid-column: 2; grid-row: 1 / span 7; overflow-y: auto; min-height: 0; padding-right: 5.5rem; }
     @media (max-width: 700px) {
@@ -9702,6 +9709,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         combat.className = lines.length ? 'spell-ref-combat' : '';
         lines.forEach(l => {
           const row = document.createElement('div');
+          if (l.label === 'Attack roll' || l.label === 'On a miss') row.className = 'spell-ref-minor';
           const b = document.createElement('b'); b.textContent = l.label + ': ';
           row.appendChild(b); row.appendChild(document.createTextNode(l.text));
           if (l.unsure) { const u = document.createElement('span'); u.className = 'spell-ref-unsure'; u.textContent = ' (unconfirmed)'; row.appendChild(u); }
@@ -9896,6 +9904,20 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         if (section === 'spellbook' && spellbookView === 'roomy') {
           const corner = document.createElement('div');
           corner.className = 'spell-card-corner';
+          const fold = document.createElement('button');
+          fold.type = 'button';
+          fold.className = 'spell-fold-btn ui-button is-bare is-icon size-sm';
+          fold.innerHTML = '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3.5 6l4.5 4.5L12.5 6"/></svg>';
+          const paintFold = () => {
+            card.classList.toggle('is-collapsed', !!spl.collapsed);
+            fold.classList.toggle('is-folded', !!spl.collapsed);
+            fold.setAttribute('aria-expanded', String(!spl.collapsed));
+            fold.setAttribute('aria-label', spl.collapsed ? 'Expand spell' : 'Collapse spell');
+            fold.title = spl.collapsed ? 'Expand' : 'Collapse';
+          };
+          paintFold();
+          fold.addEventListener('click', () => { spl.collapsed = !spl.collapsed; paintFold(); saveToItems(); });
+          corner.appendChild(fold);
           if (memWrapEl) corner.appendChild(memWrapEl);
           corner.appendChild(delBtn);
           card.appendChild(corner);
