@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { summary, isBlank, fileName, listCharacters, createCharacter, setStatus, loadCharacter, saveSheet, deleteCharacter, isSheetSave, listParty, listMembers, createCharacterFor, assignCharacter } from '../src/characters.js';
+import { summary, isBlank, fileName, listCharacters, createCharacter, setStatus, loadCharacter, saveSheet, deleteCharacter, isSheetSave, listParty, listMembers, createCharacterFor, assignCharacter, listShares, setShares } from '../src/characters.js';
 
 // A stand-in for the Supabase client: the tables and calls used here, with
 // the database's one-in-play rule
@@ -18,6 +18,7 @@ function fakeClient(tables) {
         const play = (tables.characters || []).filter(r => r.status === 'play');
         return play.some((r, i) => play.findIndex(x => x.owner_id === r.owner_id && x.campaign_id === r.campaign_id) !== i);
       };
+      if (op === 'insert' && Array.isArray(payload)) { rows.push(...payload); return { data: payload, error: null }; }
       if (op === 'insert') {
         const row = { id: `c${++n}`, updated_at: '2026-10-27', ...payload };
         rows.push(row);
@@ -164,4 +165,21 @@ test('characters: the DM assigns a backup to a player (it lands in their Backups
   assert.deepEqual([t.characters[0].owner_id, t.characters[0].status], ['u2', 'backup']);
   assert.equal(t.characters[1].status, 'play');   // their one in play stays
   await assert.rejects(assignCharacter(c, 'nope', 'u2'), /couldn.t be assigned/);
+});
+
+test('characters: assigning ends the old sharing (the new owner decides)', async () => {
+  const t = { characters: [{ id: 'n', owner_id: 'u-dm', status: 'backup' }], character_editors: [{ character_id: 'n', user_id: 'u3' }, { character_id: 'x', user_id: 'u3' }] };
+  await assignCharacter(fakeClient(t), 'n', 'u2');
+  assert.deepEqual(t.character_editors, [{ character_id: 'x', user_id: 'u3' }]);
+});
+
+test('characters: sharing adds and takes back only what changed', async () => {
+  const t = { character_editors: [{ character_id: 'j', user_id: 'u2', granted_by: 'u1' }, { character_id: 'j', user_id: 'u3', granted_by: 'u1' }, { character_id: 'o', user_id: 'u2', granted_by: 'u9' }] };
+  const c = fakeClient(t), me = { user: { id: 'u1' } };
+  assert.deepEqual(await listShares(c, []), {});
+  assert.deepEqual(await listShares(c, ['j', 'none']), { j: ['u2', 'u3'] });
+  await setShares(c, me, 'j', ['u2', 'u3'], ['u3', 'u4']);
+  assert.deepEqual(t.character_editors, [{ character_id: 'j', user_id: 'u3', granted_by: 'u1' }, { character_id: 'o', user_id: 'u2', granted_by: 'u9' }, { character_id: 'j', user_id: 'u4', granted_by: 'u1' }]);
+  // A removal the database refuses is an error, not silence
+  await assert.rejects(setShares(c, me, 'j', ['u9'], []), /taken back/);
 });

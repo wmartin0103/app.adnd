@@ -532,14 +532,6 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     .status.good { color: var(--good); }
     .current { margin: 0; }
     .stack { display: grid; gap: 20px; }
-    /* Who can play each character */
-    .chars { display: grid; gap: 14px; }
-    .char { border-top: 1px solid var(--rule); padding-top: 14px; display: grid; gap: 8px; }
-    .char:first-child { border-top: 0; padding-top: 0; }
-    .char-name { font-family: var(--font-display); font-weight: 600; font-size: 1rem; margin: 0; }
-    .char-name small { font-family: var(--font-body); font-weight: 400; font-size: 0.95rem; color: var(--ink-muted); }
-    .editors { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-    .editors li { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
   </style>
 </head>
 <body>
@@ -591,17 +583,6 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
           <button class="btn ui-button is-primary" type="submit">Change password</button>
         </form>
 
-        <section class="card" id="access" aria-labelledby="access-title">
-          <h2 id="access-title">Who can play your characters</h2>
-          <p class="hint">Give someone in the party edit access to run a character for a session. It lasts until you take it away.</p>
-          <div class="chars" id="chars"></div>
-          <p class="status" id="access-status" role="status"></p>
-        </section>
-
-        <section class="card" id="mine-to-play" hidden aria-labelledby="mine-to-play-title">
-          <h2 id="mine-to-play-title">Characters you can play</h2>
-          <ul class="editors" id="granted"></ul>
-        </section>
       </div>
     </div>
   </main>
@@ -1023,9 +1004,9 @@ return { CLOUD_URL, CLOUD_KEY, cloudClient, needsNewPassword, cloudSession, crea
 __m["account"] = (() => {
 
 // ── ACCOUNT ─────────────────────────────────────────────────────
-// A player's own account (name, email, password) and who else may play their
-// characters. Each call takes the Supabase client; the database's rules
-// (supabase/migrations/) decide what's allowed, these only ask.
+// A player's own account (name, email, password). Each call takes the Supabase
+// client; the database's rules (supabase/migrations/) decide what's allowed,
+// these only ask.
 
 const MIN_PASSWORD = 8;
 // What's wrong with a new password, or '' when it will do
@@ -1052,52 +1033,11 @@ async function setDisplayName(client, userId, name) {
   if (error) throw error;
 }
 
-// The campaign's characters and who may play them, for the session's person:
-//   { members: [{ userId, name, role }],
-//     characters: [{ id, name, ownerId, ownerName, mine, canManage, editors: [{ userId, name }] }],
-//     grantedToMe: [{ id, name, ownerName }] }
-// canManage: the owner, the DM or an admin, who grant and take away access.
-async function characterAccess(client, session) {
-  if (!session || !session.campaignId) return { members: [], characters: [], grantedToMe: [] };
-  const me = session.user.id;
-  const [chars, mems, eds] = await Promise.all([
-    client.from('characters').select('id, name, owner_id').eq('campaign_id', session.campaignId),
-    client.from('campaign_members').select('user_id, role, profiles(display_name)').eq('campaign_id', session.campaignId),
-    client.from('character_editors').select('character_id, user_id'),
-  ]);
-  const failed = [chars, mems, eds].find(r => r.error);
-  if (failed) throw failed.error;
-  const members = (mems.data || []).map(m => ({ userId: m.user_id, role: m.role, name: (m.profiles && m.profiles.display_name) || 'Someone' }))
-    .sort((a, b) => a.name.localeCompare(b.name));
-  const nameOf = id => (members.find(m => m.userId === id) || {}).name || 'Someone';
-  const manager = session.isDM || session.isAdmin;
-  const all = (chars.data || []).map(c => ({
-    id: c.id, name: c.name, ownerId: c.owner_id, ownerName: nameOf(c.owner_id), mine: c.owner_id === me,
-    canManage: c.owner_id === me || manager,
-    editors: (eds.data || []).filter(e => e.character_id === c.id).map(e => ({ userId: e.user_id, name: nameOf(e.user_id) }))
-      .sort((a, b) => a.name.localeCompare(b.name)),
-  })).sort((a, b) => (b.mine - a.mine) || a.name.localeCompare(b.name));
-  return {
-    members,
-    characters: all.filter(c => c.canManage),
-    grantedToMe: all.filter(c => !c.mine && c.editors.some(e => e.userId === me)).map(c => ({ id: c.id, name: c.name, ownerName: c.ownerName })),
-  };
-}
-// Lets someone in the campaign play (and later edit) a character, until taken away
-async function grantAccess(client, session, characterId, userId) {
-  const { error } = await client.from('character_editors').insert({ character_id: characterId, user_id: userId, granted_by: session.user.id });
-  if (error) throw error;
-}
-async function revokeAccess(client, characterId, userId) {
-  const { error } = await client.from('character_editors').delete().eq('character_id', characterId).eq('user_id', userId);
-  if (error) throw error;
-}
-
-return { MIN_PASSWORD, passwordProblem, setPassword, setEmail, setDisplayName, characterAccess, grantAccess, revokeAccess };
+return { MIN_PASSWORD, passwordProblem, setPassword, setEmail, setDisplayName };
 })();
 window.Cloud = { cloudClient: __m["cloud"].cloudClient, cloudSession: __m["cloud"].cloudSession };
 window.Theme = { mountThemeToggle: __m["ui/theme"].mountThemeToggle, currentTheme: __m["ui/theme"].currentTheme, setTheme: __m["ui/theme"].setTheme };
-window.Account = { MIN_PASSWORD: __m["account"].MIN_PASSWORD, passwordProblem: __m["account"].passwordProblem, setPassword: __m["account"].setPassword, setEmail: __m["account"].setEmail, setDisplayName: __m["account"].setDisplayName, characterAccess: __m["account"].characterAccess, grantAccess: __m["account"].grantAccess, revokeAccess: __m["account"].revokeAccess };
+window.Account = { MIN_PASSWORD: __m["account"].MIN_PASSWORD, passwordProblem: __m["account"].passwordProblem, setPassword: __m["account"].setPassword, setEmail: __m["account"].setEmail, setDisplayName: __m["account"].setDisplayName };
 })();
 /* ── end sheet converter ── */
 
@@ -1123,66 +1063,6 @@ window.Account = { MIN_PASSWORD: __m["account"].MIN_PASSWORD, passwordProblem: _
       if (session.newPassword) { $('choose').pw.focus(); return; }
       $('name-form').name.value = session.name;
       $('email-now').textContent = session.user.email;
-      await showAccess();
-    }
-
-    // ── Who can play each character ──
-    async function showAccess() {
-      const box = $('chars'), status = $('access-status');
-      let a;
-      try { a = await Account.characterAccess(client, session); } catch (e) { status.textContent = problem(e); status.className = 'status bad'; return; }
-      box.textContent = '';
-      if (!session.campaignId) { box.innerHTML = '<p class="hint">You’re not in a campaign yet. Ask your DM to add you.</p>'; }
-      else if (!a.characters.length) { box.innerHTML = '<p class="hint">You don’t have a character in the campaign yet. Ask your DM to link yours to your account.</p>'; }
-      a.characters.forEach(c => {
-        const el = document.createElement('div'); el.className = 'char';
-        const h = document.createElement('h3'); h.className = 'char-name'; h.textContent = c.name;
-        if (!c.mine) { const o = document.createElement('small'); o.textContent = ` · ${c.ownerName}’s`; h.appendChild(o); }
-        el.appendChild(h);
-        if (c.editors.length) {
-          const ul = document.createElement('ul'); ul.className = 'editors';
-          c.editors.forEach(ed => {
-            const li = document.createElement('li');
-            const who = document.createElement('span'); who.textContent = `${ed.name} can play ${c.name}`;
-            const rm = document.createElement('button'); rm.type = 'button'; rm.className = 'btn quiet small ui-button is-secondary size-sm'; rm.textContent = 'Take away';
-            rm.setAttribute('aria-label', `Take away ${ed.name}’s access to ${c.name}`);
-            rm.addEventListener('click', async () => {
-              rm.disabled = true;
-              try { await Account.revokeAccess(client, c.id, ed.userId); status.textContent = `${ed.name} can no longer play ${c.name}.`; status.className = 'status good'; }
-              catch (e) { status.textContent = problem(e); status.className = 'status bad'; }
-              showAccess();
-            });
-            li.append(who, rm); ul.appendChild(li);
-          });
-          el.appendChild(ul);
-        } else {
-          const p = document.createElement('p'); p.className = 'hint'; p.textContent = c.mine ? 'Only you.' : `Only ${c.ownerName}.`; el.appendChild(p);
-        }
-        // The other players: not the owner, not already given access (the DM can edit every character already)
-        const others = a.members.filter(m => m.role !== 'dm' && m.role !== 'both' && m.userId !== c.ownerId && !c.editors.some(e => e.userId === m.userId));
-        if (others.length) {
-          const f = document.createElement('form'); f.className = 'row'; f.noValidate = true;
-          const lab = document.createElement('label'); lab.textContent = 'Give edit access to';
-          const sel = document.createElement('select'); sel.name = 'who';
-          others.forEach(m => { const o = document.createElement('option'); o.value = m.userId; o.textContent = m.name; sel.appendChild(o); });
-          lab.appendChild(sel);
-          const go = document.createElement('button'); go.type = 'submit'; go.className = 'btn ui-button is-primary'; go.textContent = 'Give access';
-          f.append(lab, go);
-          f.addEventListener('submit', async e => {
-            e.preventDefault(); go.disabled = true;
-            const m = others.find(x => x.userId === sel.value);
-            try { await Account.grantAccess(client, session, c.id, sel.value); status.textContent = `${m.name} can now play ${c.name}.`; status.className = 'status good'; }
-            catch (err) { status.textContent = problem(err); status.className = 'status bad'; }
-            showAccess();
-          });
-          el.appendChild(f);
-        }
-        box.appendChild(el);
-      });
-      // Characters someone has let you play
-      $('mine-to-play').hidden = !a.grantedToMe.length;
-      $('granted').textContent = '';
-      a.grantedToMe.forEach(c => { const li = document.createElement('li'); li.textContent = `${c.name}, ${c.ownerName}’s, until they take it away`; $('granted').appendChild(li); });
     }
 
     // ── A password: the first one (then on to the landing page) or a new one ──

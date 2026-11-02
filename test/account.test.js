@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { passwordProblem, setPassword, setEmail, setDisplayName, characterAccess, grantAccess, revokeAccess } from '../src/account.js';
+import { passwordProblem, setPassword, setEmail, setDisplayName } from '../src/account.js';
 import { needsNewPassword } from '../src/cloud.js';
 
 // A stand-in for the Supabase client: the tables and calls the Account page uses
@@ -63,37 +63,4 @@ test('account: email and name', async () => {
   assert.deepEqual(await setEmail(waiting, 'new@example.com'), { changed: false });   // the project asks for a confirmation link
   await setDisplayName(c, 'u-me', 'Bob');
   assert.equal(c.calls.find(x => x.op === 'update').payload.display_name, 'Bob');
-});
-
-const campaign = () => ({
-  profiles: [{ id: 'u-me', display_name: 'Bob' }, { id: 'u-ann', display_name: 'Ann' }, { id: 'u-dm', display_name: 'Will' }],
-  campaign_members: [{ campaign_id: 'k', user_id: 'u-me', role: 'player' }, { campaign_id: 'k', user_id: 'u-ann', role: 'player' }, { campaign_id: 'k', user_id: 'u-dm', role: 'dm' }],
-  characters: [{ id: 'c-gor', campaign_id: 'k', name: 'Goroth', owner_id: 'u-me' }, { id: 'c-jaq', campaign_id: 'k', name: 'Jaque', owner_id: 'u-ann' }],
-  character_editors: [{ character_id: 'c-jaq', user_id: 'u-me' }],
-});
-
-test('account: a player manages their own characters and sees what they were given', async () => {
-  const t = campaign(), c = fakeClient(t);
-  const me = { user: { id: 'u-me' }, campaignId: 'k', role: 'player', isAdmin: false };
-  let a = await characterAccess(c, me);
-  assert.deepEqual(a.characters.map(x => x.name), ['Goroth']);             // only their own
-  assert.deepEqual(a.grantedToMe, [{ id: 'c-jaq', name: 'Jaque', ownerName: 'Ann' }]);
-  assert.deepEqual(a.members.map(m => m.name), ['Ann', 'Bob', 'Will']);
-  await grantAccess(c, me, 'c-gor', 'u-ann');
-  assert.deepEqual(t.character_editors.at(-1), { character_id: 'c-gor', user_id: 'u-ann', granted_by: 'u-me' });
-  a = await characterAccess(c, me);
-  assert.deepEqual(a.characters[0].editors, [{ userId: 'u-ann', name: 'Ann' }]);
-  await revokeAccess(c, 'c-gor', 'u-ann');
-  a = await characterAccess(c, me);
-  assert.deepEqual(a.characters[0].editors, []);
-  assert.equal(c.calls.filter(x => x.table === 'character_editors' && x.op === 'delete').length, 1);
-});
-
-test('account: the DM manages every character in the campaign, theirs first', async () => {
-  const t = campaign();
-  t.characters.push({ id: 'c-dm', campaign_id: 'k', name: 'Tig', owner_id: 'u-dm' });
-  const dm = { user: { id: 'u-dm' }, campaignId: 'k', role: 'dm', isDM: true, isAdmin: false };
-  const a = await characterAccess(fakeClient(t), dm);
-  assert.deepEqual(a.characters.map(x => [x.name, x.ownerName, x.mine]), [['Tig', 'Will', true], ['Goroth', 'Bob', false], ['Jaque', 'Ann', false]]);
-  assert.deepEqual(await characterAccess(fakeClient(t), { user: { id: 'x' }, campaignId: null }), { members: [], characters: [], grantedToMe: [] });
 });

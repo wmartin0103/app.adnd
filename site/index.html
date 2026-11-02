@@ -644,6 +644,17 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       <div class="row"><button class="btn quiet ui-button is-secondary" value="cancel">Cancel</button><button class="btn ui-button is-primary" value="ok" id="assign-ok">Assign</button></div>
     </form>
   </dialog>
+  <dialog id="share" aria-labelledby="share-title" aria-describedby="share-text">
+    <form method="dialog">
+      <h3 id="share-title"></h3>
+      <p id="share-text"></p>
+      <fieldset id="share-box">
+        <legend>Players</legend>
+        <div id="share-list"></div>
+      </fieldset>
+      <div class="row"><button class="btn quiet ui-button is-secondary" value="cancel">Cancel</button><button class="btn ui-button is-primary" value="ok" id="share-ok">Save</button></div>
+    </form>
+  </dialog>
   <div class="toast" id="toast" role="status"></div>
 
   <!-- Supabase: signing in and your characters (src/cloud.js, src/characters.js) -->
@@ -1180,6 +1191,34 @@ async function assignCharacter(client, id, ownerId) {
   const { data, error } = await client.from('characters').update({ owner_id: ownerId, status: 'backup' }).eq('id', id).select('id');
   if (error) throw error;
   if (!data || !data.length) throw new Error('That character couldn’t be assigned.');
+  // Theirs now: they decide who else plays it
+  const r = await client.from('character_editors').delete().eq('character_id', id);
+  if (r.error) throw r.error;
+}
+
+// Who else can play each character: { characterId: [userId, …] }
+async function listShares(client, ids) {
+  if (!ids.length) return {};
+  const { data, error } = await client.from('character_editors').select('character_id, user_id').in('character_id', ids);
+  if (error) throw error;
+  const shares = {};
+  (data || []).forEach(r => { (shares[r.character_id] = shares[r.character_id] || []).push(r.user_id); });
+  return shares;
+}
+// Who else can play a character, from `before` to `after` (lists of user ids).
+// The database's rules allow it for the owner, the DM or an admin; a removal
+// they refuse removes nothing, so ask for the rows back to know it went.
+async function setShares(client, session, id, before, after) {
+  const added = after.filter(u => !before.includes(u)), gone = before.filter(u => !after.includes(u));
+  if (added.length) {
+    const { error } = await client.from('character_editors').insert(added.map(u => ({ character_id: id, user_id: u, granted_by: session.user.id })));
+    if (error) throw error;
+  }
+  if (gone.length) {
+    const { data, error } = await client.from('character_editors').delete().eq('character_id', id).in('user_id', gone).select('user_id');
+    if (error) throw error;
+    if (!data || data.length !== gone.length) throw new Error('That access couldn’t be taken back.');
+  }
 }
 
 // Moves a character; into play, the one in play now goes to `others` (dead
@@ -1216,11 +1255,11 @@ async function saveSheet(client, id, data) {
   if (error) throw error;
 }
 
-return { STATUSES, STATUS_LABEL, summary, isBlank, fileName, listCharacters, createCharacter, isSheetSave, listParty, listMembers, createCharacterFor, assignCharacter, setStatus, deleteCharacter, loadCharacter, saveSheet };
+return { STATUSES, STATUS_LABEL, summary, isBlank, fileName, listCharacters, createCharacter, isSheetSave, listParty, listMembers, createCharacterFor, assignCharacter, listShares, setShares, setStatus, deleteCharacter, loadCharacter, saveSheet };
 })();
 window.Cloud = { cloudClient: __m["cloud"].cloudClient, cloudSession: __m["cloud"].cloudSession };
 window.Theme = { mountThemeToggle: __m["ui/theme"].mountThemeToggle, currentTheme: __m["ui/theme"].currentTheme, setTheme: __m["ui/theme"].setTheme };
-window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m["characters"].summary, isBlank: __m["characters"].isBlank, fileName: __m["characters"].fileName, listCharacters: __m["characters"].listCharacters, createCharacter: __m["characters"].createCharacter, setStatus: __m["characters"].setStatus, saveSheet: __m["characters"].saveSheet, deleteCharacter: __m["characters"].deleteCharacter, listParty: __m["characters"].listParty, listMembers: __m["characters"].listMembers, assignCharacter: __m["characters"].assignCharacter };
+window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m["characters"].summary, isBlank: __m["characters"].isBlank, fileName: __m["characters"].fileName, listCharacters: __m["characters"].listCharacters, createCharacter: __m["characters"].createCharacter, setStatus: __m["characters"].setStatus, saveSheet: __m["characters"].saveSheet, deleteCharacter: __m["characters"].deleteCharacter, listParty: __m["characters"].listParty, listMembers: __m["characters"].listMembers, assignCharacter: __m["characters"].assignCharacter, listShares: __m["characters"].listShares, setShares: __m["characters"].setShares };
 })();
 /* ── end sheet converter ── */
 
@@ -1244,7 +1283,7 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
     // Party, and can assign a backup to a player; the player role (or a DM who
     // also plays) has characters. Both: both. A DM who doesn't play keeps only
     // Backups: characters they prepare to assign.
-    let party = [], members = [];
+    let party = [], members = [], shares = {};
     const asDM = () => !!session && !!session.isDM;
     const asPlayer = () => !!session && !!session.isPlayer;
     // Both roles: a Player tab and a DM tab (remembered in this browser)
@@ -1275,10 +1314,10 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
     async function reload() {
       loadError = '';
       try { list = await Characters.listCharacters(client, session); } catch (e) { loadError = problem(e); }
-      if (asDM()) {
-        try { [party, members] = await Promise.all([Characters.listParty(client, session.campaignId), Characters.listMembers(client, session.campaignId)]); }
-        catch (e) { party = []; members = []; }
-      }
+      try { [party, members] = await Promise.all([asDM() ? Characters.listParty(client, session.campaignId) : [], Characters.listMembers(client, session.campaignId)]); }
+      catch (e) { party = []; members = []; }
+      try { shares = await Characters.listShares(client, [...list.mine, ...party].map(c => c.id)); }
+      catch (e) { shares = {}; }
       render();
     }
 
@@ -1374,6 +1413,30 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
       };
       d.returnValue = ''; d.showModal();
     }
+    // Who else can play a character: anyone who plays, but its owner. For the
+    // owner, or the DM when a player's away (a Party card)
+    const nameOf = id => (members.find(m => m.id === id) || {}).name || 'Someone';
+    function share(c) {
+      const d = $('share'), host = $('share-list'), me = session.user.id;
+      const before = shares[c.id] || [];
+      const players = members.filter(m => m.plays && m.id !== c.ownerId);
+      $('share-title').textContent = `Share ${c.name}?`;
+      $('share-text').textContent = players.length ? `Anyone you tick can open ${c.name}’s sheet, edit it and play it, until you take it back.` : 'There are no other players in this campaign yet.';
+      $('share-box').hidden = !players.length;
+      host.textContent = '';
+      players.forEach(m => { const l = el('label'); const b = el('input'); b.type = 'checkbox'; b.value = m.id; b.checked = before.includes(m.id); l.append(b, ' ', el('span', '', m.id === me ? `${m.name} (you)` : m.name)); host.appendChild(l); });
+      $('share-ok').disabled = !players.length;
+      d.onclose = async () => {
+        if (d.returnValue !== 'ok') return;
+        const after = [...host.querySelectorAll('input:checked')].map(b => b.value);
+        if (after.length === before.length && after.every(u => before.includes(u))) return;
+        try {
+          await Characters.setShares(client, session, c.id, before, after); await reload();
+          say(after.length ? `${after.map(nameOf).join(', ')} can play ${c.name}.` : `No one else can play ${c.name} now.`);
+        } catch (e) { say(problem(e)); }
+      };
+      d.returnValue = ''; d.showModal();
+    }
     async function copyOf(c) {
       const data = { ...(c.data || {}), name: `${c.name} (copy)` };
       const st = c.status === 'unassigned' ? 'unassigned' : 'backup';
@@ -1397,6 +1460,7 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
       const n = el('h3', 'name', c.name); n.id = nid; k.appendChild(n);
       k.appendChild(el('p', 'what' + (c.summary ? '' : ' blank'), c.summary || (c.blank ? 'Not filled in yet' : '')));
       if (c.updatedAt) k.appendChild(el('p', 'meta', when(c.updatedAt)));
+      if (!given && (shares[c.id] || []).length) k.appendChild(el('p', 'meta', `Shared with ${shares[c.id].map(nameOf).join(', ')}`));
       const a = el('div', 'actions');
       const open = opts.view
         ? el('a', 'btn small ui-button is-secondary size-sm', 'View sheet')
@@ -1408,7 +1472,7 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
         const b = el('button', 'btn quiet small ui-button is-secondary size-sm', c.status === 'dead' ? 'Return to play' : 'Bring into play'); b.type = 'button';
         b.addEventListener('click', () => bringIn(c)); a.appendChild(b);
       }
-      if (!given && !opts.view) {                                       // a Party card is for looking only
+      if (!given) {                                                     // a Party card's sheet is view only; its menu only shares
         const m = el('button', 'btn quiet small more ui-button is-secondary is-icon size-sm', '⋯'); m.type = 'button';
         m.setAttribute('aria-label', `More for ${c.name}`); m.setAttribute('aria-haspopup', 'true'); m.setAttribute('aria-expanded', String(openMenu === c.id));
         m.addEventListener('click', e => { e.stopPropagation(); openMenu = openMenu === c.id ? null : c.id; render(); if (openMenu) document.querySelector('.menu button')?.focus(); });
@@ -1418,11 +1482,13 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
       if (openMenu === c.id) {
         const menu = el('div', 'menu ui-menu'); menu.setAttribute('role', 'menu');
         const item = (t, fn) => { const b = el('button', '', t); b.type = 'button'; b.setAttribute('role', 'menuitem'); b.addEventListener('click', () => { openMenu = null; render(); fn(); }); menu.appendChild(b); };
+        if (opts.view) { item('Share\u2026', () => share(c)); k.appendChild(menu); return k; }
         if (asDM() && (opts.dm || c.status !== 'play')) item('Assign to player\u2026', () => assign(c));
         if (!opts.dm) {
           if (c.status !== 'play') item('Bring into play', () => bringIn(c));
           if (c.status !== 'backup') item('Move to Backups', () => move(c, 'backup').then(ok => ok && say(`${c.name} moved to Backups.`)));
           if (c.status !== 'dead') item('Mark as dead', () => move(c, 'dead').then(ok => ok && say(`${c.name} is marked as dead.`)));
+          item('Share\u2026', () => share(c));
         }
         menu.appendChild(el('hr'));
         item('Make a copy', () => copyOf(c));
@@ -1478,7 +1544,7 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
         const sp = section('Party', party.length, null, party.length ? 'Each player’s character in play. View only.' : 'No one has a character in play yet.');
         if (party.length) {
           const cp = el('div', 'cards');
-          party.forEach(p => cp.appendChild(card({ id: p.id, name: p.name, status: 'party', summary: Characters.summary(p.data), blank: Characters.isBlank(p.data), updatedAt: p.updatedAt, ownerName: ownerOf(p.ownerId) }, false, { view: true })));
+          party.forEach(p => cp.appendChild(card({ id: p.id, name: p.name, ownerId: p.ownerId, status: 'party', summary: Characters.summary(p.data), blank: Characters.isBlank(p.data), updatedAt: p.updatedAt, ownerName: ownerOf(p.ownerId) }, false, { view: true })));
           sp.appendChild(cp);
         }
         wrap.appendChild(sp);
@@ -1529,7 +1595,7 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
     document.addEventListener('click', e => { if (openMenu && !e.target.closest('.menu')) { openMenu = null; render(); } });
     document.addEventListener('keydown', e => {
       if (e.key !== 'Escape' || !openMenu) return;
-      const c = list.mine.find(x => x.id === openMenu); openMenu = null; render();
+      const c = [...list.mine, ...party].find(x => x.id === openMenu); openMenu = null; render();
       if (c) document.querySelector(`[aria-label="More for ${CSS.escape(c.name)}"]`)?.focus();
     });
 

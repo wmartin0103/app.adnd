@@ -116,6 +116,34 @@ export async function assignCharacter(client, id, ownerId) {
   const { data, error } = await client.from('characters').update({ owner_id: ownerId, status: 'backup' }).eq('id', id).select('id');
   if (error) throw error;
   if (!data || !data.length) throw new Error('That character couldn’t be assigned.');
+  // Theirs now: they decide who else plays it
+  const r = await client.from('character_editors').delete().eq('character_id', id);
+  if (r.error) throw r.error;
+}
+
+// Who else can play each character: { characterId: [userId, …] }
+export async function listShares(client, ids) {
+  if (!ids.length) return {};
+  const { data, error } = await client.from('character_editors').select('character_id, user_id').in('character_id', ids);
+  if (error) throw error;
+  const shares = {};
+  (data || []).forEach(r => { (shares[r.character_id] = shares[r.character_id] || []).push(r.user_id); });
+  return shares;
+}
+// Who else can play a character, from `before` to `after` (lists of user ids).
+// The database's rules allow it for the owner, the DM or an admin; a removal
+// they refuse removes nothing, so ask for the rows back to know it went.
+export async function setShares(client, session, id, before, after) {
+  const added = after.filter(u => !before.includes(u)), gone = before.filter(u => !after.includes(u));
+  if (added.length) {
+    const { error } = await client.from('character_editors').insert(added.map(u => ({ character_id: id, user_id: u, granted_by: session.user.id })));
+    if (error) throw error;
+  }
+  if (gone.length) {
+    const { data, error } = await client.from('character_editors').delete().eq('character_id', id).in('user_id', gone).select('user_id');
+    if (error) throw error;
+    if (!data || data.length !== gone.length) throw new Error('That access couldn’t be taken back.');
+  }
 }
 
 // Moves a character; into play, the one in play now goes to `others` (dead

@@ -69,12 +69,12 @@ export const PAGES = {
   'site/index.html': {
     Cloud: ['cloud', ['cloudClient', 'cloudSession']],
     Theme: ['ui/theme', ['mountThemeToggle', 'currentTheme', 'setTheme']],
-    Characters: ['characters', ['STATUS_LABEL', 'summary', 'isBlank', 'fileName', 'listCharacters', 'createCharacter', 'setStatus', 'saveSheet', 'deleteCharacter', 'listParty', 'listMembers', 'assignCharacter']],
+    Characters: ['characters', ['STATUS_LABEL', 'summary', 'isBlank', 'fileName', 'listCharacters', 'createCharacter', 'setStatus', 'saveSheet', 'deleteCharacter', 'listParty', 'listMembers', 'assignCharacter', 'listShares', 'setShares']],
   },
   'site/account.html': {
     Cloud: ['cloud', ['cloudClient', 'cloudSession']],
     Theme: ['ui/theme', ['mountThemeToggle', 'currentTheme', 'setTheme']],
-    Account: ['account', ['MIN_PASSWORD', 'passwordProblem', 'setPassword', 'setEmail', 'setDisplayName', 'characterAccess', 'grantAccess', 'revokeAccess']],
+    Account: ['account', ['MIN_PASSWORD', 'passwordProblem', 'setPassword', 'setEmail', 'setDisplayName']],
   },
 };
 // Each page's modules, from what it exposes (and what those import), in bundle order
