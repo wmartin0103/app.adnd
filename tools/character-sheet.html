@@ -1838,6 +1838,8 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     .spell-ov-field .spell-ov-inp { width: 8rem; flex: none; }
     .spell-ov-desc { width: 100%; box-sizing: border-box; min-height: 7rem; resize: vertical; font-family: var(--font-sans); font-size: 13px; line-height: 1.5; color: var(--ink); background: transparent; border: 1px solid var(--rule); border-radius: 4px; padding: 0.4rem 0.5rem; }
     .spell-card.is-collapsed .spell-ref :is(.spell-ov-controls, .spell-ov-desc) { display: none; }
+    .spell-card-timing { display: flex; flex-direction: column; gap: 0.1rem; font-family: var(--font-sans); font-size: 13px; color: var(--ink); }
+    .spell-card-timing b { font-family: var(--font-display); font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted); font-weight: 400; display: inline-block; width: 5rem; }
     .spell-fold-btn svg { transition: transform 0.15s; }
     .spell-fold-btn.is-folded svg { transform: rotate(-90deg); }
     /* Collapsed: level, type, name, effect, saving throw, Mem, × */
@@ -10203,7 +10205,23 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           ovWrap.appendChild(ovChk); ovWrap.appendChild(ovLabel);
           topBar.appendChild(ovWrap);   // right end of the header row, beside the level and type
         }
-        card.appendChild(bottomBar);
+        if (section === 'memorized') {
+          // A memorized card has no level/type dropdowns (the badges show them); it shows the cast time and duration instead
+          const src = spells.find(x => x.id === spl.sourceId) || spl;
+          const e = src.overridden && src.override ? src.override
+            : ((src.catalogId && window.SheetSpellCatalog && SheetSpellCatalog.spells.find(x => x.id === src.catalogId)) || catalogEntryByName(spl.name, spl.type));
+          const info = document.createElement('div');
+          info.className = 'spell-card-timing';
+          [['Cast time', e && e.castTime], ['Duration', e && e.duration]].forEach(([k, v]) => {
+            const row = document.createElement('div');
+            const b = document.createElement('b'); b.textContent = k;
+            row.appendChild(b); row.appendChild(document.createTextNode(v || '—'));
+            info.appendChild(row);
+          });
+          card.appendChild(info);
+        } else {
+          card.appendChild(bottomBar);
+        }
         return card;
       }
 
