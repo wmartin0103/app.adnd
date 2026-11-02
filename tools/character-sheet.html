@@ -1823,10 +1823,13 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       padding: 0.8rem 1rem; max-height: 330px;
     }
     .spell-card.is-roomy > * { grid-column: 1; }
-    .spell-card.is-roomy > .spell-ref { grid-column: 2; grid-row: 1 / span 7; overflow-y: auto; min-height: 0; padding-right: 0.3rem; }
+    .spell-card.is-roomy { position: relative; }
+    .spell-card-corner { position: absolute !important; top: 0.55rem; right: 0.7rem; display: flex; align-items: center; gap: 0.5rem; }
+    .spell-card.is-roomy > .spell-ref { grid-column: 2; grid-row: 1 / span 7; overflow-y: auto; min-height: 0; padding-right: 5.5rem; }
     @media (max-width: 700px) {
       .spell-card.is-roomy { display: flex; max-height: none; }
-      .spell-card.is-roomy > .spell-ref { overflow: visible; }
+      .spell-card.is-roomy > .spell-ref { overflow: visible; padding-right: 0; }
+      .spell-card-corner { position: static !important; }
     }
     .spell-ref { display: flex; flex-direction: column; gap: 0.6rem; font-family: var(--font-sans); font-size: 13px; color: var(--ink); }
     .spell-ref-facts { display: flex; flex-wrap: wrap; gap: 0.2rem 1.2rem; }
@@ -9779,7 +9782,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         spacer.style.flex = '1';
         topBar.appendChild(spacer);
 
-        let memWrapEl = null;   // the roomy card moves Mem down to the bottom bar
+        let memWrapEl = null;   // the roomy card puts Mem and × in its top-right corner
         if (section === 'spellbook') {
           // Memorize toggle — creates a separate memorized copy
           const memWrap = document.createElement('label');
@@ -9890,7 +9893,15 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           renderSpells();
           saveToItems();
         });
-        topBar.appendChild(delBtn);
+        if (section === 'spellbook' && spellbookView === 'roomy') {
+          const corner = document.createElement('div');
+          corner.className = 'spell-card-corner';
+          if (memWrapEl) corner.appendChild(memWrapEl);
+          corner.appendChild(delBtn);
+          card.appendChild(corner);
+        } else {
+          topBar.appendChild(delBtn);
+        }
         card.appendChild(topBar);
 
         // ── Name ───────────────────────────────────────────────
@@ -10004,7 +10015,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           saveToItems();
         });
         bottomBar.appendChild(typeSel);
-        if (memWrapEl) { memWrapEl.style.marginLeft = 'auto'; bottomBar.appendChild(memWrapEl); }
         card.appendChild(bottomBar);
         return card;
       }
