@@ -10304,6 +10304,20 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         b.addEventListener('click', () => { spellbookView = v; renderSpellCards(); saveToItems(); });
         viewTabs.appendChild(b);
       });
+      if (spellbookView === 'roomy' && bookSpells.length) {
+        // One button folds or unfolds every spellbook card (the level filter doesn't limit it)
+        const allFolded = bookSpells.every(x => x.collapsed);
+        const foldAll = document.createElement('button');
+        foldAll.type = 'button';
+        foldAll.className = 'ui-button is-bare size-sm';
+        foldAll.textContent = allFolded ? 'Expand all' : 'Collapse all';
+        foldAll.addEventListener('click', () => {
+          bookSpells.forEach(x => { x.collapsed = !allFolded; });
+          renderSpellCards();
+          saveToItems();
+        });
+        bookTools.appendChild(foldAll);
+      }
       bookTools.appendChild(viewTabs);
       bookTools.appendChild(pagesWrap);
       bookHead.appendChild(bookTools);
