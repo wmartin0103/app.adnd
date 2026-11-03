@@ -569,9 +569,6 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     .qr-stat dd { margin: 0; font-size: 0.85rem; line-height: 1.25; color: var(--ink); overflow-wrap: break-word; min-width: 0; }
     .qr-stat.is-key dd { font-family: var(--font-display); font-weight: 700; font-size: 1rem; color: var(--color-accent-text); }
     .qr-stat.is-quiet dd { font-size: 0.9rem; color: var(--ink-muted); }
-    /* A house rule on every spell: said once, above them */
-    .spell-note { display: none; margin: 0 0 12px; font-size: 0.85rem; color: var(--ink-muted); }
-    .is-detailed .spell-note:not([hidden]) { display: block; }
     .qr-level { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--ink-muted); }
     .qr-level input { width: 4.5rem; }
     /* Repeat cards: an offer to merge them */
@@ -3148,7 +3145,6 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
             </div>
           </div>
         </div>
-        <p class="spell-note" id="spell-note" hidden></p>
         <div id="spells-list" aria-label="Spells list">
           <!-- populated by renderSpells() -->
         </div>
@@ -4508,8 +4504,10 @@ function scenarioTHAC0(ctx, sc) {
 }
 
 // What a Detailed spell card shows, from its catalog entry: the dice at this
-// caster's level (or as written when no level is known), the save in words,
-// and any house-rule penalty. sp: the sheet's spell, with any casterLevel set.
+// caster's level (or as written when no level is known) and the save in words.
+// How it's cast is the Combat scenario's business: a Bowcaster's penalty for
+// casting without an arrow is applied there. sp: the sheet's spell, with any
+// casterLevel set.
 function spellCardStats(ctx, sp, cat) {
   if (!cat) return null;
   const setLevel = num(sp && sp.casterLevel);
@@ -4518,15 +4516,12 @@ function spellCardStats(ctx, sp, cat) {
   const known = !!setLevel || !offList || !/level/i.test(written);
   let dice = written;
   if (written && known) dice = diceAtLevel(written, setLevel || casterLevel(ctx, {}, cat.class), cat.diceMaxLevel) || written;
-  const bowcaster = isBowcaster(ctx);
-  if (bowcaster && dice && known) dice = lessPerDie(dice);
   const save = String(cat.save || '').trim();
   return {
     school: String(cat.school || '').split(';')[0].split(' · ')[0].trim(),
     dice, heal: cat.diceKind === 'heal', save: saveShort(save, !!written), saveKey: !!save && !isNoSave(save),
     attack: { touch: 'Touch', ranged: 'Ranged' }[cat.attack] || '',
-    castTime: bowcaster ? slowerCast(cat.castTime) : cat.castTime || '', range: cat.range || '', duration: cat.duration || '', area: cat.area || '',
-    penalty: bowcaster ? 'Cast without an arrow: casting time +3, −1 damage per die' : '',
+    castTime: cat.castTime || '', range: cat.range || '', duration: cat.duration || '', area: cat.area || '',
     offList, casterLevel: setLevel || '',
   };
 }
@@ -9572,9 +9567,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
       // ── Slot header ──────────────────────────────────────────
       updateSpellSlotHeader();
-      const note = document.getElementById('spell-note');
-      note.hidden = !SheetScenarios.isBowcaster(scenarioCtx());
-      note.textContent = note.hidden ? '' : 'Bowcaster: these show a spell cast without an arrow (casting time +3, −1 damage per die).';
 
       if (spells.length === 0) {
         const empty = document.createElement('p');

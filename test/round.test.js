@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { scenarioContext, scenarioSpell, scenarioDamage, spellCardStats, saveNote, saveShort, lessPerDie } from '../src/rules/scenarios.js';
+import { scenarioContext, scenarioSpell, scenarioDamage, spellCardStats, saveNote, saveShort } from '../src/rules/scenarios.js';
 import { lineSaveNote, newRound, roundLines, lineTHAC0, judgeRoll, actOn, rollLine, rollDice, lineToHit, roundACPenalty, queueAttack, unqueueAttack, roundQueue, rerollDamage, lineSay, lineKind, hasRoll, isHealing, plainAttack } from '../src/rules/round.js';
 import { createRoundSync } from '../src/round-sync.js';
 
@@ -231,17 +231,17 @@ test('a spell card works out its quick reference', () => {
   const entry = name => catalog.spells.find(e => e.name === name && e.class === 'wizard');
   const wizard = { classes: [{ name: 'Wizard', group: 'wizard', level: '5' }] };
   const st = spellCardStats(wizard, {}, entry('Fireball'));
-  assert.deepEqual([st.dice, st.save, st.saveKey, st.offList, st.penalty], ['5d6', '½ damage', true, false, '']);
+  assert.deepEqual([st.dice, st.save, st.saveKey, st.offList], ['5d6', '½ damage', true, false]);
   // Off the sheet's lists: the dice as written, until a level is given
   const fighter = { classes: [{ name: 'Fighter', group: 'warrior', level: '5' }] };
   assert.equal(spellCardStats(fighter, {}, entry('Fireball')).dice, '1d6/level');
   assert.equal(spellCardStats(fighter, {}, entry('Fireball')).offList, true);
   assert.equal(spellCardStats(fighter, { casterLevel: 9 }, entry('Fireball')).dice, '9d6');
-  // A Blade casts two levels lower; a Bowcaster's ordinary cast has the penalty
+  // A Blade casts two levels lower; a Bowcaster's penalty is the Combat scenario's, not the card's
   assert.equal(spellCardStats({ classes: [{ name: 'Blade Bard', group: 'rogue', level: '5' }] }, {}, entry('Fireball')).dice, '3d6');
   const bow = spellCardStats({ classes: [{ name: 'Wizard (Bowcaster)', group: 'wizard', level: '4' }] }, {}, entry('Fireball'));
-  assert.equal(bow.dice, lessPerDie('4d6'));
-  assert.match(bow.penalty, /without an arrow/);
+  assert.equal(bow.dice, '4d6');
+  assert.equal(bow.castTime, '3');
   assert.equal(spellCardStats(wizard, {}, null), null);
 });
 

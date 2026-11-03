@@ -2415,8 +2415,10 @@ function scenarioTHAC0(ctx, sc) {
 }
 
 // What a Detailed spell card shows, from its catalog entry: the dice at this
-// caster's level (or as written when no level is known), the save in words,
-// and any house-rule penalty. sp: the sheet's spell, with any casterLevel set.
+// caster's level (or as written when no level is known) and the save in words.
+// How it's cast is the Combat scenario's business: a Bowcaster's penalty for
+// casting without an arrow is applied there. sp: the sheet's spell, with any
+// casterLevel set.
 function spellCardStats(ctx, sp, cat) {
   if (!cat) return null;
   const setLevel = num(sp && sp.casterLevel);
@@ -2425,15 +2427,12 @@ function spellCardStats(ctx, sp, cat) {
   const known = !!setLevel || !offList || !/level/i.test(written);
   let dice = written;
   if (written && known) dice = diceAtLevel(written, setLevel || casterLevel(ctx, {}, cat.class), cat.diceMaxLevel) || written;
-  const bowcaster = isBowcaster(ctx);
-  if (bowcaster && dice && known) dice = lessPerDie(dice);
   const save = String(cat.save || '').trim();
   return {
     school: String(cat.school || '').split(';')[0].split(' · ')[0].trim(),
     dice, heal: cat.diceKind === 'heal', save: saveShort(save, !!written), saveKey: !!save && !isNoSave(save),
     attack: { touch: 'Touch', ranged: 'Ranged' }[cat.attack] || '',
-    castTime: bowcaster ? slowerCast(cat.castTime) : cat.castTime || '', range: cat.range || '', duration: cat.duration || '', area: cat.area || '',
-    penalty: bowcaster ? 'Cast without an arrow: casting time +3, −1 damage per die' : '',
+    castTime: cat.castTime || '', range: cat.range || '', duration: cat.duration || '', area: cat.area || '',
     offList, casterLevel: setLevel || '',
   };
 }
