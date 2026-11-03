@@ -1854,6 +1854,35 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     .spell-card:hover { border-color: color-mix(in srgb, var(--accent) 40%, var(--rule)); }
     .spell-card-cast  { opacity: 0.4; }
 
+    /* Spellbook: level filter, fold, drag to reorder, editable summary */
+    .spellbook-tools { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+    .spellbook-filter { max-width: 100%; overflow-x: auto !important; margin-bottom: 0.6rem; }
+    .spellbook-filter button { min-width: 2.1rem; }
+    .spell-grip { cursor: grab; color: var(--ink-muted); display: inline-flex; align-items: center; padding: 0 0.15rem; margin-left: -0.15rem; }
+    .spell-grip:hover { color: var(--accent); }
+    .spell-card.is-dragging { opacity: 0.4; }
+    .spell-card.drop-before { box-shadow: -4px 0 0 var(--accent); }
+    .spell-card.drop-after  { box-shadow: 4px 0 0 var(--accent); }
+    .spell-card.drop-before.is-stacked { box-shadow: 0 -4px 0 var(--accent); }
+    .spell-card.drop-after.is-stacked  { box-shadow: 0 4px 0 var(--accent); }
+    .spell-fold-btn svg { transition: transform 0.15s; }
+    .spell-fold-btn.is-folded svg { transform: rotate(-90deg); }
+    .spell-card.is-collapsed > :is(.spell-card-notes, .spell-qr, .spell-sum) { display: none; }
+    .spell-sum { display: none; flex-direction: column; gap: 0.25rem; }
+    .is-detailed .spell-sum { display: flex; }
+    .is-detailed .spell-card.is-collapsed .spell-sum { display: none; }
+    .spell-sum-head { display: flex; align-items: baseline; gap: 0.6rem; font-family: var(--font-display); font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted); }
+    .spell-sum-head .spell-ref-more { margin-left: auto; }
+    .spell-ref-more { font-family: var(--font-sans); font-size: 12px; letter-spacing: normal; text-transform: none; background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; text-decoration: underline; }
+    .spell-ref-more:disabled { opacity: 0.5; cursor: default; }
+    .spell-sum-view { font-family: var(--font-sans); font-size: 13px; line-height: 1.5; color: var(--ink); white-space: pre-line; cursor: text; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 6; line-clamp: 6; overflow: hidden; border-radius: 4px; }
+    .spell-sum-view:hover, .spell-sum-view:focus-visible { background: color-mix(in srgb, var(--accent) 7%, transparent); outline: none; }
+    .spell-sum-view.is-open { display: block; -webkit-line-clamp: unset; line-clamp: unset; }
+    .spell-sum-view.is-empty { color: var(--ink-muted); font-style: italic; }
+    .spell-sum-view[hidden], .spell-sum-text[hidden], .spell-sum > .spell-ref-more[hidden] { display: none; }
+    .spell-sum > .spell-ref-more { align-self: flex-start; }
+    .spell-sum-text { width: 100%; box-sizing: border-box; resize: none; overflow-y: auto; max-height: 15rem; font-family: var(--font-sans); font-size: 13px; line-height: 1.5; color: var(--ink); background: transparent; border: 1px solid var(--accent); border-radius: 4px; padding: 0.3rem 0.5rem; }
+
     /* Top bar */
     .spell-card-top {
       display: flex;
@@ -9488,6 +9517,8 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
     };
 
     let spellView = 'simple';   // the spell cards' view, kept with the character
+    let spellbookLevel = 0;     // the spellbook's level filter (0 = all); not saved
+    let dragSpellId = null;     // the spellbook card being dragged
 
     // Find highest level of a class by group and/or name hint
     // The slots, one row per class that has spells at its level (worked out from
@@ -9555,6 +9586,123 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       return pool.find(e => e.class === cls && phb(e)) || pool.find(e => e.class === cls) || pool.find(phb) || pool[0] || null;
     }
 
+    // The spell summary's wiki fetch (only when 'Load from wiki' is clicked)
+    const spellDescCache = {};
+    function wikiTitleFromUrl(url) {
+      const m = /adnd2e\.fandom\.com\/wiki\/([^?#]+)/.exec(url || '');
+      if (!m) return null;
+      try { return decodeURIComponent(m[1]).replace(/_/g, ' '); } catch (e) { return null; }
+    }
+    function wikitextToPlain(w) {
+      let t = String(w || '');
+      let out = '', depth = 0;               // drop {{templates}}, even nested (the infobox)
+      for (let i = 0; i < t.length; i++) {
+        if (t.startsWith('{{', i)) { depth++; i++; continue; }
+        if (t.startsWith('}}', i) && depth) { depth--; i++; continue; }
+        if (!depth) out += t[i];
+      }
+      out = out.split(/^==/m)[0];            // the intro only, before the first heading
+      return out
+        .replace(/<ref[^>]*>[\s\S]*?<\/ref>|<ref[^>]*\/>/g, '')
+        .replace(/\[\[(?:File|Image|Category):[^\]]*\]\]/gi, '')
+        .replace(/\[\[[^\]|]*\|([^\]]*)\]\]/g, '$1').replace(/\[\[([^\]]*)\]\]/g, '$1')
+        .replace(/<[^>]+>/g, '').replace(/'{2,}/g, '')
+        .replace(/\n{3,}/g, '\n\n').trim();
+    }
+    // Resolves to the plain description, or '' when it can't be had (offline, no wiki link)
+    function fetchSpellDescription(url) {
+      const title = wikiTitleFromUrl(url);
+      if (!title) return Promise.resolve('');
+      const key = 'adnd-spell-desc:' + title;
+      if (spellDescCache[title] !== undefined) return spellDescCache[title];
+      try { const hit = localStorage.getItem(key); if (hit) return (spellDescCache[title] = Promise.resolve(hit)); } catch (e) { /* storage blocked */ }
+      const api = 'https://adnd2e.fandom.com/api.php?action=parse&prop=wikitext&format=json&formatversion=2&origin=*&redirects=1&page=' + encodeURIComponent(title);
+      return (spellDescCache[title] = fetch(api).then(r => r.json()).then(j => {
+        const text = wikitextToPlain(j && j.parse && j.parse.wikitext);
+        if (text) { try { localStorage.setItem(key, text); } catch (e) { /* full */ } }
+        else delete spellDescCache[title];
+        return text;
+      }).catch(() => { delete spellDescCache[title]; return ''; }));
+    }
+    // What the summary box shows: the player's own text, else the catalog's
+    function spellSummaryText(spl, e) {
+      return spl.summary !== undefined ? spl.summary : ((e && e.summary) || '');
+    }
+    // Moves a spellbook entry next to another one (drag and drop)
+    function moveSpell(id, targetId, after) {
+      const from = spells.findIndex(x => x.id === id);
+      if (from < 0 || id === targetId) return false;
+      const [m] = spells.splice(from, 1);
+      const to = spells.findIndex(x => x.id === targetId);
+      if (to < 0) { spells.splice(from, 0, m); return false; }
+      spells.splice(after ? to + 1 : to, 0, m);
+      return true;
+    }
+    // The editable summary: the catalog's text to start, the player's own once edited,
+    // clamped with Show more; Load from wiki fetches the spell's page (only when clicked)
+    function buildSpellSummary(spl, e) {
+      const sum = document.createElement('div');
+      sum.className = 'spell-sum';
+      const head = document.createElement('div');
+      head.className = 'spell-sum-head';
+      const label = document.createElement('span');
+      label.textContent = 'Summary';
+      const wikiBtn = document.createElement('button');
+      wikiBtn.type = 'button';
+      wikiBtn.className = 'spell-ref-more';
+      wikiBtn.textContent = 'Load from wiki';
+      const status = document.createElement('span');
+      head.append(label, status, wikiBtn);
+      const view = document.createElement('div');
+      view.className = 'spell-sum-view';
+      view.tabIndex = 0;
+      view.title = 'Click to edit';
+      const more = document.createElement('button');
+      more.type = 'button';
+      more.className = 'spell-ref-more';
+      more.textContent = 'Show more';
+      more.hidden = true;
+      more.addEventListener('click', () => {
+        const open = view.classList.toggle('is-open');
+        more.textContent = open ? 'Show less' : 'Show more';
+      });
+      const ta = document.createElement('textarea');
+      ta.className = 'spell-sum-text open-field';
+      ta.hidden = true;
+      ta.placeholder = 'Summary…';
+      ta.setAttribute('aria-label', 'Spell summary');
+      const grow = () => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight + 4, 240) + 'px'; };
+      const showView = () => {
+        const text = spellSummaryText(spl, e);
+        view.textContent = text || 'No summary yet. Click to write one, or Load from wiki.';
+        view.classList.toggle('is-empty', !text);
+        view.hidden = false; ta.hidden = true; more.hidden = true;
+        requestAnimationFrame(() => { more.hidden = view.classList.contains('is-open') ? false : view.scrollHeight <= view.clientHeight + 1; });
+      };
+      const edit = () => { view.hidden = true; more.hidden = true; ta.hidden = false; ta.value = spellSummaryText(spl, e); grow(); ta.focus(); };
+      view.addEventListener('click', edit);
+      view.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); edit(); } });
+      ta.addEventListener('input', () => { spl.summary = ta.value; grow(); });
+      ta.addEventListener('blur', () => { spl.summary = ta.value; showView(); saveToItems(); });
+      wikiBtn.addEventListener('click', () => {
+        const url = [spl.url, e && e.link].find(u => wikiTitleFromUrl(u));
+        if (!url) { status.textContent = 'No wiki link on this spell'; return; }
+        if (spl.summary && spl.summary.trim() && spl.summary !== ((e && e.summary) || '') && !confirm('Replace the summary you have with the wiki text?')) return;
+        wikiBtn.disabled = true; status.textContent = 'Loading…';
+        fetchSpellDescription(url).then(text => {
+          wikiBtn.disabled = false;
+          if (!text) { status.textContent = "Couldn't reach the wiki"; return; }
+          status.textContent = '';
+          spl.summary = text;
+          view.classList.remove('is-open'); more.textContent = 'Show more';
+          showView(); saveToItems();
+        });
+      });
+      showView();
+      sum.append(head, view, more, ta);
+      return sum;
+    }
+
     // Redraws the spell cards, then the combat scenarios, so a scenario's
     // "Spell" list always matches what is memorized
     function renderSpells() {
@@ -9593,6 +9741,48 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         const lvlBadge = document.createElement('span');
         lvlBadge.className = 'spell-level-badge tag' + (ordinals[spl.level] ? ` tag-l${spl.level}` : '');
         lvlBadge.textContent = ordinals[spl.level] || 'Special';
+        if (section === 'spellbook') {
+          // Drag the grip to reorder (the whole card isn't draggable, so its fields stay selectable)
+          const grip = document.createElement('span');
+          grip.className = 'spell-grip';
+          grip.draggable = true;
+          grip.title = 'Drag to reorder';
+          grip.setAttribute('aria-hidden', 'true');
+          grip.innerHTML = '<svg viewBox="0 0 10 16" width="10" height="14" fill="currentColor"><circle cx="2.5" cy="3" r="1.3"/><circle cx="7.5" cy="3" r="1.3"/><circle cx="2.5" cy="8" r="1.3"/><circle cx="7.5" cy="8" r="1.3"/><circle cx="2.5" cy="13" r="1.3"/><circle cx="7.5" cy="13" r="1.3"/></svg>';
+          grip.addEventListener('dragstart', ev => {
+            dragSpellId = spl.id;
+            ev.dataTransfer.effectAllowed = 'move';
+            ev.dataTransfer.setData('text/plain', spl.id);
+            ev.dataTransfer.setDragImage(card, 16, 16);
+            card.classList.add('is-dragging');
+          });
+          grip.addEventListener('dragend', () => {
+            dragSpellId = null;
+            document.querySelectorAll('.is-dragging, .drop-before, .drop-after').forEach(el => el.classList.remove('is-dragging', 'drop-before', 'drop-after', 'is-stacked'));
+          });
+          topBar.appendChild(grip);
+          // Side by side: left or right half; one per row: top or bottom half
+          const stacked = () => card.parentElement && card.offsetWidth > card.parentElement.clientWidth * 0.8;
+          const side = ev => {
+            const r = card.getBoundingClientRect();
+            return stacked() ? ev.clientY > r.top + r.height / 2 : ev.clientX > r.left + r.width / 2;
+          };
+          card.addEventListener('dragover', ev => {
+            if (!dragSpellId || dragSpellId === spl.id) return;
+            ev.preventDefault();
+            ev.dataTransfer.dropEffect = 'move';
+            const after = side(ev);
+            card.classList.toggle('is-stacked', !!stacked());
+            card.classList.toggle('drop-after', after);
+            card.classList.toggle('drop-before', !after);
+          });
+          card.addEventListener('dragleave', ev => { if (!card.contains(ev.relatedTarget)) card.classList.remove('drop-before', 'drop-after', 'is-stacked'); });
+          card.addEventListener('drop', ev => {
+            if (!dragSpellId) return;
+            ev.preventDefault();
+            if (moveSpell(dragSpellId, spl.id, side(ev))) { renderSpells(); saveToItems(); }
+          });
+        }
         topBar.appendChild(lvlBadge);
 
         // Type badge
@@ -9717,6 +9907,22 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           renderSpells();
           saveToItems();
         });
+        if (section === 'spellbook') {
+          const fold = document.createElement('button');
+          fold.type = 'button';
+          fold.className = 'spell-fold-btn ui-button is-bare is-icon size-sm';
+          fold.innerHTML = '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3.5 6l4.5 4.5L12.5 6"/></svg>';
+          const paintFold = () => {
+            card.classList.toggle('is-collapsed', !!spl.collapsed);
+            fold.classList.toggle('is-folded', !!spl.collapsed);
+            fold.setAttribute('aria-expanded', String(!spl.collapsed));
+            fold.setAttribute('aria-label', spl.collapsed ? 'Expand spell' : 'Collapse spell');
+            fold.title = spl.collapsed ? 'Expand' : 'Collapse';
+          };
+          paintFold();
+          fold.addEventListener('click', () => { spl.collapsed = !spl.collapsed; paintFold(); saveToItems(); });
+          topBar.appendChild(fold);
+        }
         topBar.appendChild(delBtn);
         card.appendChild(topBar);
 
@@ -9740,6 +9946,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
         // ── Quick reference (Detailed) ─────────────────────────
         if (entry) card.appendChild(spellQuickRef(spl, entry));
+        if (section === 'spellbook') card.appendChild(buildSpellSummary(spl, entry));
 
         // ── Notes ──────────────────────────────────────────────
         const notesInp = document.createElement('input');
@@ -9813,6 +10020,20 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       pagesWrap.appendChild(pagesSep);
       pagesWrap.appendChild(pagesTotalInp);
       pagesWrap.appendChild(pagesLabel);
+      if (bookSpells.length) {
+        // One button folds or unfolds every spellbook card (the level filter doesn't limit it)
+        const allFolded = bookSpells.every(x => x.collapsed);
+        const foldAll = document.createElement('button');
+        foldAll.type = 'button';
+        foldAll.className = 'ui-button is-bare size-sm';
+        foldAll.textContent = allFolded ? 'Expand all' : 'Collapse all';
+        foldAll.addEventListener('click', () => {
+          bookSpells.forEach(x => { x.collapsed = !allFolded; });
+          renderSpellCards();
+          saveToItems();
+        });
+        bookHead.appendChild(foldAll);
+      }
       bookHead.appendChild(pagesWrap);
 
       list.appendChild(bookHead);
@@ -9833,9 +10054,29 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         list.appendChild(offer);
       }
 
+      // Quick filter by spell level (only levels the book has)
+      const levelsHere = [...new Set(bookSpells.map(x => x.level))].sort((a, b) => a - b);
+      if (spellbookLevel && !levelsHere.includes(spellbookLevel)) spellbookLevel = 0;
+      if (levelsHere.length > 1) {
+        const filt = document.createElement('div');
+        filt.className = 'spellbook-filter ui-tabs size-sm';
+        filt.setAttribute('role', 'group');
+        filt.setAttribute('aria-label', 'Filter spellbook by level');
+        [[0, 'All'], ...levelsHere.map(l => [l, ordinals[l] || `${l}th`])].forEach(([lvl, label]) => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.textContent = label;
+          b.setAttribute('aria-pressed', String(spellbookLevel === lvl));
+          b.addEventListener('click', () => { spellbookLevel = lvl; renderSpellCards(); });
+          filt.appendChild(b);
+        });
+        list.appendChild(filt);
+      }
+
       const bookGrid = document.createElement('div');
       bookGrid.className = 'spell-card-grid';
-      bookSpells.forEach(spl => bookGrid.appendChild(buildCard(spl, 'spellbook')));
+      bookSpells.filter(x => !spellbookLevel || x.level === spellbookLevel)
+        .forEach(spl => bookGrid.appendChild(buildCard(spl, 'spellbook')));
       list.appendChild(bookGrid);
 
     }
