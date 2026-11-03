@@ -553,8 +553,8 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     .spell-view { display: flex; align-items: center; gap: 8px; margin-left: auto; }
     /* Simple: no quick reference */
     .spell-qr { display: none; }
-    /* Detailed: fewer columns, the quick reference shows */
-    .is-detailed .spell-card-grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+    /* Detailed: three columns at the sheet's full width, fewer as it narrows; the quick reference shows */
+    .is-detailed .spell-card-grid { grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); gap: 12px; }
     .is-detailed .spell-card { gap: 0.3rem; }
     .is-detailed .spell-card-notes { margin-top: auto; }   /* notes line up along a row of cards */
     .is-detailed .spell-title { font-size: 1rem; line-height: 1.2; }
@@ -563,7 +563,8 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     /* A tinted item (never an inner shadow): what you need to roll, then the rest; each label sits beside its value */
     .qr-block { display: grid; gap: 6px; margin: 0; padding: 6px 10px; border-radius: var(--radius-inner); background: color-mix(in oklab, var(--color-text) 4%, transparent); }
     .qr-keys { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 16px; padding-bottom: 6px; border-bottom: 1px solid var(--color-divider); }
-    .qr-rest { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px 12px; }
+    .qr-rest { display: grid; gap: 2px; }
+    .qr-rest .qr-stat dt { min-width: 3.6rem; }
     .qr-stat { min-width: 0; display: flex; align-items: baseline; gap: 6px; }
     .qr-stat dt { flex: none; font-family: var(--font-display); font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-muted); }
     .qr-stat dd { margin: 0; font-size: 0.85rem; line-height: 1.25; color: var(--ink); overflow-wrap: break-word; min-width: 0; }
