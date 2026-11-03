@@ -2870,15 +2870,18 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .spell-sec-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
   .spell-sec-head .spell-section-heading { flex: 1; }
 
-  /* Small: the cards as they are today, no quick reference */
+  .spell-card-bottom { align-items: center; }
+  .spell-info { margin-left: auto; white-space: nowrap; }
+
+  /* Simple: the cards as they are today, no quick reference */
   .spell-qr { display: none; }
 
-  /* Large: fewer columns, the quick reference shows */
-  .is-large .spell-card-grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
-  .is-large .spell-card { gap: .5rem; }
-  .is-large .spell-card-notes { margin-top: auto; }   /* notes and link line up along a row of cards */
-  .is-large .spell-card-name { font-size: 1.05rem; }
-  .is-large .spell-qr { display: grid; gap: 8px; }
+  /* Detailed: fewer columns, the quick reference shows */
+  .is-detailed .spell-card-grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+  .is-detailed .spell-card { gap: .5rem; }
+  .is-detailed .spell-card-notes { margin-top: auto; }   /* notes and link line up along a row of cards */
+  .is-detailed .spell-card-name { font-size: 1.05rem; }
+  .is-detailed .spell-qr { display: grid; gap: 8px; }
   .qr-school { margin: 0; font-size: .85rem; color: var(--ink-muted); }
   .qr-none { margin: 0; font-size: .9rem; font-style: italic; color: var(--ink-muted); }
   /* A tinted item (never an inner shadow): what you need to roll, then the rest */
@@ -2894,13 +2897,13 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
 </head>
 <body>
 <div class="proto" id="spells">
-  <p class="proto-note">Prototype, with real catalog entries. The sample caster is level 5, so Fireball's "1d6/level" reads 5d6. The Small / Large toggle works.</p>
+  <p class="proto-note">Prototype, with real catalog entries. The sample caster is level 5, so Fireball's "1d6/level" reads 5d6. The Simple / Detailed toggle works.</p>
   <div class="spell-sec-head">
     <div class="spell-section-heading">Memorized</div>
-    <div class="spell-size"><span>Card size</span>
-      <div class="ui-tabs size-sm" role="group" aria-label="Spell card size">
-        <button type="button" data-v="small" aria-pressed="true">Small</button>
-        <button type="button" data-v="large" aria-pressed="false">Large</button>
+    <div class="spell-size"><span>View</span>
+      <div class="ui-tabs size-sm" role="group" aria-label="Spell card view">
+        <button type="button" data-v="simple" aria-pressed="true">Simple</button>
+        <button type="button" data-v="detailed" aria-pressed="false">Detailed</button>
       </div>
     </div>
   </div>
@@ -2918,7 +2921,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     <dl class="qr-block">
       <div class="qr-keys">
         <div class="qr-stat is-key"><dt>Damage</dt><dd title="5d6">5d6</dd></div>
-        <div class="qr-stat is-key"><dt>Save</dt><dd title="½">½</dd></div>
+        <div class="qr-stat is-key"><dt>Save</dt><dd title="½ damage">½ damage</dd></div>
         
       </div>
       <div class="qr-rest">
@@ -2929,13 +2932,11 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       </div>
     </dl></div>
     <input type="text" class="spell-card-notes open-field" value="" placeholder="Notes…" aria-label="Spell notes">
-    <div class="spell-card-url-row">
-      <input type="url" class="spell-card-url-inp open-field" value="https://adnd2e.fandom.com/wiki/Fireball_(Wizard_Spell)" placeholder="Reference URL…" aria-label="Spell reference URL">
-      <a class="spell-details-link" href="https://adnd2e.fandom.com/wiki/Fireball_(Wizard_Spell)" target="_blank" rel="noopener noreferrer">Info ↗</a>
-    </div>
+    
     <div class="spell-card-bottom">
       <select class="spell-card-select" aria-label="Spell level"><option>Lvl 3</option></select>
       <select class="spell-card-select" aria-label="Spell type"><option>Wizard</option></select>
+      <a class="spell-details-link spell-info" href="https://adnd2e.fandom.com/wiki/Fireball_(Wizard_Spell)" target="_blank" rel="noopener noreferrer" aria-label="Fireball on the wiki (opens in a new tab)">Info ↗</a>
     </div>
   </div>
     <div class="spell-card ui-card is-compact">
@@ -2962,13 +2963,11 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       </div>
     </dl></div>
     <input type="text" class="spell-card-notes open-field" value="" placeholder="Notes…" aria-label="Spell notes">
-    <div class="spell-card-url-row">
-      <input type="url" class="spell-card-url-inp open-field" value="https://adnd2e.fandom.com/wiki/Magic_Missile_(Wizard_Spell)" placeholder="Reference URL…" aria-label="Spell reference URL">
-      <a class="spell-details-link" href="https://adnd2e.fandom.com/wiki/Magic_Missile_(Wizard_Spell)" target="_blank" rel="noopener noreferrer">Info ↗</a>
-    </div>
+    
     <div class="spell-card-bottom">
       <select class="spell-card-select" aria-label="Spell level"><option>Lvl 1</option></select>
       <select class="spell-card-select" aria-label="Spell type"><option>Wizard</option></select>
+      <a class="spell-details-link spell-info" href="https://adnd2e.fandom.com/wiki/Magic_Missile_(Wizard_Spell)" target="_blank" rel="noopener noreferrer" aria-label="Magic Missile on the wiki (opens in a new tab)">Info ↗</a>
     </div>
   </div>
     <div class="spell-card ui-card is-compact">
@@ -2995,13 +2994,11 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       </div>
     </dl></div>
     <input type="text" class="spell-card-notes open-field" value="" placeholder="Notes…" aria-label="Spell notes">
-    <div class="spell-card-url-row">
-      <input type="url" class="spell-card-url-inp open-field" value="https://adnd2e.fandom.com/wiki/Shocking_Grasp_(Wizard_Spell)" placeholder="Reference URL…" aria-label="Spell reference URL">
-      <a class="spell-details-link" href="https://adnd2e.fandom.com/wiki/Shocking_Grasp_(Wizard_Spell)" target="_blank" rel="noopener noreferrer">Info ↗</a>
-    </div>
+    
     <div class="spell-card-bottom">
       <select class="spell-card-select" aria-label="Spell level"><option>Lvl 1</option></select>
       <select class="spell-card-select" aria-label="Spell type"><option>Wizard</option></select>
+      <a class="spell-details-link spell-info" href="https://adnd2e.fandom.com/wiki/Shocking_Grasp_(Wizard_Spell)" target="_blank" rel="noopener noreferrer" aria-label="Shocking Grasp on the wiki (opens in a new tab)">Info ↗</a>
     </div>
   </div>
     <div class="spell-card ui-card is-compact">
@@ -3028,13 +3025,11 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       </div>
     </dl></div>
     <input type="text" class="spell-card-notes open-field" value="Good against the goblins" placeholder="Notes…" aria-label="Spell notes">
-    <div class="spell-card-url-row">
-      <input type="url" class="spell-card-url-inp open-field" value="https://adnd2e.fandom.com/wiki/Sleep_(Wizard_Spell)" placeholder="Reference URL…" aria-label="Spell reference URL">
-      <a class="spell-details-link" href="https://adnd2e.fandom.com/wiki/Sleep_(Wizard_Spell)" target="_blank" rel="noopener noreferrer">Info ↗</a>
-    </div>
+    
     <div class="spell-card-bottom">
       <select class="spell-card-select" aria-label="Spell level"><option>Lvl 1</option></select>
       <select class="spell-card-select" aria-label="Spell type"><option>Wizard</option></select>
+      <a class="spell-details-link spell-info" href="https://adnd2e.fandom.com/wiki/Sleep_(Wizard_Spell)" target="_blank" rel="noopener noreferrer" aria-label="Sleep on the wiki (opens in a new tab)">Info ↗</a>
     </div>
   </div>
     <div class="spell-card ui-card is-compact">
@@ -3061,13 +3056,11 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       </div>
     </dl></div>
     <input type="text" class="spell-card-notes open-field" value="" placeholder="Notes…" aria-label="Spell notes">
-    <div class="spell-card-url-row">
-      <input type="url" class="spell-card-url-inp open-field" value="https://adnd2e.fandom.com/wiki/Haste_(Wizard_Spell)" placeholder="Reference URL…" aria-label="Spell reference URL">
-      <a class="spell-details-link" href="https://adnd2e.fandom.com/wiki/Haste_(Wizard_Spell)" target="_blank" rel="noopener noreferrer">Info ↗</a>
-    </div>
+    
     <div class="spell-card-bottom">
       <select class="spell-card-select" aria-label="Spell level"><option>Lvl 3</option></select>
       <select class="spell-card-select" aria-label="Spell type"><option>Wizard</option></select>
+      <a class="spell-details-link spell-info" href="https://adnd2e.fandom.com/wiki/Haste_(Wizard_Spell)" target="_blank" rel="noopener noreferrer" aria-label="Haste on the wiki (opens in a new tab)">Info ↗</a>
     </div>
   </div>
     <div class="spell-card ui-card is-compact">
@@ -3083,7 +3076,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     <dl class="qr-block">
       <div class="qr-keys">
         
-        <div class="qr-stat is-key"><dt>Save</dt><dd title="Neg.">Neg.</dd></div>
+        <div class="qr-stat is-key"><dt>Save</dt><dd title="Negates">Negates</dd></div>
         
       </div>
       <div class="qr-rest">
@@ -3094,13 +3087,11 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       </div>
     </dl></div>
     <input type="text" class="spell-card-notes open-field" value="" placeholder="Notes…" aria-label="Spell notes">
-    <div class="spell-card-url-row">
-      <input type="url" class="spell-card-url-inp open-field" value="https://adnd2e.fandom.com/wiki/Hold_Person_(Priest_Spell)" placeholder="Reference URL…" aria-label="Spell reference URL">
-      <a class="spell-details-link" href="https://adnd2e.fandom.com/wiki/Hold_Person_(Priest_Spell)" target="_blank" rel="noopener noreferrer">Info ↗</a>
-    </div>
+    
     <div class="spell-card-bottom">
       <select class="spell-card-select" aria-label="Spell level"><option>Lvl 2</option></select>
       <select class="spell-card-select" aria-label="Spell type"><option>Priest</option></select>
+      <a class="spell-details-link spell-info" href="https://adnd2e.fandom.com/wiki/Hold_Person_(Priest_Spell)" target="_blank" rel="noopener noreferrer" aria-label="Hold Person on the wiki (opens in a new tab)">Info ↗</a>
     </div>
   </div>
     <div class="spell-card ui-card is-compact">
@@ -3127,13 +3118,11 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       </div>
     </dl></div>
     <input type="text" class="spell-card-notes open-field" value="" placeholder="Notes…" aria-label="Spell notes">
-    <div class="spell-card-url-row">
-      <input type="url" class="spell-card-url-inp open-field" value="https://adnd2e.fandom.com/wiki/Cure_Light_Wounds_(Priest_Spell)" placeholder="Reference URL…" aria-label="Spell reference URL">
-      <a class="spell-details-link" href="https://adnd2e.fandom.com/wiki/Cure_Light_Wounds_(Priest_Spell)" target="_blank" rel="noopener noreferrer">Info ↗</a>
-    </div>
+    
     <div class="spell-card-bottom">
       <select class="spell-card-select" aria-label="Spell level"><option>Lvl 1</option></select>
       <select class="spell-card-select" aria-label="Spell type"><option>Priest</option></select>
+      <a class="spell-details-link spell-info" href="https://adnd2e.fandom.com/wiki/Cure_Light_Wounds_(Priest_Spell)" target="_blank" rel="noopener noreferrer" aria-label="Cure Light Wounds on the wiki (opens in a new tab)">Info ↗</a>
     </div>
   </div>
     <div class="spell-card ui-card is-compact">
@@ -3147,13 +3136,11 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     <input type="text" class="spell-card-name open-field" value="Mordrin’s Quiet Word" aria-label="Spell name">
     <div class="spell-qr"><p class="qr-none">Not in the catalog: nothing to show here. Your notes and link still work.</p></div>
     <input type="text" class="spell-card-notes open-field" value="Homebrew, from the DM" placeholder="Notes…" aria-label="Spell notes">
-    <div class="spell-card-url-row">
-      <input type="url" class="spell-card-url-inp open-field" value="" placeholder="Reference URL…" aria-label="Spell reference URL">
-      
-    </div>
+    <div class="spell-card-url-row"><input type="url" class="spell-card-url-inp open-field" placeholder="Reference URL…" aria-label="Spell reference URL"></div>
     <div class="spell-card-bottom">
       <select class="spell-card-select" aria-label="Spell level"><option>Lvl 2</option></select>
       <select class="spell-card-select" aria-label="Spell type"><option>Wizard</option></select>
+      
     </div>
   </div>
   </div>
@@ -3162,7 +3149,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   const root = document.getElementById('spells');
   document.querySelectorAll('.spell-size button').forEach(b => b.addEventListener('click', () => {
     document.querySelectorAll('.spell-size button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
-    root.classList.toggle('is-large', b.dataset.v === 'large');
+    root.classList.toggle('is-detailed', b.dataset.v === 'detailed');
   }));
 </script>
 </body>

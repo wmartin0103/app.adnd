@@ -1,5 +1,5 @@
-// Writes prototypes/spell-cards.html: the sheet's Spells section with a Small /
-// Large card toggle, Large cards carrying a quick reference from the spell
+// Writes prototypes/spell-cards.html: the sheet's Spells section with a Simple /
+// Detailed toggle, Detailed cards carrying a quick reference from the spell
 // catalog (real entries; for review before tools/character-sheet.html changes).
 // Run: node scripts/prototype-spell-cards.mjs
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -26,6 +26,13 @@ function diceNow(e) {
   if (m) return `${m[1]}+${lvl}`;
   return e.dice;
 }
+// A save in plain words: what a successful one does
+const saveSays = v => {
+  const t = String(v || 'None').trim();
+  if (/^(½|1\/2)$/.test(t)) return '½ damage';
+  if (/^neg(\.|ates?)?( effects)?$/i.test(t)) return 'Negates';
+  return t;
+};
 const stat = (label, value, cls = '') => (value ? `<div class="qr-stat${cls ? ' ' + cls : ''}"><dt>${label}</dt><dd title="${esc(value)}">${esc(value)}</dd></div>` : '');
 const quickRef = e => {
   if (!e) return '<p class="qr-none">Not in the catalog: nothing to show here. Your notes and link still work.</p>';
@@ -35,7 +42,7 @@ const quickRef = e => {
     <dl class="qr-block">
       <div class="qr-keys">
         ${stat(kind, dice, 'is-key')}
-        ${stat('Save', e.save || 'None', e.save && e.save !== 'None' ? 'is-key' : 'is-quiet')}
+        ${stat('Save', saveSays(e.save), e.save && !/^none$/i.test(e.save.trim()) ? 'is-key' : 'is-quiet')}
         ${stat('Attack roll', { touch: 'Touch', ranged: 'Ranged' }[e.attack] || '', 'is-key')}
       </div>
       <div class="qr-rest">
@@ -64,13 +71,11 @@ const card = (name, cls, { level, charges = 1, notes = '', section = 'memorized'
     <input type="text" class="spell-card-name open-field" value="${esc(name)}" aria-label="Spell name">
     <div class="spell-qr">${quickRef(e)}</div>
     <input type="text" class="spell-card-notes open-field" value="${esc(notes)}" placeholder="Notes…" aria-label="Spell notes">
-    <div class="spell-card-url-row">
-      <input type="url" class="spell-card-url-inp open-field" value="${e ? esc(e.link) : ''}" placeholder="Reference URL…" aria-label="Spell reference URL">
-      ${e ? `<a class="spell-details-link" href="${esc(e.link)}" target="_blank" rel="noopener noreferrer">Info ↗</a>` : ''}
-    </div>
+    ${e ? '' : `<div class="spell-card-url-row"><input type="url" class="spell-card-url-inp open-field" placeholder="Reference URL…" aria-label="Spell reference URL"></div>`}
     <div class="spell-card-bottom">
       <select class="spell-card-select" aria-label="Spell level"><option>Lvl ${lvl}</option></select>
       <select class="spell-card-select" aria-label="Spell type"><option>${typeLabel}</option></select>
+      ${e ? `<a class="spell-details-link spell-info" href="${esc(e.link)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(name)} on the wiki (opens in a new tab)">Info ↗</a>` : ''}
     </div>
   </div>`;
 };
@@ -94,15 +99,18 @@ const page = `<!doctype html>
   .spell-sec-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
   .spell-sec-head .spell-section-heading { flex: 1; }
 
-  /* Small: the cards as they are today, no quick reference */
+  .spell-card-bottom { align-items: center; }
+  .spell-info { margin-left: auto; white-space: nowrap; }
+
+  /* Simple: the cards as they are today, no quick reference */
   .spell-qr { display: none; }
 
-  /* Large: fewer columns, the quick reference shows */
-  .is-large .spell-card-grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
-  .is-large .spell-card { gap: .5rem; }
-  .is-large .spell-card-notes { margin-top: auto; }   /* notes and link line up along a row of cards */
-  .is-large .spell-card-name { font-size: 1.05rem; }
-  .is-large .spell-qr { display: grid; gap: 8px; }
+  /* Detailed: fewer columns, the quick reference shows */
+  .is-detailed .spell-card-grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+  .is-detailed .spell-card { gap: .5rem; }
+  .is-detailed .spell-card-notes { margin-top: auto; }   /* notes and link line up along a row of cards */
+  .is-detailed .spell-card-name { font-size: 1.05rem; }
+  .is-detailed .spell-qr { display: grid; gap: 8px; }
   .qr-school { margin: 0; font-size: .85rem; color: var(--ink-muted); }
   .qr-none { margin: 0; font-size: .9rem; font-style: italic; color: var(--ink-muted); }
   /* A tinted item (never an inner shadow): what you need to roll, then the rest */
@@ -118,13 +126,13 @@ const page = `<!doctype html>
 </head>
 <body>
 <div class="proto" id="spells">
-  <p class="proto-note">Prototype, with real catalog entries. The sample caster is level 5, so Fireball's "1d6/level" reads 5d6. The Small / Large toggle works.</p>
+  <p class="proto-note">Prototype, with real catalog entries. The sample caster is level 5, so Fireball's "1d6/level" reads 5d6. The Simple / Detailed toggle works.</p>
   <div class="spell-sec-head">
     <div class="spell-section-heading">Memorized</div>
-    <div class="spell-size"><span>Card size</span>
-      <div class="ui-tabs size-sm" role="group" aria-label="Spell card size">
-        <button type="button" data-v="small" aria-pressed="true">Small</button>
-        <button type="button" data-v="large" aria-pressed="false">Large</button>
+    <div class="spell-size"><span>View</span>
+      <div class="ui-tabs size-sm" role="group" aria-label="Spell card view">
+        <button type="button" data-v="simple" aria-pressed="true">Simple</button>
+        <button type="button" data-v="detailed" aria-pressed="false">Detailed</button>
       </div>
     </div>
   </div>
@@ -143,7 +151,7 @@ const page = `<!doctype html>
   const root = document.getElementById('spells');
   document.querySelectorAll('.spell-size button').forEach(b => b.addEventListener('click', () => {
     document.querySelectorAll('.spell-size button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
-    root.classList.toggle('is-large', b.dataset.v === 'large');
+    root.classList.toggle('is-detailed', b.dataset.v === 'detailed');
   }));
 </script>
 </body>
