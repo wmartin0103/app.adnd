@@ -29,7 +29,7 @@
 // The DM decides where extra attacks go in the order; the record only says
 // which attacks there are.
 
-import { scenarioType, scenarioSpell, scenarioWeapon, spellArrow, castSpeed, scenarioBreakdown, scenarioDamage, modNum } from './scenarios.js';
+import { scenarioType, scenarioSpell, scenarioWeapon, spellArrow, castSpeed, scenarioBreakdown, scenarioDamage, modNum, saveNote } from './scenarios.js';
 
 // Situational modifiers (the DM Helper's table rules)
 export const ROUND_MODS = {
@@ -210,6 +210,12 @@ const damageDice = (ctx, sc, target, rand) => {
 // one), and the damage dice by that target's size, which the DM counts only on
 // a hit. A spell with no attack roll just rolls its damage (once for an area
 // spell). Only the dice are kept: scoreRoll adds the sheet's numbers as they are now.
+// A spell line's save in words ('' for a weapon or an Enemy's attack)
+export const lineSaveNote = (ctx, sc) => {
+  if (sc.plain || !['spell', 'spellarrow'].includes(scenarioType(sc))) return '';   // a Spellarrow carries a spell too
+  const sp = scenarioSpell(ctx, sc);
+  return sp ? saveNote(sp.save, !!sp.dice) : '';
+};
 export function rollLine(ctx, line, rand = Math.random) {
   const kind = lineKind(ctx, line.sc);
   const shared = kind === 'area' ? damageDice(ctx, line.sc, targetsOf(line)[0], rand) : null;
@@ -254,7 +260,7 @@ export function scoreRoll(ctx, line, raw) {
       thac0: e.d20 != null ? thac0 : null, hitsAC: e.d20 != null && thac0 != null ? thac0 - e.d20 : null,
     };
   });
-  return { kind: raw.kind || lineKind(ctx, line.sc), heal: !!raw.heal, each: scored, dmgStale: scored.some(e => e.dmgStale) };
+  return { kind: raw.kind || lineKind(ctx, line.sc), heal: !!raw.heal, saveNote: lineSaveNote(ctx, line.sc), each: scored, dmgStale: scored.some(e => e.dmgStale) };
 }
 // Rolls the damage dice again where they changed, keeping the d20s (after dmgStale)
 export function rerollDamage(ctx, line, raw, rand = Math.random) {
@@ -288,7 +294,7 @@ export function lineSay(line) {
   const parts = line.roll.each.map(r => {
     const t = whoText(r.target);
     if (r.d20 == null && line.roll.heal) return `${t}, heals ${r.dmg ?? '—'}`;
-    if (r.d20 == null) return `vs ${t}, ${r.dmg ?? '—'} damage (${line.roll.kind === 'area' ? 'target saves' : 'no save'})`;
+    if (r.d20 == null) return `vs ${t}, ${r.dmg ?? '—'} damage (${(line.roll.saveNote || (line.roll.kind === 'area' ? 'target saves' : 'no save')).toLowerCase()})`;
     if (r.d20 === 1) return `vs ${t}, d20 1 (natural 1), a critical miss`;
     const nat = r.d20 === 20 ? ' (natural 20)' : '';
     return `vs ${t}, d20 ${r.d20}${nat}, hits AC ${acText(r.hitsAC)} or worse, ${r.dmg ?? '—'} damage${r.spell != null ? ` + spell ${r.spell}` : ''}`;

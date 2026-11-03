@@ -30,7 +30,7 @@ export const TARGETS = {
     SheetSpells: ['rules/spells', ['findSpell']],
     SheetScenarios: ['rules/scenarios', ['modNum', 'signed', 'ATTACK_TYPES', 'RATE_OPTIONS', 'scenarioRate', 'scenarioType',
       'scenarioSpell', 'scenarioAbility', 'activeEffectsFor', 'scenarioDamage', 'scenarioBreakdown', 'normalizeEffects', 'effectOption',
-      'isBowcaster', 'spellArrow', 'usesAmmo', 'weaponAmmoType', 'ammoType', 'ammoFor', 'scenarioAmmo', 'AMMO_TYPES']],
+      'isBowcaster', 'spellCardStats', 'saveNote', 'saveShort', 'casterLevel', 'canCastList', 'spellArrow', 'usesAmmo', 'weaponAmmoType', 'ammoType', 'ammoFor', 'scenarioAmmo', 'AMMO_TYPES']],
     SheetKits: ['rules/kits', ['HOUSE_KITS', 'classKit']],
     SheetRound: ['rules/round', ['ROUND_MODS', 'MOVE_MULTS', 'newRound', 'roundQueue', 'queueAttack', 'unqueueAttack', 'roundLines', 'lineToHit', 'roundACPenalty', 'lineTHAC0', 'judgeRoll', 'actOn', 'attackSpeed', 'rollLine', 'scoreRoll', 'rerollDamage', 'lineKind', 'hasRoll', 'isHealing', 'lineSay']],
     RoundSync: ['round-sync', ['createRoundSync']],
