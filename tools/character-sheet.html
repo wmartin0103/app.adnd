@@ -555,21 +555,23 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     .spell-qr { display: none; }
     /* Detailed: fewer columns, the quick reference shows */
     .is-detailed .spell-card-grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
-    .is-detailed .spell-card { gap: 0.5rem; }
+    .is-detailed .spell-card { gap: 0.3rem; }
     .is-detailed .spell-card-notes { margin-top: auto; }   /* notes line up along a row of cards */
-    .is-detailed .spell-title { font-size: 1.05rem; }
-    .is-detailed .spell-qr { display: grid; gap: 8px; }
-    .qr-school { margin: 0; font-size: 0.85rem; color: var(--ink-muted); }
-    /* A tinted item (never an inner shadow): what you need to roll, then the rest */
-    .qr-block { display: grid; gap: 10px; margin: 0; padding: 10px 12px; border-radius: var(--radius-inner); background: color-mix(in oklab, var(--color-text) 4%, transparent); }
-    .qr-keys { display: flex; flex-wrap: wrap; gap: 8px 24px; padding-bottom: 10px; border-bottom: 1px solid var(--color-divider); }
-    .qr-rest { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; }
-    .qr-stat { min-width: 0; }
-    .qr-stat dt { font-family: var(--font-display); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted); margin-bottom: 2px; }
-    .qr-stat dd { margin: 0; font-size: 0.9rem; color: var(--ink); overflow-wrap: anywhere; }
-    .qr-stat.is-key dd { font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; color: var(--color-accent-text); }
-    .qr-stat.is-quiet dd { font-size: 1.05rem; color: var(--ink-muted); }
-    .qr-note { margin: 0; font-size: 0.82rem; color: var(--ink-muted); }
+    .is-detailed .spell-title { font-size: 1rem; line-height: 1.2; }
+    .is-detailed .spell-qr { display: grid; gap: 6px; }
+    .qr-school { margin: 0; font-size: 0.8rem; line-height: 1.2; color: var(--ink-muted); }
+    /* A tinted item (never an inner shadow): what you need to roll, then the rest; each label sits beside its value */
+    .qr-block { display: grid; gap: 6px; margin: 0; padding: 6px 10px; border-radius: var(--radius-inner); background: color-mix(in oklab, var(--color-text) 4%, transparent); }
+    .qr-keys { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 16px; padding-bottom: 6px; border-bottom: 1px solid var(--color-divider); }
+    .qr-rest { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px 12px; }
+    .qr-stat { min-width: 0; display: flex; align-items: baseline; gap: 6px; }
+    .qr-stat dt { flex: none; font-family: var(--font-display); font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-muted); }
+    .qr-stat dd { margin: 0; font-size: 0.85rem; line-height: 1.25; color: var(--ink); overflow-wrap: break-word; min-width: 0; }
+    .qr-stat.is-key dd { font-family: var(--font-display); font-weight: 700; font-size: 1rem; color: var(--color-accent-text); }
+    .qr-stat.is-quiet dd { font-size: 0.9rem; color: var(--ink-muted); }
+    /* A house rule on every spell: said once, above them */
+    .spell-note { display: none; margin: 0 0 12px; font-size: 0.85rem; color: var(--ink-muted); }
+    .is-detailed .spell-note:not([hidden]) { display: block; }
     .qr-level { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--ink-muted); }
     .qr-level input { width: 4.5rem; }
     /* Repeat cards: an offer to merge them */
@@ -3146,6 +3148,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
             </div>
           </div>
         </div>
+        <p class="spell-note" id="spell-note" hidden></p>
         <div id="spells-list" aria-label="Spells list">
           <!-- populated by renderSpells() -->
         </div>
@@ -9569,6 +9572,9 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
       // ── Slot header ──────────────────────────────────────────
       updateSpellSlotHeader();
+      const note = document.getElementById('spell-note');
+      note.hidden = !SheetScenarios.isBowcaster(scenarioCtx());
+      note.textContent = note.hidden ? '' : 'Bowcaster: these show a spell cast without an arrow (casting time +3, −1 damage per die).';
 
       if (spells.length === 0) {
         const empty = document.createElement('p');
@@ -9872,7 +9878,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       fill(rest, [stat('Cast', st.castTime), stat('Range', st.range), stat('Duration', st.duration), stat('Area', st.area)]);
       dl.append(keys, rest);
       box.appendChild(dl);
-      if (st.penalty) box.appendChild(text('p', 'qr-note', st.penalty));
       // No class here casts from this list (a spell from a ring, say): the DM says what level
       if (st.offList) {
         const row = document.createElement('label');
