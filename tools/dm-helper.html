@@ -541,11 +541,11 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .moveafter{display:flex;align-items:center;gap:6px;padding:7px 14px;font-family:var(--serif);font-size:.82rem;border-top:1px solid var(--edge)}
   .rbtn,.res{display:none}
   .rbtn:disabled{opacity:.35;cursor:default}
-  .ldsave{display:grid;gap:8px;justify-items:start;margin:6px 0 10px}
-  /* The save rolls: the attack results' d20, one for each target, tinted brass to stand out on the dark details panel */
-  .ldsave-rolls{display:flex;flex-wrap:wrap;gap:8px}
-  .ldsave-rolls .hit-roll{flex:0 1 auto;gap:.5rem .75rem;padding:.45rem .9rem .45rem .6rem;background:color-mix(in oklab,var(--color-accent) 12%,var(--color-surface));border:1px solid color-mix(in oklab,var(--color-accent) 45%,var(--color-divider));box-shadow:none}
-  .ldsave-who{font-family:var(--serif);font-weight:700;font-size:1rem;color:var(--color-text);line-height:1.2}
+  .ldsave{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;margin:4px 0 8px}
+  /* A save roll: who, the d20 icon, the roll in bold */
+  .ldsave-roll{display:inline-flex;align-items:center;gap:6px}
+  .ldsave-roll svg{width:1.1em;height:1.1em;color:var(--color-accent-text)}
+  .lightdetail .ldsave-roll b{font-family:var(--serif);font-size:1.15rem;font-weight:700;letter-spacing:0;text-transform:none;color:var(--color-text)}
   .parrytgt,.acmod{font-size:13px;padding:1px 3px;width:auto}
   .char.synced .cfields,.char.synced .mods,.char.synced table.acts,.char.synced .moveafter{display:none !important}
   .syncpanel{padding:8px 12px 10px;font-family:var(--sans);font-size:.85rem;display:grid;gap:4px}
@@ -6003,12 +6003,9 @@ const lineNeedsSave = line => { const t=lineSaveText(line, line.roll && line.rol
 // Roll for save: a d20 for each target, kept for this round. The DM compares
 // each one to that enemy's save.
 const saveRolls=new Map();
-let saveFresh=null;   // the one just rolled: its dice tumble
 function rollSaves(key, whos){
   saveRolls.set(key, whos.map(who=>({who, d20:d20()})));
-  saveFresh=key;
   update();
-  saveFresh=null;
   document.querySelector(`[data-savekey="${CSS.escape(key)}"]`)?.focus();
 }
 function judgeOne(target, r, kind, line, bdAC){
@@ -6810,19 +6807,13 @@ function paintLightDetail(lr, d){
         btn.innerHTML=RoundUI.ROLL_ICON+'<span>'+(rolled?'Re-roll saves':'Roll for save')+'</span>';
         btn.addEventListener('click', ()=>rollSaves(a.save.key, a.save.whos));
         ln.appendChild(btn);
-        if(rolled){
-          const list=document.createElement('div'); list.className='ldsave-rolls'; list.setAttribute('role','status');
-          rolled.forEach(r=>{
-            const o=document.createElement('div'); o.className='hit-roll'+(saveFresh===a.save.key?' is-fresh':'');
-            o.setAttribute('aria-label', `${r.who}: save roll ${r.d20}`);
-            o.innerHTML=`<span class="hit-die">${RoundUI.D20_SVG}<span class="hit-die-num">${r.d20}</span></span>`;
-            const st=document.createElement('span'); st.className='hit-stat';
-            const lb=document.createElement('span'); lb.className='hit-stat-label'; lb.textContent='Save roll';
-            const nm=document.createElement('span'); nm.className='ldsave-who'; nm.textContent=r.who;
-            st.append(lb, nm); o.appendChild(st); list.appendChild(o);
-          });
-          ln.appendChild(list);
-        }
+        (rolled||[]).forEach(r=>{
+          const o=document.createElement('span'); o.className='ldsave-roll';
+          o.innerHTML=RoundUI.ROLL_ICON;
+          const v=document.createElement('b'); v.textContent=r.d20;
+          o.prepend(r.who); o.appendChild(v);
+          ln.appendChild(o);
+        });
         box.appendChild(ln);
         return;
       }
