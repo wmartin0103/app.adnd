@@ -541,11 +541,11 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .moveafter{display:flex;align-items:center;gap:6px;padding:7px 14px;font-family:var(--serif);font-size:.82rem;border-top:1px solid var(--edge)}
   .rbtn,.res{display:none}
   .rbtn:disabled{opacity:.35;cursor:default}
-  .ldsave{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;margin:4px 0 8px}
+  .ldsave{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;margin:4px 0 8px;font:inherit}
   /* A save roll: who, the d20 icon, the roll in bold */
   .ldsave-roll{display:inline-flex;align-items:center;gap:6px}
   .ldsave-roll svg{width:1.1em;height:1.1em;color:var(--color-accent-text)}
-  .ocard .lightdetail .ldsave-roll b{font:700 1.15rem/1.2 var(--serif);letter-spacing:0;text-transform:none;color:var(--color-text)}
+  .ocard .lightdetail .ldsave-roll b{font:inherit;font-weight:700;letter-spacing:0;text-transform:none;color:inherit}
   .parrytgt,.acmod{font-size:13px;padding:1px 3px;width:auto}
   .char.synced .cfields,.char.synced .mods,.char.synced table.acts,.char.synced .moveafter{display:none !important}
   .syncpanel{padding:8px 12px 10px;font-family:var(--sans);font-size:.85rem;display:grid;gap:4px}
