@@ -1,17 +1,62 @@
 // Writes prototypes/spell-cards.html: the sheet's Spells section with a Simple /
 // Detailed toggle, and Add Spell as a search of the catalog. A card's title is
 // its wiki link; Detailed cards carry a quick reference from the catalog. It
-// works, on the real catalog (for review before tools/character-sheet.html
-// changes; nothing is saved).
+// works, on the real catalog and the sample characters (for review before
+// tools/character-sheet.html changes; nothing is saved). The slot badges come
+// from each character's classes, using the sheet's own tables, and caster
+// levels from src/rules/scenarios.js.
 // Run: node scripts/prototype-spell-cards.mjs
 import { readFileSync, writeFileSync } from 'node:fs';
 import { withHead } from './build-tools.mjs';
+import { casterLevel } from '../src/rules/scenarios.js';
+import { classKit } from '../src/rules/kits.js';
 
 // The sheet's own styles, as they are
 const sheet = readFileSync('tools/character-sheet.html', 'utf8');
 const from = sheet.indexOf('<style>', sheet.indexOf('</style>')) + '<style>'.length;
 const sheetCss = sheet.slice(from, sheet.indexOf('</style>', from));
 const removeIcon = (sheet.match(/const REMOVE_ICON = '([^']+)'/) || [])[1] || '×';
+
+// The sheet's slot tables, as they are
+const table = name => {
+  const i = sheet.indexOf(`const ${name} = {`);
+  if (i < 0) throw new Error(name);
+  const from = sheet.indexOf('{', i), to = sheet.indexOf('};', from);
+  return Function(`return ${sheet.slice(from, to + 1)}`)();
+};
+const WIZARD = table('WIZARD_SLOTS'), CLERIC = table('CLERIC_SLOTS'), RANGER = table('RANGER_SLOTS'), PALADIN = table('PALADIN_SLOTS'), BARD = table('BARD_SLOTS');
+const INT = table('INT_BONUS_SLOTS'), WIS = table('WIS_BONUS_SLOTS');
+
+// One row per class that has spells at its level (the same sums as getSpellSlots)
+function slotRows(d) {
+  const intB = INT[parseInt(d.int) || 10] || [], wisB = WIS[parseInt(d.wis) || 10] || [];
+  const gated = base => (base || []).map((v, i) => (v > 0 ? v + (wisB[i] || 0) : v));
+  return (d.__classes || []).map(c => {
+    const lvl = Math.min(parseInt(c.level) || 0, 20);
+    let slots = [];
+    if (classKit(c) === 'blade') slots = lvl >= 4 ? gated(BARD[lvl - 2]) : [];
+    else if (/paladin/i.test(c.name)) slots = gated(PALADIN[lvl]);
+    else if (/ranger/i.test(c.name)) slots = gated(RANGER[lvl]);
+    else if (/bard/i.test(c.name)) slots = gated(BARD[lvl]);
+    else if (c.group === 'wizard') slots = (WIZARD[lvl] || []).map((v, i) => v + (intB[i] || 0));
+    else if (c.group === 'priest') slots = (CLERIC[lvl] || []).map((v, i) => v + (wisB[i] || 0));
+    return { label: `${c.name} ${c.level}`, slots, lists: castsFrom(c) };
+  }).filter(r => r.slots.some(v => v > 0));
+}
+const castsFrom = c => [c.group === 'wizard' || /bard/i.test(c.name || '') ? 'wizard' : '', c.group === 'priest' || /paladin|ranger/i.test(c.name || '') ? 'priest' : ''].filter(Boolean);
+const CHARS = ['rifiyr_10-12', 'jaque_10-09', 'hanspeter_10-09', 'tig_10-09'].map(file => {
+  const d = JSON.parse(readFileSync(`samples/${file}.json`, 'utf8'));
+  const ctx = { classes: d.__classes || [] };
+  const rows = slotRows(d), level = { wizard: casterLevel(ctx, {}, 'wizard'), priest: casterLevel(ctx, {}, 'priest') };
+  return {
+    name: d.name, classes: ctx.classes.map(c => `${c.name} ${c.level}`).join(' / '),
+    rows,
+    // The lists they can cast from now, their strongest first
+    lists: [...new Set(rows.flatMap(r => r.lists))].sort((a, b) => level[b] - level[a]),
+    level,
+    spells: (d.__spells || []).map(x => ({ name: x.name, level: x.level, type: x.type, memorized: !!x.isMemorized, charges: parseInt(x.charges) || 0, notes: x.notes || '' })),
+  };
+});
 
 const page = `<!doctype html>
 <html lang="en">
@@ -26,7 +71,16 @@ const page = `<!doctype html>
   .proto-note { color: var(--ink-muted); margin: 0 0 20px; max-width: 46rem; }
 
   /* The toggle: the Extra attacks pattern (a label on the left, small tab buttons) */
-  .spell-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+  .proto-chars { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .proto-chars > span, .slot-label { font-family: var(--font-display); font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-muted); }
+  .proto-who { margin: 0 0 24px; font-size: .9rem; color: var(--ink-muted); }
+  .spell-bar { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+  .spell-add { display: flex; justify-content: center; margin-top: 20px; }
+  /* The slots: one row per class that casts */
+  .slot-rows { display: grid; gap: 6px; }
+  .slot-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+  .slot-label { min-width: 7.5rem; }
+  .slot-none { margin: 0; font-size: .9rem; color: var(--ink-muted); }
   .spell-size { display: flex; align-items: center; gap: 8px; }
   .spell-size > span { font-family: var(--font-display); font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-muted); }
   .spell-section-heading { margin-top: 28px; }
@@ -37,6 +91,7 @@ const page = `<!doctype html>
   .spell-title:hover { text-decoration: underline; }
   .spell-title:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: 2px; }
   .spell-title span { font-weight: 400; font-size: .85em; }
+  .spell-title.is-plain { color: var(--ink); }
 
   /* Simple: no quick reference */
   .spell-qr { display: none; }
@@ -82,9 +137,11 @@ const page = `<!doctype html>
 </head>
 <body>
 <div class="proto" id="spells">
-  <p class="proto-note">Prototype, on the real catalog; nothing is saved. Add Spell searches, the toggle works, and each title opens the wiki in a new tab. The sample caster is a level 5 wizard.</p>
+  <p class="proto-note">Prototype, on the real catalog and the sample saves; nothing is saved. Switch characters to see the slots work themselves out. There are no selects: level and type come from the catalog, slots from the classes. Add Spell searches, the view toggle works, and each title opens the wiki.</p>
+  <div class="proto-chars"><span>Sample character</span><div class="ui-tabs size-sm" role="group" aria-label="Sample character" id="chars"></div></div>
+  <p class="proto-who" id="who"></p>
   <div class="spell-bar">
-    <button type="button" class="ui-button is-primary" id="add">＋ Add Spell</button>
+    <div class="slot-rows" id="slots"></div>
     <div class="spell-size"><span>View</span>
       <div class="ui-tabs size-sm" role="group" aria-label="Spell card view">
         <button type="button" data-v="simple" aria-pressed="true">Simple</button>
@@ -93,6 +150,7 @@ const page = `<!doctype html>
     </div>
   </div>
   <div id="list"></div>
+  <div class="spell-add"><button type="button" class="ui-button is-primary" id="add">＋ Add Spell</button></div>
 </div>
 
 <dialog class="ui-overlay spell-search" id="search" aria-labelledby="ss-title">
@@ -115,7 +173,9 @@ const page = `<!doctype html>
 </dialog>
 
 <script>
-  const CAT = window.SheetSpellCatalog.spells, LEVEL = 5, MAX = 60;
+  const CAT = window.SheetSpellCatalog.spells, MAX = 60;
+  const CHARS = ${JSON.stringify(CHARS).replace(/</g, '\\u003c')};
+  let who = CHARS[0];
   const $ = id => document.getElementById(id);
   const esc = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const ORD = ['', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th'];
@@ -124,24 +184,40 @@ const page = `<!doctype html>
   const isPHB = e => /player's handbook|^phb/i.test(e.source || '');
 
   // ── The cards ──
-  let uid = 0;
-  const spell = (name, cls, memorized, charges = 1, notes = '') => {
-    const e = CAT.filter(x => x.name === name && x.class === cls).sort((a, b) => isPHB(b) - isPHB(a))[0];
-    return { id: ++uid, e, memorized, charges, notes };
-  };
-  let spells = [
-    spell('Fireball', 'wizard', true, 2), spell('Magic Missile', 'wizard', true, 2), spell('Shocking Grasp', 'wizard', true),
-    spell('Fireball', 'wizard', false), spell('Magic Missile', 'wizard', false), spell('Shocking Grasp', 'wizard', false),
-    spell('Sleep', 'wizard', false, 1, 'Good against the goblins'), spell('Haste', 'wizard', false),
-  ];
+  let uid = 0, spells = [];
+  // The catalog's entry for a saved spell (the sheet's own match: exact name, then alias; its list, then the PHB)
+  function match(x) {
+    const n = String(x.name).trim().toLowerCase(), cls = x.type === 'priest' ? 'priest' : 'wizard';
+    const hits = CAT.filter(e => e.name.toLowerCase() === n || (e.aliases || []).some(a => a.toLowerCase() === n));
+    const exact = hits.filter(e => e.name.toLowerCase() === n), pool = exact.length ? exact : hits;
+    return pool.find(e => e.class === cls && isPHB(e)) || pool.find(e => e.class === cls) || pool.find(isPHB) || pool[0] || null;
+  }
+  function pick(c) {
+    who = c;
+    spells = c.spells.map(x => ({ id: ++uid, e: match(x), name: x.name, level: x.level, type: x.type, memorized: x.memorized, charges: x.charges, notes: x.notes }));
+    cls = c.lists[0] || 'wizard';
+    $('chars').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.name === c.name)));
+    $('who').textContent = c.classes;
+    $('slots').innerHTML = c.rows.length
+      ? c.rows.map(r => '<div class="slot-row"><span class="slot-label">' + esc(r.label) + '</span>' + r.slots.map((v, i) => (v ? '<span class="slot-badge tag tag-l' + (i + 1) + '">' + ORD[i + 1] + ' ×' + v + '</span>' : '')).join('') + '</div>').join('')
+      : '<p class="slot-none">No spell slots at this level.</p>';
+    // A list tab only when they cast from both
+    $('ss-class').hidden = c.lists.length < 2;
+    $('ss-class').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === cls)));
+    render();
+  }
 
-  // "1d6/level" at the caster's level, up to the spell's cap; anything else as written
+  // Spell dice at a caster level (src/rules/scenarios.js, diceAtLevel)
   function diceNow(e) {
-    const lvl = Math.min(LEVEL, e.diceMaxLevel || LEVEL);
-    let m = /^1d(\\d+)\\/level$/.exec(e.dice);
-    if (m) return lvl + 'd' + m[1];
-    m = /^(\\d+d\\d+)\\+1\\/level$/.exec(e.dice);
-    if (m) return m[1] + '+' + lvl;
+    let level = who.level[e.class] || 1;
+    if (e.diceMaxLevel) level = Math.min(level, e.diceMaxLevel);
+    const d = String(e.dice || '').replace(/\\s+/g, '');
+    let m = d.match(/^(\\d*)d(\\d+)\\/level$/i);
+    if (m) return ((parseInt(m[1]) || 1) * level) + 'd' + m[2];
+    m = d.match(/^(\\d*d\\d+)\\+(\\d+)\\/level$/i);
+    if (m) return m[1] + '+' + (parseInt(m[2]) * level);
+    m = d.match(/^(\\d*)d(\\d+)per(\\d+)levels?$/i);
+    if (m) return Math.max((parseInt(m[1]) || 1) * Math.floor(level / parseInt(m[3])), 1) + 'd' + m[2];
     return e.dice;
   }
   // A save in plain words: what a successful one does
@@ -159,21 +235,22 @@ const page = `<!doctype html>
     + '</div><div class="qr-rest">' + stat('Cast', e.castTime) + stat('Range', e.range) + stat('Duration', e.duration) + stat('Area', e.area) + '</div></dl>';
 
   function card(s) {
-    const e = s.e;
+    const e = s.e, name = e ? e.name : s.name;
     const cast = s.memorized && !s.charges;
     return '<div class="spell-card ui-card is-compact' + (cast ? ' spell-card-cast' : '') + '" data-id="' + s.id + '"><div class="spell-card-top">'
-      + levelTag(e.level) + classTag(e.class) + '<span style="flex:1"></span>'
+      + levelTag(e ? e.level : s.level) + classTag(e ? e.class : s.type) + '<span style="flex:1"></span>'
       + (s.memorized
         ? '<span class="ui-qty size-xs"><button type="button" data-act="less" aria-label="One fewer">−</button><input type="text" value="' + s.charges + '" aria-label="Memorized" readonly><button type="button" data-act="more" aria-label="One more">+</button></span>'
-        : '<label class="spell-mem-wrap" title="Add to Memorized"><input type="checkbox" class="spell-mem-chk" data-act="mem" aria-label="Memorize ' + esc(e.name) + '"' + (spells.some(x => x.memorized && x.e === e) ? ' checked' : '') + '></label>')
-      + '<button type="button" class="ui-button is-bare is-remove" data-act="rm" aria-label="Remove ' + esc(e.name) + '">${removeIcon.replace(/'/g, "\\'")}</button></div>'
-      + '<a class="spell-title" href="' + esc(e.link) + '" target="_blank" rel="noopener noreferrer" aria-label="' + esc(e.name) + ' on the wiki (opens in a new tab)">' + esc(e.name) + ' <span aria-hidden="true">↗</span></a>'
-      + '<div class="spell-qr">' + quickRef(e) + '</div>'
-      + '<input type="text" class="spell-card-notes open-field" value="' + esc(s.notes) + '" placeholder="Notes…" aria-label="Notes on ' + esc(e.name) + '"></div>';
+        : '<label class="spell-mem-wrap" title="Add to Memorized"><input type="checkbox" class="spell-mem-chk" data-act="mem" aria-label="Memorize ' + esc(name) + '"' + (spells.some(x => x.memorized && (e ? x.e === e : x.name === s.name)) ? ' checked' : '') + '></label>')
+      + '<button type="button" class="ui-button is-bare is-remove" data-act="rm" aria-label="Remove ' + esc(name) + '">${removeIcon.replace(/'/g, "\\'")}</button></div>'
+      + (e ? '<a class="spell-title" href="' + esc(e.link) + '" target="_blank" rel="noopener noreferrer" aria-label="' + esc(name) + ' on the wiki (opens in a new tab)">' + esc(name) + ' <span aria-hidden="true">↗</span></a>' : '<span class="spell-title is-plain">' + esc(name) + '</span>')
+      + (e ? '<div class="spell-qr">' + quickRef(e) + '</div>' : '')
+      + '<input type="text" class="spell-card-notes open-field" value="' + esc(s.notes) + '" placeholder="Notes…" aria-label="Notes on ' + esc(name) + '"></div>';
   }
   function render() {
     const part = (title, on) => {
-      const rows = spells.filter(s => s.memorized === on).sort((a, b) => a.e.level - b.e.level || a.e.name.localeCompare(b.e.name));
+      const lvl = s => (s.e ? s.e.level : s.level), nm = s => (s.e ? s.e.name : s.name);
+      const rows = spells.filter(s => s.memorized === on).sort((a, b) => lvl(a) - lvl(b) || nm(a).localeCompare(nm(b)));
       return rows.length ? '<div class="spell-section-heading">' + title + '</div><div class="spell-card-grid">' + rows.map(card).join('') + '</div>' : '';
     };
     $('list').innerHTML = part('Memorized', true) + part('Spellbook', false);
@@ -185,8 +262,8 @@ const page = `<!doctype html>
     if (act === 'more') s.charges += 1;
     if (act === 'rm') spells = spells.filter(x => x !== s);
     if (act === 'mem') {
-      if (ev.target.checked) spells.push({ id: ++uid, e: s.e, memorized: true, charges: 1, notes: s.notes });
-      else spells = spells.filter(x => !(x.memorized && x.e === s.e));
+      if (ev.target.checked) spells.push({ ...s, id: ++uid, memorized: true, charges: 1 });
+      else spells = spells.filter(x => !(x.memorized && (s.e ? x.e === s.e : x.name === s.name)));
     }
     render();
   });
@@ -205,7 +282,7 @@ const page = `<!doctype html>
     // The name's start first, then the start of a word, then anywhere
     const starts = e => { const n = e.name.toLowerCase(); return !q || n.startsWith(q) ? 0 : n.includes(' ' + q) ? 1 : 2; };
     return CAT.filter(e => e.class === cls && named(e) && inLevel(e))
-      .sort((a, b) => starts(a) - starts(b) || a.name.localeCompare(b.name) || isPHB(b) - isPHB(a));
+      .sort((a, b) => starts(a) - starts(b) || isPHB(b) - isPHB(a) || a.name.localeCompare(b.name));
   }
   function search() {
     const hits = results(), shown = hits.slice(0, MAX);
@@ -250,7 +327,9 @@ const page = `<!doctype html>
     if (ev.key === 'ArrowDown') (rows[i + 1] || rows[i] || $('ss-q')).focus();
     else (i > 0 ? rows[i - 1] : $('ss-q')).focus();
   });
-  render();
+  $('chars').innerHTML = CHARS.map(c => '<button type="button" data-name="' + esc(c.name) + '" aria-pressed="false">' + esc(c.name) + '</button>').join('');
+  $('chars').addEventListener('click', ev => { const b = ev.target.closest('button'); if (b) pick(CHARS.find(c => c.name === b.dataset.name)); });
+  pick(CHARS[0]);
 </script>
 </body>
 </html>
