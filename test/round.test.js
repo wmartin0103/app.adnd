@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { scenarioContext } from '../src/rules/scenarios.js';
-import { newRound, roundLines, lineTHAC0, judgeRoll, actOn, rollLine, rollDice, lineToHit, roundACPenalty, queueAttack, unqueueAttack, roundQueue, rerollDamage, lineSay, lineKind, hasRoll, isHealing, plainAttack } from '../src/rules/round.js';
+import { scenarioContext, scenarioSpell, scenarioDamage, spellCardStats, saveNote, saveShort } from '../src/rules/scenarios.js';
+import { lineSaveNote, newRound, roundLines, lineTHAC0, judgeRoll, actOn, rollLine, rollDice, lineToHit, roundACPenalty, queueAttack, unqueueAttack, roundQueue, rerollDamage, lineSay, lineKind, hasRoll, isHealing, plainAttack } from '../src/rules/round.js';
 import { createRoundSync } from '../src/round-sync.js';
 
 const load = f => JSON.parse(readFileSync(new URL(`../samples/${f}`, import.meta.url)));
@@ -149,7 +149,7 @@ test('several targets: a d20 each, one area roll for all, or damage each', () =>
   assert.equal(lineKind(ctxR, areaLine.sc), 'area');
   const area = rollLine(ctxR, areaLine, fixed(0.99, 0));
   assert.deepEqual(area.each.map(e => e.dmg), [4, 4]);
-  assert.match(lineSay({ ...areaLine, roll: area }), /target saves/);
+  assert.match(lineSay({ ...areaLine, roll: area }), /save for ½ damage/);
 });
 
 test('an Enemy\'s plain attack: THAC0, dice and bonus, with everything else the same', () => {
@@ -210,4 +210,44 @@ test('round sync: the DM\'s round and a sheet\'s record reach the other page', a
     assert.deepEqual([sheet.state().encounter, sheet.state().round], [enc + 1, 2]);
     dm.close(); sheet.close();
   } finally { delete globalThis.localStorage; }
+});
+
+test('a spell line says its save in words, and a level nothing on the sheet gives isn\'t guessed', () => {
+  const sc = { id: 's', attackType: 'spell', spellId: 'x', name: 'Test' };
+  const spell = (o = {}) => ({ id: 'x', name: 'Fireball', level: 3, type: 'wizard', ...o });
+  const wizard = { classes: [{ name: 'Wizard', group: 'wizard', level: '5' }], level: 5, spells: [spell()], catalog, weapons: [], ammo: [], effects: [] };
+  assert.equal(lineSaveNote(wizard, sc), 'Save for ½ damage');
+  // A fighter with Fireball from a ring: no dice until the DM gives a level
+  const fighter = { ...wizard, classes: [{ name: 'Fighter', group: 'warrior', level: '5' }] };
+  assert.equal(scenarioSpell(fighter, sc).needsLevel, true);
+  assert.equal(scenarioDamage(fighter, sc), null);
+  const held = { ...fighter, spells: [spell({ casterLevel: 9 })] };
+  assert.equal(scenarioDamage(held, sc).sm, '9d6');
+  assert.equal(scenarioDamage(wizard, sc).sm, '5d6');
+  assert.equal(lineSaveNote(wizard, { plain: true }), '');
+});
+
+test('a spell card works out its quick reference', () => {
+  const entry = name => catalog.spells.find(e => e.name === name && e.class === 'wizard');
+  const wizard = { classes: [{ name: 'Wizard', group: 'wizard', level: '5' }] };
+  const st = spellCardStats(wizard, {}, entry('Fireball'));
+  assert.deepEqual([st.dice, st.save, st.saveKey, st.offList], ['5d6', '½ damage', true, false]);
+  // Off the sheet's lists: the dice as written, until a level is given
+  const fighter = { classes: [{ name: 'Fighter', group: 'warrior', level: '5' }] };
+  assert.equal(spellCardStats(fighter, {}, entry('Fireball')).dice, '1d6/level');
+  assert.equal(spellCardStats(fighter, {}, entry('Fireball')).offList, true);
+  assert.equal(spellCardStats(fighter, { casterLevel: 9 }, entry('Fireball')).dice, '9d6');
+  // A Blade casts two levels lower; a Bowcaster's penalty is the Combat scenario's, not the card's
+  assert.equal(spellCardStats({ classes: [{ name: 'Blade Bard', group: 'rogue', level: '5' }] }, {}, entry('Fireball')).dice, '3d6');
+  const bow = spellCardStats({ classes: [{ name: 'Wizard (Bowcaster)', group: 'wizard', level: '4' }] }, {}, entry('Fireball'));
+  assert.equal(bow.dice, '4d6');
+  assert.equal(bow.castTime, '3');
+  assert.equal(spellCardStats(wizard, {}, null), null);
+});
+
+test('a save in words', () => {
+  assert.deepEqual(['½', '1/2', 'Neg.', 'Negates', 'None', '', 'Special'].map(v => saveNote(v)), ['Save for ½ damage', 'Save for ½ damage', 'Save negates', 'Save negates', 'No save', 'Save not recorded', 'Save: Special']);
+  assert.deepEqual(['½', 'Neg.', 'None', '', 'Special'].map(v => saveShort(v)), ['½ damage', 'Negates', 'None', 'Not recorded', 'Special']);
+  assert.equal(saveShort('½', false), '½ effect');   // no dice: Entangle
+  assert.equal(saveNote('½', false), 'Save for ½ effect');
 });

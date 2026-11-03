@@ -132,6 +132,7 @@ const CASTS = {
   wizard: c => c.group === 'wizard' || /bard/i.test(c.name || ''),
   priest: c => c.group === 'priest' || /paladin|ranger/i.test(c.name || ''),
 };
+CASTS.bard = CASTS.wizard;   // an old spell saved as "Bard": bards cast from the wizard list
 const classCasterLevel = c => {
   const name = c.name || '';
   const level = num(c.level);
@@ -140,6 +141,8 @@ const classCasterLevel = c => {
   if (classKit(c) === 'blade') return level - 2;
   return level;
 };
+// Can any class on the sheet cast from this list, at its level now?
+export const canCastList = (ctx, spellType) => (ctx.classes || []).some(c => (CASTS[spellType] || (() => false))(c) && classCasterLevel(c) > 0);
 export function casterLevel(ctx, sc, spellType) {
   const levels = (ctx.classes || []).filter(c => (CASTS[spellType] || (() => false))(c)).map(classCasterLevel).filter(l => l > 0);
   return levels.length ? Math.max(...levels) : (ctx.level || 1);
@@ -158,6 +161,28 @@ export function diceAtLevel(dice, level, maxLevel = 0) {
   m = d.match(/^(\d*)d(\d+)per(\d+)levels?$/i);
   if (m) return `${Math.max((num(m[1]) || 1) * Math.floor(level / num(m[3])), 1)}d${m[2]}`;
   return /^\d*d\d+([+-]\d+)?$/i.test(d) ? d : null;
+}
+
+// A spell's save in words, from the catalog: what the DM needs to know, and
+// the short form a spell card shows. A blank means the catalog doesn't record
+// one, which isn't the same as none. "½" is half the damage, or half the effect
+// on a spell with no dice (Entangle).
+const isNoSave = t => /^(none|n\/a|-|—)$/i.test(t);
+export function saveNote(save, dice = true) {
+  const t = String(save || '').trim();
+  if (!t) return 'Save not recorded';
+  if (isNoSave(t)) return 'No save';
+  if (/^(½|1\/2)$/.test(t)) return `Save for ½ ${dice ? 'damage' : 'effect'}`;
+  if (/^neg(\.|ates?)?( effects)?$/i.test(t)) return 'Save negates';
+  return `Save: ${t}`;
+}
+export function saveShort(save, dice = true) {
+  const t = String(save || '').trim();
+  if (!t) return 'Not recorded';
+  if (isNoSave(t)) return 'None';
+  if (/^(½|1\/2)$/.test(t)) return `½ ${dice ? 'damage' : 'effect'}`;
+  if (/^neg(\.|ates?)?( effects)?$/i.test(t)) return 'Negates';
+  return t;
 }
 
 // House rule (Bowcaster kit): a spell not sent through an arrow takes 3
@@ -183,8 +208,14 @@ export function scenarioSpell(ctx, sc) {
     : (catalogId && ctx.catalog.spells.find(e => e.id === catalogId)) || findSpell(ctx.catalog, sp, sp.type);
   const own = sc.spell || {};
   const pick = k => (own[k] !== undefined && own[k] !== '' ? own[k] : (cat && cat[k]) || '');
-  const level = casterLevel(ctx, sc, sp.type || (cat && cat.class) || '');
+  // The list comes from the catalog when it knows the spell. A level the player
+  // set wins (a spell from a ring: the DM says); with neither that nor a class
+  // that casts this list, dice per level can't be worked out, so it isn't guessed.
+  const list = (cat && cat.class) || sp.type || '';
+  const setLevel = num(sp.casterLevel) || num(source && source.casterLevel);
+  const level = setLevel || casterLevel(ctx, sc, list);
   const dice = pick('dice');
+  const needsLevel = !setLevel && !canCastList(ctx, list) && /level/i.test(dice);
   const rolled = dice ? diceAtLevel(dice, level, pick('diceMaxLevel')) : '';
   // The penalty is for casting the ordinary way; a Spellarrow doesn't take it
   const bowcaster = isBowcaster(ctx) && scenarioType(sc) === 'spell';
@@ -194,7 +225,7 @@ export function scenarioSpell(ctx, sc) {
     // As written above; as cast below: the dice at this caster's level (or as
     // written when they can't be worked out) and the casting time, after any
     // house-rule penalty
-    casterLevel: level, rolled: bowcaster && rolled ? lessPerDie(rolled) : rolled,
+    casterLevel: level, needsLevel, rolled: bowcaster && rolled ? lessPerDie(rolled) : rolled,
     castTimeNow: bowcaster ? slowerCast(pick('castTime')) : pick('castTime'),
     penalty: bowcaster ? 'Cast without an arrow: casting time +3, −1 damage per die' : '',
     attack: pick('attack') || 'none', heal: (cat && cat.diceKind === 'heal') || /cure|heal/i.test(sp.name),
@@ -305,7 +336,7 @@ export const scenarioWeapon = (ctx, sc) =>
 export function scenarioDamage(ctx, sc) {
   if (scenarioType(sc) === 'spell') {
     const sp = scenarioSpell(ctx, sc);
-    const dice = sp && (sp.rolled || sp.dice);
+    const dice = sp && !sp.needsLevel && (sp.rolled || sp.dice);
     return dice ? { sm: dice, l: dice, heal: sp.heal, casterLevel: sp.casterLevel } : null;
   }
   const wpn = scenarioWeapon(ctx, sc);
@@ -372,4 +403,27 @@ export function scenarioBreakdown(ctx, sc) {
 export function scenarioTHAC0(ctx, sc) {
   const bd = scenarioBreakdown(ctx, sc);
   return bd ? bd.thac0 : null;
+}
+
+// What a Detailed spell card shows, from its catalog entry: the dice at this
+// caster's level (or as written when no level is known) and the save in words.
+// How it's cast is the Combat scenario's business: a Bowcaster's penalty for
+// casting without an arrow is applied there. sp: the sheet's spell, with any
+// casterLevel set.
+export function spellCardStats(ctx, sp, cat) {
+  if (!cat) return null;
+  const setLevel = num(sp && sp.casterLevel);
+  const offList = !canCastList(ctx, cat.class);
+  const written = cat.dice || '';
+  const known = !!setLevel || !offList || !/level/i.test(written);
+  let dice = written;
+  if (written && known) dice = diceAtLevel(written, setLevel || casterLevel(ctx, {}, cat.class), cat.diceMaxLevel) || written;
+  const save = String(cat.save || '').trim();
+  return {
+    school: String(cat.school || '').split(';')[0].split(' · ')[0].trim(),
+    dice, heal: cat.diceKind === 'heal', save: saveShort(save, !!written), saveKey: !!save && !isNoSave(save),
+    attack: { touch: 'Touch', ranged: 'Ranged' }[cat.attack] || '',
+    castTime: cat.castTime || '', range: cat.range || '', duration: cat.duration || '', area: cat.area || '',
+    offList, casterLevel: setLevel || '',
+  };
 }

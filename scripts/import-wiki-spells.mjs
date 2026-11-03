@@ -181,7 +181,9 @@ async function main() {
         const f = box.fields;
         const raw = clean(f.name) || page.title.replace(/\s*\((Wizard|Priest)[^)]*\)$/i, '');
         const reversible = /reversible/i.test(raw);
-        const name = raw.replace(/[;,]?\s*\(?reversible\)?.*$/i, '').replace(/[;,\s]+$/, '').trim();
+        // A label after the name takes one form: "Sound Bubble - Bard"
+        const name = raw.replace(/[;,]?\s*\(?reversible\)?.*$/i, '').replace(/[;,\s]+$/, '').trim()
+          .replace(/\s*[-–—]\s+(?=[^-–—]+$)|\s+[-–—]\s*(?=[^-–—]+$)/, ' - ');
         const level = parseInt(clean(f.level), 10);
         const klass = /priest/i.test(f.class || '') ? 'priest' : /wizard/i.test(f.class || '') ? 'wizard' : cls;
         const g = guess(f, box.rest);

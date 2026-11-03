@@ -2933,7 +2933,7 @@
   },
   {
    "id": "beast-tattoo-elf-priest",
-   "name": "Beast Tattoo – Elf",
+   "name": "Beast Tattoo - Elf",
    "class": "priest",
    "level": 1,
    "school": "Enchantment · Sphere: All",
@@ -2953,7 +2953,8 @@
    ],
    "link": "https://adnd2e.fandom.com/wiki/Beast_Tattoo_(Priest_Spell)",
    "aliases": [
-    "Beast Tattoo"
+    "Beast Tattoo",
+    "Beast Tattoo – Elf"
    ]
   },
   {
@@ -5193,7 +5194,7 @@
   },
   {
    "id": "moonbeam-cerilia-priest",
-   "name": "Moonbeam – Cerilia",
+   "name": "Moonbeam - Cerilia",
    "class": "priest",
    "level": 1,
    "school": "Evocation · Sphere: Sun",
@@ -5213,7 +5214,8 @@
    ],
    "link": "https://adnd2e.fandom.com/wiki/Moonbeam_-_Cerilia_(Priest_Spell)",
    "aliases": [
-    "Moonbeam"
+    "Moonbeam",
+    "Moonbeam – Cerilia"
    ]
   },
   {
@@ -7889,7 +7891,7 @@
   },
   {
    "id": "blessing-of-vhaeraun-drow-priest",
-   "name": "Blessing of Vhaeraun – Drow",
+   "name": "Blessing of Vhaeraun - Drow",
    "class": "priest",
    "level": 2,
    "school": "Conjuration/Summoning · Sphere: Combat",
@@ -7909,7 +7911,8 @@
    ],
    "link": "https://adnd2e.fandom.com/wiki/Blessing_of_Vhaeraun_(Priest_Spell)",
    "aliases": [
-    "Blessing of Vhaeraun"
+    "Blessing of Vhaeraun",
+    "Blessing of Vhaeraun – Drow"
    ]
   },
   {
@@ -8048,7 +8051,7 @@
   },
   {
    "id": "brightmantle-dwarf-priest",
-   "name": "Brightmantle – Dwarf",
+   "name": "Brightmantle - Dwarf",
    "class": "priest",
    "level": 2,
    "school": "Abjuration · Sphere: Protection",
@@ -8068,12 +8071,13 @@
    ],
    "link": "https://adnd2e.fandom.com/wiki/Brightmantle_(Priest_Spell)",
    "aliases": [
-    "Brightmantle"
+    "Brightmantle",
+    "Brightmantle – Dwarf"
    ]
   },
   {
    "id": "burrow-gnome-priest",
-   "name": "Burrow – Gnome",
+   "name": "Burrow - Gnome",
    "class": "priest",
    "level": 2,
    "school": "Alteration · Sphere: Earth",
@@ -8094,7 +8098,8 @@
    ],
    "link": "https://adnd2e.fandom.com/wiki/Burrow_(Priest_Spell)",
    "aliases": [
-    "Burrow"
+    "Burrow",
+    "Burrow – Gnome"
    ]
   },
   {
@@ -12109,7 +12114,7 @@
   },
   {
    "id": "slow-poison-shukenja-priest",
-   "name": "Slow Poison – Shukenja",
+   "name": "Slow Poison - Shukenja",
    "class": "priest",
    "level": 2,
    "school": "Necromantic · Sphere: Healing",
@@ -12129,7 +12134,8 @@
    ],
    "link": "https://adnd2e.fandom.com/wiki/Slow_Poison_-_Shukenja_(Priest_Spell)",
    "aliases": [
-    "Slow Poison"
+    "Slow Poison",
+    "Slow Poison – Shukenja"
    ]
   },
   {
@@ -13571,7 +13577,7 @@
   },
   {
    "id": "bladedance-drow-priest",
-   "name": "Bladedance – Drow",
+   "name": "Bladedance - Drow",
    "class": "priest",
    "level": 3,
    "school": "Conjuration/Summoning · Sphere: Combat",
@@ -13591,12 +13597,13 @@
    ],
    "link": "https://adnd2e.fandom.com/wiki/Bladedance_(Priest_Spell)",
    "aliases": [
-    "Bladedance"
+    "Bladedance",
+    "Bladedance – Drow"
    ]
   },
   {
    "id": "blessed-craftsmanship-dwarf-priest",
-   "name": "Blessed Craftsmanship – Dwarf",
+   "name": "Blessed Craftsmanship - Dwarf",
    "class": "priest",
    "level": 3,
    "school": "Enchantment/Charm · Sphere: Creation",
@@ -13616,7 +13623,8 @@
    ],
    "link": "https://adnd2e.fandom.com/wiki/Blessed_Craftsmanship_(Priest_Spell)",
    "aliases": [
-    "Blessed Craftsmanship"
+    "Blessed Craftsmanship",
+    "Blessed Craftsmanship – Dwarf"
    ]
   },
   {
@@ -14380,7 +14388,7 @@
   },
   {
    "id": "crown-of-radiance-archon-priest",
-   "name": "Crown of Radiance – Archon",
+   "name": "Crown of Radiance - Archon",
    "class": "priest",
    "level": 3,
    "school": "Invocation/Evocation · Sphere: Sun",
@@ -14400,7 +14408,8 @@
    ],
    "link": "https://adnd2e.fandom.com/wiki/Crown_of_Radiance_(Priest_Spell)",
    "aliases": [
-    "Crown of Radiance"
+    "Crown of Radiance",
+    "Crown of Radiance – Archon"
    ]
   },
   {
@@ -14651,7 +14660,7 @@
   },
   {
    "id": "detect-curse-shukenja-priest",
-   "name": "Detect Curse – Shukenja",
+   "name": "Detect Curse - Shukenja",
    "class": "priest",
    "level": 3,
    "school": "Divination · Sphere: Divination",
@@ -14671,7 +14680,8 @@
    ],
    "link": "https://adnd2e.fandom.com/wiki/Detect_Curse_-_Shukenja_(Priest_Spell)",
    "aliases": [
-    "Detect Curse"
+    "Detect Curse",
+    "Detect Curse – Shukenja"
    ]
   },
   {
@@ -17439,7 +17449,7 @@
   },
   {
    "id": "remove-paralysis-shukenja-priest",
-   "name": "Remove Paralysis – Shukenja",
+   "name": "Remove Paralysis - Shukenja",
    "class": "priest",
    "level": 3,
    "school": "Abjuration · Sphere: Necromantic, Protection",
@@ -17459,7 +17469,8 @@
    ],
    "link": "https://adnd2e.fandom.com/wiki/Remove_Paralysis_%E2%80%93_Shukenja_(Priest_Spell)",
    "aliases": [
-    "Remove Paralysis"
+    "Remove Paralysis",
+    "Remove Paralysis – Shukenja"
    ]
   },
   {
@@ -17977,7 +17988,7 @@
   },
   {
    "id": "speak-with-dead-shukenja-priest",
-   "name": "Speak with Dead – Shukenja",
+   "name": "Speak with Dead - Shukenja",
    "class": "priest",
    "level": 3,
    "school": "Necromantic · Sphere: Divination, Necromantic",
@@ -17997,7 +18008,8 @@
    ],
    "link": "https://adnd2e.fandom.com/wiki/Speak_with_Dead_-_Shukenja_(Priest_Spell)",
    "aliases": [
-    "Speak with Dead"
+    "Speak with Dead",
+    "Speak with Dead – Shukenja"
    ]
   },
   {
@@ -18608,7 +18620,7 @@
   },
   {
    "id": "sunstroke-old-empire-priest",
-   "name": "Sunstroke – Old Empire",
+   "name": "Sunstroke - Old Empire",
    "class": "priest",
    "level": 3,
    "school": "Alteration · Sphere: Elemental Fire, Sun",
@@ -18628,7 +18640,8 @@
    ],
    "link": "https://adnd2e.fandom.com/wiki/Sunstroke_-_Old_Empire_(Priest_Spell)",
    "aliases": [
-    "Sunstroke"
+    "Sunstroke",
+    "Sunstroke – Old Empire"
    ]
   },
   {
@@ -19826,7 +19839,7 @@
   },
   {
    "id": "badger-form-halfling-priest",
-   "name": "Badger Form – Halfling",
+   "name": "Badger Form - Halfling",
    "class": "priest",
    "level": 4,
    "school": "Alteration · Sphere: Animal",
@@ -19847,7 +19860,8 @@
    ],
    "link": "https://adnd2e.fandom.com/wiki/Badger_Form_(Priest_Spell)",
    "aliases": [
-    "Badger Form"
+    "Badger Form",
+    "Badger Form – Halfling"
    ]
   },
   {
@@ -19920,7 +19934,7 @@
   },
   {
    "id": "blazing-sword-halfling-priest",
-   "name": "Blazing Sword – Halfling",
+   "name": "Blazing Sword - Halfling",
    "class": "priest",
    "level": 4,
    "school": "Evocation · Sphere: Combat",
@@ -19940,7 +19954,8 @@
    ],
    "link": "https://adnd2e.fandom.com/wiki/Blazing_Sword_(Priest_Spell)",
    "aliases": [
-    "Blazing Sword"
+    "Blazing Sword",
+    "Blazing Sword – Halfling"
    ]
   },
   {
@@ -24954,7 +24969,7 @@
   },
   {
    "id": "spell-immunity-shukenja-priest",
-   "name": "Spell Immunity – Shukenja",
+   "name": "Spell Immunity - Shukenja",
    "class": "priest",
    "level": 4,
    "school": "Abjuration · Sphere: Protection",
@@ -24974,7 +24989,8 @@
    ],
    "link": "https://adnd2e.fandom.com/wiki/Spell_Immunity_-_Shukenja_(Priest_Spell)",
    "aliases": [
-    "Spell Immunity"
+    "Spell Immunity",
+    "Spell Immunity – Shukenja"
    ]
   },
   {
@@ -25115,7 +25131,7 @@
   },
   {
    "id": "stone-walk-drow-priest",
-   "name": "Stone Walk – Drow",
+   "name": "Stone Walk - Drow",
    "class": "priest",
    "level": 4,
    "school": "Alteration · Sphere: Elemental Earth",
@@ -25136,7 +25152,8 @@
    ],
    "link": "https://adnd2e.fandom.com/wiki/Stone_Walk_-_Drow_(Priest_Spell)",
    "aliases": [
-    "Stone Walk"
+    "Stone Walk",
+    "Stone Walk – Drow"
    ]
   },
   {
@@ -26578,7 +26595,7 @@
   },
   {
    "id": "bane-of-yondalla-halfling-priest",
-   "name": "Bane of Yondalla – Halfling",
+   "name": "Bane of Yondalla - Halfling",
    "class": "priest",
    "level": 5,
    "school": "Necromancy · Sphere: Necromantic",
@@ -26599,7 +26616,8 @@
    ],
    "link": "https://adnd2e.fandom.com/wiki/Bane_of_Yondalla_(Priest_Spell)",
    "aliases": [
-    "Bane of Yondalla"
+    "Bane of Yondalla",
+    "Bane of Yondalla – Halfling"
    ]
   },
   {
@@ -26648,7 +26666,7 @@
   },
   {
    "id": "berronars-favor-dwarf-priest",
-   "name": "Berronar's Favor – Dwarf",
+   "name": "Berronar's Favor - Dwarf",
    "class": "priest",
    "level": 5,
    "school": "Conjuration/Summoning · Sphere: Summoning",
@@ -26668,7 +26686,8 @@
    ],
    "link": "https://adnd2e.fandom.com/wiki/Berronar's_Favor_(Priest_Spell)",
    "aliases": [
-    "Berronar's Favor"
+    "Berronar's Favor",
+    "Berronar's Favor – Dwarf"
    ]
   },
   {
@@ -26695,7 +26714,7 @@
   },
   {
    "id": "bestow-hit-points-savant-priest",
-   "name": "Bestow Hit Points – Savant",
+   "name": "Bestow Hit Points - Savant",
    "class": "priest",
    "level": 5,
    "school": "Alteration · Sphere: Necromantic",
@@ -26715,7 +26734,8 @@
    ],
    "link": "https://adnd2e.fandom.com/wiki/Bestow_Hit_Points_(Priest_Spell)",
    "aliases": [
-    "Bestow Hit Points"
+    "Bestow Hit Points",
+    "Bestow Hit Points – Savant"
    ]
   },
   {
@@ -26742,7 +26762,7 @@
   },
   {
    "id": "bladebend-drow-priest",
-   "name": "Bladebend – Drow",
+   "name": "Bladebend - Drow",
    "class": "priest",
    "level": 5,
    "school": "Alteration · Sphere: Combat",
@@ -26762,7 +26782,8 @@
    ],
    "link": "https://adnd2e.fandom.com/wiki/Bladebend_(Priest_Spell)",
    "aliases": [
-    "Bladebend"
+    "Bladebend",
+    "Bladebend – Drow"
    ]
   },
   {
@@ -31099,7 +31120,7 @@
   },
   {
    "id": "strength-dwarf-priest",
-   "name": "Strength – Dwarf",
+   "name": "Strength - Dwarf",
    "class": "priest",
    "level": 5,
    "school": "Alteration · Sphere: Elemental Earth",
@@ -31119,12 +31140,13 @@
    ],
    "link": "https://adnd2e.fandom.com/wiki/Strength_-_Dwarf_(Priest_Spell)",
    "aliases": [
-    "Strength"
+    "Strength",
+    "Strength – Dwarf"
    ]
   },
   {
    "id": "strength-shukenja-priest",
-   "name": "Strength – Shukenja",
+   "name": "Strength - Shukenja",
    "class": "priest",
    "level": 5,
    "school": "Alteration · Sphere: Combat",
@@ -31144,7 +31166,8 @@
    ],
    "link": "https://adnd2e.fandom.com/wiki/Strength_-_Shukenja_(Priest_Spell)",
    "aliases": [
-    "Strength"
+    "Strength",
+    "Strength – Shukenja"
    ]
   },
   {
@@ -31509,7 +31532,7 @@
   },
   {
    "id": "true-seeing-shukenja-priest",
-   "name": "True Seeing – Shukenja",
+   "name": "True Seeing - Shukenja",
    "class": "priest",
    "level": 5,
    "school": "Divination · Sphere: All",
@@ -31529,7 +31552,8 @@
    ],
    "link": "https://adnd2e.fandom.com/wiki/True_Seeing_-_Shukenja_(Priest_Spell)",
    "aliases": [
-    "True Seeing"
+    "True Seeing",
+    "True Seeing – Shukenja"
    ]
   },
   {
@@ -38486,7 +38510,7 @@
   },
   {
    "id": "reincarnate-shukenja-priest",
-   "name": "Reincarnate – Shukenja",
+   "name": "Reincarnate - Shukenja",
    "class": "priest",
    "level": 7,
    "school": "Necromancy · Sphere: Necromantic",
@@ -38506,7 +38530,8 @@
    ],
    "link": "https://adnd2e.fandom.com/wiki/Reincarnate_-_Shukenja_(Priest_Spell)",
    "aliases": [
-    "Reincarnate"
+    "Reincarnate",
+    "Reincarnate – Shukenja"
    ]
   },
   {
@@ -38644,7 +38669,7 @@
   },
   {
    "id": "resurrection-shukenja-priest",
-   "name": "Resurrection – Shukenja",
+   "name": "Resurrection - Shukenja",
    "class": "priest",
    "level": 7,
    "school": "Necromancy · Sphere: Necromantic",
@@ -38664,7 +38689,8 @@
    ],
    "link": "https://adnd2e.fandom.com/wiki/Resurrection_-_Shukenja_(Priest_Spell)",
    "aliases": [
-    "Resurrection"
+    "Resurrection",
+    "Resurrection – Shukenja"
    ]
   },
   {
@@ -39437,7 +39463,7 @@
   },
   {
    "id": "tsunami-shukenja-priest",
-   "name": "Tsunami – Shukenja",
+   "name": "Tsunami - Shukenja",
    "class": "priest",
    "level": 7,
    "school": "Invocation/Evocation · Sphere: Elemental Water",
@@ -39458,7 +39484,8 @@
    ],
    "link": "https://adnd2e.fandom.com/wiki/Tsunami_-_Shukenja_(Priest_Spell)",
    "aliases": [
-    "Tsunami"
+    "Tsunami",
+    "Tsunami – Shukenja"
    ]
   },
   {
@@ -42631,7 +42658,7 @@
   },
   {
    "id": "alter-instrument-bard-wizard",
-   "name": "Alter Instrument — Bard",
+   "name": "Alter Instrument - Bard",
    "class": "wizard",
    "level": 1,
    "school": "Alteration",
@@ -42649,7 +42676,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Alter_Instrument_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Alter_Instrument_(Wizard_Spell)",
+   "aliases": [
+    "Alter Instrument — Bard"
+   ]
   },
   {
    "id": "alter-normal-winds-wizard",
@@ -42697,7 +42727,7 @@
   },
   {
    "id": "animal-nonaggression-bard-wizard",
-   "name": "Animal Nonaggression — Bard",
+   "name": "Animal Nonaggression - Bard",
    "class": "wizard",
    "level": 1,
    "school": "Enchantment/Charm",
@@ -42715,7 +42745,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Animal_Nonaggression_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Animal_Nonaggression_(Wizard_Spell)",
+   "aliases": [
+    "Animal Nonaggression — Bard"
+   ]
   },
   {
    "id": "animal-sanctuary-wizard",
@@ -42807,7 +42840,7 @@
   },
   {
    "id": "arrowflight-pluma-wizard",
-   "name": "Arrowflight — Pluma",
+   "name": "Arrowflight - Pluma",
    "class": "wizard",
    "level": 1,
    "school": "Alteration",
@@ -42825,7 +42858,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Arrowflight_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Arrowflight_(Wizard_Spell)",
+   "aliases": [
+    "Arrowflight — Pluma"
+   ]
   },
   {
    "id": "audible-glamer-wizard",
@@ -42873,7 +42909,7 @@
   },
   {
    "id": "aura-fire-red-wizard-wizard",
-   "name": "Aura Fire — Red Wizard",
+   "name": "Aura Fire - Red Wizard",
    "class": "wizard",
    "level": 1,
    "school": "Alteration",
@@ -42891,7 +42927,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Aura_Fire_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Aura_Fire_(Wizard_Spell)",
+   "aliases": [
+    "Aura Fire — Red Wizard"
+   ]
   },
   {
    "id": "avert-evil-eye-wizard",
@@ -44019,7 +44058,7 @@
   },
   {
    "id": "dancing-fire-phaerimm-wizard",
-   "name": "Dancing Fire -Phaerimm",
+   "name": "Dancing Fire - Phaerimm",
    "class": "wizard",
    "level": 1,
    "school": "Invocation; Fire",
@@ -44038,7 +44077,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Dancing_Fire_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Dancing_Fire_(Wizard_Spell)",
+   "aliases": [
+    "Dancing Fire -Phaerimm"
+   ]
   },
   {
    "id": "dancing-lights-wizard",
@@ -46299,7 +46341,7 @@
   },
   {
    "id": "ladder-old-empire-wizard",
-   "name": "Ladder – Old Empire",
+   "name": "Ladder - Old Empire",
    "class": "wizard",
    "level": 1,
    "school": "Alteration; Force",
@@ -46319,7 +46361,8 @@
    ],
    "link": "https://adnd2e.fandom.com/wiki/Ladder_(Wizard_Spell)",
    "aliases": [
-    "Ladder"
+    "Ladder",
+    "Ladder – Old Empire"
    ]
   },
   {
@@ -48069,7 +48112,7 @@
   },
   {
    "id": "seduction-i-witch-wizard",
-   "name": "Seduction I -Witch",
+   "name": "Seduction I - Witch",
    "class": "wizard",
    "level": 1,
    "school": "Enchantment/Charm",
@@ -48087,7 +48130,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Seduction_I_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Seduction_I_(Wizard_Spell)",
+   "aliases": [
+    "Seduction I -Witch"
+   ]
   },
   {
    "id": "serpent-missile-wizard",
@@ -48947,7 +48993,7 @@
   },
   {
    "id": "talons-waterproof-bard-wizard",
-   "name": "Talon's Waterproof- Bard",
+   "name": "Talon's Waterproof - Bard",
    "class": "wizard",
    "level": 1,
    "school": "Abjuration",
@@ -48965,7 +49011,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Talon's_Waterproof_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Talon's_Waterproof_(Wizard_Spell)",
+   "aliases": [
+    "Talon's Waterproof- Bard"
+   ]
   },
   {
    "id": "talonblade-hishna-wizard",
@@ -49727,7 +49776,7 @@
   },
   {
    "id": "aerial-acceleration-dragon-wizard",
-   "name": "Aerial Acceleration — Dragon",
+   "name": "Aerial Acceleration - Dragon",
    "class": "wizard",
    "level": 2,
    "school": "Alteration",
@@ -49745,7 +49794,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Aerial_Acceleration_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Aerial_Acceleration_(Wizard_Spell)",
+   "aliases": [
+    "Aerial Acceleration — Dragon"
+   ]
   },
   {
    "id": "agannazars-scorcher-wizard",
@@ -49860,7 +49912,7 @@
   },
   {
    "id": "ambush-hishna-wizard",
-   "name": "Ambush — Hishna",
+   "name": "Ambush - Hishna",
    "class": "wizard",
    "level": 2,
    "school": "Alteration, Illusion/Phantasm",
@@ -49878,7 +49930,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Ambush_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Ambush_(Wizard_Spell)",
+   "aliases": [
+    "Ambush — Hishna"
+   ]
   },
   {
    "id": "anchor-wizard",
@@ -50036,7 +50091,7 @@
   },
   {
    "id": "aura-of-terror-dragon-wizard",
-   "name": "Aura of Terror — Dragon",
+   "name": "Aura of Terror - Dragon",
    "class": "wizard",
    "level": 2,
    "school": "Illusion/Phantasm",
@@ -50054,7 +50109,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Aura_of_Terror_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Aura_of_Terror_(Wizard_Spell)",
+   "aliases": [
+    "Aura of Terror — Dragon"
+   ]
   },
   {
    "id": "bafflement-pluma-wizard",
@@ -55920,7 +55978,7 @@
   },
   {
    "id": "seduction-ii-witch-wizard",
-   "name": "Seduction II -Witch",
+   "name": "Seduction II - Witch",
    "class": "wizard",
    "level": 2,
    "school": "Enchantment/Charm",
@@ -55938,7 +55996,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Seduction_II_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Seduction_II_(Wizard_Spell)",
+   "aliases": [
+    "Seduction II -Witch"
+   ]
   },
   {
    "id": "see-through-other-eyes-wizard",
@@ -58053,7 +58114,7 @@
   },
   {
    "id": "arachnophobia-neogi-wizard",
-   "name": "Arachnophobia — Neogi",
+   "name": "Arachnophobia - Neogi",
    "class": "wizard",
    "level": 3,
    "school": "illusion/Phantasm",
@@ -58071,7 +58132,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Arachnophobia_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Arachnophobia_(Wizard_Spell)",
+   "aliases": [
+    "Arachnophobia — Neogi"
+   ]
   },
   {
    "id": "articuss-melee-manager-wizard",
@@ -58097,7 +58161,7 @@
   },
   {
    "id": "assist-red-wizards-wizard",
-   "name": "Assist — Red Wizards",
+   "name": "Assist - Red Wizards",
    "class": "wizard",
    "level": 3,
    "school": "Conjuration, Necromancy",
@@ -58116,7 +58180,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Assist_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Assist_(Wizard_Spell)",
+   "aliases": [
+    "Assist — Red Wizards"
+   ]
   },
   {
    "id": "augment-undead-wizard",
@@ -65261,7 +65328,7 @@
   },
   {
    "id": "statue-wu-jen-wu-jen-wizard",
-   "name": "Statue (Wu Jen) -Wu Jen",
+   "name": "Statue (Wu Jen) - Wu Jen",
    "class": "wizard",
    "level": 3,
    "school": "Alteration",
@@ -65279,7 +65346,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Statue_-_Wu_Jen_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Statue_-_Wu_Jen_(Wizard_Spell)",
+   "aliases": [
+    "Statue (Wu Jen) -Wu Jen"
+   ]
   },
   {
    "id": "steam-blast-wizard",
@@ -66677,7 +66747,7 @@
   },
   {
    "id": "acid-bolt-drow-wizard",
-   "name": "Acid Bolt — Drow",
+   "name": "Acid Bolt - Drow",
    "class": "wizard",
    "level": 4,
    "school": "Conjuration",
@@ -66696,11 +66766,14 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Acid_Bolt_-_Drow_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Acid_Bolt_-_Drow_(Wizard_Spell)",
+   "aliases": [
+    "Acid Bolt — Drow"
+   ]
   },
   {
    "id": "agitate-wounds-old-empire-wizard",
-   "name": "Agitate Wounds — Old Empire",
+   "name": "Agitate Wounds - Old Empire",
    "class": "wizard",
    "level": 4,
    "school": "Necromancy",
@@ -66719,7 +66792,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Agitate_Wounds_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Agitate_Wounds_(Wizard_Spell)",
+   "aliases": [
+    "Agitate Wounds — Old Empire"
+   ]
   },
   {
    "id": "alustriels-mantle-wizard",
@@ -72818,7 +72894,7 @@
   },
   {
    "id": "seduction-iv-witch-wizard",
-   "name": "Seduction IV -Witch",
+   "name": "Seduction IV - Witch",
    "class": "wizard",
    "level": 4,
    "school": "Enchantment/Charm",
@@ -72836,7 +72912,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Seduction_IV_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Seduction_IV_(Wizard_Spell)",
+   "aliases": [
+    "Seduction IV -Witch"
+   ]
   },
   {
    "id": "sending-lvl-4-hishna-wizard",
@@ -75237,7 +75316,7 @@
   },
   {
    "id": "azure-flame-paramander-wizard",
-   "name": "Azure Flame — Paramander",
+   "name": "Azure Flame - Paramander",
    "class": "wizard",
    "level": 5,
    "school": "Alteration; Fire",
@@ -75255,7 +75334,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Azure_Flame_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Azure_Flame_(Wizard_Spell)",
+   "aliases": [
+    "Azure Flame — Paramander"
+   ]
   },
   {
    "id": "azuths-exalted-triad-wizard",
@@ -80214,7 +80296,7 @@
   },
   {
    "id": "seduction-v-witch-wizard",
-   "name": "Seduction V -Witch",
+   "name": "Seduction V - Witch",
    "class": "wizard",
    "level": 5,
    "school": "Enchantment/Charm",
@@ -80232,7 +80314,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Seduction_V_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Seduction_V_(Wizard_Spell)",
+   "aliases": [
+    "Seduction V -Witch"
+   ]
   },
   {
    "id": "seeming-wizard",
@@ -82193,7 +82278,7 @@
   },
   {
    "id": "acid-rain-red-wizard-wizard",
-   "name": "Acid Rain — Red Wizard",
+   "name": "Acid Rain - Red Wizard",
    "class": "wizard",
    "level": 6,
    "school": "Alteration",
@@ -82212,7 +82297,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Acid_Rain_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Acid_Rain_(Wizard_Spell)",
+   "aliases": [
+    "Acid Rain — Red Wizard"
+   ]
   },
   {
    "id": "age-animal-wizard",
@@ -82371,7 +82459,7 @@
   },
   {
    "id": "animate-dread-warrior-red-wizard-wizard",
-   "name": "Animate Dread Warrior — Red Wizard",
+   "name": "Animate Dread Warrior - Red Wizard",
    "class": "wizard",
    "level": 6,
    "school": "Necromancy",
@@ -82389,7 +82477,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Animate_Dread_Warrior_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Animate_Dread_Warrior_(Wizard_Spell)",
+   "aliases": [
+    "Animate Dread Warrior — Red Wizard"
+   ]
   },
   {
    "id": "anti-magic-shell-wizard",
@@ -82415,7 +82506,7 @@
   },
   {
    "id": "antimagic-aura-elf-wizard",
-   "name": "Antimagic Aura — Elf",
+   "name": "Antimagic Aura - Elf",
    "class": "wizard",
    "level": 6,
    "school": "Abjuration",
@@ -82433,7 +82524,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Anti-Magic_Aura_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Anti-Magic_Aura_(Wizard_Spell)",
+   "aliases": [
+    "Antimagic Aura — Elf"
+   ]
   },
   {
    "id": "archveults-skybolt-wizard",
@@ -94599,7 +94693,7 @@
   },
   {
    "id": "seduction-viii-witch-wizard",
-   "name": "Seduction VIII- Witch",
+   "name": "Seduction VIII - Witch",
    "class": "wizard",
    "level": 8,
    "school": "Enchantment/Charm",
@@ -94617,7 +94711,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Seduction_VIII_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Seduction_VIII_(Wizard_Spell)",
+   "aliases": [
+    "Seduction VIII- Witch"
+   ]
   },
   {
    "id": "sertens-spell-immunity-wizard",
@@ -95701,7 +95798,7 @@
   },
   {
    "id": "army-old-empire-wizard",
-   "name": "Army — Old Empire",
+   "name": "Army - Old Empire",
    "class": "wizard",
    "level": 9,
    "school": "Conjuration/Summoning; Earth",
@@ -95719,7 +95816,10 @@
     "attack",
     "dice"
    ],
-   "link": "https://adnd2e.fandom.com/wiki/Army_(Wizard_Spell)"
+   "link": "https://adnd2e.fandom.com/wiki/Army_(Wizard_Spell)",
+   "aliases": [
+    "Army — Old Empire"
+   ]
   },
   {
    "id": "astral-spell-wizard",

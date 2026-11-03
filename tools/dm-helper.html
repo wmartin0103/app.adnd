@@ -541,6 +541,11 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .moveafter{display:flex;align-items:center;gap:6px;padding:7px 14px;font-family:var(--serif);font-size:.82rem;border-top:1px solid var(--edge)}
   .rbtn,.res{display:none}
   .rbtn:disabled{opacity:.35;cursor:default}
+  .ldsave{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;margin:4px 0 8px;font:inherit}
+  /* A save roll: who, the d20 icon, the roll in bold */
+  .ldsave-roll{display:inline-flex;align-items:center;gap:6px}
+  .ldsave-roll svg{width:1.1em;height:1.1em;color:var(--color-accent-text)}
+  .ocard .lightdetail .ldsave-roll b{font:inherit;font-weight:700;letter-spacing:0;text-transform:none;color:inherit}
   .parrytgt,.acmod{font-size:13px;padding:1px 3px;width:auto}
   .char.synced .cfields,.char.synced .mods,.char.synced table.acts,.char.synced .moveafter{display:none !important}
   .syncpanel{padding:8px 12px 10px;font-family:var(--sans);font-size:.85rem;display:grid;gap:4px}
@@ -2136,6 +2141,7 @@ const CASTS = {
   wizard: c => c.group === 'wizard' || /bard/i.test(c.name || ''),
   priest: c => c.group === 'priest' || /paladin|ranger/i.test(c.name || ''),
 };
+CASTS.bard = CASTS.wizard;   // an old spell saved as "Bard": bards cast from the wizard list
 const classCasterLevel = c => {
   const name = c.name || '';
   const level = num(c.level);
@@ -2144,6 +2150,8 @@ const classCasterLevel = c => {
   if (classKit(c) === 'blade') return level - 2;
   return level;
 };
+// Can any class on the sheet cast from this list, at its level now?
+const canCastList = (ctx, spellType) => (ctx.classes || []).some(c => (CASTS[spellType] || (() => false))(c) && classCasterLevel(c) > 0);
 function casterLevel(ctx, sc, spellType) {
   const levels = (ctx.classes || []).filter(c => (CASTS[spellType] || (() => false))(c)).map(classCasterLevel).filter(l => l > 0);
   return levels.length ? Math.max(...levels) : (ctx.level || 1);
@@ -2162,6 +2170,28 @@ function diceAtLevel(dice, level, maxLevel = 0) {
   m = d.match(/^(\d*)d(\d+)per(\d+)levels?$/i);
   if (m) return `${Math.max((num(m[1]) || 1) * Math.floor(level / num(m[3])), 1)}d${m[2]}`;
   return /^\d*d\d+([+-]\d+)?$/i.test(d) ? d : null;
+}
+
+// A spell's save in words, from the catalog: what the DM needs to know, and
+// the short form a spell card shows. A blank means the catalog doesn't record
+// one, which isn't the same as none. "½" is half the damage, or half the effect
+// on a spell with no dice (Entangle).
+const isNoSave = t => /^(none|n\/a|-|—)$/i.test(t);
+function saveNote(save, dice = true) {
+  const t = String(save || '').trim();
+  if (!t) return 'Save not recorded';
+  if (isNoSave(t)) return 'No save';
+  if (/^(½|1\/2)$/.test(t)) return `Save for ½ ${dice ? 'damage' : 'effect'}`;
+  if (/^neg(\.|ates?)?( effects)?$/i.test(t)) return 'Save negates';
+  return `Save: ${t}`;
+}
+function saveShort(save, dice = true) {
+  const t = String(save || '').trim();
+  if (!t) return 'Not recorded';
+  if (isNoSave(t)) return 'None';
+  if (/^(½|1\/2)$/.test(t)) return `½ ${dice ? 'damage' : 'effect'}`;
+  if (/^neg(\.|ates?)?( effects)?$/i.test(t)) return 'Negates';
+  return t;
 }
 
 // House rule (Bowcaster kit): a spell not sent through an arrow takes 3
@@ -2187,8 +2217,14 @@ function scenarioSpell(ctx, sc) {
     : (catalogId && ctx.catalog.spells.find(e => e.id === catalogId)) || findSpell(ctx.catalog, sp, sp.type);
   const own = sc.spell || {};
   const pick = k => (own[k] !== undefined && own[k] !== '' ? own[k] : (cat && cat[k]) || '');
-  const level = casterLevel(ctx, sc, sp.type || (cat && cat.class) || '');
+  // The list comes from the catalog when it knows the spell. A level the player
+  // set wins (a spell from a ring: the DM says); with neither that nor a class
+  // that casts this list, dice per level can't be worked out, so it isn't guessed.
+  const list = (cat && cat.class) || sp.type || '';
+  const setLevel = num(sp.casterLevel) || num(source && source.casterLevel);
+  const level = setLevel || casterLevel(ctx, sc, list);
   const dice = pick('dice');
+  const needsLevel = !setLevel && !canCastList(ctx, list) && /level/i.test(dice);
   const rolled = dice ? diceAtLevel(dice, level, pick('diceMaxLevel')) : '';
   // The penalty is for casting the ordinary way; a Spellarrow doesn't take it
   const bowcaster = isBowcaster(ctx) && scenarioType(sc) === 'spell';
@@ -2198,7 +2234,7 @@ function scenarioSpell(ctx, sc) {
     // As written above; as cast below: the dice at this caster's level (or as
     // written when they can't be worked out) and the casting time, after any
     // house-rule penalty
-    casterLevel: level, rolled: bowcaster && rolled ? lessPerDie(rolled) : rolled,
+    casterLevel: level, needsLevel, rolled: bowcaster && rolled ? lessPerDie(rolled) : rolled,
     castTimeNow: bowcaster ? slowerCast(pick('castTime')) : pick('castTime'),
     penalty: bowcaster ? 'Cast without an arrow: casting time +3, −1 damage per die' : '',
     attack: pick('attack') || 'none', heal: (cat && cat.diceKind === 'heal') || /cure|heal/i.test(sp.name),
@@ -2309,7 +2345,7 @@ const scenarioWeapon = (ctx, sc) =>
 function scenarioDamage(ctx, sc) {
   if (scenarioType(sc) === 'spell') {
     const sp = scenarioSpell(ctx, sc);
-    const dice = sp && (sp.rolled || sp.dice);
+    const dice = sp && !sp.needsLevel && (sp.rolled || sp.dice);
     return dice ? { sm: dice, l: dice, heal: sp.heal, casterLevel: sp.casterLevel } : null;
   }
   const wpn = scenarioWeapon(ctx, sc);
@@ -2378,11 +2414,34 @@ function scenarioTHAC0(ctx, sc) {
   return bd ? bd.thac0 : null;
 }
 
-return { modNum, signed, ATTACK_TYPES, RATE_OPTIONS, racialWeaponBonus, strengthRow, scenarioContext, scenarioRate, rateValue, scenarioType, normalizeEffects, effectOption, activeEffectsFor, effectsACBonus, casterLevel, diceAtLevel, isBowcaster, lessPerDie, scenarioSpell, scenarioAbility, castSpeed, spellArrow, AMMO_TYPES, PHB_AMMO, isBow, weaponAmmoType, usesAmmo, ammoType, ammoFor, scenarioAmmo, scenarioDice, scenarioWeapon, scenarioDamage, scenarioBreakdown, scenarioTHAC0 };
+// What a Detailed spell card shows, from its catalog entry: the dice at this
+// caster's level (or as written when no level is known) and the save in words.
+// How it's cast is the Combat scenario's business: a Bowcaster's penalty for
+// casting without an arrow is applied there. sp: the sheet's spell, with any
+// casterLevel set.
+function spellCardStats(ctx, sp, cat) {
+  if (!cat) return null;
+  const setLevel = num(sp && sp.casterLevel);
+  const offList = !canCastList(ctx, cat.class);
+  const written = cat.dice || '';
+  const known = !!setLevel || !offList || !/level/i.test(written);
+  let dice = written;
+  if (written && known) dice = diceAtLevel(written, setLevel || casterLevel(ctx, {}, cat.class), cat.diceMaxLevel) || written;
+  const save = String(cat.save || '').trim();
+  return {
+    school: String(cat.school || '').split(';')[0].split(' · ')[0].trim(),
+    dice, heal: cat.diceKind === 'heal', save: saveShort(save, !!written), saveKey: !!save && !isNoSave(save),
+    attack: { touch: 'Touch', ranged: 'Ranged' }[cat.attack] || '',
+    castTime: cat.castTime || '', range: cat.range || '', duration: cat.duration || '', area: cat.area || '',
+    offList, casterLevel: setLevel || '',
+  };
+}
+
+return { modNum, signed, ATTACK_TYPES, RATE_OPTIONS, racialWeaponBonus, strengthRow, scenarioContext, scenarioRate, rateValue, scenarioType, normalizeEffects, effectOption, activeEffectsFor, effectsACBonus, canCastList, casterLevel, diceAtLevel, saveNote, saveShort, isBowcaster, lessPerDie, scenarioSpell, scenarioAbility, castSpeed, spellArrow, AMMO_TYPES, PHB_AMMO, isBow, weaponAmmoType, usesAmmo, ammoType, ammoFor, scenarioAmmo, scenarioDice, scenarioWeapon, scenarioDamage, scenarioBreakdown, scenarioTHAC0, spellCardStats };
 })();
 // ── rules/round ──
 __m["rules/round"] = (() => {
-const {scenarioType, scenarioSpell, scenarioWeapon, spellArrow, castSpeed, scenarioBreakdown, scenarioDamage, modNum} = __m["rules/scenarios"];
+const {scenarioType, scenarioSpell, scenarioWeapon, spellArrow, castSpeed, scenarioBreakdown, scenarioDamage, modNum, saveNote} = __m["rules/scenarios"];
 // ── ONE ROUND OF COMBAT ─────────────────────────────────────────
 // A character's round as the sheet's Combat section declares it and the DM's
 // initiative page shows it. Both work from the same record (the "round
@@ -2594,6 +2653,12 @@ const damageDice = (ctx, sc, target, rand) => {
 // one), and the damage dice by that target's size, which the DM counts only on
 // a hit. A spell with no attack roll just rolls its damage (once for an area
 // spell). Only the dice are kept: scoreRoll adds the sheet's numbers as they are now.
+// A spell line's save in words ('' for a weapon or an Enemy's attack)
+const lineSaveNote = (ctx, sc) => {
+  if (sc.plain || !['spell', 'spellarrow'].includes(scenarioType(sc))) return '';   // a Spellarrow carries a spell too
+  const sp = scenarioSpell(ctx, sc);
+  return sp ? saveNote(sp.save, !!sp.dice) : '';
+};
 function rollLine(ctx, line, rand = Math.random) {
   const kind = lineKind(ctx, line.sc);
   const shared = kind === 'area' ? damageDice(ctx, line.sc, targetsOf(line)[0], rand) : null;
@@ -2638,7 +2703,7 @@ function scoreRoll(ctx, line, raw) {
       thac0: e.d20 != null ? thac0 : null, hitsAC: e.d20 != null && thac0 != null ? thac0 - e.d20 : null,
     };
   });
-  return { kind: raw.kind || lineKind(ctx, line.sc), heal: !!raw.heal, each: scored, dmgStale: scored.some(e => e.dmgStale) };
+  return { kind: raw.kind || lineKind(ctx, line.sc), heal: !!raw.heal, saveNote: lineSaveNote(ctx, line.sc), each: scored, dmgStale: scored.some(e => e.dmgStale) };
 }
 // Rolls the damage dice again where they changed, keeping the d20s (after dmgStale)
 function rerollDamage(ctx, line, raw, rand = Math.random) {
@@ -2672,7 +2737,7 @@ function lineSay(line) {
   const parts = line.roll.each.map(r => {
     const t = whoText(r.target);
     if (r.d20 == null && line.roll.heal) return `${t}, heals ${r.dmg ?? '—'}`;
-    if (r.d20 == null) return `vs ${t}, ${r.dmg ?? '—'} damage (${line.roll.kind === 'area' ? 'target saves' : 'no save'})`;
+    if (r.d20 == null) return `vs ${t}, ${r.dmg ?? '—'} damage (${(line.roll.saveNote || (line.roll.kind === 'area' ? 'target saves' : 'no save')).toLowerCase()})`;
     if (r.d20 === 1) return `vs ${t}, d20 1 (natural 1), a critical miss`;
     const nat = r.d20 === 20 ? ' (natural 20)' : '';
     return `vs ${t}, d20 ${r.d20}${nat}, hits AC ${acText(r.hitsAC)} or worse, ${r.dmg ?? '—'} damage${r.spell != null ? ` + spell ${r.spell}` : ''}`;
@@ -2680,7 +2745,7 @@ function lineSay(line) {
   return `${line.label}: ${parts.join('; ')}`;
 }
 
-return { ROUND_MODS, MOVE_MULTS, newRound, roundQueue, queueAttack, unqueueAttack, plainAttack, attackSpeed, roundLines, lineToHit, roundACPenalty, actOn, rollDice, lineTHAC0, splitDice, hasRoll, isHealing, lineKind, rollFaces, rollLine, scoreRoll, rerollDamage, judgeRoll, lineSay };
+return { ROUND_MODS, MOVE_MULTS, newRound, roundQueue, queueAttack, unqueueAttack, plainAttack, attackSpeed, roundLines, lineToHit, roundACPenalty, actOn, rollDice, lineTHAC0, splitDice, hasRoll, isHealing, lineKind, rollFaces, lineSaveNote, rollLine, scoreRoll, rerollDamage, judgeRoll, lineSay };
 })();
 // ── ui/round-ui ──
 __m["ui/round-ui"] = (() => {
@@ -2819,7 +2884,7 @@ function hitRoll(line, fresh, onReroll, judge) {
     const dmgCls = 'is-dmg' + (moved('dmg') ? ' is-updated' : '');
     const tag = whoText ? `<span class="hit-who">${esc(whoText)}</span>` : '';
     if (r.d20 == null) {
-      const saves = roll.heal ? '' : roll.kind === 'area' ? 'each target saves' : 'no save';
+      const saves = roll.heal ? '' : roll.saveNote || (roll.kind === 'area' ? 'each target saves' : 'no save');
       el.innerHTML = tag + stat(dmgCls, roll.heal ? 'Healing' : 'Damage', dmg, [dmgSub, saves].filter(Boolean).join(' · '));
     } else if (r.d20 === 1) {
       // A natural 1 always misses: no AC, no damage; the DM has the Bad Misses table
@@ -5926,14 +5991,30 @@ function lineEntries(line){
   return [{target:targets[0], roll:r}];
 }
 function judgeLine(line, bdAC){ return lineEntries(line).map(e=>judgeOne(e.target, e.roll, e.heal ? 'heal' : e.kind, line, bdAC)); }
+// A spell line's save in words (a sheet from before saveNote says less)
+function lineSaveNote(line){ return line.saveNote || (line.roll && line.roll.saveNote) || ''; }
+function lineSaveText(line, kind){
+  const note = lineSaveNote(line) || (line.save || '').replace(/^Target saves/, 'Target saves') || (kind==='split' ? 'No save' : kind==='area' ? 'Target saves' : 'No save');
+  return note.charAt(0).toLowerCase() + note.slice(1);
+}
+// Does this declared action call for a save? (Nothing's rolled until the DM asks)
+const lineNeedsSave = line => { const t=lineSaveText(line, line.roll && line.roll.kind); return !!t && t!=='no save' && !line.roll?.heal; };
+// Roll for save: a d20 for each target, kept for this round. The DM compares
+// each one to that enemy's save.
+const saveRolls=new Map();
+function rollSaves(key, whos){
+  saveRolls.set(key, whos.map(who=>({who, d20:d20()})));
+  update();
+  document.querySelector(`[data-savekey="${CSS.escape(key)}"]`)?.focus();
+}
 function judgeOne(target, r, kind, line, bdAC){
   const fb = target && !/^other/.test(target.id) ? foeBlock(target.id) : null;
   const who = fb ? `${fb.b.nameInput.value||fb.name} [${fb.b.bdId}]` : (target ? target.label : 'no target');
   // A spell with nothing to roll (Charm Person, Sleep): cast; the DM resolves it
-  if(!r && line.cast) return {who, text:`cast · ${(line.save || 'no save').replace(/^Target saves/, 'target saves').replace(/^No save/, 'no save')}`, cls:''};
+  if(!r && line.cast) return {who, text:`cast · ${lineSaveText(line)}`, cls:''};
   if(!r) return {who, text:'not rolled yet', cls:''};
   if(r.d20==null && kind==='heal') return {who, text:`heals ${r.dmg??'—'}`, cls:'hit'};
-  if(r.d20==null) return {who, text:`${r.dmg??'—'} damage (${kind==='split'?'no save':'target saves'})`, cls:'hit'};
+  if(r.d20==null) return {who, text:`${r.dmg??'—'} damage (${lineSaveText(line, kind)})`, cls:'hit'};
   const ac = fb ? bdAC[fb.name] : null;
   if((ac==null || isNaN(ac)) && r.d20===1) return {who, text:`d20 1 · <b>Natural 1</b>: critical miss (a Bad Miss on the table if it would have missed anyway)`, cls:'fumble'};
   if(ac==null || isNaN(ac)) return {who, text:`d20 ${r.d20}${r.d20===20?' · <b>Natural 20</b>: critical if it hits':''} · hits AC ${r.hitsAC} or worse · ${r.dmg??'—'} dmg`, cls: r.d20===20?'crit':''};
@@ -6717,7 +6798,25 @@ function paintLightDetail(lr, d){
   }
   if(d.acts.length){
     const h=document.createElement('div'); h.className='ldhead'; const b=document.createElement('b'); b.textContent='Actions'; h.appendChild(b); box.appendChild(h);
-    d.acts.forEach(a=>{ const ln=document.createElement('div'); ln.className='ldact'+(a.cls?' '+a.cls:''); ln.textContent = (typeof a==='string') ? a : a.t; if(a.tip) ln.title=a.tip; box.appendChild(ln);
+    d.acts.forEach(a=>{
+      if(a.save){
+        const ln=document.createElement('div'); ln.className='ldsave';
+        const rolled=saveRolls.get(a.save.key);
+        const btn=document.createElement('button'); btn.type='button'; btn.className='ui-button is-secondary size-sm'; btn.dataset.savekey=a.save.key;
+        btn.innerHTML=RoundUI.ROLL_ICON+'<span>'+(rolled?'Re-roll saves':'Roll for save')+'</span>';
+        btn.addEventListener('click', ()=>rollSaves(a.save.key, a.save.whos));
+        ln.appendChild(btn);
+        (rolled||[]).forEach(r=>{
+          const o=document.createElement('span'); o.className='ldsave-roll';
+          o.innerHTML=RoundUI.ROLL_ICON;
+          const v=document.createElement('b'); v.textContent=r.d20;
+          o.prepend(r.who); o.appendChild(v);
+          ln.appendChild(o);
+        });
+        box.appendChild(ln);
+        return;
+      }
+      const ln=document.createElement('div'); ln.className='ldact'+(a.cls?' '+a.cls:''); ln.textContent = (typeof a==='string') ? a : a.t; if(a.tip) ln.title=a.tip; box.appendChild(ln);
       if(a.html){ const cr=document.createElement('div'); cr.className='ldcrit'; cr.innerHTML=a.html; box.appendChild(cr); }       // crit / fumble table result, DM only
     });
   }
@@ -6834,7 +6933,13 @@ function renderLight(){
       lr.spSel.value = sv.speed!=null && [...lr.spSel.options].some(o=>o.value===String(sv.speed)) ? String(sv.speed) : '';   // blank until an attack is added
       lr.actSpan.textContent = sv.actOn==null ? '—' : String(sv.actOn); lr.actSpan.title='from the sheet';
       const timing=(syncState&&syncState.timing)||'end', ac=baddyACs();
-      const acts=(sv.lines||[]).filter(l=>timing==='turn'||!l.extra).flatMap(l=>judgeLine(l, ac).map(j=>({t:`${l.label} vs ${j.who}${l.tags&&l.tags.length?' · '+l.tags.join(', '):''}: ${j.text.replace(/<[^>]+>/g,' ')}`, cls:j.cls})));
+      const round=document.getElementById('roundNo').textContent || document.getElementById('roundNo').value;
+      const acts=(sv.lines||[]).filter(l=>timing==='turn'||!l.extra).flatMap(l=>{
+        const judged=judgeLine(l, ac);
+        const rows=judged.map(j=>({t:`${l.label} vs ${j.who}${l.tags&&l.tags.length?' · '+l.tags.join(', '):''}: ${j.text.replace(/<[^>]+>/g,' ')}`, cls:j.cls}));
+        if(lineNeedsSave(l)) rows.push({save:{key:`${round}|${name}|${l.key}`, whos:judged.map(j=>j.who)}});
+        return rows;
+      });
       paintLightDetail(lr, {conds: sv.you||[], acts: [{t: `From the sheet: ${syncedDoing(sv)}`}, ...acts]});
       entries.push({name, act: sv.actOn==null ? 1e9 : sv.actOn, trs:[lr.tr, lr.detailTr]});
       return;
@@ -7345,6 +7450,7 @@ function resetEncounter(){
   resetPartyCombat();
   resetBaddies();
   document.getElementById('surpriseBar').style.display='none';
+  saveRolls.clear();
   if(ROUND){ lastFoes=''; syncState = ROUND.sendDM({round:1, reset:true}); showRound(); }
   displayOrder=[]; reorderPending=false;
   update();
@@ -7385,6 +7491,7 @@ function resetAll(){
   document.getElementById('gcSkill').value=''; document.getElementById('svCat').value=''; document.getElementById('rxRep').value='0';
   try{ localStorage.removeItem(STORE_KEY); localStorage.removeItem(ORDER_KEY); }catch(e){}
   document.getElementById('surpriseBar').style.display='none';
+  saveRolls.clear();
   displayOrder=[]; reorderPending=false;
   resetBaddies();
   // The shared round starts over too: round 1, every player's round cleared

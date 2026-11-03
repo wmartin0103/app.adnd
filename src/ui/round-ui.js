@@ -133,7 +133,7 @@ export function hitRoll(line, fresh, onReroll, judge) {
     const dmgCls = 'is-dmg' + (moved('dmg') ? ' is-updated' : '');
     const tag = whoText ? `<span class="hit-who">${esc(whoText)}</span>` : '';
     if (r.d20 == null) {
-      const saves = roll.heal ? '' : roll.kind === 'area' ? 'each target saves' : 'no save';
+      const saves = roll.heal ? '' : roll.saveNote || (roll.kind === 'area' ? 'each target saves' : 'no save');
       el.innerHTML = tag + stat(dmgCls, roll.heal ? 'Healing' : 'Damage', dmg, [dmgSub, saves].filter(Boolean).join(' · '));
     } else if (r.d20 === 1) {
       // A natural 1 always misses: no AC, no damage; the DM has the Bad Misses table
