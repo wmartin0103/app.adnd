@@ -1,7 +1,6 @@
 {
   "__version": 1,
   "name": "Atteroak Bearingstone",
-  "player": "",
   "race-group": "dwarf",
   "alignment": "Neutral-Good",
   "str": "14",
