@@ -2884,7 +2884,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
           <div class="header-meta-field">
             <label class="header-player-label" for="char-player">Player</label>
             <input id="char-player" class="header-player-input open-field" type="text"
-              placeholder="—" autocomplete="off" data-save="player" />
+              placeholder="—" autocomplete="off" readonly tabindex="-1" title="From the account this character belongs to" />
           </div>
           <div class="header-meta-field">
             <label class="header-player-label" for="char-race-group">Race</label>
@@ -11095,6 +11095,13 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
     }
     // Signed in: the account's copy replaces this browser's (a character made
     // but not filled in yet keeps what's here, and takes its name)
+    // The Player: the account this character belongs to (saves don't hold it)
+    async function showPlayer(client, row) {
+      let owner = '';
+      try { const p = await client.from('profiles').select('display_name').eq('id', row.owner_id).maybeSingle(); owner = (p.data && p.data.display_name) || ''; } catch (e) { /* the field stays empty */ }
+      const el = document.getElementById('char-player');
+      if (el) el.value = owner;
+    }
     async function cloudLoad(sess) {
       const client = window.Cloud && Cloud.cloudClient();
       if (!CLOUD_ID || !sess || !client || !window.Characters || cloudLoaded) return;
@@ -11102,6 +11109,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       try { row = await Characters.loadCharacter(client, CLOUD_ID); } catch (e) { return; }
       if (!row) return;
       cloudLoaded = true;
+      showPlayer(client, row);
       if (isViewOnly()) {
         if (!Characters.isBlank(row.data)) { applyData(row.data); refreshAll(); }
         showViewOnly(client, row);

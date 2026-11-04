@@ -486,7 +486,7 @@ Helper pick from (see section 9).
     off-hand / one weapon; switched on always, per attack or for the whole
     round). This replaces the Jaque-specific rules (`__combatBonuses`,
     `__combatOptions`, `__combatRules`); Jaque's save is converted
-    (`samples/jaque_10-09.json`). Off-hand is open to any weapon row.
+    (`test/fixtures/characters/jaque_10-09.json`). Off-hand is open to any weapon row.
 22. **Abilities are reminders, not rules (decided; replaces the combat
     modifiers in 21 and the "In combat" roles in 17):** ability and
     fighting-style cards get one "Show in Combat" checkbox. Combat lists the
@@ -625,7 +625,8 @@ can grow over time.
 - [x] Character sheet received and reviewed
 - [x] DM Helper received and reviewed
 - [x] One character save received (Jaque)
-- [x] Repo made private, then files committed to `legacy/` and `samples/`
+- [x] Files committed to `legacy/` and `samples/` (now `tools/` and `test/fixtures/characters/`). The repo was private then; it's public now (checked 2026-11-03), and nobody minds the characters being public
+- [x] `main` is the live branch: every change is a pull request, with the tests and the owner's review required (`.github/rulesets/protect-main.json`, `AGENTS.md`; 2026-11-03)
 - [x] Combat data spec drafted (`docs/combat-data-spec.md`)
 - [x] Combat data spec: first round of UX answers folded in
 - [x] Sheet: weapon settings gear (based on, melee/thrown, magic +); Combat Scenarios and Enemy Tracker removed (data kept in saves); THAC0 card shows base from class and level
@@ -640,5 +641,5 @@ can grow over time.
 - [x] Spells: Simple / Detailed views, Add Spell searches the catalog, title is the wiki link, slots from the classes, a caster level for spells off the sheet's lists, Roll for save in the DM Helper (2026-11-02)
 - [ ] Spells: try it live (real sheets, merging repeats, Roll for save from a real round)
 - [ ] Optional: a Save number on each Enemy, so Roll for save can say saved or failed and apply the damage
-- [ ] **Must do before release: a staging site (noted 2026-10-30).** Changes go to staging first, then to the live site when approved. Proposed: the `main` branch is the live site and the working branch is staging, published at `/staging/` on the same domain (one Pages deploy builds both). It also needs a second free Supabase project, so staging tests never touch real characters; migrations go to it first. And it needs browser storage keys kept apart, since both sites share one origin.
+- [ ] **Must do before release: a staging site (noted 2026-10-30).** Changes go to staging first, then to the live site when approved. Proposed: `main` (already the live site) stays as it is, and a `staging` branch is published at `/staging/` on the same domain (one Pages deploy builds both). It also needs a second free Supabase project, so staging tests never touch real characters; migrations go to it first. And it needs browser storage keys kept apart, since both sites share one origin.
 - [ ] Later: let the DM reveal an Enemy's name to players, one Enemy at a time, so sheets can target "Ogre Chief (E2)" once the party knows what it is. Names stay hidden until revealed. The badge and name otherwise stay as they are (decided 2026-11-02).

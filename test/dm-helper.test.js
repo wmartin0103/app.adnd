@@ -8,7 +8,7 @@ import { diceAtLevel, casterLevel, scenarioContext, scenarioDamage, lessPerDie, 
 import { diceCap } from '../scripts/import-wiki-spells.mjs';
 
 const jaque = JSON.parse(readFileSync(new URL('./fixtures/jaque-v2.json', import.meta.url)));
-const jaqueV1 = JSON.parse(readFileSync(new URL('../samples/jaque_09-23.json', import.meta.url)));
+const jaqueV1 = JSON.parse(readFileSync(new URL('./fixtures/characters/jaque_09-23.json', import.meta.url)));
 
 // ── Character rules ──
 test('AC: Dex applies normally, not when surprised', () => {
@@ -69,7 +69,7 @@ test('proficiency targets: ability + adjustment; non-checks skipped; "*" flagged
 // ── Adapter ──
 // Jaque's current save: scenarios, PHB rates, a spell, and effects (Bladesong
 // +1 hit and Bless +1 hit are on)
-const current = JSON.parse(readFileSync(new URL('../samples/jaque_10-09.json', import.meta.url)));
+const current = JSON.parse(readFileSync(new URL('./fixtures/characters/jaque_10-09.json', import.meta.url)));
 const catalog = JSON.parse(readFileSync(new URL('../data/spell-catalog.json', import.meta.url)));
 const effectsOff = save => ({ ...save, __stances: save.__stances.map(st => ({ ...st, on: false })) });
 
@@ -103,24 +103,24 @@ test('Jaque\'s scenarios become the DM Helper\'s attacks, with the sheet\'s numb
 // Goroth's current save: Str 18/00, weapon rows without Strength. The melee
 // numbers match the Excel sheet he was converted from.
 test('Goroth imports under the name the DM Helper uses, with PHB skill names and Danger Sense', () => {
-  const r = toDMHelper(JSON.parse(readFileSync(new URL('../samples/goroth_10-09.json', import.meta.url))));
+  const r = toDMHelper(JSON.parse(readFileSync(new URL('./fixtures/characters/goroth_10-09.json', import.meta.url))));
   assert.equal(r.name, 'Goroth');
   assert.deepEqual(Object.keys(r.skills), ['Dirty Tricks', 'Intimidation', 'Running', 'Danger Sense', 'Animal Lore', 'Hiding', 'Survival', 'Tracking']);   // "Wild Fighting" has no check
   // The free ones match his hand-typed DM Helper entry
   assert.deepEqual(['Danger Sense', 'Animal Lore', 'Hiding', 'Survival', 'Tracking'].map(k => r.skills[k].t), [13, 10, 9, 10, 12]);
   // Book codes from the Excel sheet come off; names without one stay as they are
-  const s = toDMHelper(JSON.parse(readFileSync(new URL('../samples/hanspeter_10-09.json', import.meta.url)))).skills;
+  const s = toDMHelper(JSON.parse(readFileSync(new URL('./fixtures/characters/hanspeter_10-09.json', import.meta.url)))).skills;
   assert.ok(s['Animal Lore'] && s['Persuasion'] && s['Tumbling'] && s['Homeopathy'] === undefined && s['Survival']);
 });
 
 test('Tig\'s proficiencies all import, on book values', () => {
-  const s = toDMHelper(JSON.parse(readFileSync(new URL('../samples/tig_10-09.json', import.meta.url)))).skills;
+  const s = toDMHelper(JSON.parse(readFileSync(new URL('./fixtures/characters/tig_10-09.json', import.meta.url)))).skills;
   assert.equal(Object.keys(s).length, 18);
   assert.deepEqual(['Dancing', 'Poetry', 'Riding, Land-based', 'Jousting', 'Enamour', 'Musical Instrument', 'Singing'].map(k => s[k].t), [13, 15, 16, 15, 15, 12, 17]);
 });
 
 test('Goroth\'s melee scenarios match his Excel sheet', () => {
-  const r = toDMHelper(JSON.parse(readFileSync(new URL('../samples/goroth_10-09.json', import.meta.url))));
+  const r = toDMHelper(JSON.parse(readFileSync(new URL('./fixtures/characters/goroth_10-09.json', import.meta.url))));
   const thac0 = Object.fromEntries(Object.entries(r.character.weapons).map(([k, v]) => [k, v.thac0]));
   assert.deepEqual([thac0.Maul, thac0.Club, thac0.Dagger, thac0.Punch, thac0.Wrestling], [13, 15, 17, 15, 15]);
   assert.deepEqual(r.character.secondary, [{ name: 'Maul (2nd, alt. rounds)', thac0: 13 }]);
@@ -130,7 +130,7 @@ test('Goroth\'s melee scenarios match his Excel sheet', () => {
 
 // Tig's current save, rebuilt on PHB values: THAC0 18 (Bard 5)
 test('Tig\'s scenarios use PHB weapons, with Code of Gallant as an effect', () => {
-  const tig = JSON.parse(readFileSync(new URL('../samples/tig_10-09.json', import.meta.url)));
+  const tig = JSON.parse(readFileSync(new URL('./fixtures/characters/tig_10-09.json', import.meta.url)));
   const r = toDMHelper(tig);
   assert.deepEqual(r.character.weapons['Bastard sword, two-handed'], { thac0: 16, speed: 8 });   // 18 − sword +1 − Skilled +1
   assert.deepEqual(r.damage['Tighkar Talenthos|Bastard sword, two-handed'], { sm: '2d4+2', l: '2d8+2' });
@@ -143,7 +143,7 @@ test('Tig\'s scenarios use PHB weapons, with Code of Gallant as an effect', () =
 
 // Rifiyr, Wizard 4 with the Bowcaster kit (docs/house-rules/bowcaster.md)
 test('Rifiyr: bows with Mystic Aim, −2 off the bow, and the casting penalty without an arrow', () => {
-  const r = toDMHelper(JSON.parse(readFileSync(new URL('../samples/rifiyr_10-12.json', import.meta.url))), {}, { catalog });
+  const r = toDMHelper(JSON.parse(readFileSync(new URL('./fixtures/characters/rifiyr_10-12.json', import.meta.url))), {}, { catalog });
   const c = r.character;
   assert.deepEqual(c.weapons['Long bow, flight'], { thac0: 16, speed: 8 });             // 19 − bow +1 − Dex +1 − Mystic Aim +1
   assert.deepEqual(c.secondary.map(s => s.name), ['Long bow, flight (2nd)', 'Long bow, sheaf (2nd)', 'Folding bow, flight (2nd)', 'Folding bow, sheaf (2nd)']);   // two shots a round
@@ -160,7 +160,7 @@ test('Rifiyr: bows with Mystic Aim, −2 off the bow, and the casting penalty wi
 });
 
 test('Spellarrow: the bow\'s to-hit, bow + casting time, the arrow\'s damage and the spell at full strength', () => {
-  const save = JSON.parse(readFileSync(new URL('../samples/rifiyr_10-12.json', import.meta.url)));
+  const save = JSON.parse(readFileSync(new URL('./fixtures/characters/rifiyr_10-12.json', import.meta.url)));
   const r = toDMHelper(save, {}, { catalog });
   const shot = r.character.actions.find(a => a.name === 'Shocking Grasp arrow');
   assert.deepEqual(shot, { name: 'Shocking Grasp arrow', thac0: 16, baseSpeed: 8, speedMin: 0, speedMax: 10, speedDefault: 1 });
@@ -185,14 +185,14 @@ test('a class\'s house-rule kit: chosen in its settings, or read from the name i
   assert.equal(classKit({ name: 'Wizard (Bowcaster)', kit: '' }), '');            // None chosen: the name doesn't count
   assert.equal(classKit({ name: 'Ranger', kit: 'beastmaster' }), '');             // not a house-rule kit
   // The rules follow the setting: no Bowcaster kit, no casting penalty
-  const save = JSON.parse(readFileSync(new URL('../samples/rifiyr_10-12.json', import.meta.url)));
+  const save = JSON.parse(readFileSync(new URL('./fixtures/characters/rifiyr_10-12.json', import.meta.url)));
   const none = { ...save, __classes: save.__classes.map(c => ({ ...c, kit: '' })) };
   assert.deepEqual(toDMHelper(none, {}, { catalog }).damage['Rifiyr|Shocking Grasp'], { sm: '1d8+4', l: '1d8+4' });
 });
 
 test('ammunition: the weapon\'s and the ammo\'s bonuses add up; the ammo sets the dice', async () => {
   const { usesAmmo, weaponAmmoType, ammoFor } = await import('../src/rules/scenarios.js');
-  const save = JSON.parse(readFileSync(new URL('../samples/rifiyr_10-12.json', import.meta.url)));
+  const save = JSON.parse(readFileSync(new URL('./fixtures/characters/rifiyr_10-12.json', import.meta.url)));
   // An arrow of flame +1 (+1 hit, +1 fire damage) from the Long Bow (Fine) (+1 hit)
   save.__ammo = [...save.__ammo, { id: 'amm-3', name: 'Arrow of flame +1', hitAdj: '+1', dmgAdj: '+1', dmgSM: '1d6', dmgL: '1d6', notes: 'Fire' }];
   save.__scenarios = [...save.__scenarios, { ...save.__scenarios.find(s => s.id === 'sc-1'), id: 'sc-20', name: 'Long bow, flame', ammo: 'amm-3', active: false }];

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { baseTHAC0, weaponModes, attackFor, attackRate } from '../src/rules/combat.js';
 
-const load = f => JSON.parse(readFileSync(new URL(`../samples/${f}`, import.meta.url)));
+const load = f => JSON.parse(readFileSync(new URL(`./fixtures/characters/${f}`, import.meta.url)));
 const row = (s, name) => s.__weapons.find(w => w.name === name);
 
 test('base THAC0 is the best of the classes', () => {

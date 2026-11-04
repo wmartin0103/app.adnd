@@ -1,7 +1,6 @@
 {
   "__version": 1,
   "name": "Jaque",
-  "player": "William",
   "race-group": "elf",
   "alignment": "True Neutral",
   "str": "13",

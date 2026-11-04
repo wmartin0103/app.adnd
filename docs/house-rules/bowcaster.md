@@ -182,7 +182,7 @@ A natural 1 on the attack roll is worse than an ordinary miss. The arrow goes ba
 
 Numbers the tools work out (THAC0, damage, initiative speed) follow the
 kit; everything else is announced at the table, like other characters'
-abilities (PLAN decision 23). Rifiyr's save: `samples/rifiyr_10-12.json`,
+abilities (PLAN decision 23). Rifiyr's save: `test/fixtures/characters/rifiyr_10-12.json`,
 built by `scripts/convert-rifiyr.mjs`.
 
 | Rule | In the app |

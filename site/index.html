@@ -1444,7 +1444,9 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
       catch (e) { say(problem(e)); }
     }
     function exportFile(c) {
-      const url = URL.createObjectURL(new Blob([JSON.stringify(c.data || { name: c.name }, null, 2)], { type: 'application/json' }));
+      // A save doesn't carry the player (a row saved before this might): the account says who
+      const { player, ...sheet } = c.data || { name: c.name };
+      const url = URL.createObjectURL(new Blob([JSON.stringify(sheet, null, 2)], { type: 'application/json' }));
       const a = document.createElement('a'); a.href = url; a.download = Characters.fileName(c.data || { name: c.name }); a.click();
       URL.revokeObjectURL(url);
     }

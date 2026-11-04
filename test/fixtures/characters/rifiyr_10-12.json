@@ -1,7 +1,6 @@
 {
   "__version": 1,
   "name": "Rifiyr",
-  "player": "Scott",
   "race-group": "half-elf",
   "alignment": "Neutral-Good",
   "str": "15",
@@ -18,20 +17,172 @@
   "notes": "CONVERTED 9/21/26: Fighter3/Wizard3 (Spellarcher) -> single-classed Wizard 4 (Bowcaster kit, PHB no longer requires dual-classing). XP combined (4000+6792=10792) per house-rule -> Wizard lvl4. WIS raised 14->15 and CHA lowered 13->12 to meet Bowcaster's WIS15+/INT15+ requirement. HP re-rolled on Wizard d4 (was 14 on blended F/W die; new value is an ESTIMATE using max-at-1st + avg-thereafter - reroll with DM if preferred). Lost Fighter-side weapon specialization (old 2-slot Long Bow entry) - wizards can never specialize. Only 1 weapon prof slot at lvl4: spent on 'Bow, any type' per kit (covers long bow + folding bow, no separate slots needed). Dropped Short Sword proficiency - not on the wizard weapon list the kit allows; a 2nd slot (for one wizard-list weapon, e.g. Dagger) opens at lvl6. Removed Detect Magic and Identify - both Lesser Divination, banned for Bowcasters. Added free bonus spells Warp Wood + Murdock's Feathery Flyer (kit grant, don't count against known-spell total). Added free bonus NWPs Hunting/Tracking/Observation/Investigation in place of normal starting wizard NWP slots. NWP slot budget confirmed (PHB Table 34/4): lvl4 Wizard using optional INT-bonus rule = 1 (leveling, crossed lvl3) + 4 (INT15 bonus) = 5 slots. Dropped Alchemy (2 slots - overlapped the kit's no-potions/salves hindrance) and Mental Resistance (1 slot - redundant with half-elf charm resistance) to get from 8 down to 5: Spellcraft(1)+Reading/Writing(1)+Alertness(1)+Arcanology(1)+Swimming(1)=5/5. Kept Swimming despite low kit-relevance since this is an island campaign (without the NWP you cannot swim at all per PHB, only float/hold breath). No armor ever, of any kind - confirm w/ DM whether Bracers of Defence (currently baked into AC 6) still count, since this kit's fluff reads stricter than the usual wizard armor rule. Cannot cast from scrolls anymore (Scroll of Charm Person can only be studied/copied to a feather, not read aloud). Spellbook is now a set of trimmed feathers, not bound pages. SPELL SWAPS (same total count, kept): dropped Disarm, Alustriel's Fang, and Scare (none were touch/point/self-origin, so none could ever ride an arrow, and Scare duplicated the kit's own 6th-level Stopping Aim fear effect). Added Grease (1st - point-of-origin, arrow-ready once Spellarrows hit 5th-level tier next level), Invisibility (2nd - Range: Touch, arrow-ready now), and Melf's Acid Arrow (2nd - already fluffed as a magic arrow; ask DM whether it should just ride your own bow attack instead of the normal-cast penalty). Ring of Spell Storing still lists Alustriel's Fang/Scare as stored - confirm with DM if that stays valid or needs re-storing with the new list.",
   "__scenarios": [
     {
-      "id": "sc-1",
-      "name": "",
       "group": "wizard",
       "levelMode": "sheet",
       "customLevel": 1,
       "active": true,
-      "collapsed": true,
-      "weaponId": "wpn-2",
+      "collapsed": false,
       "handedness": "main",
       "offHandPenalty": "",
-      "hitMod": ""
+      "spellId": null,
+      "spell": {},
+      "hitMod": "1",
+      "dmgMod": "",
+      "rate": "2/1",
+      "id": "sc-1",
+      "name": "Long bow, flight",
+      "weaponId": "wpn-2",
+      "attackType": "missile",
+      "ammo": "phb-flight"
+    },
+    {
+      "group": "wizard",
+      "levelMode": "sheet",
+      "customLevel": 1,
+      "active": false,
+      "collapsed": false,
+      "handedness": "main",
+      "offHandPenalty": "",
+      "spellId": null,
+      "spell": {},
+      "hitMod": "1",
+      "dmgMod": "",
+      "rate": "2/1",
+      "id": "sc-8",
+      "name": "Long bow, sheaf",
+      "weaponId": "wpn-2",
+      "attackType": "missile",
+      "ammo": "phb-sheaf"
+    },
+    {
+      "group": "wizard",
+      "levelMode": "sheet",
+      "customLevel": 1,
+      "active": false,
+      "collapsed": false,
+      "handedness": "main",
+      "offHandPenalty": "",
+      "spellId": null,
+      "spell": {},
+      "hitMod": "1",
+      "dmgMod": "",
+      "rate": "2/1",
+      "id": "sc-2",
+      "name": "Folding bow, flight",
+      "weaponId": "wpn-4",
+      "attackType": "missile",
+      "ammo": "phb-flight"
+    },
+    {
+      "group": "wizard",
+      "levelMode": "sheet",
+      "customLevel": 1,
+      "active": false,
+      "collapsed": false,
+      "handedness": "main",
+      "offHandPenalty": "",
+      "spellId": null,
+      "spell": {},
+      "hitMod": "1",
+      "dmgMod": "",
+      "rate": "2/1",
+      "id": "sc-9",
+      "name": "Folding bow, sheaf",
+      "weaponId": "wpn-4",
+      "attackType": "missile",
+      "ammo": "phb-sheaf"
+    },
+    {
+      "group": "wizard",
+      "levelMode": "sheet",
+      "customLevel": 1,
+      "active": false,
+      "collapsed": false,
+      "handedness": "main",
+      "offHandPenalty": "",
+      "spellId": "spl-32",
+      "spell": {},
+      "hitMod": "1",
+      "dmgMod": "",
+      "rate": "1/1",
+      "id": "sc-7",
+      "name": "Shocking Grasp arrow",
+      "weaponId": "wpn-2",
+      "attackType": "spellarrow",
+      "ammo": "phb-flight"
+    },
+    {
+      "group": "wizard",
+      "levelMode": "sheet",
+      "customLevel": 1,
+      "active": false,
+      "collapsed": false,
+      "handedness": "main",
+      "offHandPenalty": "",
+      "spellId": "spl-30",
+      "spell": {},
+      "hitMod": "",
+      "dmgMod": "",
+      "rate": "1/1",
+      "id": "sc-3",
+      "name": "Magic Missile",
+      "attackType": "spell"
+    },
+    {
+      "group": "wizard",
+      "levelMode": "sheet",
+      "customLevel": 1,
+      "active": false,
+      "collapsed": false,
+      "handedness": "main",
+      "offHandPenalty": "",
+      "spellId": "spl-32",
+      "spell": {},
+      "hitMod": "",
+      "dmgMod": "",
+      "rate": "1/1",
+      "id": "sc-4",
+      "name": "Shocking Grasp",
+      "attackType": "spell"
+    },
+    {
+      "group": "wizard",
+      "levelMode": "sheet",
+      "customLevel": 1,
+      "active": false,
+      "collapsed": false,
+      "handedness": "main",
+      "offHandPenalty": "",
+      "spellId": null,
+      "spell": {},
+      "hitMod": "-7",
+      "dmgMod": "",
+      "rate": "1/1",
+      "id": "sc-5",
+      "name": "Dagger",
+      "weaponId": "wpn-3",
+      "attackType": "melee"
+    },
+    {
+      "group": "wizard",
+      "levelMode": "sheet",
+      "customLevel": 1,
+      "active": false,
+      "collapsed": false,
+      "handedness": "main",
+      "offHandPenalty": "",
+      "spellId": null,
+      "spell": {},
+      "hitMod": "-7",
+      "dmgMod": "",
+      "rate": "1/1",
+      "id": "sc-6",
+      "name": "Silver short sword",
+      "weaponId": "wpn-1",
+      "attackType": "melee"
     }
   ],
-  "__scenarioCounter": 1,
+  "__scenarioCounter": 9,
   "__enemies": [],
   "__enemyCounter": 1,
   "__classes": [
@@ -40,7 +191,8 @@
       "name": "Wizard (Bowcaster)",
       "group": "wizard",
       "level": "4",
-      "xp": "10792"
+      "xp": "10792",
+      "kit": "bowcaster"
     }
   ],
   "__classCounter": 2,
@@ -88,10 +240,11 @@
       "speed": "3",
       "hitAdj": "+1",
       "dmgAdj": "",
-      "dmgSM": "1D6",
-      "dmgL": "1D8",
+      "dmgSM": "1d6",
+      "dmgL": "1d8",
       "notes": "NOT PROFICIENT under Bowcaster (short sword isn't on the wizard weapon list) - suffers normal non-proficiency penalty PLUS the kit's -2 for any non-bow weapon. Kept as inventory/backup only.",
-      "racialBonus": false
+      "racialBonus": false,
+      "ammoType": ""
     },
     {
       "id": "wpn-2",
@@ -101,10 +254,11 @@
       "speed": "8",
       "hitAdj": "+1",
       "dmgAdj": "",
-      "dmgSM": "1D8",
+      "dmgSM": "1d8",
       "dmgL": "1d6",
       "notes": "30/70/140/210. Represents the kit's free starting masterwork bow (+1 to hit, +1 material saves). Main weapon.",
-      "racialBonus": false
+      "racialBonus": false,
+      "ammoType": "arrows"
     },
     {
       "id": "wpn-3",
@@ -112,12 +266,13 @@
       "size": "sm",
       "dmgType": "slashing",
       "speed": "2",
-      "hitAdj": "-2",
+      "hitAdj": "",
       "dmgAdj": "",
-      "dmgSM": "1D4",
-      "dmgL": "1D3",
+      "dmgSM": "1d4",
+      "dmgL": "1d3",
       "notes": "On the wizard weapon list - best candidate for the kit's 'one other weapon' slot once a 2nd weapon proficiency opens at lvl6. Not proficient yet at lvl4.",
-      "racialBonus": false
+      "racialBonus": false,
+      "ammoType": ""
     },
     {
       "id": "wpn-4",
@@ -127,10 +282,11 @@
       "speed": "7",
       "hitAdj": "-1",
       "dmgAdj": "-1",
-      "dmgSM": "1D8",
-      "dmgL": "1D6",
+      "dmgSM": "1d8",
+      "dmgL": "1d6",
       "notes": "46/92/137. Covered by the same generalized 'Bow' proficiency as the Long Bow - no separate slot needed under this kit.",
-      "racialBonus": false
+      "racialBonus": false,
+      "ammoType": "arrows"
     }
   ],
   "__weaponCounter": 4,
@@ -181,7 +337,7 @@
     },
     {
       "id": "spl-11",
-      "name": "Magic Missle",
+      "name": "Magic Missile",
       "level": 1,
       "type": "wizard",
       "isMemorized": false,
@@ -214,7 +370,7 @@
     },
     {
       "id": "spl-30",
-      "name": "Magic Missle",
+      "name": "Magic Missile",
       "level": 1,
       "type": "wizard",
       "isMemorized": true,
@@ -387,8 +543,45 @@
     }
   ],
   "__nwpCounter": 14,
-  "__abilitiesCards": [],
-  "__abilitiesCardsCounter": 1,
+  "__abilitiesCards": [
+    {
+      "id": "abc-1",
+      "name": "Mystic Aim",
+      "desc": "Always on: Wisdom magical defense adjustment (+1) added to hit with a bow, on top of Dex. Counted in the bow scenarios.",
+      "url": ""
+    },
+    {
+      "id": "abc-2",
+      "name": "Unfriendly Fire",
+      "desc": "Firing into a melee: take any penalty to hit and add the same number to the intended target's weight when rolling who is struck.",
+      "url": ""
+    },
+    {
+      "id": "abc-3",
+      "name": "Direction Arrow (1/day)",
+      "desc": "Concentrate a full round, loose an arrow straight up: it points toward a person, place or object seen or touched before, within 1 mile per level, for 1 turn per level. Direction only.",
+      "url": ""
+    },
+    {
+      "id": "abc-4",
+      "name": "Anticipate Blow (1/round)",
+      "desc": "When an attack targets him: Wisdom check; on a success, AC better by half his caster level (2 at 4th) against that one attack.",
+      "url": ""
+    },
+    {
+      "id": "abc-5",
+      "name": "Spellarrows (touch spells)",
+      "desc": "Cast a touch spell onto an arrow and fire it as his only shot that round. Initiative: bow speed + casting time. The spell lands if the roll beats the target's AC without armor or shield; the arrow wounds if it also beats the true AC. No casting penalty. A missed touch-arrow loses the spell; a natural 1 is a misfire.",
+      "url": ""
+    },
+    {
+      "id": "abc-6",
+      "name": "Casting without an arrow",
+      "desc": "Casting time +3 and −1 damage per die (at least 1 per die). Counted in the spell scenarios.",
+      "url": ""
+    }
+  ],
+  "__abilitiesCardsCounter": 6,
   "__wpnProfCards": [
     {
       "id": "wpc-4",
@@ -433,5 +626,7 @@
   ],
   "__equipCounter": 6,
   "__items": [],
-  "__itemsCounter": 1
+  "__itemsCounter": 1,
+  "__ammo": [],
+  "__ammoCounter": 0
 }

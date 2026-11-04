@@ -306,7 +306,7 @@ test('unarmed: PHB Table 57 lookup and THAC0 from Strength and situation', async
 
 test('ability cards: combat role guessed from the wording', async () => {
   const { guessCombatRole, sameAbility } = await import('../src/rules/abilities.js');
-  const sheet = JSON.parse(readFileSync(new URL('../samples/jaque_09-23.json', import.meta.url)));
+  const sheet = JSON.parse(readFileSync(new URL('./fixtures/characters/jaque_09-23.json', import.meta.url)));
   const roles = Object.fromEntries(sheet.__abilitiesCards.map(a => [a.name, guessCombatRole(a)]));
   assert.deepEqual(roles, {
     'Weapons Display': 'round', 'Handle Weapon': 'passive', 'Trick Throw': 'attack',
@@ -325,8 +325,8 @@ test('spell catalog: every spell in the saves has an entry, matched by name or a
   const { findSpell, missingFields } = await import('../src/rules/spells.js');
   const catalog = JSON.parse(readFileSync(new URL('../data/spell-catalog.json', import.meta.url)));
   const { readdirSync } = await import('node:fs');
-  for (const f of readdirSync(new URL('../samples/', import.meta.url)).filter(f => f.endsWith('.json'))) {
-    const s = JSON.parse(readFileSync(new URL(`../samples/${f}`, import.meta.url)));
+  for (const f of readdirSync(new URL('./fixtures/characters/', import.meta.url)).filter(f => f.endsWith('.json'))) {
+    const s = JSON.parse(readFileSync(new URL(`./fixtures/characters/${f}`, import.meta.url)));
     for (const sp of s.__spells || []) assert.ok(findSpell(catalog, sp), `${f}: ${sp.name}`);
   }
   assert.equal(findSpell(catalog, { name: 'Cure L Wounds', level: 1 }).id, 'cure-light-wounds');

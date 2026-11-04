@@ -15,7 +15,7 @@ DM's combat helper, moving from two standalone HTML pages to one private site.
 | `src/rules/` | Game math as plain functions: attacks, saves, thief skills, proficiencies, old-save conversion |
 | `src/adapters/` | Converters between tools (sheet → DM Helper) |
 | `scripts/` | Command-line helpers |
-| `samples/` | Real character saves |
+| `test/fixtures/characters/` | Snapshots of real characters, for the tests (the live saves are in Supabase) |
 | `test/` | Automated tests (`npm test`) |
 | `generated/` | Ready-to-paste DM Helper blocks |
 
@@ -66,3 +66,8 @@ node scripts/build-tools.mjs
 ```
 
 `npm test` fails if you forget.
+
+## Contributing
+
+`main` is the live site. Every change goes through a pull request: see
+[AGENTS.md](AGENTS.md).

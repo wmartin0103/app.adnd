@@ -5,11 +5,11 @@
 //     "Experienced" rule (better of Wis or Int for craft skills). The others
 //     are with the owner to review.
 // Weapons are unchanged for now: three questions are open (handoff).
-// Output: samples/atteroak_10-13.json
+// Output: test/fixtures/characters/atteroak_10-13.json
 import { readFileSync, writeFileSync } from 'node:fs';
 import { tidyProficiencyNames } from './tidy-names.mjs';
 
-const s = JSON.parse(readFileSync('samples/atteroak.json', 'utf8'));
+const s = JSON.parse(readFileSync('test/fixtures/characters/atteroak.json', 'utf8'));
 // 10-13: proficiency names without the Excel sheet's group codes and book references
 tidyProficiencyNames(s);
 for (const p of s.__nwps) {
@@ -17,5 +17,5 @@ for (const p of s.__nwps) {
   // PHB title is Weaponsmithing (the Excel sheet had "Weaponsmith W (87,CF10)")
   if (p.name.startsWith('Weaponsmith')) { p.name = 'Weaponsmithing'; p.adj = '-3'; }
 }
-writeFileSync('samples/atteroak_10-13.json', JSON.stringify(s, null, 2) + '\n');
-console.log('Wrote samples/atteroak_10-13.json');
+writeFileSync('test/fixtures/characters/atteroak_10-13.json', JSON.stringify(s, null, 2) + '\n');
+console.log('Wrote test/fixtures/characters/atteroak_10-13.json');

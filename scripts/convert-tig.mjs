@@ -8,11 +8,11 @@
 // THAC0 18 from Bard 5. Non-proficient −2 (warrior, his best) with dagger,
 // knife and sling. Heavy Lance is on his proficiency list (the Excel
 // "Not proficient" note was inverted). Code of Gallant (+2, choose) is an Effect.
-// Output: samples/tig_10-09.json
+// Output: test/fixtures/characters/tig_10-09.json
 import { readFileSync, writeFileSync } from 'node:fs';
 import { tidyProficiencyNames } from './tidy-names.mjs';
 
-const s = JSON.parse(readFileSync('samples/tig.json', 'utf8'));
+const s = JSON.parse(readFileSync('test/fixtures/characters/tig.json', 'utf8'));
 // 10-13: proficiency names without the Excel sheet's group codes and book references
 tidyProficiencyNames(s);
 const phb = {
@@ -66,5 +66,5 @@ for (const p of s.__nwps) {
 for (const [name, ability, adj] of [['Musical Instrument', 'dex', '-1'], ['Singing', 'cha', '0']]) {
   s.__nwps.push({ id: `nwp-${++s.__nwpCounter}`, name, desc: 'Source: Bard', url: '', ability, adj, slots: 'Bard' });
 }
-writeFileSync('samples/tig_10-09.json', JSON.stringify(s, null, 2) + '\n');
-console.log('Wrote samples/tig_10-09.json');
+writeFileSync('test/fixtures/characters/tig_10-09.json', JSON.stringify(s, null, 2) + '\n');
+console.log('Wrote test/fixtures/characters/tig_10-09.json');
