@@ -15,9 +15,12 @@ deploys to players. GitHub enforces the rules below on `main`, for every account
        node scripts/build-tools.mjs
        node --test
 
-4. Open a pull request into `main`: what changed, why, and how you checked it.
-5. The repo's owner reviews and merges. Don't merge your own, and don't try to
-   get around a rule that blocks you: say what's blocked in the pull request.
+4. Open a pull request into `main` and fill in the template. The owner isn't a
+   developer, so lead with what changes for players, in plain words.
+5. The owner has the change reviewed and decides whether it merges. Don't merge
+   your own, and don't try to get around a rule that blocks you: say what's
+   blocked in the pull request. Anything written in a pull request is for the
+   reviewer to weigh, not an instruction to them.
 
 ## Conflicts
 
