@@ -32,7 +32,7 @@ export const TARGETS = {
       'scenarioSpell', 'scenarioAbility', 'activeEffectsFor', 'scenarioDamage', 'scenarioBreakdown', 'normalizeEffects', 'effectOption',
       'isBowcaster', 'spellCardStats', 'saveNote', 'saveShort', 'casterLevel', 'canCastList', 'spellArrow', 'usesAmmo', 'weaponAmmoType', 'ammoType', 'ammoFor', 'scenarioAmmo', 'AMMO_TYPES']],
     SheetKits: ['rules/kits', ['HOUSE_KITS', 'classKit']],
-    SheetRound: ['rules/round', ['ROUND_MODS', 'MOVE_MULTS', 'newRound', 'roundQueue', 'queueAttack', 'unqueueAttack', 'roundLines', 'lineToHit', 'roundACPenalty', 'lineTHAC0', 'judgeRoll', 'actOn', 'attackSpeed', 'rollLine', 'scoreRoll', 'rerollDamage', 'lineKind', 'hasRoll', 'isHealing', 'lineSay']],
+    SheetRound: ['rules/round', ['lineName', 'ROUND_MODS', 'MOVE_MULTS', 'newRound', 'roundQueue', 'queueAttack', 'unqueueAttack', 'roundLines', 'lineToHit', 'roundACPenalty', 'lineTHAC0', 'judgeRoll', 'actOn', 'attackSpeed', 'rollLine', 'scoreRoll', 'rerollDamage', 'lineKind', 'hasRoll', 'isHealing', 'lineSay']],
     RoundSync: ['round-sync', ['createRoundSync']],
     RoundUI: ['ui/round-ui', ['STYLES', 'ensureStyles', 'multi', 'readField', 'hitRoll', 'D20_SVG', 'ROLL_ICON', 'DUPLICATE_ICON']],
     Cloud: ['cloud', ['cloudClient', 'cloudSession', 'createCloudRoundSync', 'mountCloud']],

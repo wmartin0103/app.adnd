@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { scenarioContext, scenarioSpell, scenarioDamage, spellCardStats, saveNote, saveShort } from '../src/rules/scenarios.js';
-import { lineSaveNote, newRound, roundLines, lineTHAC0, judgeRoll, actOn, rollLine, rollDice, lineToHit, roundACPenalty, queueAttack, unqueueAttack, roundQueue, rerollDamage, lineSay, lineKind, hasRoll, isHealing, plainAttack } from '../src/rules/round.js';
+import { lineName, lineSaveNote, newRound, roundLines, lineTHAC0, judgeRoll, actOn, rollLine, rollDice, lineToHit, roundACPenalty, queueAttack, unqueueAttack, roundQueue, rerollDamage, lineSay, lineKind, hasRoll, isHealing, plainAttack } from '../src/rules/round.js';
 import { createRoundSync } from '../src/round-sync.js';
 
 const load = f => JSON.parse(readFileSync(new URL(`./fixtures/characters/${f}`, import.meta.url)));
@@ -250,4 +250,23 @@ test('a save in words', () => {
   assert.deepEqual(['½', 'Neg.', 'None', '', 'Special'].map(v => saveShort(v)), ['½ damage', 'Negates', 'None', 'Not recorded', 'Special']);
   assert.equal(saveShort('½', false), '½ effect');   // no dice: Entangle
   assert.equal(saveNote('½', false), 'Save for ½ effect');
+});
+
+test('the DM sees the chosen weapon or spell, and the scenario name when it says something different', () => {
+  const ctx = { classes: [{ name: 'Wizard', group: 'wizard', level: '5' }], level: 5, catalog, ammo: [], effects: [],
+    weapons: [{ id: 'w', name: 'Long Sword' }],
+    spells: [{ id: 'f', name: 'Fireball', level: 3, type: 'wizard' }, { id: 'c', name: 'Cure L Wounds', level: 1, type: 'priest' }] };
+  const melee = (name, weaponId = 'w') => ({ name, attackType: 'melee', weaponId });
+  assert.equal(lineName(ctx, melee('Opener')), 'Long Sword (Opener)');
+  assert.equal(lineName(ctx, melee('long sword')), 'Long Sword');
+  assert.equal(lineName(ctx, melee('')), 'Long Sword');
+  assert.equal(lineName(ctx, melee('Opener', null)), 'Opener');
+  assert.equal(lineName(ctx, melee('', null)), 'Attack');
+  const spell = name => ({ name, attackType: 'spell', spellId: 'f' });
+  assert.equal(lineName(ctx, spell('Spell slot')), 'Fireball (Spell slot)');
+  assert.equal(lineName(ctx, spell('Fireball')), 'Fireball');
+  assert.equal(lineName(ctx, { name: 'Healing', attackType: 'spell', spellId: 'c' }), 'Cure Light Wounds (Healing)');   // the catalog's name, not the saved alias
+  assert.equal(lineName(ctx, { name: 'Spell slot', attackType: 'spell', spellId: null }), 'Spell slot');
+  assert.equal(lineName(ctx, { name: 'Arrow trick', attackType: 'spellarrow', spellId: 'f', weaponId: 'w' }), 'Spellarrow: Fireball (Arrow trick)');
+  assert.equal(lineName(ctx, { name: 'Fireball', attackType: 'spellarrow', spellId: 'f', weaponId: 'w' }), 'Spellarrow: Fireball');
 });
