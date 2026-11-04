@@ -650,3 +650,4 @@ can grow over time.
 - [x] Dice setting, part 1: Account has Assisted dice rolls or Roll my own dice, and the sheet's rolls follow it (2026-11-04)
 - [x] Dice setting, part 2: the DM Helper's rolls follow it too (2026-11-04)
 - [x] The minimum before play: a name, a class with a level and six ability scores; an unfinished first character starts in Backups (2026-11-04)
+- [x] Staging: the owner publishes any branch at `/staging/` with a button, using a test campaign in the one database; a second Supabase project was declined, so migrations can't be tried there (2026-11-04)

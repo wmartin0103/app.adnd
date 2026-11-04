@@ -8,7 +8,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { bundle, RULES_FILES } from './bundle.mjs';
-import { tokensCSS, themeInitScript, FONTS_URL } from '../src/ui/tokens.js';
+import { tokensCSS, themeInitScript, stagingInitScript, FONTS_URL } from '../src/ui/tokens.js';
 import { THEME_TOGGLE_CSS } from '../src/ui/theme.js';
 import { FIELDS_CSS, TAGS_CSS, BUTTONS_CSS, CHOICES_CSS, DISCLOSURE_CSS, QTY_CSS, PATTERNS_CSS, SURFACES_CSS } from '../src/ui/components.js';
 
@@ -35,7 +35,7 @@ export const TARGETS = {
     SheetRound: ['rules/round', ['typedFields', 'typedValue', 'typedPrompt', 'typedRoll', 'lineName', 'ROUND_MODS', 'MOVE_MULTS', 'newRound', 'roundQueue', 'queueAttack', 'unqueueAttack', 'roundLines', 'lineToHit', 'roundACPenalty', 'lineTHAC0', 'judgeRoll', 'actOn', 'attackSpeed', 'rollLine', 'scoreRoll', 'rerollDamage', 'lineKind', 'hasRoll', 'isHealing', 'lineSay']],
     RoundSync: ['round-sync', ['createRoundSync']],
     RoundUI: ['ui/round-ui', ['STYLES', 'ensureStyles', 'multi', 'readField', 'hitRoll', 'typedField', 'D20_SVG', 'ROLL_ICON', 'DUPLICATE_ICON']],
-    Cloud: ['cloud', ['cloudClient', 'cloudSession', 'createCloudRoundSync', 'mountCloud']],
+    Cloud: ['cloud', ['isStaging', 'cloudClient', 'cloudSession', 'createCloudRoundSync', 'mountCloud']],
     SheetRules: ['rules/weapons', ['PHB_WEAPONS']],
     SheetGuess: ['rules/migrate', ['guessCategory']],
     Characters: ['characters', ['loadCharacter', 'saveSheet', 'isBlank', 'isNameTaken', 'campaignNames']],
@@ -93,6 +93,7 @@ export const headBlock = () => [
   HEAD_START,
   `<link href="${FONTS_URL}" rel="stylesheet">`,
   `<style id="design-tokens">\n${tokensCSS()}\n${THEME_TOGGLE_CSS}\n${FIELDS_CSS}\n${TAGS_CSS}\n${BUTTONS_CSS}\n${CHOICES_CSS}\n${DISCLOSURE_CSS}\n${QTY_CSS}\n${PATTERNS_CSS}\n${SURFACES_CSS}\n</style>`,
+  `<script>${stagingInitScript()}</script>`,
   `<script>${themeInitScript()}</script>`,
   HEAD_END,
 ].join('\n');

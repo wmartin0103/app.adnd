@@ -18,6 +18,8 @@ database, holding the group's real data, so these files are for the owner to run
   own at first sign-in). Also for a forgotten password: set a new one on the
   user in Authentication → Users, then run it again. Steps are in the file.
 
+- **`staging-campaign.sql`** — data: makes the test campaign the staging site shows,
+  and adds someone to it (`docs/deploy.md`).
 - **`set-role.sql`** — data: sets someone's role in the campaign (DM,
   player, or both: a DM who also plays) and, optionally, admin. DM + admin
   is the owner's own access; player + not admin takes it back. In the Table
