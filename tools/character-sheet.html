@@ -1959,7 +1959,8 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       transition: border-color 0.2s;
     }
     /* Notes wrap and grow (where the browser can't, spellNotesFit does it) */
-    textarea.spell-card-notes { display: block; box-sizing: border-box; resize: none; overflow-y: hidden; field-sizing: content; line-height: 1.3; }
+    textarea.spell-card-notes { display: block; box-sizing: border-box; resize: none; overflow-y: auto; field-sizing: content; line-height: 1.3; }
+    @supports (field-sizing: content) { textarea.spell-card-notes { overflow-y: hidden; } }
     .spell-card-notes:focus         { border-bottom-color: var(--rule); }
     .spell-card-notes::placeholder  { color: var(--ink-faint); font-style: italic; }
 
@@ -9701,14 +9702,15 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           const open = view.classList.toggle('is-open');
           more.textContent = open ? 'Show less' : 'Show more';
         });
-        sum.append(view, more);
+        sum.appendChild(view);
         if (wiki) {
-          // The wiki's license asks for credit; the card's title links to the page
+          // The wiki's license asks for credit, right under its text; the card's title links to the page
           const credit = document.createElement('p');
           credit.className = 'spell-sum-credit';
-          credit.textContent = 'From the AD&D 2e wiki';
+          credit.textContent = 'From the AD&D 2e wiki (CC BY-SA)';
           sum.appendChild(credit);
         }
+        sum.appendChild(more);
         requestAnimationFrame(() => { more.hidden = view.scrollHeight <= view.clientHeight + 1; });
       };
       paint();
