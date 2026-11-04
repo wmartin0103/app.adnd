@@ -8666,6 +8666,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
     });
     // Rolls real dice and types the result (the account's Dice setting)
     const rollsOwnDice = () => !!(cloudSess && cloudSess.diceMode === 'own');
+    let cloudStatus = null;   // the character's place (In play, Backups, Dead), once loaded; null signed out
     const typedField = (...args) => RoundUI.typedField(...args);
     const charName = () => (document.getElementById('char-name')?.value || '').trim() || 'Unnamed';
     const roundState = () => { const s = roundSync(); return s ? s.state() : { round: 1, foes: [], records: {} }; };
@@ -8850,6 +8851,12 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       body.appendChild(renderQueue(rec, ctx, st.foes || []));
       const queued = SheetRound.roundQueue(rec).map(q => scenarios.find(s => s.id === q.scenarioId)).filter(Boolean);
       const send = document.createElement('div'); send.className = 'round-send';
+      // Only a character in play is in the party, so a round from any other never reaches the DM
+      if (cloudStatus && cloudStatus !== 'play') {
+        const n = document.createElement('span'); n.className = 'round-note'; n.textContent = `To send rounds to the DM, bring ${charName()} into play from Home.`;
+        send.appendChild(n); body.appendChild(send);
+        return;
+      }
       const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'round-btn ui-button is-primary'; btn.id = 'round-send-btn';
       const changed = roundChanged(rec);
       btn.textContent = rec.sent && changed ? 'Send changes' : rec.sent ? 'Sent ✓' : 'Send to DM';
@@ -11461,6 +11468,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       if (!row) return;
       if (Cloud.isStaging() && row.campaign_id !== sess.campaignId) return;   // a real character: never opened, never saved, from staging
       cloudLoaded = true;
+      cloudStatus = row.status || null;
       showPlayer(client, row);
       if (isViewOnly()) {
         if (!Characters.isBlank(row.data)) { applyData(row.data); refreshAll(); }
@@ -11479,7 +11487,16 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         saveToItems();
       }
       document.title = `${charName()} · Character Sheet`;
+      renderScenarios();
     }
+    // Brought into play (or moved out) from Home in another tab: catch up on coming back
+    document.addEventListener('visibilitychange', async () => {
+      const client = window.Cloud && Cloud.cloudClient();
+      if (document.visibilityState !== 'visible' || !CLOUD_ID || !cloudLoaded || isViewOnly() || !client) return;
+      let row = null;
+      try { row = await Characters.loadCharacter(client, CLOUD_ID); } catch (e) { return; }
+      if (row && row.status && row.status !== cloudStatus) { cloudStatus = row.status; renderScenarios(); }
+    });
 
     function gatherData() {
       const data = {};
