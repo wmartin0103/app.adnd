@@ -6,8 +6,8 @@ the owner on 2026-10-27, ahead of a dark theme.
 
 **Status: partly applied (2026-10-27).**
 
-- Applied everywhere (the sheet, the DM Helper, the sign-in, Your
-  characters and Account pages): the colour tokens in light and dark, the
+- Applied everywhere (the sheet, the DM Helper, the sign-in, Home and
+  Account pages): the colour tokens in light and dark, the
   light/dark toggle in each header, Barlow and Spectral. The tokens live in
   `src/ui/tokens.js`; `scripts/build-tools.mjs` writes them into every
   page's `<head>`. Each page's older variable names now point at the tokens.
@@ -336,7 +336,8 @@ In code (`src/ui/components.js`): every `input[type=checkbox|radio]` unless
 ## Patterns
 
 Standard, reusable arrangements of the pieces above (decided 2026-10-30, as
-first made on Home). In code: `ui-choice`, `ui-menu`.
+first made on Home, except where a date says otherwise). In code: `ui-choice`,
+`ui-menu`.
 
 - **Choice card** (`ui-choice` on a `<button>`, or an `<a>` when it goes to
   another page): a whole card that is the button, for a few big choices side by side ("Create a new character",
@@ -353,6 +354,27 @@ first made on Home). In code: `ui-choice`, `ui-menu`.
   Groups are split by an `<hr>` (a divider hairline); a destructive item is
   last, in its own group, red (`danger`) with an ellipsis when it asks to
   confirm ("Delete…"). The page decides where the menu opens.
+
+- **Spell cards** (decided 2026-11-04): the Spellbook has one view for all its
+  cards, **Simple** or **Detailed**, a small tab group in its heading, kept with
+  the character (new characters start on Simple). Both are 3 columns at full
+  width, fewer as the page narrows. Simple shows the tags, Mem, × and the name;
+  Detailed adds the quick reference, the Summary and Notes. Memorized always
+  shows the full card. There's no folding of single cards. The level buttons
+  (All, 1st, 2nd…) filter the Spellbook, and a level with no number reads
+  "Special" everywhere.
+- **Summary** (on a spell card): read-only, and never saved with the character.
+  It shows the catalog's short text, or wiki text once loaded, kept in that
+  browser only. With neither, just **Load from wiki**. Loaded text has **Remove
+  summary** in place of that link, and "From the AD&D 2e wiki (CC BY-SA)" directly
+  under the text, above **Show more**.
+- **Notes** (on a spell card): the place for the player's own words. It wraps and
+  grows with its text.
+- **Drag to reorder** (decided 2026-11-04, on the Spellbook): a grip of six dots at
+  the left of a card's top row, in the secondary colour. The card lifts out and a
+  dashed slot of the same size (2px brass, with a 10% brass fill and card corners)
+  shows where it will land. The slot takes a card's place as soon as the pointer
+  enters that card, and the other cards move aside. Mouse only for now.
 
 ## Sections and cards
 

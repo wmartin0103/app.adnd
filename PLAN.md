@@ -635,11 +635,13 @@ can grow over time.
 - [ ] Combat data spec: remaining questions in its section 8
 - [ ] Saves from the other active players
 - [ ] Answers to section 8
-- [ ] Accounts: Netlify or Cloudflare, Supabase (free; owned by you)
+- [x] Accounts: Supabase (free; owned by the owner) and GitHub Pages, in place of the Netlify or Cloudflare planned above
 - [x] Sharing: Share… in a character's ⋯ menu on Home, for its owner and (on a Party card) the DM; the person sees it under "Shared with you" (moved from Account, 2026-11-01)
 - [ ] Sharing: try it on the real database
 - [x] Spells: Simple / Detailed views, Add Spell searches the catalog, title is the wiki link, slots from the classes, a caster level for spells off the sheet's lists, Roll for save in the DM Helper (2026-11-02)
+- [x] Spellbook: one Simple / Detailed view for all its cards, Memorized always full, level buttons, drag to reorder with a landing slot, read-only Summary, Notes that grow (2026-11-04)
 - [ ] Spells: try it live (real sheets, merging repeats, Roll for save from a real round)
+- [ ] Reordering spells without a mouse (keyboard and phones): later, with the mobile layout
 - [ ] Optional: a Save number on each Enemy, so Roll for save can say saved or failed and apply the damage
 - [ ] **Must do before release: a staging site (noted 2026-10-30).** Changes go to staging first, then to the live site when approved. Proposed: `main` (already the live site) stays as it is, and a `staging` branch is published at `/staging/` on the same domain (one Pages deploy builds both). It also needs a second free Supabase project, so staging tests never touch real characters; migrations go to it first. And it needs browser storage keys kept apart, since both sites share one origin.
 - [ ] Later: let the DM reveal an Enemy's name to players, one Enemy at a time, so sheets can target "Ogre Chief (E2)" once the party knows what it is. Names stay hidden until revealed. The badge and name otherwise stay as they are (decided 2026-11-02).

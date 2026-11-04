@@ -1,84 +1,46 @@
-# Putting the site online
+# How the site goes online
 
-The site is the landing page (`site/index.html`), the two tools and the
-shared spell catalog. `npm run build` copies just those into `dist/`, so the
-repo's character saves, docs and scripts are never published.
+The site is at https://wmartin0103.github.io/app.adnd/, on GitHub Pages. It's
+Home (`site/index.html`), Account, the two tools and the shared spell catalog.
+`npm run build` copies just those into `dist/`, so the repo's docs, scripts and
+test data are never published.
 
-The steps below are done once, by the owner, in their own accounts.
+## What happens on a merge
 
-## Chosen: GitHub Pages (public repo)
+Every push to `main` runs `.github/workflows/pages.yml`: the tests, the build,
+and the deploy. Because of the rule on `main`, a push only happens when a pull
+request merges, so **a merge is a release**. There's no staging site yet (see
+the Status section of `PLAN.md`).
 
-The repo is public (the owner's choice, 2026-10-23: the group is small; if it
-grows, clone it and start clean). `.github/workflows/pages.yml` runs the
-tests, builds `dist/` and publishes it on every push to
-`claude/vibrant-wozniak-gjkyjd`.
+Only `main` is allowed to deploy: the `github-pages` environment's branch policy
+lists it alone.
 
-1. **Settings → General → Danger Zone → Change visibility → Public.**
-   (Optional: **github.com/settings/emails → Keep my email addresses
-   private**, for future commits.)
-2. **Settings → Pages → Build and deployment → Source: GitHub Actions.**
-3. **Actions → Pages → Run workflow** (or push anything). The site appears at
-   `https://wmartin0103.github.io/app.adnd/`.
-4. Your own domain: **Settings → Pages → Custom domain**, then add the DNS
-   records GitHub shows at your domain's registrar (a `CNAME` to
-   `wmartin0103.github.io` for a subdomain such as `adnd.example.com`).
-   Tick **Enforce HTTPS** once it's verified.
-5. In Supabase: **Authentication → URL Configuration → Site URL** = the
-   site's address, and add it under **Redirect URLs**.
+Pull requests run `.github/workflows/test.yml` instead, which doesn't deploy.
 
-The Cloudflare route below does the same with the repo kept private.
+The rule on `main` is `.github/rulesets/protect-main.json`. That file is a copy
+for the record: changing it doesn't change the rule, which the owner manages on
+GitHub.
 
-## 1. Cloudflare Pages: host the site
+## Undoing a release
 
-1. Sign up at https://dash.cloudflare.com (free plan).
-2. **Workers & Pages → Create → Pages → Connect to Git.** Authorize GitHub
-   for the `wmartin0103/app.adnd` repo only.
-3. Build settings:
-   - Production branch: `claude/vibrant-wozniak-gjkyjd` (or `main` once the
-     work is merged there)
-   - Framework preset: None
-   - Build command: `npm run build`
-   - Build output directory: `dist`
-   - Environment variable: `NODE_VERSION` = `20`
-4. **Save and Deploy.** The site appears at `https://<project>.pages.dev`.
-   Every push to the production branch redeploys it.
+Open the merged pull request on GitHub and press **Revert**. That makes a new
+pull request; merging it redeploys the site as it was.
 
-Other branches get preview addresses (`<branch>.<project>.pages.dev`); a
-gate (step 3) covers those too if added.
+This doesn't undo a database migration, which needs its own fix.
 
-## 2. Your own domain
+## Old addresses
 
-1. Buy a domain (about $10–15 a year). Simplest: **Domain Registration →
-   Register Domains** in the same Cloudflare account (sold at cost; DNS is set
-   up for you). A domain from another registrar works too: add it to
-   Cloudflare as a site and switch its nameservers to Cloudflare's.
-2. **Workers & Pages → your project → Custom domains → Set up a custom
-   domain**, and enter it (e.g. `adnd.example.com` or the bare domain).
-   HTTPS is automatic.
-3. In Supabase: **Authentication → URL Configuration → Site URL** = your
-   domain (`https://…`), and add it under **Redirect URLs**. Password sign-in
-   works without this; password resets and invite emails need it.
+The tools used to be at `legacy/character-sheet.html` and `legacy/dm-helper.html`.
+`scripts/build-site.mjs` keeps small pages there that forward to `sheet/` and
+`dm/`, keeping `?id=…`, so older links still work.
 
-## 3. Optional: Cloudflare Access in front of the whole site
+## The owner's one-time settings
 
-Now that the tools have sign-in, campaign data is already protected (the
-database's rules; see `supabase/`). Without a gate, anyone with the link can
-open the tools, but signed out they only see their own browser's sheet. Add
-Access only if the tools themselves should stay private; players then get an
-email code before the page loads, as well as signing in.
+Already done, and listed in case the site is ever set up again:
 
-1. In the dashboard, **Zero Trust** (free for up to 50 people; it asks for a
-   team name and may ask for a card for the free plan).
-2. **Access → Applications → Add an application → Self-hosted.**
-   - Domain: `<project>.pages.dev`, and add `*.<project>.pages.dev` for the
-     preview addresses.
-   - Policy: Action **Allow**, Include **Emails**, and list each player's
-     email address.
-   - Login method: **One-time PIN** (Cloudflare emails a code; nobody needs
-     a password).
-3. Open the site in a private window: it should ask for an email first.
-
-Adding a player later: add their email to the policy.
+1. **Settings → Pages → Build and deployment → Source: GitHub Actions.**
+2. In Supabase: **Authentication → URL Configuration → Site URL** = the site's
+   address, and the same under **Redirect URLs**.
 
 ## Checking a build locally
 
@@ -86,4 +48,5 @@ Adding a player later: add their email to the policy.
 npm run build
 ```
 
-Then open `dist/index.html`, or serve `dist/` with any static server.
+Then serve `dist/` with any static server. Its links are relative, so it works
+from any folder.
