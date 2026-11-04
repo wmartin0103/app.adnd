@@ -210,6 +210,20 @@ const damageDice = (ctx, sc, target, rand) => {
 // one), and the damage dice by that target's size, which the DM counts only on
 // a hit. A spell with no attack roll just rolls its damage (once for an area
 // spell). Only the dice are kept: scoreRoll adds the sheet's numbers as they are now.
+// What a scenario uses, in words, for the DM's page: the chosen weapon or spell,
+// then the scenario's own name when it says something different. "Long Sword
+// (Opener)", "Fireball", "Spellarrow: Fireball (Arrow trick)"
+export function lineName(ctx, sc) {
+  const own = String(sc.name || '').trim();
+  const type = scenarioType(sc);
+  const chosen = ['spell', 'spellarrow'].includes(type)
+    ? (sp => (sp ? (sp.catalog && sp.catalog.name) || sp.name : ''))(scenarioSpell(ctx, sc))
+    : (scenarioWeapon(ctx, sc) || {}).name;
+  const used = String(chosen || '').trim();
+  if (!used) return own || 'Attack';
+  const says = type === 'spellarrow' ? `Spellarrow: ${used}` : used;
+  return own && own.toLowerCase() !== used.toLowerCase() ? `${says} (${own})` : says;
+}
 // A spell line's save in words ('' for a weapon or an Enemy's attack)
 export const lineSaveNote = (ctx, sc) => {
   if (sc.plain || !['spell', 'spellarrow'].includes(scenarioType(sc))) return '';   // a Spellarrow carries a spell too
