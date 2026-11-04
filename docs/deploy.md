@@ -36,6 +36,7 @@ Staging uses the live database, so:
 - A real character won't open there, even by its address.
 - The Account page is real on staging: a change to your name, email, password or
   Dice setting is a change to your account.
+- Signing out on staging signs that login out of the live site too.
 - A migration can't be tried there: it changes the one database.
 - Its code shares the live site's address, so only open staging for a branch you
   trust.

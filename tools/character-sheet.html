@@ -6252,7 +6252,9 @@ __m["round-sync"] = (() => {
 // moment it changes. A cross-device connection (Supabase) will offer the same
 // calls. With no connection, the sheet still works on its own.
 
-const CHANNEL = 'adnd-round';
+// A copy at /staging/ keeps to itself in this browser (its storage has its own names too)
+const STAGING = /\/staging(\/|$)/.test((globalThis.location && globalThis.location.pathname) || '');
+const CHANNEL = STAGING ? 'adnd-round-staging' : 'adnd-round';
 const STORE = 'adnd-round-state';
 const empty = () => ({ round: 1, encounter: 1, foes: [], timing: 'end', records: {}, at: 0 });
 
@@ -6266,7 +6268,7 @@ function createRoundSync() {
   const tell = s => { listeners.forEach(fn => { try { fn(s); } catch (e) { /* a listener's problem */ } }); };
   const announce = s => { try { channel && channel.postMessage(s); } catch (e) { ok = false; } };
   if (channel) channel.onmessage = e => tell(e.data);
-  try { window.addEventListener('storage', e => { if (e.key === STORE) tell(read()); }); } catch (e) { /* no window */ }
+  try { window.addEventListener('storage', e => { if (e.key === (STAGING ? `staging:${STORE}` : STORE)) tell(read()); }); } catch (e) { /* no window */ }
 
   const change = fn => { const s = read(); fn(s); s.at = Date.now(); write(s); announce(s); return s; };
   return {

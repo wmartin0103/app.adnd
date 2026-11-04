@@ -28,8 +28,9 @@ concurrency:
 
 jobs:
   # The branch's code runs here with read access only, and only for the owner
+  # (triggering_actor: someone else re-running the owner's run doesn't count)
   staging:
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.actor == github.repository_owner)
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.actor == github.repository_owner && github.triggering_actor == github.repository_owner))
     runs-on: ubuntu-latest
     permissions:
       contents: read

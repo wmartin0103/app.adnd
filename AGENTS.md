@@ -71,6 +71,8 @@ The tests don't cover much of what the pages do, so check the page itself.
   the sheet keeps its data in that browser, so you can load a save from
   `test/fixtures/characters/` with **Import JSON**.
 - **Home, or the site as published:** `npm run build`, then serve `dist/`.
+- **As published, with real sign-in:** the owner can publish a branch at `/staging/`
+  (`docs/deploy.md`). It shows only a test campaign.
 - **Stay signed out when testing.** There's only one database, and it holds the
   group's real characters: signing in from your machine works on live data.
   To test signed-in behaviour, stand in for the database in the browser.
