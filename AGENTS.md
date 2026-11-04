@@ -98,7 +98,7 @@ Saves are the players' own work, and a mistake here is the worst one to make.
 ## The database
 
 Files in `supabase/migrations/` change the live database, and only the owner
-runs them (`supabase db push`). So a migration needs its own note in the pull
+runs them (`supabase db push --remote`). So a migration needs its own note in the pull
 request, and:
 
 - Add a new file; never edit one that's been deployed.

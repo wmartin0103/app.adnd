@@ -5,8 +5,10 @@ database, holding the group's real data, so these files are for the owner to run
 
 - **`migrations/`** — the database's structure: tables, permission rules
   (Row Level Security), triggers, realtime. Applied with the Supabase CLI
-  from this folder (linked to the project): `npx.cmd supabase db push`
-  (`npx.cmd` on Windows PowerShell). Supabase keeps a record of which ones
+  from this folder (linked to the project): `npx.cmd supabase db push --remote`
+  (`npx.cmd` on Windows PowerShell). The Supabase tool's version 3 aims at a
+  local database unless told `--remote`; check that it names **app.ADND** before
+  you confirm. Supabase keeps a record of which ones
   have run; `npx.cmd supabase migration list --linked` shows it. Merging a
   migration file into `main` is meant to change nothing until the owner runs this.
 - **`setup-first-admin.sql`** — data, not structure: makes the owner an admin
