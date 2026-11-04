@@ -10097,7 +10097,8 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       // Accepting the drag as soon as it enters, so a quick flick still drops
       grid.addEventListener('dragenter', ev => { if (card) ev.preventDefault(); });
       const placeSlot = ev => {
-        if (!slot.parentElement) return;
+        // A very quick drag can get here before the slot went in
+        if (!slot.parentElement) { card.after(slot); card.classList.add('is-lifted'); }
         // By the pointer's position: the event's target can be the grid itself
         const inCard = c => { const b = c.getBoundingClientRect(); return ev.clientX >= b.left && ev.clientX <= b.right && ev.clientY >= b.top && ev.clientY <= b.bottom; };
         const over = [...grid.querySelectorAll('.spell-card')].find(c => c !== card && inCard(c));
