@@ -66,3 +66,8 @@ node scripts/build-tools.mjs
 ```
 
 `npm test` fails if you forget.
+
+## Contributing
+
+`main` is the live site. Every change goes through a pull request: see
+[AGENTS.md](AGENTS.md).
