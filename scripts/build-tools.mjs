@@ -38,7 +38,7 @@ export const TARGETS = {
     Cloud: ['cloud', ['cloudClient', 'cloudSession', 'createCloudRoundSync', 'mountCloud']],
     SheetRules: ['rules/weapons', ['PHB_WEAPONS']],
     SheetGuess: ['rules/migrate', ['guessCategory']],
-    Characters: ['characters', ['loadCharacter', 'saveSheet', 'isBlank']],
+    Characters: ['characters', ['loadCharacter', 'saveSheet', 'isBlank', 'isNameTaken', 'campaignNames']],
     Spin: ['ui/spin', ['mountSpin']],
     Theme: ['ui/theme', ['mountThemeToggle', 'currentTheme', 'setTheme']],
   },
@@ -69,7 +69,7 @@ export const PAGES = {
   'site/index.html': {
     Cloud: ['cloud', ['cloudClient', 'cloudSession']],
     Theme: ['ui/theme', ['mountThemeToggle', 'currentTheme', 'setTheme']],
-    Characters: ['characters', ['STATUS_LABEL', 'summary', 'isBlank', 'fileName', 'listCharacters', 'createCharacter', 'setStatus', 'saveSheet', 'deleteCharacter', 'listParty', 'listMembers', 'assignCharacter', 'listShares', 'setShares']],
+    Characters: ['characters', ['STATUS_LABEL', 'summary', 'isBlank', 'fileName', 'listCharacters', 'createCharacter', 'setStatus', 'saveSheet', 'deleteCharacter', 'listParty', 'listMembers', 'assignCharacter', 'listShares', 'setShares', 'isNameTaken']],
   },
   'site/account.html': {
     Cloud: ['cloud', ['cloudClient', 'cloudSession']],

@@ -149,15 +149,17 @@ export async function setShares(client, session, id, before, after) {
 // Moves a character; into play, the one in play now goes to `others` (dead
 // or backup) first, as only one may be in play
 export async function setStatus(client, mine, id, status, others = 'backup') {
-  if (status === 'play') {
-    const cur = mine.find(c => c.status === 'play' && c.id !== id);
-    if (cur) {
-      const r = await client.from('characters').update({ status: others }).eq('id', cur.id);
-      if (r.error) throw r.error;
-    }
+  const cur = status === 'play' ? mine.find(c => c.status === 'play' && c.id !== id) : null;
+  if (cur) {
+    const r = await client.from('characters').update({ status: others }).eq('id', cur.id);
+    if (r.error) throw r.error;
   }
   const { error } = await client.from('characters').update({ status }).eq('id', id);
-  if (error) throw error;
+  if (error) {
+    // Refused (its name is taken, say): the one in play goes back, so nobody's left out
+    if (cur) await client.from('characters').update({ status: 'play' }).eq('id', cur.id);
+    throw error;
+  }
 }
 
 // Deletes one of yours from Backups or Dead, for good (versions and all).
@@ -175,7 +177,20 @@ export async function loadCharacter(client, id) {
   if (error) throw error;
   return data;
 }
+// A save the database's rules refuse changes nothing and says nothing, so ask for
+// the row back to know it went
 export async function saveSheet(client, id, data) {
-  const { error } = await client.from('characters').update({ data }).eq('id', id);
+  const { data: rows, error } = await client.from('characters').update({ data }).eq('id', id).select('id');
   if (error) throw error;
+  if (!rows || !rows.length) throw new Error('That character couldn’t be saved.');
+}
+// The database refused because another character in play has this name
+// (supabase/migrations/20261104120000_one_name_in_play.sql)
+export const isNameTaken = e => !!e && /characters_name_in_play/.test(`${e.message || ''} ${e.details || ''}`);
+// The campaign's characters, for spotting a name already in use
+export async function campaignNames(client, campaignId) {
+  if (!campaignId) return [];
+  const { data, error } = await client.from('characters').select('id, name').eq('campaign_id', campaignId);
+  if (error) throw error;
+  return data || [];
 }
