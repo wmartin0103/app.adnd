@@ -1324,10 +1324,11 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     .round-head { display: flex; align-items: baseline; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
     .round-status { font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 0.08em; color: var(--ink-muted); }
     .round-row { display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; align-items: flex-end; }
-    /* One control system: every control 2.1rem tall under a small label;
+    /* One control system: every control the standard field height under a small label;
        situational on/off choices live in a select with checkboxes */
-    .round { --ctl-h: 2.1rem; }
+    .round { --ctl-h: var(--ctl-md); }
     .round .round-pick .scenario-select, .round .round-btn { height: var(--ctl-h); box-sizing: border-box; }
+    .round .round-pick .typed-field input { --field-h: var(--ctl-h); --field-fs: var(--ctl-fs-md); --field-px: var(--ctl-pad-md); }
     .round .round-btn { display: inline-flex; align-items: center; padding-top: 0; padding-bottom: 0; }
     .round-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
     /* A select with checkboxes in its list */
