@@ -74,7 +74,7 @@ const catalog = JSON.parse(readFileSync(new URL('../data/spell-catalog.json', im
 const effectsOff = save => ({ ...save, __stances: save.__stances.map(st => ({ ...st, on: false })) });
 
 test('Jaque\'s scenarios become the DM Helper\'s attacks, with the sheet\'s numbers', () => {
-  const r = toDMHelper(effectsOff(current), {}, { catalog });
+  const r = toDMHelper(effectsOff(current), { catalog });
   const c = r.character;
   assert.equal(r.name, 'Jaque');
   assert.deepEqual(c.armor, { ac: 4, shieldless: 4, surprised: 8 });
@@ -106,7 +106,7 @@ test('Goroth imports under the name the DM Helper uses, with PHB skill names and
   const r = toDMHelper(JSON.parse(readFileSync(new URL('./fixtures/characters/goroth_10-09.json', import.meta.url))));
   assert.equal(r.name, 'Goroth');
   assert.deepEqual(Object.keys(r.skills), ['Dirty Tricks', 'Intimidation', 'Running', 'Danger Sense', 'Animal Lore', 'Hiding', 'Survival', 'Tracking']);   // "Wild Fighting" has no check
-  // The free ones match his hand-typed DM Helper entry
+  // The free ones
   assert.deepEqual(['Danger Sense', 'Animal Lore', 'Hiding', 'Survival', 'Tracking'].map(k => r.skills[k].t), [13, 10, 9, 10, 12]);
   // Book codes from the Excel sheet come off; names without one stay as they are
   const s = toDMHelper(JSON.parse(readFileSync(new URL('./fixtures/characters/hanspeter_10-09.json', import.meta.url)))).skills;
@@ -143,7 +143,7 @@ test('Tig\'s scenarios use PHB weapons, with Code of Gallant as an effect', () =
 
 // Rifiyr, Wizard 4 with the Bowcaster kit (docs/house-rules/bowcaster.md)
 test('Rifiyr: bows with Mystic Aim, −2 off the bow, and the casting penalty without an arrow', () => {
-  const r = toDMHelper(JSON.parse(readFileSync(new URL('./fixtures/characters/rifiyr_10-12.json', import.meta.url))), {}, { catalog });
+  const r = toDMHelper(JSON.parse(readFileSync(new URL('./fixtures/characters/rifiyr_10-12.json', import.meta.url))), { catalog });
   const c = r.character;
   assert.deepEqual(c.weapons['Long bow, flight'], { thac0: 16, speed: 8 });             // 19 − bow +1 − Dex +1 − Mystic Aim +1
   assert.deepEqual(c.secondary.map(s => s.name), ['Long bow, flight (2nd)', 'Long bow, sheaf (2nd)', 'Folding bow, flight (2nd)', 'Folding bow, sheaf (2nd)']);   // two shots a round
@@ -161,7 +161,7 @@ test('Rifiyr: bows with Mystic Aim, −2 off the bow, and the casting penalty wi
 
 test('Spellarrow: the bow\'s to-hit, bow + casting time, the arrow\'s damage and the spell at full strength', () => {
   const save = JSON.parse(readFileSync(new URL('./fixtures/characters/rifiyr_10-12.json', import.meta.url)));
-  const r = toDMHelper(save, {}, { catalog });
+  const r = toDMHelper(save, { catalog });
   const shot = r.character.actions.find(a => a.name === 'Shocking Grasp arrow');
   assert.deepEqual(shot, { name: 'Shocking Grasp arrow', thac0: 16, baseSpeed: 8, speedMin: 0, speedMax: 10, speedDefault: 1 });
   assert.equal(r.character.secondary.some(s => s.name.startsWith('Shocking Grasp arrow')), false);   // its only shot
@@ -171,7 +171,7 @@ test('Spellarrow: the bow\'s to-hit, bow + casting time, the arrow\'s damage and
   // Any memorized spell can go on the arrow (honor system): no flag
   const fireball = { ...save, __spells: [...save.__spells, { id: 'spl-90', name: 'Fireball', level: 3, type: 'wizard', isMemorized: true }],
     __scenarios: [{ ...save.__scenarios.find(s => s.id === 'sc-7'), spellId: 'spl-90' }] };
-  const fb = toDMHelper(fireball, {}, { catalog });
+  const fb = toDMHelper(fireball, { catalog });
   assert.deepEqual(fb.review, []);
   assert.equal(fb.damage['Rifiyr|Shocking Grasp arrow'].spell, '4d6');
   assert.deepEqual(['1 rd.', '1 round', '3'].map(castSpeed), [10, 10, 3]);
@@ -187,7 +187,7 @@ test('a class\'s house-rule kit: chosen in its settings, or read from the name i
   // The rules follow the setting: no Bowcaster kit, no casting penalty
   const save = JSON.parse(readFileSync(new URL('./fixtures/characters/rifiyr_10-12.json', import.meta.url)));
   const none = { ...save, __classes: save.__classes.map(c => ({ ...c, kit: '' })) };
-  assert.deepEqual(toDMHelper(none, {}, { catalog }).damage['Rifiyr|Shocking Grasp'], { sm: '1d8+4', l: '1d8+4' });
+  assert.deepEqual(toDMHelper(none, { catalog }).damage['Rifiyr|Shocking Grasp'], { sm: '1d8+4', l: '1d8+4' });
 });
 
 test('ammunition: the weapon\'s and the ammo\'s bonuses add up; the ammo sets the dice', async () => {
@@ -196,7 +196,7 @@ test('ammunition: the weapon\'s and the ammo\'s bonuses add up; the ammo sets th
   // An arrow of flame +1 (+1 hit, +1 fire damage) from the Long Bow (Fine) (+1 hit)
   save.__ammo = [...save.__ammo, { id: 'amm-3', name: 'Arrow of flame +1', hitAdj: '+1', dmgAdj: '+1', dmgSM: '1d6', dmgL: '1d6', notes: 'Fire' }];
   save.__scenarios = [...save.__scenarios, { ...save.__scenarios.find(s => s.id === 'sc-1'), id: 'sc-20', name: 'Long bow, flame', ammo: 'amm-3', active: false }];
-  const r = toDMHelper(save, {}, { catalog });
+  const r = toDMHelper(save, { catalog });
   assert.equal(r.character.weapons['Long bow, flame'].thac0, 15);                    // 16 with flight arrows, −1 more
   assert.deepEqual(r.damage['Rifiyr|Long bow, flame'], { sm: '1d6+1', l: '1d6+1' });
   assert.deepEqual(r.damage['Rifiyr|Folding bow, sheaf'], { sm: '1d8-1', l: '1d8-1' });   // the folding bow's −1 still counts
@@ -211,13 +211,13 @@ test('ammunition: the weapon\'s and the ammo\'s bonuses add up; the ammo sets th
   // A bow is offered the PHB's arrows, always, then the sheet's own arrows
   assert.deepEqual(ammoFor({ ammo: withQuarrel.__ammo }, save.__weapons.find(w => w.id === 'wpn-2')).map(a => a.name), ['Flight arrow', 'Sheaf arrow', 'Arrow of flame +1']);
   assert.deepEqual(ammoFor({ ammo: [] }, { name: 'Heavy crossbow', ammoType: 'quarrels' }).map(a => a.name), ['Hand quarrel', 'Light quarrel', 'Heavy quarrel']);
-  assert.deepEqual(toDMHelper({ ...withQuarrel, __scenarios: [{ ...save.__scenarios.find(s => s.id === 'sc-1'), ammo: 'amm-9' }] }, {}, { catalog }).damage['Rifiyr|Long bow, flight'], { sm: '1d8', l: '1d6' });
+  assert.deepEqual(toDMHelper({ ...withQuarrel, __scenarios: [{ ...save.__scenarios.find(s => s.id === 'sc-1'), ammo: 'amm-9' }] }, { catalog }).damage['Rifiyr|Long bow, flight'], { sm: '1d8', l: '1d6' });
   // A weapon set to No ignores the ammo and uses its own dice
   const off = { ...save, __weapons: save.__weapons.map(w => (w.id === 'wpn-2' ? { ...w, ammoType: '' } : w)) };
-  assert.deepEqual(toDMHelper(off, {}, { catalog }).damage['Rifiyr|Long bow, flame'], { sm: '1d8', l: '1d6' });
+  assert.deepEqual(toDMHelper(off, { catalog }).damage['Rifiyr|Long bow, flame'], { sm: '1d8', l: '1d6' });
   // Scenarios from before the Ammunition list ("flight"/"sheaf") still get PHB dice
   const old = { ...save, __ammo: [], __scenarios: [{ ...save.__scenarios.find(s => s.id === 'sc-1'), ammo: 'sheaf' }] };
-  assert.deepEqual(toDMHelper(old, {}, { catalog }).damage['Rifiyr|Long bow, flight'], { sm: '1d8', l: '1d8' });
+  assert.deepEqual(toDMHelper(old, { catalog }).damage['Rifiyr|Long bow, flight'], { sm: '1d8', l: '1d8' });
 });
 
 test('−1 per die', () => {
@@ -225,7 +225,7 @@ test('−1 per die', () => {
 });
 
 test('effects that are on count, as on the sheet, and are listed for the DM', () => {
-  const c = toDMHelper(current, {}, { catalog }).character;
+  const c = toDMHelper(current, { catalog }).character;
   assert.equal(c.weapons['Dagger, thrown'].thac0, 12);   // Bladesong +1, Bless +1
   assert.deepEqual(c.effects, ['Bladesong: +1 hit', 'Bless (+1 hit) · from Atteroak, 6 rounds left']);
   // Defensive Spin: +3 AC
@@ -240,7 +240,7 @@ test('spell scenarios: attack rolls, cast time and damage at the caster\'s level
   const save = effectsOff(current);
   save.__spells = [...save.__spells, { id: 'spl-77', name: 'Shocking Grasp', level: 1, type: 'wizard', isMemorized: true }];
   save.__scenarios = [{ id: 'sc-9', name: 'Shocking Grasp', group: 'rogue', levelMode: 'sheet', attackType: 'spell', spellId: 'spl-77', spell: {}, rate: '1/1' }];
-  const r = toDMHelper(save, {}, { catalog });
+  const r = toDMHelper(save, { catalog });
   assert.deepEqual(r.character.actions, [{ name: 'Shocking Grasp', thac0: 18, speedMin: 0, speedMax: 10, speedDefault: 1 }]);   // touch: Str (13) adds nothing
   assert.deepEqual(r.damage['Jaque|Shocking Grasp'], { sm: '1d8+3', l: '1d8+3' });   // Blade 5 casts as a 3rd-level bard
 });
@@ -260,7 +260,7 @@ test('per-level spell dice stop growing at the spell\'s cap', () => {
   const save = { ...effectsOff(current), __classes: [{ id: 'c', name: 'Mage', group: 'wizard', level: '12' }] };
   save.__spells = [{ id: 'spl-80', name: 'Fireball', level: 3, type: 'wizard', isMemorized: true }];
   save.__scenarios = [{ id: 'sc-9', name: 'Fireball', group: 'wizard', levelMode: 'sheet', attackType: 'spell', spellId: 'spl-80', spell: {}, rate: '1/1' }];
-  assert.deepEqual(toDMHelper(save, {}, { catalog }).damage['Jaque|Fireball'], { sm: '10d6', l: '10d6' });
+  assert.deepEqual(toDMHelper(save, { catalog }).damage['Jaque|Fireball'], { sm: '10d6', l: '10d6' });
 });
 
 test('caster level is the level of the class that casts that kind of spell', () => {
@@ -298,17 +298,48 @@ test('the wiki import reads a spell\'s cap from its wording', () => {
   assert.equal(diceCap('2d4', 'up to a maximum of 10d6'), 0);           // not per-level dice
 });
 
-test('DM settings that aren\'t on the sheet are passed through; the DM\'s actions follow the spells', () => {
-  const r = toDMHelper(current, { parry: 2, legacy: true, actions: [{ name: 'Bow + spell', baseSpeed: 7 }] }, { catalog });
-  assert.equal(r.character.parry, 2);
-  assert.equal(r.character.legacy, true);
-  assert.deepEqual(r.character.actions.map(a => a.name), ['Charm Person', 'Bow + spell']);
+test('Turn Undead comes from the class: clerics at their level, paladins from 3rd as two levels lower', () => {
+  const turn = (name, group, level) => toDMHelper({ name: 'Anyone', __classes: [{ name, group, level }] }).character.turn;
+  assert.deepEqual(turn('Cleric', 'priest', '4'), { level: 4 });
+  assert.equal(turn('Paladin', 'warrior', '2'), undefined);
+  assert.deepEqual(turn('Paladin', 'warrior', '3'), { level: 1 });
+  assert.equal(turn('Druid', 'priest', '5'), undefined);
+  assert.equal(turn('Priest of Tempus', 'priest', '5'), undefined);    // a specialty priest: only at the DM's option
+  assert.equal(turn('Fighter', 'warrior', '5'), undefined);
+  // The best of a character's classes
+  assert.deepEqual(toDMHelper({ name: 'Anyone', __classes: [{ name: 'Bard', group: 'rogue', level: '6' }, { name: 'Paladin', group: 'warrior', level: '5' }] }).character.turn, { level: 3 });
+});
+
+test('Parry is for anyone: half the level, warriors one more', () => {
+  const parry = (group, level) => toDMHelper({ name: 'Anyone', __classes: [{ name: 'Any', group, level }] }).character.parry;
+  assert.equal(parry('rogue', '5'), 2);
+  assert.equal(parry('wizard', '4'), 2);
+  assert.equal(parry('warrior', '4'), 3);
+  assert.equal(parry('warrior', '1'), 1);
+  assert.equal(parry('rogue', '1'), undefined);                         // nothing to gain, so no checkbox
+  // A multi-class warrior counts as one, at the highest level
+  assert.equal(toDMHelper({ name: 'Anyone', __classes: [{ name: 'Paladin', group: 'warrior', level: '2' }, { name: 'Bard', group: 'rogue', level: '5' }] }).character.parry, 3);
+});
+
+test('own-race reactions read the race on the sheet, as the NPC list spells it', () => {
+  const race = v => toDMHelper({ name: 'Anyone', 'race-group': v, __classes: [] }).character.race;
+  assert.equal(race('half-elf'), 'Half-elf');
+  assert.equal(race('half-orc'), 'Half-orc');
+  assert.equal(race('dwarf'), 'Dwarf');
+  assert.equal(race(undefined), undefined);
+});
+
+test('the DM Helper page has no character name in it, so no rule can hang on one', () => {
+  const page = readFileSync(new URL('../tools/dm-helper.html', import.meta.url), 'utf8');
+  for (const name of ['Tig', 'Tighkar', 'Jaque', 'Rifiyr', 'Goroth', 'Nandun', 'Atteroak', 'Hanspeter', 'Borsun', 'Nebish']) {
+    assert.ok(!new RegExp('\b' + name + '\b').test(page), name);
+  }
 });
 
 test('a weapon with an unrevealed bonus is flagged, and its damage leaves the "?" out', () => {
   const save = effectsOff(current);
   save.__scenarios = [{ ...save.__scenarios[0], weaponId: 'wpn-3', name: 'Leprechaun' }];
-  const r = toDMHelper(save, {}, { catalog });
+  const r = toDMHelper(save, { catalog });
   assert.deepEqual(r.damage['Jaque|Leprechaun'], { sm: '1d4+2', l: '1d3+2' });
   assert.ok(r.review.some(m => /Leprechaun.*isn't revealed/.test(m)));
 });
@@ -351,13 +382,13 @@ test('exceptional Strength: "00" is 100, and past 100 is flagged', () => {
 });
 
 test('a finished sheet\'s scores are untouched, with nothing new to check', () => {
-  const r = toDMHelper(effectsOff(current), {}, { catalog });
+  const r = toDMHelper(effectsOff(current), { catalog });
   for (const k of ['str', 'dex', 'con', 'int', 'wis', 'cha']) assert.equal(r.character.stats[k], Number(current[k]));
   assert.ok(!r.review.some(m => /isn't filled in|outside 3–25|past 100/.test(m)));
 });
 
 test('the paste block runs and fills the DM Helper\'s tables', () => {
-  const text = formatDMHelperConfig([toDMHelper(current, {}, { catalog })]);
+  const text = formatDMHelperConfig([toDMHelper(current, { catalog })]);
   const tables = { CHARACTERS: {}, SKILLS: {}, THIEF: {}, SAVES: {}, DAMAGE: {}, CRIT_TYPES: {}, WEAPON_MATERIAL: {} };
   new Function(...Object.keys(tables), text)(...Object.values(tables));
   assert.equal(tables.CHARACTERS.Jaque.level, 5);
@@ -368,7 +399,7 @@ test('the paste block runs and fills the DM Helper\'s tables', () => {
 test('no separate magic bonus: a critical multiplies the whole damage', () => {
   const save = effectsOff(current);
   save.__weapons = save.__weapons.map(w => (w.id === 'wpn-1' ? { ...w, dmgSM: '1d4', dmgL: '1d3', dmgAdj: '+1' } : w));
-  const r = toDMHelper(save, {}, { catalog });
+  const r = toDMHelper(save, { catalog });
   assert.deepEqual(r.damage['Jaque|Dagger, melee'], { sm: '1d4+3', l: '1d3+3' });
   assert.deepEqual(r.material['Dagger, melee'], { m: 'metal' });
 });

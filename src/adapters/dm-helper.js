@@ -14,15 +14,13 @@
 //   - effects that are on (stances, Bless …) count, as they do on the sheet,
 //     and their AC bonus lowers the DM's AC for the character
 //
-// `dmSettings` carries the DM's own per-character choices that aren't on the
-// sheet: { legacy, initBonus, parry, parryTargeted, armorSpell, virtue, turn,
-// shield, actions }. They're copied onto the CHARACTERS entry as-is (the DM's
-// own actions come after the sheet's spells).
+// Rules read from the sheet, never from a name: Turn Undead and Parry from its
+// classes, own-race reactions from its race.
 // `options.catalog` is the campaign spell catalog, for spell scenarios.
 
 import { migrateV1toV2, guessCategory } from '../rules/migrate.js';
 import { baseTHAC0 } from '../rules/attacks.js';
-import { armorClass, savingThrows, thiefSkills, proficiencyTargets } from '../rules/character.js';
+import { armorClass, savingThrows, thiefSkills, proficiencyTargets, turningLevel, parryBonus } from '../rules/character.js';
 import {
   scenarioContext, scenarioType, scenarioRate, rateValue, scenarioWeapon, scenarioSpell,
   scenarioBreakdown, scenarioDamage, effectsACBonus, effectOption, modNum, signed, castSpeed, spellArrow,
@@ -80,7 +78,10 @@ function critType(dmgType) {
   return types.length > 1 ? types : types[0];
 }
 
-export function toDMHelper(save, dmSettings = {}, { catalog = null } = {}) {
+// The sheet's race → the DM Helper's list of NPC races, for own-race reactions
+const NPC_RACE = { human: 'Human', elf: 'Elf', 'half-elf': 'Half-elf', dwarf: 'Dwarf', halfling: 'Halfling', gnome: 'Gnome', 'half-orc': 'Half-orc' };
+
+export function toDMHelper(save, { catalog = null } = {}) {
   // Saves, skills and thief skills read the migrated sheet; attacks read the
   // save exactly as the sheet wrote it
   const sheet = (save.__version || 0) >= 2 ? save : migrateV1toV2(save);
@@ -182,7 +183,9 @@ export function toDMHelper(save, dmSettings = {}, { catalog = null } = {}) {
   const strPct = stats.str === 18 && pct ? strengthPercent(pct, review) : 0;
   const caster = (save.__spells || []).length > 0 || groups.some(([g]) => g === 'wizard' || g === 'priest');
   const quickness = (save.__nwps || []).some(p => /^quickness$/i.test((p.name || '').trim()));
-  const { actions: dmActions, ...dmRest } = dmSettings;
+  const turnLevel = turningLevel(save.__classes);
+  const parry = parryBonus(level, save.__classes);
+  const race = NPC_RACE[save['race-group']];
 
   const character = {
     level,
@@ -195,9 +198,11 @@ export function toDMHelper(save, dmSettings = {}, { catalog = null } = {}) {
     ...(quickness ? { quickness: { bonus: -2 } } : {}),
     weapons,
     ...(secondary.length ? { secondary } : {}),
-    ...(actions.length || dmActions ? { actions: [...actions, ...(dmActions || [])] } : {}),
+    ...(actions.length ? { actions } : {}),
     ...(effects.length ? { effects } : {}),
-    ...dmRest,
+    ...(turnLevel ? { turn: { level: turnLevel } } : {}),
+    ...(parry ? { parry } : {}),
+    ...(race ? { race } : {}),
   };
 
   const skills = Object.fromEntries(proficiencyTargets(sheet).map(p => {
@@ -228,7 +233,7 @@ export function formatDMHelperConfig(list) {
   const lines = [
     `/* ── Generated from character sheet saves: ${list.map(c => c.name).join(', ')} ──`,
     '   Paste just above:  const STORE_KEY=\'adnd-init-tracker\';',
-    '   Replaces these characters\' hand-typed entries; other characters are untouched. */',
+    '   Adds these characters to the party; other characters are untouched. */',
     assign('CHARACTERS', entries(c => [`  ${JSON.stringify(c.name)}: ${js(c.character)}`])),
     assign('SKILLS', entries(c => [`  ${JSON.stringify(c.name)}: ${js(c.skills)}`])),
     assign('THIEF', entries(c => Object.keys(c.thief).length ? [`  ${JSON.stringify(c.name)}: ${js(c.thief)}`] : [])),
