@@ -597,6 +597,11 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     body.is-view-only :is(.spell-dupes, .spell-grip, .spell-view) { display: none; }
     /* View only: no buttons to press (a toggle's state, like Main / Off, still shows) */
     body.is-view-only main.sheet :is(.ui-button, .ui-qty > button, .add-scenario-btn) { display: none !important; }
+    /* A name another character in the campaign is using */
+    .name-warning { margin: 4px 0 0; font-size: 14px; color: var(--color-danger-text); }
+    /* Changes that didn't reach the account: stays until they do */
+    .save-error { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 50; box-sizing: border-box; width: min(34rem, calc(100vw - 32px)); padding: 10px 14px; font-size: 14px; color: var(--color-text); border: 1px solid var(--color-danger) !important; }
+    .save-error[hidden], .name-warning[hidden] { display: none; }
     .view-note { margin: -1.5rem 0 1.5rem; padding: 10px 14px; font-size: 14px; color: var(--color-text); }
     .sheet-header {
       display: grid;
@@ -2879,6 +2884,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
             autocomplete="off"
             data-save="name"
           />
+          <p class="name-warning" id="name-warning" role="status" hidden></p>
         </div>
         <div class="header-player-row">
           <div class="header-meta-field">
@@ -6256,8 +6262,12 @@ function createCloudRoundSync({ client, campaignId, userId, characterIds = {} })
   // The character's row in the campaign, found by name (made if it's new)
   async function characterId(name) {
     if (ids[name]) return ids[name];
-    const { data } = await client.from('characters').select('id').eq('campaign_id', campaignId).eq('name', name).limit(1);
-    if (data && data[0]) return (ids[name] = data[0].id);
+    // Yours first; someone else's only if it's the one with that name
+    const { data } = await client.from('characters').select('id, owner_id').eq('campaign_id', campaignId).eq('name', name);
+    const rows = data || [];
+    const match = rows.find(r => r.owner_id === userId) || (rows.length === 1 ? rows[0] : null);
+    if (match) return (ids[name] = match.id);
+    if (rows.length) throw new Error(`More than one character is named ${name}. Open yours from Home.`);
     const { data: made, error } = await client.from('characters')
       .insert({ campaign_id: campaignId, owner_id: userId, name, data: { name } }).select('id').single();
     if (error) throw error;
@@ -6563,15 +6573,17 @@ async function setShares(client, session, id, before, after) {
 // Moves a character; into play, the one in play now goes to `others` (dead
 // or backup) first, as only one may be in play
 async function setStatus(client, mine, id, status, others = 'backup') {
-  if (status === 'play') {
-    const cur = mine.find(c => c.status === 'play' && c.id !== id);
-    if (cur) {
-      const r = await client.from('characters').update({ status: others }).eq('id', cur.id);
-      if (r.error) throw r.error;
-    }
+  const cur = status === 'play' ? mine.find(c => c.status === 'play' && c.id !== id) : null;
+  if (cur) {
+    const r = await client.from('characters').update({ status: others }).eq('id', cur.id);
+    if (r.error) throw r.error;
   }
   const { error } = await client.from('characters').update({ status }).eq('id', id);
-  if (error) throw error;
+  if (error) {
+    // Refused (its name is taken, say): the one in play goes back, so nobody's left out
+    if (cur) await client.from('characters').update({ status: 'play' }).eq('id', cur.id);
+    throw error;
+  }
 }
 
 // Deletes one of yours from Backups or Dead, for good (versions and all).
@@ -6589,12 +6601,25 @@ async function loadCharacter(client, id) {
   if (error) throw error;
   return data;
 }
+// A save the database's rules refuse changes nothing and says nothing, so ask for
+// the row back to know it went
 async function saveSheet(client, id, data) {
-  const { error } = await client.from('characters').update({ data }).eq('id', id);
+  const { data: rows, error } = await client.from('characters').update({ data }).eq('id', id).select('id');
   if (error) throw error;
+  if (!rows || !rows.length) throw new Error('That character couldn’t be saved.');
+}
+// The database refused because another character in play has this name
+// (supabase/migrations/20261104120000_one_name_in_play.sql)
+const isNameTaken = e => !!e && /characters_name_in_play/.test(`${e.message || ''} ${e.details || ''}`);
+// The campaign's characters, for spotting a name already in use
+async function campaignNames(client, campaignId) {
+  if (!campaignId) return [];
+  const { data, error } = await client.from('characters').select('id, name').eq('campaign_id', campaignId);
+  if (error) throw error;
+  return data || [];
 }
 
-return { STATUSES, STATUS_LABEL, summary, isBlank, fileName, listCharacters, createCharacter, isSheetSave, listParty, listMembers, createCharacterFor, assignCharacter, listShares, setShares, setStatus, deleteCharacter, loadCharacter, saveSheet };
+return { STATUSES, STATUS_LABEL, summary, isBlank, fileName, listCharacters, createCharacter, isSheetSave, listParty, listMembers, createCharacterFor, assignCharacter, listShares, setShares, setStatus, deleteCharacter, loadCharacter, saveSheet, isNameTaken, campaignNames };
 })();
 window.SheetSpells = { findSpell: __m["rules/spells"].findSpell };
 window.SheetScenarios = { modNum: __m["rules/scenarios"].modNum, signed: __m["rules/scenarios"].signed, ATTACK_TYPES: __m["rules/scenarios"].ATTACK_TYPES, RATE_OPTIONS: __m["rules/scenarios"].RATE_OPTIONS, scenarioRate: __m["rules/scenarios"].scenarioRate, scenarioType: __m["rules/scenarios"].scenarioType, scenarioSpell: __m["rules/scenarios"].scenarioSpell, scenarioAbility: __m["rules/scenarios"].scenarioAbility, activeEffectsFor: __m["rules/scenarios"].activeEffectsFor, scenarioDamage: __m["rules/scenarios"].scenarioDamage, scenarioBreakdown: __m["rules/scenarios"].scenarioBreakdown, normalizeEffects: __m["rules/scenarios"].normalizeEffects, effectOption: __m["rules/scenarios"].effectOption, isBowcaster: __m["rules/scenarios"].isBowcaster, spellCardStats: __m["rules/scenarios"].spellCardStats, saveNote: __m["rules/scenarios"].saveNote, saveShort: __m["rules/scenarios"].saveShort, casterLevel: __m["rules/scenarios"].casterLevel, canCastList: __m["rules/scenarios"].canCastList, spellArrow: __m["rules/scenarios"].spellArrow, usesAmmo: __m["rules/scenarios"].usesAmmo, weaponAmmoType: __m["rules/scenarios"].weaponAmmoType, ammoType: __m["rules/scenarios"].ammoType, ammoFor: __m["rules/scenarios"].ammoFor, scenarioAmmo: __m["rules/scenarios"].scenarioAmmo, AMMO_TYPES: __m["rules/scenarios"].AMMO_TYPES };
@@ -6605,7 +6630,7 @@ window.RoundUI = { STYLES: __m["ui/round-ui"].STYLES, ensureStyles: __m["ui/roun
 window.Cloud = { cloudClient: __m["cloud"].cloudClient, cloudSession: __m["cloud"].cloudSession, createCloudRoundSync: __m["cloud"].createCloudRoundSync, mountCloud: __m["cloud"].mountCloud };
 window.SheetRules = { PHB_WEAPONS: __m["rules/weapons"].PHB_WEAPONS };
 window.SheetGuess = { guessCategory: __m["rules/migrate"].guessCategory };
-window.Characters = { loadCharacter: __m["characters"].loadCharacter, saveSheet: __m["characters"].saveSheet, isBlank: __m["characters"].isBlank };
+window.Characters = { loadCharacter: __m["characters"].loadCharacter, saveSheet: __m["characters"].saveSheet, isBlank: __m["characters"].isBlank, isNameTaken: __m["characters"].isNameTaken, campaignNames: __m["characters"].campaignNames };
 window.Spin = { mountSpin: __m["ui/spin"].mountSpin };
 window.Theme = { mountThemeToggle: __m["ui/theme"].mountThemeToggle, currentTheme: __m["ui/theme"].currentTheme, setTheme: __m["ui/theme"].setTheme };
 })();
@@ -11157,11 +11182,48 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
     let cloudLoaded = false, cloudTimer = null;
     // Saves quietly: a save that doesn't reach the account is a conversation
     // at the table, and the account keeps the last 30 versions
+    // Changes that don't reach the account say so, and keep trying: a reload would
+    // bring back the account's copy without them. (Connection status otherwise stays
+    // off the sheet; this is only for work at risk.)
+    let saveFailing = false, cloudRetry = null;
+    function showSaveError(e) {
+      saveFailing = !!e;
+      const box = document.getElementById('save-error');
+      box.hidden = !e;
+      if (e) document.getElementById('save-indicator').textContent = '';
+      if (e) box.textContent = Characters.isNameTaken(e)
+        ? 'Not saved: another character in play already has this name. Change it to save your changes.'
+        : 'Couldn’t save your changes to your account. Keep this page open, and they’ll save when they can.';
+    }
+    function pushCloudSave() {
+      clearTimeout(cloudRetry);
+      Characters.saveSheet(Cloud.cloudClient(), CLOUD_ID, gatherData())
+        .then(() => showSaveError(null), e => { showSaveError(e); cloudRetry = setTimeout(pushCloudSave, 15000); });
+    }
+    window.addEventListener('beforeunload', ev => { if (saveFailing) ev.preventDefault(); });
     function cloudSave() {
       const client = window.Cloud && Cloud.cloudClient();
       if (!CLOUD_ID || !cloudLoaded || !client || !window.Characters || isViewOnly()) return;
       clearTimeout(cloudTimer);
-      cloudTimer = setTimeout(() => { Characters.saveSheet(client, CLOUD_ID, gatherData()).catch(() => {}); }, 600);
+      clearTimeout(cloudRetry);
+      cloudTimer = setTimeout(pushCloudSave, 600);
+    }
+    // A name another character in the campaign is using: said as it's typed
+    let otherCharacterNames = [];
+    function showNameWarning() {
+      const box = document.getElementById('name-warning');
+      const name = (document.getElementById('char-name')?.value || '').trim();
+      const taken = !!name && otherCharacterNames.includes(name.toLowerCase());
+      box.hidden = !taken;
+      if (taken) box.textContent = `Another character in this campaign is named ${name}. Choose a different name so the DM can tell them apart.`;
+    }
+    document.getElementById('char-name')?.addEventListener('input', showNameWarning);
+    async function loadOtherNames(client, sess) {
+      try {
+        const rows = await Characters.campaignNames(client, sess.campaignId);
+        otherCharacterNames = rows.filter(r => r.id !== CLOUD_ID).map(r => String(r.name || '').trim().toLowerCase());
+        showNameWarning();
+      } catch (e) { /* the warning is a courtesy: the database still guards who's in play */ }
     }
     // Signed in: the account's copy replaces this browser's (a character made
     // but not filled in yet keeps what's here, and takes its name)
@@ -11190,6 +11252,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         document.title = `${charName()} · Character Sheet (view only)`;
         return;
       }
+      loadOtherNames(client, sess);
       if (!Characters.isBlank(row.data)) {
         applyData(row.data);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(gatherData()));
@@ -11321,7 +11384,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 
       // Show a brief "Saved" confirmation
       const indicator = document.getElementById('save-indicator');
-      indicator.textContent = 'Saved';
+      indicator.textContent = saveFailing ? '' : 'Saved';
       clearTimeout(saveTimer);
       saveTimer = setTimeout(() => { indicator.textContent = ''; }, 2000);
     }
@@ -12228,5 +12291,6 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
     initSectionPanel('equipment-heading', 'equipment-panel', 'equipment-chevron', 'panel-equipment');
     initSectionPanel('items-heading',   'items-panel',   'items-chevron',   'panel-items');
   </script>
+  <div class="save-error ui-raised" id="save-error" role="alert" hidden></div>
 </body>
 </html>

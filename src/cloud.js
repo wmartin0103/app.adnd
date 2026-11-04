@@ -112,8 +112,12 @@ export function createCloudRoundSync({ client, campaignId, userId, characterIds 
   // The character's row in the campaign, found by name (made if it's new)
   async function characterId(name) {
     if (ids[name]) return ids[name];
-    const { data } = await client.from('characters').select('id').eq('campaign_id', campaignId).eq('name', name).limit(1);
-    if (data && data[0]) return (ids[name] = data[0].id);
+    // Yours first; someone else's only if it's the one with that name
+    const { data } = await client.from('characters').select('id, owner_id').eq('campaign_id', campaignId).eq('name', name);
+    const rows = data || [];
+    const match = rows.find(r => r.owner_id === userId) || (rows.length === 1 ? rows[0] : null);
+    if (match) return (ids[name] = match.id);
+    if (rows.length) throw new Error(`More than one character is named ${name}. Open yours from Home.`);
     const { data: made, error } = await client.from('characters')
       .insert({ campaign_id: campaignId, owner_id: userId, name, data: { name } }).select('id').single();
     if (error) throw error;

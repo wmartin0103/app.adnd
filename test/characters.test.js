@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { summary, isBlank, fileName, listCharacters, createCharacter, setStatus, loadCharacter, saveSheet, deleteCharacter, isSheetSave, listParty, listMembers, createCharacterFor, assignCharacter, listShares, setShares } from '../src/characters.js';
+import { summary, isBlank, fileName, listCharacters, createCharacter, setStatus, loadCharacter, saveSheet, deleteCharacter, isSheetSave, listParty, listMembers, createCharacterFor, assignCharacter, listShares, setShares, isNameTaken, campaignNames } from '../src/characters.js';
 
 // A stand-in for the Supabase client: the tables and calls used here, with
 // the database's one-in-play rule
@@ -182,4 +182,36 @@ test('characters: sharing adds and takes back only what changed', async () => {
   assert.deepEqual(t.character_editors, [{ character_id: 'j', user_id: 'u3', granted_by: 'u1' }, { character_id: 'o', user_id: 'u2', granted_by: 'u9' }, { character_id: 'j', user_id: 'u4', granted_by: 'u1' }]);
   // A removal the database refuses is an error, not silence
   await assert.rejects(setShares(c, me, 'j', ['u9'], []), /taken back/);
+});
+
+test('characters: a refused save is an error, not silence', async () => {
+  const t = { characters: [{ id: 'a', status: 'play' }] };
+  const c = fakeClient(t);
+  await saveSheet(c, 'a', sheet('Jaque'));
+  assert.equal(t.characters[0].data.name, 'Jaque');
+  await assert.rejects(saveSheet(c, 'nobody', sheet('Jaque')), /couldn.t be saved/);
+});
+
+test('characters: a name taken among those in play', async () => {
+  assert.equal(isNameTaken({ message: 'duplicate key value violates unique constraint "characters_name_in_play"' }), true);
+  assert.equal(isNameTaken({ message: 'duplicate key value violates unique constraint "characters_one_in_play"' }), false);
+  assert.equal(isNameTaken(null), false);
+  const t = { characters: [{ id: 'a', campaign_id: 'k', name: 'Rifiyr' }, { id: 'b', campaign_id: 'x', name: 'Tig' }] };
+  assert.deepEqual((await campaignNames(fakeClient(t), 'k')).map(r => r.name), ['Rifiyr']);
+  assert.deepEqual(await campaignNames(fakeClient(t), null), []);
+});
+
+test('characters: bringing one in that the database refuses puts the old one back', async () => {
+  const t = { characters: [{ id: 'cur', status: 'play' }, { id: 'new', status: 'backup' }] };
+  const base = fakeClient(t);
+  const refuse = { message: 'unique constraint "characters_name_in_play"' };
+  // Refuses only the move into play of the new one
+  const c = { from: table => {
+    const q = base.from(table), update = q.update.bind(q);
+    q.update = p => { update(p); q.eq = (col, v) => ({ then: (res, rej) => (v === 'new' && p.status === 'play' ? Promise.resolve({ error: refuse }) : (q.eq = undefined, base.from(table).update(p).eq(col, v))).then(res, rej) }); return q; };
+    return q;
+  } };
+  await assert.rejects(setStatus(c, t.characters, 'new', 'play'), e => /name_in_play/.test(e.message));
+  assert.equal(t.characters.find(x => x.id === 'cur').status, 'play');
+  assert.equal(t.characters.find(x => x.id === 'new').status, 'backup');
 });

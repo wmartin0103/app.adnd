@@ -42,6 +42,7 @@ declare
   v_user uuid;
   v_camp uuid;
   v_names text[];
+  v_matches int;
   ch text;
 begin
   v_role := lower(trim(v_role));
@@ -76,7 +77,10 @@ begin
   select coalesce(array_agg(trim(x)), '{}') into v_names
     from unnest(string_to_array(v_characters, ',')) as x where trim(x) <> '';
   foreach ch in array v_names loop
-    if exists (select 1 from public.characters where campaign_id = v_camp and name = ch) then
+    select count(*) into v_matches from public.characters where campaign_id = v_camp and name = ch;
+    if v_matches > 1 then
+      raise exception 'More than one character is named %. Rename or delete the extra one first, then run this again.', ch;
+    elsif v_matches = 1 then
       update public.characters set owner_id = v_user where campaign_id = v_camp and name = ch;
     else
       insert into public.characters (campaign_id, owner_id, name, data, status)
