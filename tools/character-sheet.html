@@ -9623,9 +9623,18 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         return text;
       }).catch(() => { delete spellDescCache[title]; return ''; }));
     }
-    // What the summary box shows: the player's own text, else the catalog's
+    // Wiki text lives only in this browser's cache (localStorage), never in the character's save
+    function spellWikiUrl(spl, e) { return [spl.url, e && e.link].find(u => wikiTitleFromUrl(u)); }
+    function cachedWikiText(spl, e) {
+      const title = wikiTitleFromUrl(spellWikiUrl(spl, e));
+      if (!title) return '';
+      try { return localStorage.getItem('adnd-spell-desc:' + title) || ''; } catch (err) { return ''; }
+    }
+    // What the summary box shows: the player's own words (saved), else the wiki text
+    // cached in this browser, else the catalog's short summary
     function spellSummaryText(spl, e) {
-      return spl.summary !== undefined ? spl.summary : ((e && e.summary) || '');
+      if (spl.summary !== undefined) return spl.summary;
+      return cachedWikiText(spl, e) || ((e && e.summary) || '');
     }
     // Moves a spellbook entry next to another one (drag and drop)
     function moveSpell(id, targetId, after) {
@@ -9678,23 +9687,29 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         view.hidden = false; ta.hidden = true; more.hidden = true;
         requestAnimationFrame(() => { more.hidden = view.classList.contains('is-open') ? false : view.scrollHeight <= view.clientHeight + 1; });
       };
-      const edit = () => { view.hidden = true; more.hidden = true; ta.hidden = false; ta.value = spellSummaryText(spl, e); grow(); ta.focus(); };
+      const edit = () => { view.hidden = true; more.hidden = true; ta.hidden = false; shown = spellSummaryText(spl, e); ta.value = shown; grow(); ta.focus(); };
       view.addEventListener('click', edit);
       view.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); edit(); } });
-      ta.addEventListener('input', () => { spl.summary = ta.value; grow(); });
-      ta.addEventListener('blur', () => { spl.summary = ta.value; showView(); saveToItems(); });
+      // Only the player's own edits are saved: text left as shown (wiki or catalog) stays out of the save
+      let shown = '';
+      ta.addEventListener('input', grow);
+      ta.addEventListener('blur', () => {
+        if (ta.value !== shown) { spl.summary = ta.value; saveToItems(); }
+        showView();
+      });
       wikiBtn.addEventListener('click', () => {
-        const url = [spl.url, e && e.link].find(u => wikiTitleFromUrl(u));
+        const url = spellWikiUrl(spl, e);
         if (!url) { status.textContent = 'No wiki link on this spell'; return; }
-        if (spl.summary && spl.summary.trim() && spl.summary !== ((e && e.summary) || '') && !confirm('Replace the summary you have with the wiki text?')) return;
+        if (spl.summary && spl.summary.trim() && !confirm('Replace the summary you wrote with the wiki text?')) return;
         wikiBtn.disabled = true; status.textContent = 'Loading…';
         fetchSpellDescription(url).then(text => {
           wikiBtn.disabled = false;
           if (!text) { status.textContent = "Couldn't reach the wiki"; return; }
           status.textContent = '';
-          spl.summary = text;
+          // fetchSpellDescription cached the text in this browser; the save keeps only the player's own words
+          if (spl.summary !== undefined) { delete spl.summary; saveToItems(); }
           view.classList.remove('is-open'); more.textContent = 'Show more';
-          showView(); saveToItems();
+          showView();
         });
       });
       showView();
