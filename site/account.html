@@ -525,6 +525,11 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     .btn.quiet:hover, .btn.quiet:focus-visible { color: var(--accent); border-color: var(--accent); background: none; }
     .btn.small { padding: 6px 10px; font-size: 0.65rem; }
     .row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+    .dice-options { display: grid; gap: 10px; }
+    label.dice-option { display: flex; flex-direction: row; align-items: flex-start; gap: 10px; cursor: pointer; font-family: var(--font-body); font-size: 1rem; letter-spacing: 0; text-transform: none; }
+    label.dice-option input { flex: none; margin: 4px 0 0; padding: 0; accent-color: var(--accent); }
+    .dice-option b { display: block; font-weight: 600; color: var(--ink); }
+    .dice-option small { display: block; font-size: 0.9rem; color: var(--ink-muted); }
     .row > label { flex: 1 1 12rem; }
     .hint { margin: 0; font-size: 0.95rem; color: var(--ink-muted); }
     .status { margin: 0; font-size: 0.95rem; min-height: 1.2em; }
@@ -561,6 +566,16 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
           <div class="row">
             <label>Name<input type="text" name="name" autocomplete="nickname" required maxlength="40"></label>
             <button class="btn ui-button is-primary" type="submit">Save</button>
+          </div>
+          <p class="status" role="status"></p>
+        </form>
+
+        <form class="card" id="dice-form" novalidate>
+          <h2>Dice</h2>
+          <p class="hint">How you roll on the character sheet.</p>
+          <div class="dice-options">
+            <label class="dice-option"><input type="radio" name="dice" value="assisted"><span><b>Assisted dice rolls</b><small>Roll buttons do it for you.</small></span></label>
+            <label class="dice-option"><input type="radio" name="dice" value="own"><span><b>Roll my own dice</b><small>The app says what to roll, and you type the result. It adds your bonuses.</small></span></label>
           </div>
           <p class="status" role="status"></p>
         </form>
@@ -803,10 +818,13 @@ const cloudSession = async (client = cloudClient()) => {
     const { data } = await client.auth.getSession();
     const user = data && data.session && data.session.user;
     if (!user) return null;
-    const [{ data: prof }, { data: rows }] = await Promise.all([
-      client.from('profiles').select('display_name, is_admin').eq('id', user.id).maybeSingle(),
+    const profile = cols => client.from('profiles').select(cols).eq('id', user.id).maybeSingle();
+    const [mine, { data: rows }] = await Promise.all([
+      profile('display_name, is_admin, dice_mode'),
       client.from('campaign_members').select('campaign_id, role, campaigns(name)').eq('user_id', user.id),
     ]);
+    // Before supabase/migrations/20261104180000_dice_mode.sql: no dice_mode yet
+    const { data: prof } = mine.error ? await profile('display_name, is_admin') : mine;
     const m = (rows || [])[0] || null;
     const role = m ? m.role : null;
     return {
@@ -814,6 +832,8 @@ const cloudSession = async (client = cloudClient()) => {
       campaignId: m ? m.campaign_id : null, campaignName: m && m.campaigns ? m.campaigns.name : '', role,
       // The role: player (has characters), dm (runs the game) or both
       isDM: role === 'dm' || role === 'both', isPlayer: role === 'player' || role === 'both',
+      // How they roll: 'assisted' (the app rolls) or 'own' (real dice, typed in)
+      diceMode: prof && prof.dice_mode === 'own' ? 'own' : 'assisted',
     };
   } catch (e) { return null; }
 };
@@ -1032,16 +1052,23 @@ async function setEmail(client, email) {
   const now = data && data.user && data.user.email;
   return { changed: !!now && now.toLowerCase() === email.toLowerCase() };
 }
+// How they roll: 'assisted' or 'own'. A refused save changes nothing and says
+// nothing, so ask for the row back to know it went.
+async function setDiceMode(client, userId, mode) {
+  const { data, error } = await client.from('profiles').update({ dice_mode: mode }).eq('id', userId).select('id');
+  if (error) throw error;
+  if (!data || !data.length) throw new Error('That couldn’t be saved.');
+}
 async function setDisplayName(client, userId, name) {
   const { error } = await client.from('profiles').update({ display_name: name }).eq('id', userId);
   if (error) throw error;
 }
 
-return { MIN_PASSWORD, passwordProblem, setPassword, setEmail, setDisplayName };
+return { MIN_PASSWORD, passwordProblem, setPassword, setEmail, setDiceMode, setDisplayName };
 })();
 window.Cloud = { cloudClient: __m["cloud"].cloudClient, cloudSession: __m["cloud"].cloudSession };
 window.Theme = { mountThemeToggle: __m["ui/theme"].mountThemeToggle, currentTheme: __m["ui/theme"].currentTheme, setTheme: __m["ui/theme"].setTheme };
-window.Account = { MIN_PASSWORD: __m["account"].MIN_PASSWORD, passwordProblem: __m["account"].passwordProblem, setPassword: __m["account"].setPassword, setEmail: __m["account"].setEmail, setDisplayName: __m["account"].setDisplayName };
+window.Account = { MIN_PASSWORD: __m["account"].MIN_PASSWORD, passwordProblem: __m["account"].passwordProblem, setPassword: __m["account"].setPassword, setEmail: __m["account"].setEmail, setDisplayName: __m["account"].setDisplayName, setDiceMode: __m["account"].setDiceMode };
 })();
 /* ── end sheet converter ── */
 
@@ -1066,6 +1093,7 @@ window.Account = { MIN_PASSWORD: __m["account"].MIN_PASSWORD, passwordProblem: _
       if (!session) return;
       if (session.newPassword) { $('choose').pw.focus(); return; }
       $('name-form').name.value = session.name;
+      $('dice-form').dice.value = session.diceMode;
       $('email-now').textContent = session.user.email;
     }
 
@@ -1081,6 +1109,13 @@ window.Account = { MIN_PASSWORD: __m["account"].MIN_PASSWORD, passwordProblem: _
     $('choose').addEventListener('submit', e => { e.preventDefault(); savePassword(e.target, () => { location.href = 'index.html'; }); });
     $('pw-form').addEventListener('submit', e => { e.preventDefault(); savePassword(e.target); });
 
+    // Saved as soon as it's chosen; if it can't be, the choice goes back
+    $('dice-form').addEventListener('change', async e => {
+      const form = e.currentTarget, mode = form.dice.value;
+      say(form, 'Saving…');
+      try { await Account.setDiceMode(client, session.user.id, mode); session.diceMode = mode; say(form, 'Saved.', 'good'); }
+      catch (err) { form.dice.value = session.diceMode; say(form, problem(err), 'bad'); }
+    });
     $('name-form').addEventListener('submit', async e => {
       e.preventDefault(); const form = e.target, name = form.name.value.trim();
       if (!name) { say(form, 'Enter a name.', 'bad'); form.name.focus(); return; }

@@ -33,10 +33,13 @@ export const cloudSession = async (client = cloudClient()) => {
     const { data } = await client.auth.getSession();
     const user = data && data.session && data.session.user;
     if (!user) return null;
-    const [{ data: prof }, { data: rows }] = await Promise.all([
-      client.from('profiles').select('display_name, is_admin').eq('id', user.id).maybeSingle(),
+    const profile = cols => client.from('profiles').select(cols).eq('id', user.id).maybeSingle();
+    const [mine, { data: rows }] = await Promise.all([
+      profile('display_name, is_admin, dice_mode'),
       client.from('campaign_members').select('campaign_id, role, campaigns(name)').eq('user_id', user.id),
     ]);
+    // Before supabase/migrations/20261104180000_dice_mode.sql: no dice_mode yet
+    const { data: prof } = mine.error ? await profile('display_name, is_admin') : mine;
     const m = (rows || [])[0] || null;
     const role = m ? m.role : null;
     return {
@@ -44,6 +47,8 @@ export const cloudSession = async (client = cloudClient()) => {
       campaignId: m ? m.campaign_id : null, campaignName: m && m.campaigns ? m.campaigns.name : '', role,
       // The role: player (has characters), dm (runs the game) or both
       isDM: role === 'dm' || role === 'both', isPlayer: role === 'player' || role === 'both',
+      // How they roll: 'assisted' (the app rolls) or 'own' (real dice, typed in)
+      diceMode: prof && prof.dice_mode === 'own' ? 'own' : 'assisted',
     };
   } catch (e) { return null; }
 };

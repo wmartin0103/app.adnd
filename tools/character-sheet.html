@@ -597,6 +597,13 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     body.is-view-only :is(.spell-dupes, .spell-grip, .spell-view) { display: none; }
     /* View only: no buttons to press (a toggle's state, like Main / Off, still shows) */
     body.is-view-only main.sheet :is(.ui-button, .ui-qty > button, .add-scenario-btn) { display: none !important; }
+    /* Real dice: what to roll, and a field for the result */
+    .typed-dice { flex-basis: 100%; display: grid; gap: 6px; justify-items: start; }
+    .typed-field { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+    .typed-prompt { font-size: 14px; color: var(--color-text-muted); }
+    .typed-prompt b { color: var(--color-accent-text); font-weight: 700; }
+    .typed-field input { width: 4rem; }
+    .typed-field input.is-bad { border-color: var(--color-danger); }
     /* A name another character in the campaign is using */
     .name-warning { margin: 4px 0 0; font-size: 14px; color: var(--color-danger-text); }
     /* Changes that didn't reach the account: stays until they do */
@@ -1317,10 +1324,11 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     .round-head { display: flex; align-items: baseline; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
     .round-status { font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 0.08em; color: var(--ink-muted); }
     .round-row { display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; align-items: flex-end; }
-    /* One control system: every control 2.1rem tall under a small label;
+    /* One control system: every control the standard field height under a small label;
        situational on/off choices live in a select with checkboxes */
-    .round { --ctl-h: 2.1rem; }
+    .round { --ctl-h: var(--ctl-md); }
     .round .round-pick .scenario-select, .round .round-btn { height: var(--ctl-h); box-sizing: border-box; }
+    .round .round-pick .typed-field input { --field-h: var(--ctl-h); --field-fs: var(--ctl-fs-md); --field-px: var(--ctl-pad-md); }
     .round .round-btn { display: inline-flex; align-items: center; padding-top: 0; padding-bottom: 0; }
     .round-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
     /* A select with checkboxes in its list */
@@ -4807,6 +4815,66 @@ function rollLine(ctx, line, rand = Math.random) {
   });
   return scoreRoll(ctx, line, { kind, heal: isHealing(ctx, line.sc), each });
 }
+// ── Rolling real dice ──
+// For someone who rolls their own (the account's Dice setting): what a line needs
+// them to roll, and a roll made from what they type. They type the dice alone, and
+// the bonuses are added here, as they are for a rolled one. Each field:
+//   { id: 'd20:0' | 'dmg:0' | 'spell:0', i, what, target, dice: '1d8', add: 2, min, max }
+function typedFields(ctx, line, typed = {}) {
+  const kind = lineKind(ctx, line.sc), targets = targetsOf(line), fields = [];
+  const heal = isHealing(ctx, line.sc);
+  const needsD20 = kind === 'attack';
+  if (needsD20) targets.forEach((target, i) => fields.push({ id: `d20:${i}`, i, what: 'to hit', target, dice: '1d20', add: 0, min: 1, max: 20 }));
+  targets.forEach((target, i) => {
+    if (kind === 'area' && i > 0) return;                              // one damage roll for everyone in it
+    if (needsD20 && (typed[`d20:${i}`] == null || typed[`d20:${i}`] === 1)) return;   // to hit first; a natural 1 has no damage
+    const d = lineDamage(ctx, line.sc, target), dmg = splitDice(d.expr), spell = splitDice(d.spell);
+    const who = kind === 'area' ? null : target;
+    if (dmg.sig) fields.push({ id: `dmg:${i}`, i, what: heal ? 'healing' : 'damage', target: who, dice: dmg.sig, add: dmg.flat, min: 0, max: null });
+    if (spell.sig) fields.push({ id: `spell:${i}`, i, what: 'spell', target: who, dice: spell.sig, add: spell.flat, min: 0, max: null });
+  });
+  return fields;
+}
+// What a field's text is worth: a whole number the die can show, else null
+function typedValue(field, text) {
+  const t = String(text ?? '').trim();
+  if (!/^\d+$/.test(t)) return null;
+  const n = parseInt(t, 10);
+  return n < field.min || (field.max != null && n > field.max) ? null : n;
+}
+// "Roll 1d8 (we'll add 2) · damage", kept apart so a bonus isn't counted twice
+function typedPrompt(field, many = false) {
+  const extra = field.add > 0 ? ` (we’ll add ${field.add})` : field.add < 0 ? ` (we’ll take off ${-field.add})` : '';
+  const who = many && field.target ? ` vs ${field.target.label}` : '';
+  return { dice: field.dice, text: `${extra} · ${field.what}${who}` };
+}
+// A line's roll from what's been typed: null until there's something to show. An
+// attack needs its d20s first; damage not typed yet is the state a changed size
+// leaves it in (dmgStale), so the DM's page treats it the same.
+function typedRoll(ctx, line, typed = {}, rand = Math.random) {
+  const kind = lineKind(ctx, line.sc), targets = targetsOf(line);
+  if (kind === 'attack' && targets.some((t, i) => typed[`d20:${i}`] == null)) return null;
+  if (kind !== 'attack' && !Object.keys(typed).some(k => typed[k] != null)) return null;
+  const dice = (target, i) => {
+    const d = lineDamage(ctx, line.sc, target), dmg = splitDice(d.expr).sig, spell = splitDice(d.spell).sig;
+    const a = typed[`dmg:${i}`], b = typed[`spell:${i}`];
+    return {
+      dmgSig: a != null ? dmg : '', dmgDice: a != null ? a : null, dmgFaces: null,
+      spellSig: b != null ? spell : '', spellDice: b != null ? b : null, spellFaces: null,
+    };
+  };
+  const shared = kind === 'area' ? dice(targets[0], 0) : null;
+  const each = targets.map((target, i) => {
+    const raw = { target, d20: null, pct: null };
+    if (kind === 'attack') {
+      raw.d20 = typed[`d20:${i}`];
+      raw.pct = raw.d20 === 20 || raw.d20 === 1 ? 1 + Math.floor(rand() * 100) : null;   // the DM's Good Hits and Bad Misses tables
+    }
+    if (raw.d20 === 1) return Object.assign(raw, { dmgSig: '', dmgDice: null, spellSig: '', spellDice: null });
+    return Object.assign(raw, shared || dice(target, i));
+  });
+  return scoreRoll(ctx, line, { kind, heal: isHealing(ctx, line.sc), typed: true, each });
+}
 // A roll with the sheet's current numbers: change an effect (Bless off) or the
 // conditions after rolling and the THAC0, AC hit and damage follow, until it's
 // sent to the DM (frozen). If the damage dice themselves changed (another
@@ -4836,7 +4904,7 @@ function scoreRoll(ctx, line, raw) {
       thac0: e.d20 != null ? thac0 : null, hitsAC: e.d20 != null && thac0 != null ? thac0 - e.d20 : null,
     };
   });
-  return { kind: raw.kind || lineKind(ctx, line.sc), heal: !!raw.heal, saveNote: lineSaveNote(ctx, line.sc), each: scored, dmgStale: scored.some(e => e.dmgStale) };
+  return { kind: raw.kind || lineKind(ctx, line.sc), heal: !!raw.heal, ...(raw.typed ? { typed: true } : {}), saveNote: lineSaveNote(ctx, line.sc), each: scored, dmgStale: scored.some(e => e.dmgStale) };
 }
 // Rolls the damage dice again where they changed, keeping the d20s (after dmgStale)
 function rerollDamage(ctx, line, raw, rand = Math.random) {
@@ -4878,7 +4946,7 @@ function lineSay(line) {
   return `${line.label}: ${parts.join('; ')}`;
 }
 
-return { ROUND_MODS, MOVE_MULTS, newRound, roundQueue, queueAttack, unqueueAttack, plainAttack, attackSpeed, roundLines, lineToHit, roundACPenalty, actOn, rollDice, lineTHAC0, splitDice, hasRoll, isHealing, lineKind, rollFaces, lineName, lineSaveNote, rollLine, scoreRoll, rerollDamage, judgeRoll, lineSay };
+return { ROUND_MODS, MOVE_MULTS, newRound, roundQueue, queueAttack, unqueueAttack, plainAttack, attackSpeed, roundLines, lineToHit, roundACPenalty, actOn, rollDice, lineTHAC0, splitDice, hasRoll, isHealing, lineKind, rollFaces, lineName, lineSaveNote, rollLine, typedFields, typedValue, typedPrompt, typedRoll, scoreRoll, rerollDamage, judgeRoll, lineSay };
 })();
 // ── ui/round-ui ──
 __m["ui/round-ui"] = (() => {
@@ -5012,7 +5080,7 @@ function hitRoll(line, fresh, onReroll, judge) {
     const facesText = (faces, flat) => !faces || !faces.length ? ''
       : faces.map((v, n) => (n ? (v < 0 ? `− ${-v}` : `+ ${v}`) : String(v))).join(' ') + (flat ? ` ${flat > 0 ? '+' : '−'} ${Math.abs(flat)}` : '');
     const dmgDice = facesText(r.dmgFaces, r.dmgFlat), spellDice = facesText(r.spellFaces, r.spellFlat);
-    const dmgSub = r.dmgStale ? 'the damage dice changed'
+    const dmgSub = r.dmgStale ? (roll.typed ? 'not rolled yet' : 'the damage dice changed')
       : esc([r.dmgExpr ? `${r.dmgExpr}${dmgDice ? `: ${dmgDice}` : ''}` : '', r.spell != null ? `+ spell ${r.spell}${spellDice ? ` (${spellDice})` : ''}` : ''].filter(Boolean).join(' '));
     const dmgCls = 'is-dmg' + (moved('dmg') ? ' is-updated' : '');
     const tag = whoText ? `<span class="hit-who">${esc(whoText)}</span>` : '';
@@ -6183,10 +6251,13 @@ const cloudSession = async (client = cloudClient()) => {
     const { data } = await client.auth.getSession();
     const user = data && data.session && data.session.user;
     if (!user) return null;
-    const [{ data: prof }, { data: rows }] = await Promise.all([
-      client.from('profiles').select('display_name, is_admin').eq('id', user.id).maybeSingle(),
+    const profile = cols => client.from('profiles').select(cols).eq('id', user.id).maybeSingle();
+    const [mine, { data: rows }] = await Promise.all([
+      profile('display_name, is_admin, dice_mode'),
       client.from('campaign_members').select('campaign_id, role, campaigns(name)').eq('user_id', user.id),
     ]);
+    // Before supabase/migrations/20261104180000_dice_mode.sql: no dice_mode yet
+    const { data: prof } = mine.error ? await profile('display_name, is_admin') : mine;
     const m = (rows || [])[0] || null;
     const role = m ? m.role : null;
     return {
@@ -6194,6 +6265,8 @@ const cloudSession = async (client = cloudClient()) => {
       campaignId: m ? m.campaign_id : null, campaignName: m && m.campaigns ? m.campaigns.name : '', role,
       // The role: player (has characters), dm (runs the game) or both
       isDM: role === 'dm' || role === 'both', isPlayer: role === 'player' || role === 'both',
+      // How they roll: 'assisted' (the app rolls) or 'own' (real dice, typed in)
+      diceMode: prof && prof.dice_mode === 'own' ? 'own' : 'assisted',
     };
   } catch (e) { return null; }
 };
@@ -6412,12 +6485,19 @@ async function setEmail(client, email) {
   const now = data && data.user && data.user.email;
   return { changed: !!now && now.toLowerCase() === email.toLowerCase() };
 }
+// How they roll: 'assisted' or 'own'. A refused save changes nothing and says
+// nothing, so ask for the row back to know it went.
+async function setDiceMode(client, userId, mode) {
+  const { data, error } = await client.from('profiles').update({ dice_mode: mode }).eq('id', userId).select('id');
+  if (error) throw error;
+  if (!data || !data.length) throw new Error('That couldn’t be saved.');
+}
 async function setDisplayName(client, userId, name) {
   const { error } = await client.from('profiles').update({ display_name: name }).eq('id', userId);
   if (error) throw error;
 }
 
-return { MIN_PASSWORD, passwordProblem, setPassword, setEmail, setDisplayName };
+return { MIN_PASSWORD, passwordProblem, setPassword, setEmail, setDiceMode, setDisplayName };
 })();
 // ── characters ──
 __m["characters"] = (() => {
@@ -6624,7 +6704,7 @@ return { STATUSES, STATUS_LABEL, summary, isBlank, fileName, listCharacters, cre
 window.SheetSpells = { findSpell: __m["rules/spells"].findSpell };
 window.SheetScenarios = { modNum: __m["rules/scenarios"].modNum, signed: __m["rules/scenarios"].signed, ATTACK_TYPES: __m["rules/scenarios"].ATTACK_TYPES, RATE_OPTIONS: __m["rules/scenarios"].RATE_OPTIONS, scenarioRate: __m["rules/scenarios"].scenarioRate, scenarioType: __m["rules/scenarios"].scenarioType, scenarioSpell: __m["rules/scenarios"].scenarioSpell, scenarioAbility: __m["rules/scenarios"].scenarioAbility, activeEffectsFor: __m["rules/scenarios"].activeEffectsFor, scenarioDamage: __m["rules/scenarios"].scenarioDamage, scenarioBreakdown: __m["rules/scenarios"].scenarioBreakdown, normalizeEffects: __m["rules/scenarios"].normalizeEffects, effectOption: __m["rules/scenarios"].effectOption, isBowcaster: __m["rules/scenarios"].isBowcaster, spellCardStats: __m["rules/scenarios"].spellCardStats, saveNote: __m["rules/scenarios"].saveNote, saveShort: __m["rules/scenarios"].saveShort, casterLevel: __m["rules/scenarios"].casterLevel, canCastList: __m["rules/scenarios"].canCastList, spellArrow: __m["rules/scenarios"].spellArrow, usesAmmo: __m["rules/scenarios"].usesAmmo, weaponAmmoType: __m["rules/scenarios"].weaponAmmoType, ammoType: __m["rules/scenarios"].ammoType, ammoFor: __m["rules/scenarios"].ammoFor, scenarioAmmo: __m["rules/scenarios"].scenarioAmmo, AMMO_TYPES: __m["rules/scenarios"].AMMO_TYPES };
 window.SheetKits = { HOUSE_KITS: __m["rules/kits"].HOUSE_KITS, classKit: __m["rules/kits"].classKit };
-window.SheetRound = { lineName: __m["rules/round"].lineName, ROUND_MODS: __m["rules/round"].ROUND_MODS, MOVE_MULTS: __m["rules/round"].MOVE_MULTS, newRound: __m["rules/round"].newRound, roundQueue: __m["rules/round"].roundQueue, queueAttack: __m["rules/round"].queueAttack, unqueueAttack: __m["rules/round"].unqueueAttack, roundLines: __m["rules/round"].roundLines, lineToHit: __m["rules/round"].lineToHit, roundACPenalty: __m["rules/round"].roundACPenalty, lineTHAC0: __m["rules/round"].lineTHAC0, judgeRoll: __m["rules/round"].judgeRoll, actOn: __m["rules/round"].actOn, attackSpeed: __m["rules/round"].attackSpeed, rollLine: __m["rules/round"].rollLine, scoreRoll: __m["rules/round"].scoreRoll, rerollDamage: __m["rules/round"].rerollDamage, lineKind: __m["rules/round"].lineKind, hasRoll: __m["rules/round"].hasRoll, isHealing: __m["rules/round"].isHealing, lineSay: __m["rules/round"].lineSay };
+window.SheetRound = { typedFields: __m["rules/round"].typedFields, typedValue: __m["rules/round"].typedValue, typedPrompt: __m["rules/round"].typedPrompt, typedRoll: __m["rules/round"].typedRoll, lineName: __m["rules/round"].lineName, ROUND_MODS: __m["rules/round"].ROUND_MODS, MOVE_MULTS: __m["rules/round"].MOVE_MULTS, newRound: __m["rules/round"].newRound, roundQueue: __m["rules/round"].roundQueue, queueAttack: __m["rules/round"].queueAttack, unqueueAttack: __m["rules/round"].unqueueAttack, roundLines: __m["rules/round"].roundLines, lineToHit: __m["rules/round"].lineToHit, roundACPenalty: __m["rules/round"].roundACPenalty, lineTHAC0: __m["rules/round"].lineTHAC0, judgeRoll: __m["rules/round"].judgeRoll, actOn: __m["rules/round"].actOn, attackSpeed: __m["rules/round"].attackSpeed, rollLine: __m["rules/round"].rollLine, scoreRoll: __m["rules/round"].scoreRoll, rerollDamage: __m["rules/round"].rerollDamage, lineKind: __m["rules/round"].lineKind, hasRoll: __m["rules/round"].hasRoll, isHealing: __m["rules/round"].isHealing, lineSay: __m["rules/round"].lineSay };
 window.RoundSync = { createRoundSync: __m["round-sync"].createRoundSync };
 window.RoundUI = { STYLES: __m["ui/round-ui"].STYLES, ensureStyles: __m["ui/round-ui"].ensureStyles, multi: __m["ui/round-ui"].multi, readField: __m["ui/round-ui"].readField, hitRoll: __m["ui/round-ui"].hitRoll, D20_SVG: __m["ui/round-ui"].D20_SVG, ROLL_ICON: __m["ui/round-ui"].ROLL_ICON, DUPLICATE_ICON: __m["ui/round-ui"].DUPLICATE_ICON };
 window.Cloud = { cloudClient: __m["cloud"].cloudClient, cloudSession: __m["cloud"].cloudSession, createCloudRoundSync: __m["cloud"].createCloudRoundSync, mountCloud: __m["cloud"].mountCloud };
@@ -8469,6 +8549,46 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       renderScenarios();
       cloudLoad(s);
     });
+    // Rolls real dice and types the result (the account's Dice setting)
+    const rollsOwnDice = () => !!(cloudSess && cloudSess.diceMode === 'own');
+    // A field for one roll. Tab and Enter carry on to the next field after the page
+    // redraws; an impossible number is marked and changes nothing.
+    let typedNext = null;
+    function typedField(field, prompt, value, onValue, key) {
+      const label = document.createElement('label'); label.className = 'typed-field';
+      const say = document.createElement('span'); say.className = 'typed-prompt';
+      const dice = document.createElement('b'); dice.textContent = prompt.dice;
+      say.append('Roll ', dice, prompt.text);
+      const input = document.createElement('input');
+      input.type = 'text'; input.inputMode = 'numeric'; input.className = 'size-sm'; input.autocomplete = 'off';
+      input.value = value == null ? '' : value;
+      input.dataset.typed = key;
+      input.setAttribute('aria-label', `${prompt.dice}${prompt.text}`);
+      input.addEventListener('keydown', ev => {
+        if ((ev.key === 'Tab' && !ev.shiftKey) || ev.key === 'Enter') {
+          const all = [...document.querySelectorAll('[data-typed]')];
+          typedNext = { from: key, after: all.slice(all.indexOf(input) + 1).map(x => x.dataset.typed) };
+          if (ev.key === 'Enter') { ev.preventDefault(); input.blur(); }
+        }
+      });
+      input.addEventListener('change', () => {
+        const text = input.value.trim();
+        const v = SheetRound.typedValue(field, text);
+        const bad = !!text && v == null;
+        input.classList.toggle('is-bad', bad);
+        input.setAttribute('aria-invalid', String(bad));
+        if (bad) { typedNext = null; return; }
+        onValue(v);
+        // The page has redrawn: on to the next field that's there, or a new one
+        const wanted = typedNext; typedNext = null;
+        if (!wanted) return;
+        const here = [...document.querySelectorAll('[data-typed]')];
+        const at = here.findIndex(x => x.dataset.typed === wanted.from);
+        (here[at + 1] || here.find(x => wanted.after.includes(x.dataset.typed)))?.focus();
+      });
+      label.append(say, input);
+      return label;
+    }
     const charName = () => (document.getElementById('char-name')?.value || '').trim() || 'Unnamed';
     const roundState = () => { const s = roundSync(); return s ? s.state() : { round: 1, foes: [], records: {} }; };
     const dmLive = () => !!roundState().dmAt;
@@ -8617,7 +8737,10 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       const il = document.createElement('span'); il.className = 'scenario-field-label'; il.textContent = 'Initiative';
       init.appendChild(il);
       const initRow = document.createElement('div'); initRow.className = 'round-chips';
-      if (rec.init.roll == null) {
+      if (rollsOwnDice()) {
+        const f = { id: 'init', dice: '1d10', min: 1, max: 10 };
+        initRow.append(typedField(f, { dice: '1d10', text: '' }, rec.init.roll, v => { rec.init.roll = v; saveRound(rec); }, 'initiative'));
+      } else if (rec.init.roll == null) {
         const roll = document.createElement('button'); roll.type = 'button'; roll.className = 'round-btn ui-button is-primary'; roll.innerHTML = `${ROLL_ICON}<span>Roll d10</span>`;
         roll.addEventListener('click', () => { rec.init.roll = 1 + Math.floor(Math.random() * 10); saveRound(rec); });
         initRow.append(roll);
@@ -8779,7 +8902,21 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
           s.textContent = thac0 != null ? `THAC0 ${thac0}` : heal ? 'Healing' : saveText;
           summary.appendChild(s);
         } else row.appendChild(n);
-        if (!line.roll && canRoll) {
+        if (canRoll && rollsOwnDice()) {
+          // Real dice: a field for each thing to roll, and the result as it fills in
+          const typed = own(line.key).typed || {};
+          const fields = SheetRound.typedFields(ctx, line, typed);
+          const many = (line.set.targets || []).length > 1;
+          const box = document.createElement('div'); box.className = 'typed-dice';
+          fields.forEach(f => box.appendChild(typedField(f, SheetRound.typedPrompt(f, many), typed[f.id], v => {
+            const next = { ...typed };
+            if (v == null) delete next[f.id]; else next[f.id] = v;
+            rec.lines[line.key] = { ...own(line.key), ...line.set, target: null, typed: next, roll: SheetRound.typedRoll(ctx, line, next) };
+            saveRound(rec, false, line.key);
+          }, `${line.key}:${f.id}`)));
+          row.appendChild(box);
+          if (line.roll) row.appendChild(hitRoll(line, false, null));
+        } else if (!line.roll && canRoll) {
           const b = document.createElement('button'); b.type = 'button'; b.className = 'round-btn roll-hit-btn ui-button is-primary';
           b.innerHTML = `${ROLL_ICON}<span>${thac0 != null ? 'Roll to hit' : 'Roll'}</span>`;
           b.addEventListener('click', () => {

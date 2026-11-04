@@ -23,6 +23,13 @@ export async function setEmail(client, email) {
   const now = data && data.user && data.user.email;
   return { changed: !!now && now.toLowerCase() === email.toLowerCase() };
 }
+// How they roll: 'assisted' or 'own'. A refused save changes nothing and says
+// nothing, so ask for the row back to know it went.
+export async function setDiceMode(client, userId, mode) {
+  const { data, error } = await client.from('profiles').update({ dice_mode: mode }).eq('id', userId).select('id');
+  if (error) throw error;
+  if (!data || !data.length) throw new Error('That couldn’t be saved.');
+}
 export async function setDisplayName(client, userId, name) {
   const { error } = await client.from('profiles').update({ display_name: name }).eq('id', userId);
   if (error) throw error;

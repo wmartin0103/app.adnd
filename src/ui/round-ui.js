@@ -128,7 +128,7 @@ export function hitRoll(line, fresh, onReroll, judge) {
     const facesText = (faces, flat) => !faces || !faces.length ? ''
       : faces.map((v, n) => (n ? (v < 0 ? `− ${-v}` : `+ ${v}`) : String(v))).join(' ') + (flat ? ` ${flat > 0 ? '+' : '−'} ${Math.abs(flat)}` : '');
     const dmgDice = facesText(r.dmgFaces, r.dmgFlat), spellDice = facesText(r.spellFaces, r.spellFlat);
-    const dmgSub = r.dmgStale ? 'the damage dice changed'
+    const dmgSub = r.dmgStale ? (roll.typed ? 'not rolled yet' : 'the damage dice changed')
       : esc([r.dmgExpr ? `${r.dmgExpr}${dmgDice ? `: ${dmgDice}` : ''}` : '', r.spell != null ? `+ spell ${r.spell}${spellDice ? ` (${spellDice})` : ''}` : ''].filter(Boolean).join(' '));
     const dmgCls = 'is-dmg' + (moved('dmg') ? ' is-updated' : '');
     const tag = whoText ? `<span class="hit-who">${esc(whoText)}</span>` : '';
