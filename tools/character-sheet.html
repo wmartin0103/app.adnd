@@ -10074,18 +10074,19 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       if (t.offsetParent) t.style.height = t.scrollHeight + 'px';
     }
     // Dragging a Spellbook card by its grip: the card lifts out and a card-sized slot
-    // marks where it will land, the other cards moving aside as it goes. The slot moves
-    // once the pointer is past a card's middle, so it can't flicker back and forth:
-    // across a card in the slot's row, else down it.
+    // marks where it will land, the other cards moving aside as it goes. The slot takes
+    // a card's place as soon as the pointer enters that card, once per card entered, so
+    // it can't flicker back and forth while the pointer stays on it.
     function spellDragging(grid) {
       const slot = document.createElement('div');
       slot.className = 'spell-drop-slot';
       slot.setAttribute('aria-hidden', 'true');
-      let card = null;
+      let card = null, lastOver = null;
       grid.addEventListener('dragstart', ev => {
         const grip = ev.target.closest && ev.target.closest('.spell-grip');
         if (!grip) return;
         card = grip.closest('.spell-card');
+        lastOver = null;
         ev.dataTransfer.effectAllowed = 'move';
         ev.dataTransfer.setData('text/plain', card.dataset.spellId);
         ev.dataTransfer.setDragImage(card, 16, 16);
@@ -10100,13 +10101,12 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
         // By the pointer's position: the event's target can be the grid itself
         const inCard = c => { const b = c.getBoundingClientRect(); return ev.clientX >= b.left && ev.clientX <= b.right && ev.clientY >= b.top && ev.clientY <= b.bottom; };
         const over = [...grid.querySelectorAll('.spell-card')].find(c => c !== card && inCard(c));
+        if (over === lastOver) return;
+        lastOver = over || null;
         if (!over) return;
-        const kids = [...grid.children], r = over.getBoundingClientRect(), sl = slot.getBoundingClientRect();
-        const sameRow = sl.top < r.bottom && r.top < sl.bottom;
-        const past = sameRow ? ev.clientX > r.left + r.width / 2 : ev.clientY > r.top + r.height / 2;
-        const slotBefore = kids.indexOf(slot) < kids.indexOf(over);
-        if (slotBefore && past) over.after(slot);
-        else if (!slotBefore && !past) over.before(slot);
+        const kids = [...grid.children];
+        if (kids.indexOf(slot) < kids.indexOf(over)) over.after(slot);
+        else over.before(slot);
       };
       grid.addEventListener('dragover', ev => {
         if (!card) return;
