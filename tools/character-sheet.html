@@ -4570,7 +4570,7 @@ const {scenarioType, scenarioSpell, scenarioWeapon, spellArrow, castSpeed, scena
 // record"), so they always agree; it's also what the sync sends.
 //
 //   {
-//     character: 'Rifiyr', round: 3,
+//     character: 'A character', round: 3,
 //     init: { roll: 7, adj: -2 },          // the d10, rolled once a round; adj: anything else that moves it (Quickness rolled at the table)
 //     you: { moveFirst, moveMult: '1', setVsCharge },
 //     queue: [{ qid: 'q1', scenarioId: 'sc-1', extra: false }, ...],   // the attacks added this round, in order
@@ -5594,7 +5594,29 @@ function hpState(current) {
   return hp === 0 ? 'Unconscious' : 'Dying';
 }
 
-return { armorClass, stoutSaveBonus, savingThrows, THIEF_SKILLS, thiefSkills, skillName, proficiencyTargets, HP_FLOOR, hpState };
+// ── Turning undead (PHB) ──
+// The level a character turns at: a cleric at their own level; a paladin from
+// 3rd level, as a cleric two levels lower. Druids can't turn, and specialty
+// priests only at the DM's option, so a priest class named anything else doesn't
+// count. 0 for a character who can't turn.
+function turningLevel(classes) {
+  const levels = (classes || []).map(c => {
+    const level = parseInt(c.level, 10) || 0, name = String(c.name || '').trim();
+    if (/\bpaladin\b/i.test(name)) return level >= 3 ? level - 2 : 0;
+    return /\bcleric\b/i.test(name) || /^priest$/i.test(name) ? level : 0;
+  });
+  return Math.max(0, ...levels);
+}
+
+// ── Parrying (PHB/DMG optional rule) ──
+// The AC bonus for parrying: half the character's level, rounded down, and
+// warriors 1 more.
+function parryBonus(level, classes) {
+  const warrior = (classes || []).some(c => c.group === 'warrior');
+  return Math.floor((parseInt(level, 10) || 0) / 2) + (warrior ? 1 : 0);
+}
+
+return { armorClass, stoutSaveBonus, savingThrows, THIEF_SKILLS, thiefSkills, skillName, proficiencyTargets, HP_FLOOR, hpState, turningLevel, parryBonus };
 })();
 // ── rules/migrate ──
 __m["rules/migrate"] = (() => {
@@ -5986,7 +6008,7 @@ return { SITUATIONS, baseTHAC0, weaponModes, attackRate, attackFor };
 __m["adapters/dm-helper"] = (() => {
 const {migrateV1toV2, guessCategory} = __m["rules/migrate"];
 const {baseTHAC0} = __m["rules/attacks"];
-const {armorClass, savingThrows, thiefSkills, proficiencyTargets} = __m["rules/character"];
+const {armorClass, savingThrows, thiefSkills, proficiencyTargets, turningLevel, parryBonus} = __m["rules/character"];
 const {scenarioContext, scenarioType, scenarioRate, rateValue, scenarioWeapon, scenarioSpell,
   scenarioBreakdown, scenarioDamage, effectsACBonus, effectOption, modNum, signed, castSpeed, spellArrow,} = __m["rules/scenarios"];
 // ── SHEET → DM HELPER ───────────────────────────────────────────
@@ -6005,10 +6027,8 @@ const {scenarioContext, scenarioType, scenarioRate, rateValue, scenarioWeapon, s
 //   - effects that are on (stances, Bless …) count, as they do on the sheet,
 //     and their AC bonus lowers the DM's AC for the character
 //
-// `dmSettings` carries the DM's own per-character choices that aren't on the
-// sheet: { legacy, initBonus, parry, parryTargeted, armorSpell, virtue, turn,
-// shield, actions }. They're copied onto the CHARACTERS entry as-is (the DM's
-// own actions come after the sheet's spells).
+// Rules read from the sheet, never from a name: Turn Undead and Parry from its
+// classes, own-race reactions from its race.
 // `options.catalog` is the campaign spell catalog, for spell scenarios.
 
 
@@ -6067,7 +6087,10 @@ function critType(dmgType) {
   return types.length > 1 ? types : types[0];
 }
 
-function toDMHelper(save, dmSettings = {}, { catalog = null } = {}) {
+// The sheet's race → the DM Helper's list of NPC races, for own-race reactions
+const NPC_RACE = { human: 'Human', elf: 'Elf', 'half-elf': 'Half-elf', dwarf: 'Dwarf', halfling: 'Halfling', gnome: 'Gnome', 'half-orc': 'Half-orc' };
+
+function toDMHelper(save, { catalog = null } = {}) {
   // Saves, skills and thief skills read the migrated sheet; attacks read the
   // save exactly as the sheet wrote it
   const sheet = (save.__version || 0) >= 2 ? save : migrateV1toV2(save);
@@ -6169,7 +6192,9 @@ function toDMHelper(save, dmSettings = {}, { catalog = null } = {}) {
   const strPct = stats.str === 18 && pct ? strengthPercent(pct, review) : 0;
   const caster = (save.__spells || []).length > 0 || groups.some(([g]) => g === 'wizard' || g === 'priest');
   const quickness = (save.__nwps || []).some(p => /^quickness$/i.test((p.name || '').trim()));
-  const { actions: dmActions, ...dmRest } = dmSettings;
+  const turnLevel = turningLevel(save.__classes);
+  const parry = parryBonus(level, save.__classes);
+  const race = NPC_RACE[save['race-group']];
 
   const character = {
     level,
@@ -6182,9 +6207,11 @@ function toDMHelper(save, dmSettings = {}, { catalog = null } = {}) {
     ...(quickness ? { quickness: { bonus: -2 } } : {}),
     weapons,
     ...(secondary.length ? { secondary } : {}),
-    ...(actions.length || dmActions ? { actions: [...actions, ...(dmActions || [])] } : {}),
+    ...(actions.length ? { actions } : {}),
     ...(effects.length ? { effects } : {}),
-    ...dmRest,
+    ...(turnLevel ? { turn: { level: turnLevel } } : {}),
+    ...(parry ? { parry } : {}),
+    ...(race ? { race } : {}),
   };
 
   const skills = Object.fromEntries(proficiencyTargets(sheet).map(p => {
@@ -6215,7 +6242,7 @@ function formatDMHelperConfig(list) {
   const lines = [
     `/* ── Generated from character sheet saves: ${list.map(c => c.name).join(', ')} ──`,
     '   Paste just above:  const STORE_KEY=\'adnd-init-tracker\';',
-    '   Replaces these characters\' hand-typed entries; other characters are untouched. */',
+    '   Adds these characters to the party; other characters are untouched. */',
     assign('CHARACTERS', entries(c => [`  ${JSON.stringify(c.name)}: ${js(c.character)}`])),
     assign('SKILLS', entries(c => [`  ${JSON.stringify(c.name)}: ${js(c.skills)}`])),
     assign('THIEF', entries(c => Object.keys(c.thief).length ? [`  ${JSON.stringify(c.name)}: ${js(c.thief)}`] : [])),

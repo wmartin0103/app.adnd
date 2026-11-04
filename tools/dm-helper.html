@@ -555,7 +555,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .ldsave-roll{display:inline-flex;align-items:center;gap:6px}
   .ldsave-roll svg{width:1.1em;height:1.1em;color:var(--color-accent-text)}
   .ocard .lightdetail .ldsave-roll b{font:inherit;font-weight:700;letter-spacing:0;text-transform:none;color:inherit}
-  .parrytgt,.acmod{font-size:13px;padding:1px 3px;width:auto}
+  .acmod{font-size:13px;padding:1px 3px;width:auto}
   .char.synced .cfields,.char.synced .mods,.char.synced table.acts,.char.synced .moveafter{display:none !important}
   .syncpanel{padding:8px 12px 10px;font-family:var(--sans);font-size:.85rem;display:grid;gap:4px}
   .syncpanel .sphead{color:var(--muted)}
@@ -659,7 +659,6 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   #lcOut{padding:0 14px 12px;font-size:.9rem;line-height:1.5}
   .reroll.small.quick{padding:2px 8px;font-size:.72rem}
   .reroll.small.quick.rm{border-color:var(--rust);color:var(--rust)}
-  .apsave{font-size:.72rem;padding:1px 2px}
   .reroll.small.quick.ok{border-color:var(--verdigris)!important;color:var(--verdigris)!important}
   .reroll.small.quick.bad{border-color:var(--rust)!important;color:var(--rust)!important;font-weight:700}
   .addrow.inner{padding:6px 14px 10px}
@@ -751,9 +750,10 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   td.dmg.na .n{color:var(--muted);font-weight:400}
   td.dmg.critdmg .n{color:var(--verdigris)}
   .cfields .tsize{width:64px;text-align:center}
-  .acw select.virtue{margin-left:4px}
   tr.turnres td{padding:4px 14px 8px 52px;border-bottom:1px solid var(--edge)}
-  .turnwrap{display:flex;flex-wrap:wrap;gap:4px 6px}
+  .turnwrap{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px}
+  .turnwrap>span:not(.typed-field){display:contents}
+  .ocard td.name>.acw.chk,.ocard td.name>.quick{margin-left:10px}
   .turnchip{font-size:.72rem;color:var(--muted);border:1px solid var(--edge);border-radius:3px;padding:1px 6px;white-space:nowrap;cursor:default}
   .turnchip b{font-family:var(--serif);font-weight:700;margin-left:2px}
   .turnchip.pass{color:var(--verdigris);border-color:color-mix(in oklab, var(--verdigris) 50%, transparent)}
@@ -800,7 +800,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .groupcheck #rollProfs,.groupcheck #rollSavesAll{margin-left:auto}
   .rxpickers{flex-wrap:nowrap;margin-bottom:6px}
   .rxpickers .gclabel select{min-width:0}
-  .rxpickers #rxStance{width:130px} .rxpickers #rxRep{width:80px} .rxpickers #rxRace{width:130px} .rxpickers #rxOcc{width:160px} .rxpickers #rxCulture{width:95px}
+  .rxpickers #rxStance{width:130px} .rxpickers #rxRep{width:80px} .rxpickers #rxRace{width:130px}
   .gcresults{margin-bottom:14px}
   .gcresults table{margin:0}
   .gctable td.name{font-family:var(--serif)}
@@ -1064,6 +1064,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   </header>
 
   <div id="dmArea">
+  <div class="partynote" id="noParty" role="status" hidden><span id="noPartyText"></span></div>
   <div class="partynote" id="partyNote" role="status" hidden><span id="partyNoteText"></span> <button class="reroll ui-button is-secondary size-sm" type="button" id="partyReload">Reload</button></div>
   <nav class="tabs ui-pagetabs">
     <button class="tab active" data-panel="combat">Initiative</button>
@@ -1167,12 +1168,6 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       <div class="line">
         <label class="gclabel">NPC race
           <select id="rxRace"></select>
-        </label>
-        <label class="gclabel">Occupation
-          <select id="rxOcc"></select>
-        </label>
-        <label class="gclabel">Culture
-          <select id="rxCulture" class="as-tabs"><option value="own">Own</option><option value="foreign">Foreign</option></select>
         </label>
       </div>
       <div class="line">
@@ -2459,7 +2454,7 @@ const {scenarioType, scenarioSpell, scenarioWeapon, spellArrow, castSpeed, scena
 // record"), so they always agree; it's also what the sync sends.
 //
 //   {
-//     character: 'Rifiyr', round: 3,
+//     character: 'A character', round: 3,
 //     init: { roll: 7, adj: -2 },          // the d10, rolled once a round; adj: anything else that moves it (Quickness rolled at the table)
 //     you: { moveFirst, moveMult: '1', setVsCharge },
 //     queue: [{ qid: 'q1', scenarioId: 'sc-1', extra: false }, ...],   // the attacks added this round, in order
@@ -3483,7 +3478,29 @@ function hpState(current) {
   return hp === 0 ? 'Unconscious' : 'Dying';
 }
 
-return { armorClass, stoutSaveBonus, savingThrows, THIEF_SKILLS, thiefSkills, skillName, proficiencyTargets, HP_FLOOR, hpState };
+// ── Turning undead (PHB) ──
+// The level a character turns at: a cleric at their own level; a paladin from
+// 3rd level, as a cleric two levels lower. Druids can't turn, and specialty
+// priests only at the DM's option, so a priest class named anything else doesn't
+// count. 0 for a character who can't turn.
+function turningLevel(classes) {
+  const levels = (classes || []).map(c => {
+    const level = parseInt(c.level, 10) || 0, name = String(c.name || '').trim();
+    if (/\bpaladin\b/i.test(name)) return level >= 3 ? level - 2 : 0;
+    return /\bcleric\b/i.test(name) || /^priest$/i.test(name) ? level : 0;
+  });
+  return Math.max(0, ...levels);
+}
+
+// ── Parrying (PHB/DMG optional rule) ──
+// The AC bonus for parrying: half the character's level, rounded down, and
+// warriors 1 more.
+function parryBonus(level, classes) {
+  const warrior = (classes || []).some(c => c.group === 'warrior');
+  return Math.floor((parseInt(level, 10) || 0) / 2) + (warrior ? 1 : 0);
+}
+
+return { armorClass, stoutSaveBonus, savingThrows, THIEF_SKILLS, thiefSkills, skillName, proficiencyTargets, HP_FLOOR, hpState, turningLevel, parryBonus };
 })();
 // ── rules/migrate ──
 __m["rules/migrate"] = (() => {
@@ -3875,7 +3892,7 @@ return { SITUATIONS, baseTHAC0, weaponModes, attackRate, attackFor };
 __m["adapters/dm-helper"] = (() => {
 const {migrateV1toV2, guessCategory} = __m["rules/migrate"];
 const {baseTHAC0} = __m["rules/attacks"];
-const {armorClass, savingThrows, thiefSkills, proficiencyTargets} = __m["rules/character"];
+const {armorClass, savingThrows, thiefSkills, proficiencyTargets, turningLevel, parryBonus} = __m["rules/character"];
 const {scenarioContext, scenarioType, scenarioRate, rateValue, scenarioWeapon, scenarioSpell,
   scenarioBreakdown, scenarioDamage, effectsACBonus, effectOption, modNum, signed, castSpeed, spellArrow,} = __m["rules/scenarios"];
 // ── SHEET → DM HELPER ───────────────────────────────────────────
@@ -3894,10 +3911,8 @@ const {scenarioContext, scenarioType, scenarioRate, rateValue, scenarioWeapon, s
 //   - effects that are on (stances, Bless …) count, as they do on the sheet,
 //     and their AC bonus lowers the DM's AC for the character
 //
-// `dmSettings` carries the DM's own per-character choices that aren't on the
-// sheet: { legacy, initBonus, parry, parryTargeted, armorSpell, virtue, turn,
-// shield, actions }. They're copied onto the CHARACTERS entry as-is (the DM's
-// own actions come after the sheet's spells).
+// Rules read from the sheet, never from a name: Turn Undead and Parry from its
+// classes, own-race reactions from its race.
 // `options.catalog` is the campaign spell catalog, for spell scenarios.
 
 
@@ -3956,7 +3971,10 @@ function critType(dmgType) {
   return types.length > 1 ? types : types[0];
 }
 
-function toDMHelper(save, dmSettings = {}, { catalog = null } = {}) {
+// The sheet's race → the DM Helper's list of NPC races, for own-race reactions
+const NPC_RACE = { human: 'Human', elf: 'Elf', 'half-elf': 'Half-elf', dwarf: 'Dwarf', halfling: 'Halfling', gnome: 'Gnome', 'half-orc': 'Half-orc' };
+
+function toDMHelper(save, { catalog = null } = {}) {
   // Saves, skills and thief skills read the migrated sheet; attacks read the
   // save exactly as the sheet wrote it
   const sheet = (save.__version || 0) >= 2 ? save : migrateV1toV2(save);
@@ -4058,7 +4076,9 @@ function toDMHelper(save, dmSettings = {}, { catalog = null } = {}) {
   const strPct = stats.str === 18 && pct ? strengthPercent(pct, review) : 0;
   const caster = (save.__spells || []).length > 0 || groups.some(([g]) => g === 'wizard' || g === 'priest');
   const quickness = (save.__nwps || []).some(p => /^quickness$/i.test((p.name || '').trim()));
-  const { actions: dmActions, ...dmRest } = dmSettings;
+  const turnLevel = turningLevel(save.__classes);
+  const parry = parryBonus(level, save.__classes);
+  const race = NPC_RACE[save['race-group']];
 
   const character = {
     level,
@@ -4071,9 +4091,11 @@ function toDMHelper(save, dmSettings = {}, { catalog = null } = {}) {
     ...(quickness ? { quickness: { bonus: -2 } } : {}),
     weapons,
     ...(secondary.length ? { secondary } : {}),
-    ...(actions.length || dmActions ? { actions: [...actions, ...(dmActions || [])] } : {}),
+    ...(actions.length ? { actions } : {}),
     ...(effects.length ? { effects } : {}),
-    ...dmRest,
+    ...(turnLevel ? { turn: { level: turnLevel } } : {}),
+    ...(parry ? { parry } : {}),
+    ...(race ? { race } : {}),
   };
 
   const skills = Object.fromEntries(proficiencyTargets(sheet).map(p => {
@@ -4104,7 +4126,7 @@ function formatDMHelperConfig(list) {
   const lines = [
     `/* ── Generated from character sheet saves: ${list.map(c => c.name).join(', ')} ──`,
     '   Paste just above:  const STORE_KEY=\'adnd-init-tracker\';',
-    '   Replaces these characters\' hand-typed entries; other characters are untouched. */',
+    '   Adds these characters to the party; other characters are untouched. */',
     assign('CHARACTERS', entries(c => [`  ${JSON.stringify(c.name)}: ${js(c.character)}`])),
     assign('SKILLS', entries(c => [`  ${JSON.stringify(c.name)}: ${js(c.skills)}`])),
     assign('THIEF', entries(c => Object.keys(c.thief).length ? [`  ${JSON.stringify(c.name)}: ${js(c.thief)}`] : [])),
@@ -4722,109 +4744,10 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
 /* ============================================================
    CONFIG — edit to match your table.
    ============================================================ */
-const CHARACTERS = {
-  /* Effective THAC0 = sheet THAC0 − sheet "TH Bonus" (STR, prof/spec, magic already folded in).
-     initBonus = a flat initiative adjustment (none at present; the Dex reaction adjustment is a surprise-only rule).  caster:false hides the Cast rows. */
-
-  "Jaque": { level:5, armor:{ac:4, shieldless:4, surprised:8}, armorSpell:2, parry:2, /* half of 5th */   /* leather 8, DEX 19 −4; surprised loses the Dex */                      /* Blade Bard 5 */
-    baseTHAC0:18, initBonus:0,
-    quickness:{bonus:-2},
-    stats:{str:13, dex:19, con:15, int:16, wis:13, cha:15},
-    weapons:{
-      "Magic Dagger +1":{modes:{melee:{thac0:16, speed:2}, thrown:{thac0:13, speed:2}}},   /* thrown adds DEX missile +3 */
-      "Dagger":         {modes:{melee:{thac0:17, speed:2}, thrown:{thac0:14, speed:2}}}
-    },
-    secondary:[
-      {name:"Magic Dagger +1", modes:{melee:{thac0:16}, thrown:{thac0:13}}},   /* 2nd attack with the main dagger */
-      {name:"Off-hand Dagger", modes:{melee:{thac0:17}, thrown:{thac0:14}}},   /* ambidextrous: no off-hand penalty */
-      {name:"Dagger, thrown",  thac0:14}                                        /* 3rd thrown dagger */
-    ]
-  },
-  "Rifiyr": { level:5, armor:{ac:6, shieldless:6, surprised:8}, armorSpell:2,
-    actions:[ {name:"Bowcast", baseSpeed:8, thac0:17, speedMin:1, speedMax:10, speedDefault:4} ],   /* spell on an arrow: 8 (bow) + casting time; hits with the long bow */                     /* Wizard 4, Bowcaster — THAC0 19 assumed (JSON has none) */
-    baseTHAC0:19, initBonus:0,
-    stats:{str:15, dex:16, con:14, int:15, wis:15, cha:12},
-    weapons:{
-      "Long Bow (Fine)":   {thac0:17, speed:8},   /* fine +1, DEX missile +1 */
-      "Folding bow":       {thac0:19, speed:7},   /* −1 bow, DEX +1 */
-      "Silver Short Sword":{thac0:25, speed:3},   /* +1 silver, −5 non-prof, −2 kit */
-      "Dagger":            {thac0:26, speed:2}    /* −5 non-prof, −2 kit */
-    },
-    secondary:[
-      {name:"Long Bow (2nd shot)",    thac0:17},
-      {name:"Folding bow (2nd shot)", thac0:19}
-    ]
-  },
-  "Goroth": { level:3, armor:{ac:3, shieldless:3, surprised:3},                     /* Half-Orc Barbarian 3 / Ranger 3, Brute */
-    caster:false,
-    baseTHAC0:18, initBonus:0, strPct:100,
-    stats:{str:18, dex:12, con:18, int:10, wis:12, cha:6},
-    weapons:{
-      "Maul":          {thac0:13, speed:6},   /* proficient + Weapon Expertise, STR +3 → TH +5 */
-      "Club":          {thac0:15, speed:4},
-      "Harpoon":       {thac0:15, speed:4},
-      "Wrestling":     {thac0:15, speed:3},
-      "Dagger":        {thac0:17, speed:2},
-      "Spear, Thrown": {thac0:17, speed:6}
-    },
-    secondary:[ {name:"Maul (2nd, alt. rounds)", thac0:13} ]
-  },
-  "Atteroak": { level:5, armor:{ac:2, shieldless:2, surprised:3}, turn:{level:5},   /* turns undead as a 5th-level priest */                   /* Dwarf Cleric 4 — PHB priest THAC0 18 */
-    baseTHAC0:18, initBonus:0,
-    stats:{str:14, dex:13, con:16, int:11, wis:18, cha:11},
-    weapons:{
-      "Horseman's Mace +1":{thac0:17, speed:5},
-      "Warhammer":         {modes:{melee:{thac0:18, speed:4}, thrown:{thac0:18, speed:4}}},
-      "Dagger":            {modes:{melee:{thac0:21, speed:2}, thrown:{thac0:21, speed:2}}},
-      "Sling, Bullets":    {thac0:21, speed:6},
-      "Sling, Stones":     {thac0:20, speed:6}
-    }
-  },
-  "Hanspeter": { level:5, armor:{ac:8, shieldless:8, surprised:8}, armorSpell:4,                  /* Bard 2 / Druid 5, Shapeshifter */
-    baseTHAC0:18, initBonus:0,
-    stats:{str:10, dex:11, con:16, int:13, wis:18, cha:15},
-    weapons:{
-      "Club":           {thac0:17, speed:4},
-      "Stone Knife":    {thac0:17, speed:2},
-      "Natural attack": {thac0:15, speed:3}    /* sheet's 2nd custom row — confirm what it is */
-    },
-    secondary:[ {name:"Natural attack 2", thac0:15}, {name:"Natural attack 3", thac0:15} ]
-  },
-  "Borsun": { level:4, armor:{ac:3, shieldless:3, surprised:3}, parry:3, parryTargeted:true, /* half of 4th +1 (fighter) */                     /* Human Fighter 4, Myrmidon */
-    legacy:true, caster:false,
-    baseTHAC0:16, initBonus:0, strPct:67,
-    stats:{str:18, dex:12, con:15, int:14, wis:13, cha:9},
-    weapons:{
-      "Lucern Hammer":   {thac0:13, speed:6},
-      "Comp. Short Bow": {thac0:16, speed:8},
-      "Short Sword":     {thac0:16, speed:3}
-    },
-    secondary:[
-      {name:"Lucern Hammer (2nd, alt. rounds)", thac0:13},
-      {name:"Comp. Short Bow (2nd shot)",       thac0:16}
-    ]
-  },
-  "Tig": { level:5, virtue:true, armor:{ac:5, shieldless:5, surprised:6}, parry:2, parryTargeted:true, /* half of 5th */
-    legacy:true,
-    baseTHAC0:18, initBonus:0,
-    stats:{str:16, dex:13, con:10, int:17, wis:13, cha:17},
-    weapons:{
-      "Bastard sword +1 (1H)":{thac0:18, speed:5},
-      "Bastard sword +1 (2H)":{thac0:18, speed:3},
-      "Heavy lance":          {thac0:17, speed:3},
-      "Knife":                {thac0:20, speed:2},
-      "Sling":                {thac0:20, speed:6}
-    }
-  },
-  "Nebish": { level:4, armor:{ac:10, shieldless:10, surprised:10},                     /* Human Defiler 4, Academian — PHB wizard THAC0 19 */
-    legacy:true,
-    baseTHAC0:19, initBonus:0,
-    stats:{str:7, dex:10, con:7, int:19, wis:19, cha:15},
-    weapons:{ "Knife":{thac0:21, speed:2} }
-  },
-
-  /* Enemies are created on demand at runtime (see addBaddy) — none are listed here. */
-};
+/* Every character here comes from the party's saved sheets (see "The party" below);
+   Enemies are created on demand at runtime (see addBaddy). No rule is keyed to a character's name:
+   a rule comes from the sheet (its classes, race, Effects). */
+const CHARACTERS = {};
 
 const UNIVERSAL = [
   {name:"Cast",         cast:true, spell:true, noAttack:true, speedMin:1, speedMax:10, speedDefault:4},
@@ -4839,95 +4762,21 @@ const MODS = {
 };
 const OTHER_MAX=10, OTHER_MIN=-10;
 
-/* SKILL CHECK — number is the base target (Moderate). Roll d20 ≤ target.
-   PLACEHOLDERS — replace with each character's real proficiencies and numbers. */
-const SKILLS = {
-  /* {t: check target from the sheet, src: the sheet's own slot-source label, verbatim}
-     Int / Kit / Gal / Brd / Fighter / Cleric / Ranger / Lvl3 / Pov / Gift / Bonus / Hum / Race … as written.
-     "Free" = the sheet marked the slot None/NA (a free grant). Blank = the sheet gave only a slot count. */
-  "Tig": {
-    "Appraising":{t:17,src:"Bard"}, "Dancing":{t:13,src:"Gal"}, "Enamour":{t:15,src:"Hum"}, "Etiquette":{t:19,src:"Cav + Gal"},
-    "Folklore":{t:15,src:"Int"}, "Jousting":{t:13,src:"Lvl-3"}, "Languages, Ancient":{t:17,src:"Gal"},
-    "Local History":{t:17,src:"Int"}, "Musical Instrument":{t:13,src:"Brd"}, "Observation":{t:15,src:"Int"},
-    "Persuasion":{t:14,src:"Int"}, "Poetry":{t:14,src:"Gal"}, "Riding, Land-based":{t:17,src:"Gal + Int"},
-    "Singing":{t:17,src:"Brd"}, "Storytelling":{t:17,src:"Int"}, "Style Analysis":{t:16,src:"Fighter"},
-    "Swimming":{t:17,src:"Fighter"}, "Tactics":{t:16,src:"Fighter"}
-  },
-  "Jaque": {
-    "Disguise":{t:14,src:""}, "Fast-Talking":{t:15,src:""}, "Information Gathering":{t:16,src:""},
-    "Juggling":{t:18,src:"Kit"}, "Local History":{t:15,src:"Kit"}, "Locksmithing":{t:19,src:""},
-    "Musical Instrument":{t:18,src:"Class"}, "Observation":{t:16,src:""}, "Quickness":{t:16,src:""},
-    "Reading/Writing":{t:17,src:"Kit"}, "Tumbling":{t:19,src:""}
-  },
-  "Rifiyr": {
-    "Alertness":{t:16,src:""}, "Arcanology":{t:12,src:""}, "Bowyer/Fletcher":{t:14,src:"Kit"},
-    "Hunting":{t:14,src:"Kit"}, "Investigation":{t:15,src:"Kit"}, "Observation":{t:15,src:"Kit"},
-    "Reading/Writing":{t:16,src:""}, "Spellcraft":{t:13,src:""}, "Swimming":{t:15,src:""}, "Tracking":{t:12,src:"Kit"}
-  },
-  "Atteroak": {
-    "Animal Handling":{t:16,src:"Int"}, "Armorer":{t:15,src:"Int + Cleric"}, "Artistic Ability":{t:11,src:"Cleric"},
-    "Bargain":{t:15,src:"Lvl3"}, "Cooking":{t:17,src:"Gift"}, "Endurance":{t:14,src:"Kit"}, "Healing":{t:16,src:"Cleric"},
-    "Religion":{t:17,src:"Kit"}, "Weaponsmithing":{t:15,src:"Kit"}
-  },
-  "Hanspeter": {
-    "Animal Lore":{t:18,src:"Kit"}, "Camouflage":{t:17,src:"Brd"}, "Foraging":{t:11,src:"Dru"},
-    "Herbalism":{t:19,src:"Int/Dru"}, "Homeopathy":{t:12,src:"Pov"}, "Hunting":{t:16,src:"Brd"},
-    "Musical Instrument":{t:16,src:"Kit"}, "Naturopathy":{t:14,src:"Pov"}, "Persuasion":{t:13,src:"Bonus"},
-    "Singing":{t:15,src:"Kit"}, "Survival":{t:13,src:"Kit"}, "Tumbling":{t:11,src:"Brd"}
-  },
-  "Goroth": {
-    "Animal Lore":{t:10,src:"Free"}, "Danger Sense":{t:13,src:"Free"}, "Dirty Tricks":{t:10,src:"Int"},
-    "Hiding":{t:9,src:"Free"}, "Intimidation":{t:18,src:"Ranger"}, "Running":{t:12,src:"Ranger"},
-    "Survival":{t:10,src:"Free"}, "Tracking":{t:12,src:"Free"}
-  },
-  "Borsun": {
-    "Ancient History":{t:14,src:"Kit"}, "Dirty Tricks":{t:12,src:"Lvl3"}, "Etiquette":{t:14,src:"Int"},
-    "Fire-building":{t:13,src:"Kit"}, "Mental Resistance":{t:12,src:"Int"}, "Style Analysis":{t:14,src:"W"},
-    "Tactics":{t:14,src:"W"}
-  },
-  "Nebish": {
-    "Ancient History":{t:20,src:"Int"}, "Arcanology":{t:18,src:"Int"}, "Concocting":{t:19,src:"Int"},
-    "Enamour":{t:13,src:"Int"}, "Healing":{t:21,src:"Int"}, "Herbalism":{t:21,src:"Int"},
-    "Observation":{t:21,src:"Int"}, "Omen Reading":{t:19,src:""}, "Reading/Writing":{t:22,src:"Kit"},
-    "Scribe":{t:10,src:"Race"}, "Somatic Concealment":{t:9,src:""}, "Spellcraft":{t:19,src:""},
-    "Thaumaturgy":{t:19,src:"Lvl3"}
-  }
-};
+/* SKILL CHECK: {t: base check target (Moderate), src: the sheet's slot-source label}. Roll d20 ≤ target. */
+const SKILLS = {};
 /* THIEVING SKILLS as sheet percentages; shown after proficiencies as d20 checks (% ÷ 5, rounded). */
-const THIEF={
-  "Tig":       { "Detect Noise":20, "Climb Walls":45, "Read Languages":90 },
-  "Hanspeter": { "Detect Noise":65, "Climb Walls":50 },
-  "Goroth":    { "Move Silently":27, "Hide in Shadows":20, "Climb Walls":75, "Flanking Detection":25 },
-  /* Jaque: bard base (PP10/DN20/CW50/RL5) + 80 points + Blade kit (+10 OL) + DEX 19 adjustments */
-  "Jaque":     { "Pick Pockets":25, "Open Locks":50, "Move Silently":40, "Hide in Shadows":45, "Detect Noise":20, "Climb Walls":60, "Read Languages":5 }
-};
+const THIEF = {};
 /* ===== GOOD HITS & BAD MISSES (Dragon #39, as modified for this table) =====
    Natural 20: always a hit; a CRITICAL only if it would have hit anyway (needed ≤ 20).
    Natural 1:  always a miss; a FUMBLE only if it would have missed anyway (needed > 1); no more actions that round.
    Crit damage: (weapon dmg + STR + spec) × multiplier + weapon plus. */
-const CRIT_TYPES={   /* S slashing · B blunt · P missile & piercing · array = pick at the table */
-  "Bastard sword +1 (1H)":"S","Bastard sword +1 (2H)":"S","Heavy lance":"P","Knife":"P","Sling":"B",
-  "Magic Dagger +1":"P","Dagger":"P","Off-hand Dagger":"P","Dagger, thrown":"P",
-  "Long Bow (Fine)":"P","Folding bow":"P","Bowcast":"P","Silver Short Sword":"P","Long Bow (2nd shot)":"P","Folding bow (2nd shot)":"P",
-  "Horseman's Mace +1":"B","Warhammer":"B","Sling, Bullets":"B","Sling, Stones":"B",
-  "Club":"B","Stone Knife":"P","Natural attack":"B","Natural attack 2":"B","Natural attack 3":"B",
-  "Maul":"B","Harpoon":"P","Wrestling":"B","Spear, Thrown":"P","Maul (2nd, alt. rounds)":"B",
-  "Lucern Hammer":["B","P","S"],"Comp. Short Bow":"P","Short Sword":"P","Lucern Hammer (2nd, alt. rounds)":["B","P","S"],"Comp. Short Bow (2nd shot)":"P"
-};
+const CRIT_TYPES={};   /* from the sheets. S slashing · B blunt · P missile & piercing · array = pick at the table */
 const CRIT_LABEL={S:"Slashing",B:"Blunt",P:"Missile & Piercing",A:"vs Animal"};
 const CRIT_SHORT={B:"Blunt",P:"Piercing",S:"Slashing",A:"Animal"};
 /* Item saving throw vs. crushing blow (DMG Table 29), d20 ≥ number; +1 per magical plus. */
 const ITEM_SAVE_CB={metal:6, woodThick:10, woodThin:13, leather:6, stone:17};
 const ITEM_LABEL={metal:"hard metal", woodThick:"thick wood", woodThin:"thin wood", leather:"leather", stone:"stone"};
-const WEAPON_MATERIAL={
-  "Bastard sword +1 (1H)":{m:"metal",plus:1},"Bastard sword +1 (2H)":{m:"metal",plus:1},"Heavy lance":{m:"woodThick"},"Knife":{m:"metal"},"Sling":{m:"leather"},
-  "Magic Dagger +1":{m:"metal",plus:1},"Dagger":{m:"metal"},"Off-hand Dagger":{m:"metal"},"Dagger, thrown":{m:"metal"},
-  "Long Bow (Fine)":{m:"woodThin"},"Folding bow":{m:"woodThin"},"Bowcast":{m:"woodThin"},"Silver Short Sword":{m:"metal"},"Long Bow (2nd shot)":{m:"woodThin"},"Folding bow (2nd shot)":{m:"woodThin"},
-  "Horseman's Mace +1":{m:"woodThick",plus:1},"Warhammer":{m:"woodThick"},"Sling, Bullets":{m:"leather"},"Sling, Stones":{m:"leather"},
-  "Club":{m:"woodThick"},"Stone Knife":{m:"stone"},
-  "Maul":{m:"woodThick"},"Harpoon":{m:"woodThick"},"Spear, Thrown":{m:"woodThick"},"Maul (2nd, alt. rounds)":{m:"woodThick"},
-  "Lucern Hammer":{m:"woodThick"},"Comp. Short Bow":{m:"woodThin"},"Short Sword":{m:"metal"},"Lucern Hammer (2nd, alt. rounds)":{m:"woodThick"},"Comp. Short Bow (2nd shot)":{m:"woodThin"}
-};
+const WEAPON_MATERIAL={};   /* from the sheets */
 const CRIT_TABLES={
 S:[[1,31,"Double (x2) Damage"],[32,62,"Triple (x3) Damage"],[63,63,"Shield Destroyed (No effect if no shield)"],[64,64,"Shield Destroyed (Roll again if no shield)"],
  [65,65,"Helm Removed (If no helm lose ear, stunned for 1-6 rds.)"],[66,66,"Helm Removed (lose ear, stunned for 1-6 rds.)"],[67,67,"Voice Box Punctured, no talking (no effect if helmed)"],
@@ -4995,61 +4844,11 @@ const RX_TABLE={   // modified roll → [Friendly, Indifferent, Threatening, Hos
   18:["Threatening","Threatening","Hostile","Hostile"],19:["Hostile","Hostile","Hostile","Hostile"],20:["Hostile","Hostile","Hostile","Hostile"]
 };
 const RX_COL={Friendly:0,Indifferent:1,Threatening:2,Hostile:3};
-const RX_ORDER=["Friendly","Indifferent","Cautious","Threatening","Hostile"];   // Flight sits outside the ladder
 const CHA_REACT={3:-5,4:-4,5:-3,6:-2,7:-1,8:0,9:0,10:0,11:0,12:0,13:1,14:2,15:3,16:5,17:6,18:7,19:8};
 const chaReact = c => CHA_REACT[Math.max(3,Math.min(19,c))] ?? 0;
 const NPC_RACES=["Human","Elf","Half-elf","Dwarf","Halfling","Gnome","Half-orc","Orc","Other"];
-const NPC_OCCUPATIONS=["Commoners","Nobles","Craftspeople","Merchants","Clergy","Soldiers & guards","Criminals","Evil folks"];
-/* Per-PC reaction modifiers: a list of entries, each with the races and/or occupations it covers, the bonus (subtracted
-   from the roll), and its source. Entries stack; an entry matches if it names the NPC's race OR occupation.
-   types may be an array, or a group: "humans" (race Human), "own culture" (the non-criminal occupations), "all". */
-const OWN_CULTURE=["Commoners","Nobles","Craftspeople","Merchants","Clergy","Soldiers & guards"];   /* entries with culture:"own" apply only when Culture is Own */
-const REACTION_MODS={
-  "Tig":       { mods:[
-                        {types:["Human"], mod:3, why:"Beloved: humans of his own culture", culture:"own", withOcc:"own culture"},
-                        {types:["Half-elf"], mod:2, why:"Beloved: partial", culture:"own", withOcc:"own culture"},
-                        {types:["Halfling"], mod:1, why:"Beloved: partial", culture:"own", withOcc:"own culture"},
-                        {types:["Criminals","Evil folks"], mod:-3, why:"Beloved: criminals and evil, any race", culture:"own"} ],
-                 split:{ "women & 1sex group":1, "men":-1, why:"Romantic Appeal" },
-                 appeal:{ need:{"women & 1sex group":16, "men":12}, when:{"women & 1sex group":"fail", "men":"save"}, why:"Romantic Appeal: each group rolls its own save vs Paralysis (1 HD humanoids: women 16, men 12). Women & single-sex: if the crowd FAILS, the response is one step friendlier. Men in a coed group: if they SAVE, it is one step less friendly." } },
-  "Jaque":     { mods:[
-                        {types:["Elf"], mod:1, why:"own race"},
-                        {types:["Criminals"], mod:2, why:"Blade"},
-                        {types:["Nobles","Soldiers & guards"], mod:-2, why:"Blade"} ] },
-  "Rifiyr":    { mods:[ {types:["Half-elf"], mod:1, why:"own race"} ] },
-  "Atteroak":  { mods:[
-                        {types:["Dwarf"], mod:1, why:"own race"},
-                        {types:["Craftspeople"], mod:2, why:"dwarven smith"} ] },
-  "Hanspeter": { mods:[ {types:["Human"], mod:1, why:"own race"} ] },
-  "Goroth":    { mods:[
-                        {types:["Half-orc","Orc"], mod:1, why:"own race"},
-                        {types:"humans", mod:-4, why:"ranger species enemy (PHB)"},
-                        {types:["Nobles"], mod:-2, why:"Brute"} ] },
-  "Borsun":    { mods:[ {types:["Human"], mod:1, why:"own race"}, {types:["Soldiers & guards"], mod:2, why:"Myrmidon / soldier"} ] },
-  "Nebish":    { mods:[ {types:["Human"], mod:1, why:"own race"} ] }
-};
-/* WEAPON DAMAGE from the sheets, "Character|Weapon" → S-M and L expressions (STR and specialization folded in).
-   plus = magic bonus, kept apart so a critical multiplies (dice + STR + spec) and adds the plus after.
-   byType = damage depends on the crit-type picker (Borsun's Lucern hammer). */
-const DAMAGE={
-  "Jaque|Magic Dagger +1":{sm:"1d4+3", l:"1d4+3", plus:1}, "Jaque|Dagger":{sm:"1d4+2", l:"1d4+2"},
-  "Jaque|Off-hand Dagger":{sm:"1d4+2", l:"1d4+2"}, "Jaque|Dagger, thrown":{sm:"1d4+2", l:"1d4+2"},
-  "Rifiyr|Long Bow (Fine)":{sm:"1d8", l:"1d6"}, "Rifiyr|Folding bow":{sm:"1d8-1", l:"1d6-1"},
-  "Rifiyr|Silver Short Sword":{sm:"1d6", l:"1d8"}, "Rifiyr|Dagger":{sm:"1d4", l:"1d3"},
-  "Rifiyr|Long Bow (2nd shot)":{sm:"1d8", l:"1d6"}, "Rifiyr|Folding bow (2nd shot)":{sm:"1d8-1", l:"1d6-1"}, "Rifiyr|Bowcast":{sm:"1d8", l:"1d6"},
-  "Goroth|Maul":{sm:"2d4+6", l:"1d10+6"}, "Goroth|Club":{sm:"1d6+6", l:"1d3+6"}, "Goroth|Harpoon":{sm:"2d4+6", l:"2d6+6"},
-  "Goroth|Wrestling":{sm:"1d6+6", l:"1d6+6"}, "Goroth|Dagger":{sm:"1d4+6", l:"1d3+6"}, "Goroth|Spear, Thrown":{sm:"1d6+6", l:"1d8+6"},
-  "Goroth|Maul (2nd, alt. rounds)":{sm:"2d4+6", l:"1d10+6"},
-  "Atteroak|Horseman's Mace +1":{sm:"1d6+2", l:"1d6+2", plus:1}, "Atteroak|Warhammer":{sm:"1d4+1", l:"1d4+1"},
-  "Atteroak|Dagger":{sm:"1d4", l:"1d3"}, "Atteroak|Sling, Bullets":{sm:"1d4+1", l:"1d6+1"}, "Atteroak|Sling, Stones":{sm:"1d4", l:"1d4"},
-  "Hanspeter|Club":{sm:"1d6+1", l:"1d3+1"}, "Hanspeter|Stone Knife":{sm:"1d2+1", l:"1d2+1"},
-  "Borsun|Lucern Hammer":{byType:{B:{sm:"2d4+5", l:"1d6+6"}, P:{sm:"1d8+5", l:"2d6+5"}, S:{sm:"1d6+6", l:"2d4+5"}}},
-  "Borsun|Lucern Hammer (2nd, alt. rounds)":{byType:{B:{sm:"2d4+5", l:"1d6+6"}, P:{sm:"1d8+5", l:"2d6+5"}, S:{sm:"1d6+6", l:"2d4+5"}}},
-  "Borsun|Comp. Short Bow":{sm:"1d6+3", l:"1d6+3"}, "Borsun|Comp. Short Bow (2nd shot)":{sm:"1d6+3", l:"1d6+3"}, "Borsun|Short Sword":{sm:"1d6+3", l:"1d4+3"},
-  "Tig|Bastard sword +1 (1H)":{sm:"1d8+2", l:"1d12+3", plus:1}, "Tig|Bastard sword +1 (2H)":{sm:"2d4+3", l:"2d8+3", plus:1},
-  "Tig|Heavy lance":{sm:"1d8+2", l:"3d6+1"}, "Tig|Knife":{sm:"1d3+1", l:"1d2+1"}, "Tig|Sling":{sm:"1d4+2", l:"1d6+2"},
-  "Nebish|Knife":{sm:"1d3", l:"1d2"}
-};
+/* WEAPON DAMAGE from the sheets, "Character|Weapon" → S-M and L expressions. */
+const DAMAGE={};
 const DIFFICULTY = [
   {name:"Easy", mod:5}, {name:"Moderate", mod:0}, {name:"Hard", mod:-5},
   {name:"Very hard", mod:-10}, {name:"Impossible", mod:-15}
@@ -5145,22 +4944,7 @@ const SAVE_GROUPS=[
   {label:"Breath Weapon",                        cats:["Breath Weapon"]},
   {label:"Spell",                                cats:["Spell","Mind Control Spell"]}
 ];
-const SAVES={
-  "Tig":       { base:{PPD:12, RSW:12, PP:11, BW:15, Spell:13}, mods:{"All":2, "Mind Control Spell":4},
-                 note:"Immune to fear; courage aura 10' while fighting (Cavalier). Paladin +2 to all; +4 vs mind control (Cavalier); immune to disease; re-roll a save that would kill" },
-  "Jaque":     { base:{PPD:12, RSW:12, PP:11, BW:15, Spell:13}, mods:{},
-                 note:"Elf: 90% resistance to sleep and charm; immune to ghoul paralysis" },     /* rogue table, L5 */
-  "Rifiyr":    { base:{PPD:14, RSW:11, PP:13, BW:15, Spell:12}, mods:{"Mind Control Spell":1},
-                 note:"Half-elf: 30% resistance to sleep and charm" },                          /* wizard table, L4; WIS 15 */
-  "Atteroak":  { base:{PPD:10, RSW:14, PP:13, BW:16, Spell:15},
-                 mods:{"Poison":4, "Rod, Staff, or Wand":4, "Spell":4, "Mind Control Spell":8},
-                 note:"Dwarf: +4 vs poison, rod/staff/wand, spell; +8 vs charm/fear/suggestion" },
-  "Hanspeter": { base:{PPD:10, RSW:14, PP:13, BW:16, Spell:15}, mods:{"Mind Control Spell":3},
-                 note:"+2 vs fire or electrical attacks (not modelled — apply by hand)" },
-  "Goroth":    { base:{PPD:13, RSW:15, PP:14, BW:16, Spell:16}, mods:{} },
-  "Borsun":    { base:{PPD:13, RSW:15, PP:14, BW:15, Spell:16}, mods:{"Mind Control Spell":2} },
-  "Nebish":    { base:{PPD:14, RSW:11, PP:13, BW:15, Spell:12}, mods:{"Mind Control Spell":4} }
-};
+const SAVES={};   /* from the sheets */
 
 /* ============================================================ */
 /* ---------------- The party: each player's character in play ----------------
@@ -5168,32 +4952,21 @@ const SAVES={
    from their saved sheet (Home decides who's in play). It's kept
    in this browser so the page starts with it; signed in again, the page
    checks it and starts over with the new one if it changed. Never signed in
-   here: the hand-typed characters above, all but the ones marked legacy.
-   A sheet's conversion keeps the DM's own settings typed above: parry,
-   armor spell, virtue, init bonus, turning, shield, extra actions, an "All"
-   save bonus, and the save note. A character in play with no saved sheet yet
-   uses its hand-typed entry, if there is one. */
+   here: no party, only Enemies. A character in play with no saved sheet yet
+   is named in the note at the top of the page. */
 const PARTY_KEY='adnd-dm-party';
 const PARTY=(()=>{ try{ const v=JSON.parse(localStorage.getItem(PARTY_KEY)); return v && Array.isArray(v.chars) ? v : null; }catch(e){ return null; } })();
 try{ localStorage.removeItem('adnd-imported-sheets'); localStorage.removeItem('adnd-active'); }catch(e){}   // the old Config import and checkboxes
 const SHEET_REVIEW={};   // name → what the conversion asks the DM to check, or why it failed
-const DM_ONLY=['legacy','initBonus','parry','parryTargeted','armorSpell','virtue','turn','shield','actions'];
 (PARTY ? PARTY.chars : []).forEach(entry=>{
   if(!entry.save) return;
   try{
     if(!window.SheetConverter) throw new Error('The sheet converter is missing from this file.');
-    const prev=CHARACTERS[entry.name]||{};
-    const dm={}; DM_ONLY.forEach(k=>{ if(prev[k]!==undefined) dm[k]=prev[k]; });
-    delete dm.legacy;                                    // in play is in the party
-    const r=SheetConverter.toDMHelper(entry.save, dm, {catalog: window.SheetSpellCatalog||null});
+    const r=SheetConverter.toDMHelper(entry.save, {catalog: window.SheetSpellCatalog||null});
     CHARACTERS[r.name]=r.character;
     SKILLS[r.name]=r.skills;
     if(Object.keys(r.thief).length) THIEF[r.name]=r.thief; else delete THIEF[r.name];
-    if(r.saves){
-      const old=SAVES[r.name]||{};
-      const mods={...r.saves.mods}; if(old.mods && old.mods.All) mods.All=old.mods.All;
-      SAVES[r.name]={base:r.saves.base, mods, ...((old.note||r.saves.note)?{note:old.note||r.saves.note}:{})};
-    }
+    if(r.saves) SAVES[r.name]=r.saves;
     Object.assign(DAMAGE,r.damage); Object.assign(CRIT_TYPES,r.critTypes); Object.assign(WEAPON_MATERIAL,r.material);
     SHEET_REVIEW[r.name]={review:r.review||[]};
   }catch(e){ SHEET_REVIEW[entry.name]={error:String(e.message||e)}; }
@@ -5547,7 +5320,7 @@ function buildChar(name){
   const statsBox=document.createElement('input'); statsBox.type='checkbox'; statsBox.className='statsbox'; statsBox.checked=!!st.showStats; statsBox.title='show / hide ability scores';
   const statsLbl=document.createElement('label'); statsLbl.className='acw chk statslbl'; statsLbl.append(statsBox,' Stats');
   nameLine.append(cname, statsLbl); namecol.appendChild(nameLine);
-  const acVals={}; let armorBox=null, shlBox=null, surBox=null, parryBox=null, parrySel=null, acModSel=null, virtueSel=null;
+  const acVals={}; let shlBox=null, surBox=null, parryBox=null, acModSel=null;
   if(c.armor){
     const acRow=document.createElement('div'); acRow.className='acrow';
     [['AC','ac'],['Shieldless','shieldless'],['Surprised','surprised']].forEach(([l,k])=>{
@@ -5559,28 +5332,9 @@ function buildChar(name){
     });
     if(c.parry){
       parryBox=document.createElement('input'); parryBox.type='checkbox'; if(st.parry) parryBox.checked=true;
-      const pl=document.createElement('label'); pl.className='acw chk'; pl.append(parryBox,` Parry +${c.parry}`); pl.title='parrying this round: AC improves (not when surprised)';
+      const pl=document.createElement('label'); pl.className='acw chk'; pl.append(parryBox,` Parry +${c.parry}`); pl.title=`Parrying this round: AC ${c.parry} better against attackers in front, not rear, missile or magical attacks, and not when surprised. A parrying character gives up attacking, moving and casting this round.`;
       acRow.appendChild(pl);
       parryBox.addEventListener('input', update);
-      if(c.parryTargeted){                                       // parry one chosen Enemy: only that Enemy's attacks meet the better AC
-        parrySel=document.createElement('select'); parrySel.className='parrytgt'; parrySel.appendChild(opt('','vs —'));
-        const pw=document.createElement('span'); pw.className='acw chk parrywrap'; pw.appendChild(parrySel); pw.title='the Enemy this parry is against';
-        acRow.appendChild(pw); parrySel.addEventListener('input', update);
-      }
-    }
-    if(c.virtue){
-      virtueSel=document.createElement('select'); virtueSel.className='virtue';
-      [['','—'],['ac','AC'],['hit','To-Hit'],['dmg','Damage'],['saves','Saves']].forEach(([v,l])=> virtueSel.appendChild(opt(v,l)));
-      virtueSel.value = st.virtue||'';
-      const vl=document.createElement('label'); vl.className='acw chk'; vl.append('Virtue ', virtueSel); vl.title='Virtue: +2 to the chosen thing';
-      acRow.appendChild(vl);
-      virtueSel.addEventListener('input', update);
-    }
-    if(c.armorSpell){
-      armorBox=document.createElement('input'); armorBox.type='checkbox'; if(st.armorSpell) armorBox.checked=true;
-      const al=document.createElement('label'); al.className='acw chk'; al.append(armorBox,' Armor Spell'); al.title=`Armor spell up: AC improves by ${c.armorSpell}`;
-      acRow.appendChild(al);
-      armorBox.addEventListener('input', update);
     }
     acModSel=document.createElement('select'); acModSel.className='acmod';
     for(let n=10;n>=-10;n--) acModSel.appendChild(opt(n, n>0?'+'+n:n<0?'−'+Math.abs(n):'0')); acModSel.value = st.acMod||'0';
@@ -5770,7 +5524,7 @@ function buildChar(name){
   el.append(head, ...(effectsLine?[effectsLine]:[]), mods, table, maLbl, fullNote);
   tracker.appendChild(el);
   [initRoll,tsize,moving,flanking,ground,charging,set4,other].forEach(c2=>c2.addEventListener('input',update));
-  blocks[name]={el, actson, initRoll, tsize, sizeLbl, fields, mods, rowTargets, resetTargets:()=>{ rowTargets.forEach(rt=>{ rt.userSet=false; }); applyTarget({bd:null, value:''}); }, virtueSel, statsBox, fullNote, moving, moveMult, flanking, ground, charging, set4, other, rows, table, statsSel, statsBase, acVals, armorBox, shlBox, surBox, parryBox, parrySel, acModSel,
+  blocks[name]={el, actson, initRoll, tsize, sizeLbl, fields, mods, rowTargets, resetTargets:()=>{ rowTargets.forEach(rt=>{ rt.userSet=false; }); applyTarget({bd:null, value:''}); }, statsBox, fullNote, moving, moveMult, flanking, ground, charging, set4, other, rows, table, statsSel, statsBase, acVals, shlBox, surBox, parryBox, acModSel,
     quickRoll: c.quickness ? null : undefined, quickBtn, runRoll: d20(), moveAfter:moveAfterBox, maLbl, initRolled: !!st.initRolled};
   wireMoveLinks({moving, moveMult, charging}, ()=>{ if(parseFloat(moveMult.value)>=3) blocks[name].runRoll=d20(); });   // fresh Str check on 3x/4x
 }
@@ -5800,8 +5554,11 @@ function enemyTargetAC(name, a, t){                            // the AC this at
   if(!t) return null;
   if(t.pc){
     const c=CHARACTERS[t.pc], e=effectiveAC(t.pc); if(!e) return null;
-    let ac=e.ac-(e.parryVs===name ? e.parryVsAmt : 0);
-    if(a.set.rear && e.state==='ac' && c.armor.shieldless!=null) ac+=c.armor.shieldless-c.armor.ac;   // from behind: no shield
+    let ac=e.ac;
+    if(a.set.rear){
+      ac+=e.parry;                                                  // a parry covers attackers in front only
+      if(e.state==='ac' && c.armor.shieldless!=null) ac+=c.armor.shieldless-c.armor.ac;   // from behind: no shield
+    }
     return ac;
   }
   const n=parseInt(a.otherAC,10); return isNaN(n) ? null : n;
@@ -5926,7 +5683,7 @@ function renderEnemyAttacks(name){
         uiPick(`${id}-ground`, 'Ground', [['', 'Level'], ['high', 'Higher'], ['low', 'Lower']], st.ground, v=>{ st.ground=v; update(); }),
         RoundUI.multi(`${id}-cond`, 'Conditions', [
           {key:'flanking', label:'Flanking', note:'+2 to hit', on:st.flanking},
-          {key:'rear', label:'Rear attack', note:'+2 to hit; the target has no shield', on:st.rear},
+          {key:'rear', label:'Rear attack', note:'+2 to hit; the target has no shield and no parry', on:st.rear},
           {key:'charging', label:'Charging', note:'+2 to hit; this Enemy\'s AC 1 worse this round', on:st.charging},
         ], (key, v)=>{ st[key]=v; update(); }),
         uiPick(`${id}-other`, 'Other', BD_OTHER_OPTS, String(st.other), v=>{ st.other=parseInt(v,10)||0; update(); }),
@@ -5961,21 +5718,16 @@ function situation(b){
   else if(b.placeholder && b.attacks && b.attacks.some(a=>a.set.charging)) ac+=MODS.chargingAC;
   if(b.set4.checked) init-=MODS.set4chargeInit;
   toHit += parseInt(b.other.value,10)||0;
-  if(b.virtueSel && b.virtueSel.value==='hit') toHit+=2;         // Virtue: To-Hit
   return {toHit,init,ac};
 }
 
 function effectiveAC(name){
   const c=CHARACTERS[name], b=blocks[name]; if(!c||!c.armor||!b) return null;
   const state = (b.surBox&&b.surBox.checked) ? 'surprised' : (b.shlBox&&b.shlBox.checked) ? 'shieldless' : 'ac';
-  let bonus=(b.armorBox&&b.armorBox.checked)?(c.armorSpell||0):0;
-  const parryAll=(b.parryBox&&b.parryBox.checked && state!=='surprised')?(c.parry||0):0;
-  const parryVs = (c.parryTargeted && b.parrySel) ? (b.parrySel.value||null) : null;    // targeted: only this Enemy sees the parry
-  const parry = c.parryTargeted ? 0 : parryAll;                   // targeted parries are added per attacking Enemy, below
+  const parry=(b.parryBox&&b.parryBox.checked && state!=='surprised')?(c.parry||0):0;
   const charge=situation(b).ac;                                   // charging: AC one worse
-  const virtueAC=(b.virtueSel && b.virtueSel.value==='ac') ? 2 : 0;
   const acMod = b.acModSel ? (parseInt(b.acModSel.value,10)||0) : 0;
-  return {ac:c.armor[state]-bonus-parry+charge-virtueAC-acMod, state, bonus, parry, parryVs, parryVsAmt:parryAll, charge, virtueAC, acMod};
+  return {ac:c.armor[state]-parry+charge-acMod, state, parry, charge, acMod};
 }
 function update(){
   const store=loadStore();
@@ -6025,11 +5777,6 @@ function update(){
     if(b.syncPanel){ b.syncPanel.remove(); b.syncPanel=null; }
 
     const sit=situation(b);
-    if(b.parrySel){                                                // targeted parry: list the Enemies in the round
-      const keep=b.parrySel.value; [...b.parrySel.querySelectorAll('option')].slice(1).forEach(o=>o.remove());
-      baddies.forEach(n=>{ if(!blocks[n]||!blocks[n].inRound.checked) return; const o=opt(n, `${blocks[n].nameInput.value||n} · ${blocks[n].bdId}`); b.parrySel.appendChild(o); });
-      b.parrySel.value = [...b.parrySel.options].some(o=>o.value===keep) ? keep : '';
-    }
     b.rowTargets.forEach(rt=>{
       syncBaddyOptions(rt);                                    // real add/remove, so phones never list an Enemy who is not in the round
       Object.keys(rt.bdOpts).forEach(n=>{ const o=rt.bdOpts[n]; if(bdAC[n]===undefined) return; o.value=bdAC[n]; o.textContent = `${blocks[n].nameInput.value||n} · ${blocks[n].bdId}${blocks[n].initRoll.value==='50'?' (held)':''}`; });
@@ -6037,7 +5784,6 @@ function update(){
     });
     const rowTac = r => (r.rt && r.rt.sel.value!=='') ? (parseInt(r.rt.sel.value,10)||0) : 10;      // 10 only as a stand-in; Roll stays off until a target is chosen
     const rowSize = r => { const so=r.rt && r.rt.sel.selectedOptions[0]; const bd=so && so.dataset.bd; return (bd && blocks[bd]) ? blocks[bd].bsize.value : b.tsize.value; };
-    const virtueDmg=(b.virtueSel && b.virtueSel.value==='dmg') ? 2 : 0;
     const stat = k => parseInt(b.statsSel[k].value,10);
     if(c.armor){
       const e=effAC[name];
@@ -6045,10 +5791,10 @@ function update(){
       const acModOn=e.acMod||0;
       ['ac','shieldless','surprised'].forEach(k=>{
         if(!b.acVals[k]) return;
-        const v=c.armor[k]-e.bonus-(k==='surprised'?0:parryOn)+e.charge-e.virtueAC-acModOn;
+        const v=c.armor[k]-(k==='surprised'?0:parryOn)+e.charge-acModOn;
         b.acVals[k].textContent=v;
         b.acVals[k].className = k===e.state ? 'inuse' : '';
-        b.acVals[k].style.color = k===e.state ? '' : ((e.bonus||(k!=='surprised'&&parryOn)) ? 'var(--verdigris)' : (e.charge ? 'var(--rust)' : ''));
+        b.acVals[k].style.color = k===e.state ? '' : ((k!=='surprised'&&parryOn) ? 'var(--verdigris)' : (e.charge ? 'var(--rust)' : ''));
         b.acVals[k].title = e.charge ? 'charging: one worse this round' : '';
       });
     }
@@ -6180,10 +5926,10 @@ function update(){
             const roll = pool[tsize], plus=r.dmg.plus||0;
             let mult=1;
             if(r.roll===20 && need<=20 && r.pct){ const t=r.animal?'A':critTypeOf(r); const txt=tableLookup(critTable(t,false), r.pct); if(/^Double/.test(txt)) mult=2; else if(/^Triple/.test(txt)) mult=3; }
-            const base = roll.dice + roll.flat + virtueDmg - plus;
+            const base = roll.dice + roll.flat - plus;
             const total = mult>1 ? base*mult+plus : base+plus;
             dn.textContent=total; dmgOut=total; r.dmgTd.className='dmg num '+(mult>1?'critdmg':'');
-            r.dmgTd.title=`${roll.expr}${virtueDmg?' +2 virtue':''}: dice ${roll.dice} + ${roll.flat+virtueDmg-plus}${plus?` (+${plus} magic)`:''}${mult>1?` × ${mult} = ${total}`:''} · ${tsize==='l'?'L':'S-M'} target${spellNoteFor(name, r)}`;
+            r.dmgTd.title=`${roll.expr}: dice ${roll.dice} + ${roll.flat-plus}${plus?` (+${plus} magic)`:''}${mult>1?` × ${mult} = ${total}`:''} · ${tsize==='l'?'L':'S-M'} target${spellNoteFor(name, r)}`;
           }
         }
         r.out = r.roll===null ? null : {roll:r.roll, need, ac:tacRow, thac0:res, mods:0, hit:(r.roll===20 ? true : r.roll===1 ? false : r.roll>=need), crit:(r.roll===20 && need<=20), fumble:(r.roll===1 && need>1), dmg:dmgOut};
@@ -6219,16 +5965,16 @@ function update(){
     const statsOut={}; Object.keys(b.statsSel).forEach(k=> statsOut[k]=b.statsSel[k].value);
     const statsBaseOut={}; Object.keys(b.statsBase).forEach(k=> statsBaseOut[k]=b.statsBase[k]);
     store[name]={
-      initRoll:b.initRoll.value, initRolled:b.initRolled, tsize:b.tsize.value, virtue: b.virtueSel ? b.virtueSel.value : undefined, showStats:b.statsBox.checked,
+      initRoll:b.initRoll.value, initRolled:b.initRolled, tsize:b.tsize.value, showStats:b.statsBox.checked,
       moving:b.moving.checked, moveAfter:b.moveAfter.checked, moveMult:b.moveMult.value, flanking:b.flanking.checked, ground:b.ground.value,
-      charging:b.charging.checked, set4:b.set4.checked, other:b.other.value, armorSpell: b.armorBox ? b.armorBox.checked : undefined, parry: b.parryBox ? b.parryBox.checked : undefined, acMod: b.acModSel ? b.acModSel.value : undefined, shieldless: b.shlBox ? b.shlBox.checked : undefined, surprised: b.surBox ? b.surBox.checked : undefined,
+      charging:b.charging.checked, set4:b.set4.checked, other:b.other.value, parry: b.parryBox ? b.parryBox.checked : undefined, acMod: b.acModSel ? b.acModSel.value : undefined, shieldless: b.shlBox ? b.shlBox.checked : undefined, surprised: b.surBox ? b.surBox.checked : undefined,
       selected: selLabel===null ? '' : selLabel, speeds:speeds, modes:modes, stats:statsOut, statsBase:statsBaseOut
     };
   });
 
   // The list only re-sorts on demand (⚄ Roll initiative or ↕ Order); otherwise it keeps its last order,
   // with anything new falling in set-up order (players as listed, then Enemies in creation order).
-  const setupRank = n => { const i=SETUP_ORDER.indexOf(n); return i>=0 ? i : (SETUP_ORDER.length + baddies.indexOf(n)); };
+  const setupRank = n => { const i=baddies.indexOf(n); return i>=0 ? PCS.length+i : PCS.indexOf(n); };
   if(reorderPending){ lightSortPending=true; reorderPending=false; }                   // the order sorts by its own Act On
   if(reorderPending){ order.sort((a,b)=> a.sortInit - b.sortInit); reorderPending=false; }
   else{ const rank = n => { const i=displayOrder.indexOf(n); return i>=0 ? i : 10000+setupRank(n); }; order.sort((a,b)=> rank(a.name)-rank(b.name)); }
@@ -6243,7 +5989,7 @@ function update(){
   });
   saveStore(store);
   if(skillRows.length || abilityChecks.length) recolorSkills();   // ability strip reads live stats
-  if(typeof renderSaves==='function' && Object.keys(SAVES).length) renderSaves();     // Virtue on saves
+  if(typeof renderSaves==='function' && Object.keys(SAVES).length) renderSaves();
   if(typeof renderReaction==='function') renderReaction();                             // live CHA
   if(typeof renderLight==='function') renderLight();
 }
@@ -6431,7 +6177,7 @@ function applyDiceMode(sess){
 document.getElementById('nextRoundSync').addEventListener('click', ()=>{
   if(!ROUND) return;
   syncState = ROUND.sendDM({round: (syncState ? syncState.round : 1) + 1});
-  Object.keys(blocks).forEach(n=>{ if(blocks[n].placeholder) clearEnemyRolls(blocks[n]); });   // the Enemies' attacks are rolled again
+  Object.keys(blocks).forEach(n=>{ const b=blocks[n]; if(b.placeholder) clearEnemyRolls(b); else clearRoundChoices(b); });   // the Enemies' attacks are rolled again
   showRound(); update();
 });
 document.getElementById('resetInitSync').addEventListener('click', ()=>{
@@ -6459,11 +6205,10 @@ function newRound(){
   Object.keys(blocks).forEach(name=>{ const b=blocks[name];
     if(b.placeholder){ clearEnemyRolls(b); return; }          // the setup stays; each attack is rolled again by the DM
     if(!b.rows) return;
-    b.rows.forEach(r=>{ if(r.box && r.box.checked){ if(!r.action.noAttack) rollAttack(r, name); else if(r.action.turn) r.roll=d20(); } });   // fresh dice, same picks
+    b.rows.forEach(r=>{ if(r.box && r.box.checked){ if(!r.action.noAttack) rollAttack(r, name); else if(r.action.turn) r.roll=ownDice ? null : d20(); } });   // fresh dice, same picks
   });
   update();
 }
-const SETUP_ORDER=['Borsun','Jaque','Rifiyr','Goroth','Atteroak','Hanspeter','Tig','Nebish'];
 const ORDER_KEY='adnd-order';
 let displayOrder=[]; try{ const v=JSON.parse(localStorage.getItem(ORDER_KEY)); if(Array.isArray(v)) displayOrder=v; }catch(e){}
 let reorderPending=false, lightSortPending=false;
@@ -6676,7 +6421,6 @@ function conPct(kind, con){ const t=CON_SAVES[kind]; return t[Math.max(0,Math.mi
 function saveBonus(name, cat){
   const sv=SAVES[name]; if(!sv) return null;
   let b = sv.mods["All"]||0;
-  const blk=blocks[name]; if(blk && blk.virtueSel && blk.virtueSel.value==='saves') b+=2;   // Tig's Virtue on Saves
   if(sv.mods[cat.name]!==undefined) b += sv.mods[cat.name];
   else if(cat.parent && sv.mods[cat.parent]!==undefined) b += sv.mods[cat.parent];
   return b;
@@ -6791,70 +6535,47 @@ function renderSaves(){
 }
 
 /* ---------------- Reaction tab ---------------- */
-let rxParty=null;          // one roll for the encounter: {d:2d10 total, appeal:d20 for Tig's Romantic Appeal save}
-function rxTypes(t){ return t==="humans" ? ["Human"] : t==="own culture" ? OWN_CULTURE : t==="all" ? [...NPC_RACES,...NPC_OCCUPATIONS] : t; }
-function rxSel(){ return {race:document.getElementById('rxRace').value, occ:document.getElementById('rxOcc').value, cul:document.getElementById('rxCulture').value}; }
-function rxEntries(name){
-  const {race,occ,cul}=rxSel();
-  return ((REACTION_MODS[name]||{}).mods||[]).filter(e=>{ const ts=rxTypes(e.types); const hit = e.withOcc ? (ts.includes(race) && rxTypes(e.withOcc).includes(occ)) : (ts.includes(race)||ts.includes(occ)); return hit && (!e.culture || e.culture===cul); });
+let rxParty=null;          // one roll for the encounter: {d:2d10 total}
+function rxEntries(name){  // what adjusts this character's reaction, besides Charisma and reputation
+  const c=CHARACTERS[name];
+  return c && c.race && c.race===document.getElementById('rxRace').value ? [{mod:1, why:'own race'}] : [];
 }
-function rxMod(name){ return rxEntries(name).reduce((s,e)=>s+e.mod,0); }
-const rxLabel = t => typeof t==="string" ? t.charAt(0).toUpperCase()+t.slice(1) : t.join(', ');
-const rxApNeed={};         // the save each group needs vs Paralysis (defaults from the config; adjustable per row)
-function appealNeed(name,key){ const a=REACTION_MODS[name].appeal; return rxApNeed[key]!==undefined ? rxApNeed[key] : a.need[key]; }
-function appealEffect(name,key,roll){ const a=REACTION_MODS[name].appeal, saved=roll>=appealNeed(name,key); return a.when[key]==='save' ? saved : !saved; }
-function rxResult(name, extra, grp){
+function rxResult(name){
   const stance=document.getElementById('rxStance').value;
   const cha=liveStat(name,'cha'), chaAdj=chaReact(cha);
   const rep=parseInt(document.getElementById('rxRep').value,10)||0;
   const o=rxParty; if(!o) return null;
-  const mod=rxMod(name); let appeal=null, shift=0;
-  const ap=(REACTION_MODS[name]||{}).appeal;
-  if(ap && o.appeal && o.appeal[grp]!=null){                                        // Romantic Appeal: the crowd's d20 save at a penalty; if it FAILS, +1 to the reaction adjustment
-    const need=appealNeed(name,grp), ok=appealEffect(name,grp,o.appeal[grp]);
-    appeal={roll:o.appeal[grp], need, ok, when:ap.when[grp]};
-    if(ok) shift=extra||0;                                        // the appeal moves the RESPONSE one step: friendlier (+1, women & single-sex) or less friendly (−1, men in coed)
-  }
+  const mod=rxEntries(name).reduce((s,e)=>s+e.mod,0);
   const modRoll=o.d-chaAdj-mod-rep, key=Math.max(2,Math.min(20,modRoll));
-  const base=RX_TABLE[key][RX_COL[stance]]; let res=base;
-  if(shift){ const i=RX_ORDER.indexOf(base); if(i>=0) res=RX_ORDER[Math.max(0,Math.min(RX_ORDER.length-1,i-shift))]; }   // Flight sits outside the ladder
-  return {res, base, appeal, shift, d:o.d, chaAdj, mod, rep, modRoll};
+  return {res:RX_TABLE[key][RX_COL[stance]], d:o.d, chaAdj, mod, rep, modRoll};
 }
 const RX_CLASS={Friendly:'rx-friendly',Indifferent:'rx-indiff',Cautious:'rx-caut',Threatening:'rx-threat',Hostile:'rx-host',Flight:'rx-flight'};
 function buildReaction(){
   const rp=document.getElementById('rxRep'); for(let n=10;n>=-10;n--) rp.appendChild(opt(n, n>0?'+'+n:n<0?'−'+Math.abs(n):'0')); rp.value='0';
   const rc=document.getElementById('rxRace'); NPC_RACES.forEach(n=> rc.appendChild(opt(n,n)));
-  const oc=document.getElementById('rxOcc'); NPC_OCCUPATIONS.forEach(n=> oc.appendChild(opt(n,n)));
-  ['rxStance','rxRep','rxRace','rxOcc','rxCulture'].forEach(id=> document.getElementById(id).addEventListener('input', renderReaction));
-  document.getElementById('rxRoll').addEventListener('click', ()=>{ rxParty={d:Math.floor(Math.random()*10)+1+Math.floor(Math.random()*10)+1, appeal:{"women & 1sex group":d20(), "men":d20()}}; /* Appeal auto-rolls with the party roll, one roll per group */ renderReaction(); });
+  ['rxStance','rxRep','rxRace'].forEach(id=> document.getElementById(id).addEventListener('input', renderReaction));
+  document.getElementById('rxRoll').addEventListener('click', ()=>{ rxParty={d:Math.floor(Math.random()*10)+1+Math.floor(Math.random()*10)+1}; renderReaction(); });
   document.getElementById('rxClear').addEventListener('click', ()=>{ rxParty=null; renderReaction(); });
   renderReaction();
 }
 function renderReaction(){
-  const visible=Object.keys(REACTION_MODS).sort().filter(isActive);
-  const {race,occ,cul}=rxSel();
+  const visible=PCS.filter(isActive).sort();
+  const race=document.getElementById('rxRace').value;
   const rxf=document.getElementById('rxFields'); rxf.replaceChildren();
-  if(ownDice) rxf.appendChild(RoundUI.typedField({min:2,max:20}, {dice:'2d10', text:' · reaction'}, rxParty ? rxParty.d : null, v=>{ rxParty = v==null ? null : {d:v, appeal:(rxParty&&rxParty.appeal)||{}}; renderReaction(); }, 'rx|party'));
+  if(ownDice) rxf.appendChild(RoundUI.typedField({min:2,max:20}, {dice:'2d10', text:' · reaction'}, rxParty ? rxParty.d : null, v=>{ rxParty = v==null ? null : {d:v}; renderReaction(); }, 'rx|party'));
   const host=document.getElementById('rxResults');
   if(!rxParty){ host.classList.add('hidden'); host.innerHTML=''; }
   else{
     host.classList.remove('hidden');
     const rep=parseInt(document.getElementById('rxRep').value,10)||0;
-    let html=`<table class="acts gctable"><thead><tr><th class="l">${race} ${occ.toLowerCase()} (${cul} culture) · 2d10 = ${rxParty.d}${rep?` · reputation ${fmt(rep)}`:''}</th><th>CHA</th><th>Mod</th><th>Result</th><th class="l">Reaction</th></tr></thead><tbody>`;
+    let html=`<table class="acts gctable"><thead><tr><th class="l">${race} · 2d10 = ${rxParty.d}${rep?` · reputation ${fmt(rep)}`:''}</th><th>CHA</th><th>Mod</th><th>Result</th><th class="l">Reaction</th></tr></thead><tbody>`;
     const partyRows=[];                                            // every row shown, for the Party average
     visible.forEach(name=>{
-      const m=REACTION_MODS[name]||{};
-      const variants = m.split ? Object.keys(m.split).filter(k=>k!=='why').map(k=>({label:`${name} (${k})`, key:k, extra:m.split[k]})) : [{label:name, extra:0}];
-      variants.forEach(v=>{
-        const r=rxResult(name, v.extra, v.key); if(!r) return;
-        const tip=[...rxEntries(name).map(e=>`${fmt(e.mod)} ${e.why}`), ...(r.shift?[`Romantic Appeal: ${r.base} → ${r.res}`]:[])].join(' · ');
-        if(!m.split || v===variants[0]) partyRows.push(r);                // Party average counts each character once (Tig's base row)
-        const apSel = (REACTION_MODS[name]||{}).appeal ? ` <select class="apsave" data-apsave data-key="${v.key}" title="the Paralysis save this group needs (1 HD humanoids)">${Array.from({length:20},(_,n)=>n+1).map(n=>`<option value="${n}"${n===appealNeed(name,v.key)?' selected':''}>${n}${n===REACTION_MODS[name].appeal.need[v.key]?' · 1 HD':''}</option>`).join('')}</select>` : '';
-        const apOwn = ownDice && (REACTION_MODS[name]||{}).appeal ? ` ${rollSlot(D20, {dice:'1d20', text:' · Romantic Appeal'}, r.appeal ? r.appeal.roll : null, x=>{ rxParty.appeal=rxParty.appeal||{}; rxParty.appeal[v.key]=x; renderReaction(); }, `rxa|${v.key}`)}${r.appeal?` ${r.appeal.ok?(r.appeal.when==='save'?'Saved ↓':'Appeal ✓'):(r.appeal.when==='save'?'Failed':'Saved ✗')}`:''}${apSel}` : '';
-        const apTxt = ownDice ? apOwn : (REACTION_MODS[name]||{}).appeal ? ` <button class="reroll small quick appealbtn ui-button is-secondary size-sm ${r.appeal?(r.appeal.ok?'ok':'bad'):''}" data-appeal data-name="${name}" data-key="${v.key}" title="${r.appeal?`Romantic Appeal: needs ${r.appeal.need} to save, d20 ${r.appeal.roll} → ${r.appeal.ok?'the response shifts one step (click to clear)':'no effect (click to roll again)'}`:'Romantic Appeal: roll this group\'s Paralysis save'}">${r.appeal?`⚄ ${r.appeal.roll} · ${r.appeal.ok?(r.appeal.when==='save'?'Saved ↓':'Appeal ✓'):(r.appeal.when==='save'?'Failed':'Saved ✗')}`:'⚄ Appeal'}</button>${apSel}` : '';
-        html+=`<tr><td class="name">${v.label}</td><td class="num modcell">${r.chaAdj?fmt(r.chaAdj):'—'}</td><td class="num modcell" title="${tip}">${r.mod?fmt(r.mod):'—'}</td><td class="stgt num" title="${r.d} − CHA ${fmt(r.chaAdj)} − mods ${fmt(r.mod)}${r.rep?` − rep ${fmt(r.rep)}`:''} = ${r.modRoll}">${r.modRoll}</td>`
-            +`<td class="rxres ${RX_CLASS[r.res]}">${r.res}${apTxt}</td></tr>`;
-      });
+      const r=rxResult(name); if(!r) return;
+      const tip=rxEntries(name).map(e=>`${fmt(e.mod)} ${e.why}`).join(' · ');
+      partyRows.push(r);
+      html+=`<tr><td class="name">${esc(name)}</td><td class="num modcell">${r.chaAdj?fmt(r.chaAdj):'—'}</td><td class="num modcell" title="${tip}">${r.mod?fmt(r.mod):'—'}</td><td class="stgt num" title="${r.d} − CHA ${fmt(r.chaAdj)} − mods ${fmt(r.mod)}${r.rep?` − rep ${fmt(r.rep)}`:''} = ${r.modRoll}">${r.modRoll}</td>`
+          +`<td class="rxres ${RX_CLASS[r.res]}">${r.res}</td></tr>`;
     });
     if(partyRows.length){                                          // Party: the average of everyone's modified roll, read off the table
       const stance=document.getElementById('rxStance').value, n=partyRows.length;
@@ -6865,14 +6586,6 @@ function renderReaction(){
       html+=`<tr class="partyrow"><td class="name">Party</td><td class="num modcell">${avgCha?fmt(+f1(avgCha)):'—'}</td><td class="num modcell" title="average of everyone's modifiers">${avgMod?fmt(+f1(avgMod)):'—'}</td><td class="stgt num" title="average of the ${n} modified rolls above = ${f1(avg)}, read as ${rounded}">${f1(avg)}</td><td class="rxres ${RX_CLASS[res]}">${res}</td></tr>`;
     }
     host.innerHTML=html+'</tbody></table>';
-    fillRollSlots(host);
-    host.querySelectorAll('[data-appeal]').forEach(btn=> btn.addEventListener('click', ()=>{   // first click rolls; after a success it clears, after a failure it re-rolls
-      const g=btn.dataset.key, cur=rxParty.appeal&&rxParty.appeal[g];
-      rxParty.appeal=rxParty.appeal||{};
-      if(cur!=null && appealEffect(btn.dataset.name, g, cur)) rxParty.appeal[g]=null; else rxParty.appeal[g]=d20();   // clears after an effect, re-rolls after none
-      renderReaction();
-    }));
-    host.querySelectorAll('[data-apsave]').forEach(sel=> sel.addEventListener('change', ()=>{ rxApNeed[sel.dataset.key]=parseInt(sel.value,10); renderReaction(); }));
   }
 }
 
@@ -6930,12 +6643,25 @@ function resetBaddies(){
   addBaddy();
 }
 
+// Parrying and turning are for one round
+function clearRoundChoices(b){
+  if(b.parryBox) b.parryBox.checked=false;
+  const r=b.rows && b.rows.find(x=>x.action.turn); if(r){ r.box.checked=false; r.roll=null; }
+}
+
 /* ---------------- The party on every tab ---------------- */
 const PCS=Object.keys(CHARACTERS).filter(n=>!CHARACTERS[n].placeholder);
-const partyNames=PARTY ? PARTY.chars.map(c=>c.name).filter(n=>PCS.includes(n)) : [];
-// No one in play yet (or never signed in here): the hand-typed characters
-const activeSet=new Set(partyNames.length ? partyNames : PCS.filter(n=>!CHARACTERS[n].legacy));
+const activeSet=new Set(PCS);
 function isActive(name){ const c=CHARACTERS[name]; if(!c) return false; if(c.placeholder) return true; return activeSet.has(name); }
+(function noteParty(){   // who isn't on the page, and why
+  const waiting=(PARTY ? PARTY.chars : []).filter(c=>!c.save || (SHEET_REVIEW[c.name]||{}).error).map(c=>c.name);
+  const say=[];
+  if(!PCS.length && !waiting.length) say.push(PARTY ? 'Nobody is in play in this campaign yet; Enemies work without a party.' : 'No party loaded. Sign in to bring in each player\'s character in play; Enemies work without one.');
+  if(waiting.length) say.push(`No saved sheet to read yet: ${waiting.join(', ')}.`);
+  if(!say.length) return;
+  document.getElementById('noPartyText').textContent=say.join(' ');
+  document.getElementById('noParty').hidden=false;
+})();
 function applyActive(){
   Object.keys(skillBlocks).forEach(name=>{ skillBlocks[name].style.display = isActive(name) ? '' : 'none'; });
   update();
@@ -6997,15 +6723,15 @@ function showConfigReview(only){
   const host=document.getElementById('cfgReview'); host.innerHTML='';
   if(!only) return;
   [only].forEach(name=>{
-    const c=CHARACTERS[name], sv=SAVES[name]||{base:{},mods:{}}, rx=REACTION_MODS[name]||{};
+    const c=CHARACTERS[name], sv=SAVES[name]||{base:{},mods:{}};
     const block=document.createElement('div'); block.className='char cfgblock';
     const head=document.createElement('div'); head.className='chead'; head.appendChild(nameEl(name));
     const facts=[];
-    facts.push(SHEET_REVIEW[name] && !SHEET_REVIEW[name].error ? 'from their saved sheet' : 'hand-typed'); if(c.caster===false) facts.push('no casting'); if(c.shield) facts.push('carries a shield');
+    if(c.caster===false) facts.push('no casting'); if(c.shield) facts.push('carries a shield');
     facts.push(`base THAC0 ${c.baseTHAC0}`); if(c.initBonus) facts.push(`init bonus ${fmt(c.initBonus)}`);
     if(c.quickness) facts.push(`Quickness ${fmt(c.quickness.bonus)} init (d20 ≤ Dex)`);
     if(c.turn) facts.push(`turns undead as ${ORD(c.turn.level)}-level priest`);
-    if(c.armorSpell) facts.push(`Armor spell +${c.armorSpell} AC`); if(c.parry) facts.push(`Parry +${c.parry} AC`); if(c.virtue) facts.push('Virtue +2 (AC / to-hit / damage / saves)');
+    if(c.parry) facts.push(`Parry +${c.parry} AC`);
     const note=document.createElement('span'); note.className='svnote'; note.textContent=facts.join(' · '); head.appendChild(note);
     block.appendChild(head);
     let h='';
@@ -7016,7 +6742,7 @@ function showConfigReview(only){
       ${c.effects&&c.effects.length?`<tr><td class="name">Effects on</td><td colspan="5">${c.effects.map(esc).join(' · ')} <span class="meta">(counted in the THAC0s and AC)</span></td></tr>`:''}
       <tr><td class="name">Armor Class</td><td colspan="5">AC ${c.armor?c.armor.ac:'—'}${c.shield?` · shieldless ${c.armor.shieldless}`:''} · surprised ${c.armor?c.armor.surprised:'—'}</td></tr>
       <tr><td class="name">Saves</td><td colspan="5">${sv.base.PPD===undefined?'None yet':`PPD ${sv.base.PPD} · RSW ${sv.base.RSW} · Pet/Poly ${sv.base.PP} · Breath ${sv.base.BW} · Spell ${sv.base.Spell}`}${Object.keys(sv.mods).length?' · '+Object.keys(sv.mods).map(k=>`${k} ${fmt(sv.mods[k])}`).join(', '):''}${sv.note?` · <i>${esc(sv.note)}</i>`:''}</td></tr>
-      <tr><td class="name">Reactions</td><td colspan="5">${(rx.mods||[]).map(e=>`${rxLabel(e.types)} ${fmt(e.mod)} (${e.why}${e.culture?', own culture':''})`).join(' · ')||'Charisma only'}${rx.appeal?' · Romantic Appeal: women & single-sex save 16 (crowd fails → one step friendlier); men in coed save 12 (they save → one step less friendly)':''}</td></tr>
+      <tr><td class="name">Reactions</td><td colspan="5">Charisma${c.race?` · ${esc(c.race)} +1 (own race)`:''}</td></tr>
     </tbody></table>`;
     // weapons
     h+=`<table class="acts cfgtable"><thead><tr><th class="l">Attack</th><th>THAC0</th><th>Speed</th><th class="l">Damage S-M / L</th><th>Crit</th><th>Material</th></tr></thead><tbody>`;
@@ -7035,15 +6761,13 @@ function showConfigReview(only){
     if(Object.keys(th).length){ h+=`<tr class="divider"><td colspan="3">Thieving skills (% ÷ 5)</td></tr>`; Object.keys(th).forEach(k=>{ h+=`<tr><td class="name">${esc(k)}</td><td class="num">${Math.round(th[k]/5)}</td><td class="l">${th[k]}%</td></tr>`; }); }
     h+=`</tbody></table>`;
     const rv=SHEET_REVIEW[name];
-    if(rv && rv.error) h=`<div class="review err">Couldn't read their saved sheet (${esc(rv.error)}); this is the hand-typed entry.</div>`+h;
-    else if(rv && rv.review.length) h=`<details class="review"><summary>${rv.review.length} thing${rv.review.length===1?'':'s'} to check in the sheet</summary><ul>${rv.review.map(m=>`<li>${esc(m)}</li>`).join('')}</ul></details>`+h;
+    if(rv && rv.review && rv.review.length) h=`<details class="review"><summary>${rv.review.length} thing${rv.review.length===1?'':'s'} to check in the sheet</summary><ul>${rv.review.map(m=>`<li>${esc(m)}</li>`).join('')}</ul></details>`+h;
     const body=document.createElement('div'); body.innerHTML=h; block.appendChild(body);
     host.appendChild(block);
   });
 }
 
 /* ---------------- Surprise ---------------- */
-const SURPRISE_RACE_BONUS={};            // house-rule knob, e.g. {Jaque:1, Rifiyr:1}; core 2E gives elves no bonus to their own roll
 const SURPRISE_THRESHOLD=3;              // PHB: d10 of 1–3 = surprised
 let surTyped={};                         // real dice: name -> {d10, ds}
 function rollSurprise(){
@@ -7055,7 +6779,6 @@ function rollSurprise(){
     const mods=[]; let m=0;
     const dexAdj=-DEX_REACT(dex); if(dexAdj){ m+=dexAdj; mods.push(`Dex ${fmt(dexAdj)}`); }
     if(SKILLS[name] && SKILLS[name]['Alertness']){ m+=1; mods.push('Alertness +1'); }
-    if(SURPRISE_RACE_BONUS[name]){ m+=SURPRISE_RACE_BONUS[name]; mods.push(`race ${fmt(SURPRISE_RACE_BONUS[name])}`); }
     if(sit){ m+=sit; mods.push(`situation ${fmt(sit)}`); }
     const typed=surTyped[name]||(surTyped[name]={});
     const d10=ownDice ? typed.d10 : Math.floor(Math.random()*10)+1;
@@ -7134,7 +6857,7 @@ function describeChoices(name){
     if(!full) b.attacks.forEach((a,i)=>{ if(a.roll) acts.push({t:SheetRound.lineSay(enemyLine(name, a, i))}); });
     if(b.shieldless.checked) conds.push('Shieldless');
   }else{
-    if(!full) b.rows.forEach(r=>{ if(r.box && r.box.checked){
+    if(!full) b.rows.forEach(r=>{ if(r.box && r.box.checked && !r.action.turn){
       let l=r.action.name;
       if(r.modeSel && r.modeSel.value) l+=` (${r.modeSel.value})`;
       if(r.action.cast && r.castSel) l+=` (speed ${r.castSel.value})`;
@@ -7144,10 +6867,8 @@ function describeChoices(name){
     if(b.moveAfter.checked) acts.push('Move after');
     if(b.surBox && b.surBox.checked) conds.push('Surprised');
     if(b.shlBox && b.shlBox.checked) conds.push('Shieldless');
-    if(b.parryBox && b.parryBox.checked) conds.push('Parry'+(b.parrySel ? (b.parrySel.value ? ' vs '+(blocks[b.parrySel.value]?blocks[b.parrySel.value].bdId:b.parrySel.value) : ' (no Enemy chosen)') : ''));
+    if(b.parryBox && b.parryBox.checked) conds.push('Parry');
     if(b.acModSel && b.acModSel.value!=='0') conds.push('AC mod '+fmt(parseInt(b.acModSel.value,10)));
-    if(b.armorBox && b.armorBox.checked) conds.push('Armor Spell');
-    if(b.virtueSel && b.virtueSel.value) conds.push('Virtue: '+({ac:'AC',hit:'To-Hit',dmg:'Damage',saves:'Saves'}[b.virtueSel.value]));
   }
   if(b.flanking.checked) conds.push('Flanking');
   if(b.ground.value!=='even') conds.push((b.ground.value==='high'?'High':'Low')+' ground');
@@ -7261,6 +6982,7 @@ function lightRowFor(name){
   }else nameLabel=document.createElement('span');
   nameTd.appendChild(nameLabel);
   if(quickBtn) nameTd.appendChild(quickBtn);                      // after the name, so names line up
+  if(b.parryBox) nameTd.appendChild(b.parryBox.closest('label'));  // the same box the AC reads
   if(b.placeholder){
     const dupBtn=document.createElement('button'); dupBtn.className='reroll small quick ui-button is-secondary size-sm'; dupBtn.innerHTML=RoundUI.DUPLICATE_ICON+'<span>Duplicate</span>'; dupBtn.title='another Enemy with the same stats';
     dupBtn.addEventListener('click', ()=>{ duplicateBaddy(name); update(); });
@@ -7276,12 +6998,35 @@ function lightRowFor(name){
   const actTd=document.createElement('td'); actTd.className='num'; const actSpan=document.createElement('span'); actSpan.className='actson'; actTd.appendChild(actSpan);
   tr.append(nameTd, spTd, irTd, actTd);
   let turnTr=null;
-  if(!b.placeholder && CHARACTERS[name].turn){ turnTr=document.createElement('tr'); turnTr.className='turnres'; turnTr.innerHTML='<td colspan="4"><div class="turnwrap"></div></td>'; }
+  let turnBtn=null;
+  if(!b.placeholder && CHARACTERS[name].turn){
+    turnTr=document.createElement('tr'); turnTr.className='turnres'; turnTr.innerHTML='<td colspan="4"><div class="turnwrap"></div></td>';
+    turnBtn=document.createElement('button'); turnBtn.type='button'; turnBtn.className='reroll small quick ui-button is-secondary size-sm'; turnBtn.textContent='Turn Undead';
+    turnBtn.title=`turns as a ${ORD(CHARACTERS[name].turn.level)}-level priest`;
+    turnBtn.addEventListener('click', ()=>{ const r=b.rows.find(x=>x.action.turn); r.box.checked=true; r.roll=ownDice ? null : d20(); update(); });
+    nameTd.appendChild(turnBtn);
+  }
   const detailTr=document.createElement('tr'); detailTr.className='lightdetail-row'; detailTr.innerHTML='<td colspan="4"><div class="lightdetail"></div></td>';
-  b.lightRow={tr, detailTr, turnTr, nameTd, nameLabel, quickBtn, spSel, irSel, actSpan};
+  b.lightRow={tr, detailTr, turnTr, turnBtn, nameTd, nameLabel, quickBtn, spSel, irSel, actSpan};
   return b.lightRow;
 }
 const orderCards=new Map();   // name → its card in the order
+// Turn Undead on the order's card: the result, once it's picked and rolled
+function paintTurn(lr, b, name, trs){
+  if(!lr.turnTr) return;
+  const r=b.rows.find(x=>x.action.turn), on=!!(r && r.box.checked);
+  lr.turnBtn.hidden=on;
+  if(!on){ if(lr.turnTr.parentNode) lr.turnTr.remove(); return; }
+  const wrap=lr.turnTr.querySelector('.turnwrap'); wrap.replaceChildren();
+  if(ownDice) wrap.appendChild(RoundUI.typedField(D20, {dice:'1d20', text:' · Turn Undead'}, r.roll, v=>{ r.roll=v; update(); }, `turn|${name}`));
+  const res=document.createElement('span');
+  res.innerHTML=(r.roll==null ? '' : (ownDice ? '' : `<span class="lbl"><b>Turn Undead</b> d20 ${r.roll}</span>`) + turnResultHTML(CHARACTERS[name].turn.level, r.roll));
+  wrap.appendChild(res);
+  const clear=document.createElement('button'); clear.type='button'; clear.className='reroll small turnclear ui-button is-secondary size-sm'; clear.textContent='Clear';
+  clear.addEventListener('click', ()=>{ r.box.checked=false; r.roll=null; update(); });
+  wrap.appendChild(clear);
+  trs.push(lr.turnTr);
+}
 function renderLight(){
   // The hidden tracker builds each combatant's pieces; the order shows them
   document.getElementById('tracker').style.display = 'none';
@@ -7342,8 +7087,10 @@ function renderLight(){
         if(lineNeedsSave(l)) rows.push({save:{key:`${round}|${name}|${l.key}`, whos:judged.map(j=>j.who)}});
         return rows;
       });
-      paintLightDetail(lr, {conds: sv.you||[], acts: [{t: `From the sheet: ${syncedDoing(sv)}`}, ...acts]});
-      entries.push({name, act: sv.actOn==null ? 1e9 : sv.actOn, trs:[lr.tr, lr.detailTr]});
+      paintLightDetail(lr, {conds: [...(sv.you||[]), ...(b.parryBox && b.parryBox.checked ? ['Parry'] : [])], acts: [{t: `From the sheet: ${syncedDoing(sv)}`}, ...acts]});
+      const trs=[lr.tr, lr.detailTr];
+      paintTurn(lr, b, name, trs);
+      entries.push({name, act: sv.actOn==null ? 1e9 : sv.actOn, trs});
       return;
     }
     const dex = b.placeholder ? 10 : parseInt(b.statsSel.dex.value,10);          // only Quickness reads it, straight from the card
@@ -7364,21 +7111,7 @@ function renderLight(){
     lr.actSpan.title = held ? 'held at 50' : noSpeed ? 'pick a speed once they say what they\'re doing' : `${roll} + speed ${sp}${quick?' '+fmt(quick)+' Quickness':''}`;
     const trs=[lr.tr];
     if(paintLightDetail(lr, describeChoices(name))) trs.push(lr.detailTr); else if(lr.detailTr.parentNode) lr.detailTr.remove();
-    if(lr.turnTr){
-      // the result shows whenever Turn Undead is the action he has picked on his own card
-      const tRow=b.rows.find(r=>r.action.turn);
-      const pickedRoll = (tRow && tRow.box.checked && tRow.roll!==null) ? tRow.roll : null;
-      const troll = pickedRoll;
-      if(troll!=null){
-        const roll=troll, wrap=lr.turnTr.querySelector('.turnwrap');
-        wrap.innerHTML = `<span class="lbl"><b>Turn Undead</b> d20 ${roll}</span>` + turnResultHTML(CHARACTERS[name].turn.level, roll) + `<button class="reroll small turnclear ui-button is-secondary size-sm">Clear</button>`;
-        wrap.querySelector('.turnclear').addEventListener('click', ()=>{
-          if(tRow && tRow.box.checked){ tRow.box.checked=false; tRow.roll=null; }              // clearing also drops the pick on his card
-          update();
-        });
-        trs.push(lr.turnTr);
-      }else if(lr.turnTr.parentNode) lr.turnTr.remove();
-    }
+    paintTurn(lr, b, name, trs);
     entries.push({name, act, trs});
   });
   // same ordering discipline as the full view: only re-sort on demand
@@ -7920,9 +7653,9 @@ function resetPartyCombat(){
     const b=blocks[name];
     if(!b || b.placeholder) return;
     if(b.lightRow) b.lightRow.spSel.value='';                   // speed comes with the attack they pick
-    b.initRoll.value='10'; b.initRolled=false; b.tsize.value='sm'; b.lightQuick=null; if(b.lightRow && b.lightRow.quickBtn) b.lightRow.quickBtn.hidden=true; b.lightTurn=null; if(b.virtueSel) b.virtueSel.value=''; b.resetTargets();
+    b.initRoll.value='10'; b.initRolled=false; b.tsize.value='sm'; b.lightQuick=null; if(b.lightRow && b.lightRow.quickBtn) b.lightRow.quickBtn.hidden=true; b.lightTurn=null; b.resetTargets();
     b.moving.checked=false; b.moveAfter.checked=false; b.moveMult.value='1'; b.flanking.checked=false; b.ground.value='even';
-    b.charging.checked=false; b.set4.checked=false; b.other.value='0'; if(b.armorBox) b.armorBox.checked=false; if(b.parryBox) b.parryBox.checked=false; if(b.parrySel) b.parrySel.value=''; if(b.acModSel) b.acModSel.value='0'; if(b.shlBox) b.shlBox.checked=false; if(b.surBox) b.surBox.checked=false;
+    b.charging.checked=false; b.set4.checked=false; b.other.value='0'; if(b.parryBox) b.parryBox.checked=false; if(b.acModSel) b.acModSel.value='0'; if(b.shlBox) b.shlBox.checked=false; if(b.surBox) b.surBox.checked=false;
     b.rows.forEach(r=>{
       if(r.box) r.box.checked=false;
       r.roll=null; r.pct=null; r.sub=null; r.dmg=null; r.animal=false;

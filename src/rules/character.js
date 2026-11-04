@@ -198,3 +198,25 @@ export function hpState(current) {
   if (hp <= HP_FLOOR) return 'Dead';
   return hp === 0 ? 'Unconscious' : 'Dying';
 }
+
+// ── Turning undead (PHB) ──
+// The level a character turns at: a cleric at their own level; a paladin from
+// 3rd level, as a cleric two levels lower. Druids can't turn, and specialty
+// priests only at the DM's option, so a priest class named anything else doesn't
+// count. 0 for a character who can't turn.
+export function turningLevel(classes) {
+  const levels = (classes || []).map(c => {
+    const level = parseInt(c.level, 10) || 0, name = String(c.name || '').trim();
+    if (/\bpaladin\b/i.test(name)) return level >= 3 ? level - 2 : 0;
+    return /\bcleric\b/i.test(name) || /^priest$/i.test(name) ? level : 0;
+  });
+  return Math.max(0, ...levels);
+}
+
+// ── Parrying (PHB/DMG optional rule) ──
+// The AC bonus for parrying: half the character's level, rounded down, and
+// warriors 1 more.
+export function parryBonus(level, classes) {
+  const warrior = (classes || []).some(c => c.group === 'warrior');
+  return Math.floor((parseInt(level, 10) || 0) / 2) + (warrior ? 1 : 0);
+}

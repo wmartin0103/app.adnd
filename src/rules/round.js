@@ -4,7 +4,7 @@
 // record"), so they always agree; it's also what the sync sends.
 //
 //   {
-//     character: 'Rifiyr', round: 3,
+//     character: 'A character', round: 3,
 //     init: { roll: 7, adj: -2 },          // the d10, rolled once a round; adj: anything else that moves it (Quickness rolled at the table)
 //     you: { moveFirst, moveMult: '1', setVsCharge },
 //     queue: [{ qid: 'q1', scenarioId: 'sc-1', extra: false }, ...],   // the attacks added this round, in order
