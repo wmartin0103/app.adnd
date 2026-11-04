@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { passwordProblem, setPassword, setEmail, setDisplayName } from '../src/account.js';
+import { passwordProblem, setPassword, setEmail, setDisplayName, setDiceMode } from '../src/account.js';
 import { needsNewPassword } from '../src/cloud.js';
 
 // A stand-in for the Supabase client: the tables and calls the Account page uses
@@ -63,4 +63,13 @@ test('account: email and name', async () => {
   assert.deepEqual(await setEmail(waiting, 'new@example.com'), { changed: false });   // the project asks for a confirmation link
   await setDisplayName(c, 'u-me', 'Bob');
   assert.equal(c.calls.find(x => x.op === 'update').payload.display_name, 'Bob');
+});
+
+test('account: the Dice setting saves, and a refused one says so', async () => {
+  const noRows = { from: () => { const b = { update() { return b; }, eq() { return b; }, select: async () => ({ data: [], error: null }) }; return b; } };
+  await assert.rejects(setDiceMode(noRows, 'u', 'own'), /couldn.t be saved/);
+  let wrote = null;
+  const ok = { from: () => { const b = { update(p) { wrote = p; return b; }, eq() { return b; }, select: async () => ({ data: [{ id: 'u' }], error: null }) }; return b; } };
+  await setDiceMode(ok, 'u', 'own');
+  assert.deepEqual(wrote, { dice_mode: 'own' });
 });

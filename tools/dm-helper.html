@@ -2688,6 +2688,66 @@ function rollLine(ctx, line, rand = Math.random) {
   });
   return scoreRoll(ctx, line, { kind, heal: isHealing(ctx, line.sc), each });
 }
+// ── Rolling real dice ──
+// For someone who rolls their own (the account's Dice setting): what a line needs
+// them to roll, and a roll made from what they type. They type the dice alone, and
+// the bonuses are added here, as they are for a rolled one. Each field:
+//   { id: 'd20:0' | 'dmg:0' | 'spell:0', i, what, target, dice: '1d8', add: 2, min, max }
+function typedFields(ctx, line, typed = {}) {
+  const kind = lineKind(ctx, line.sc), targets = targetsOf(line), fields = [];
+  const heal = isHealing(ctx, line.sc);
+  const needsD20 = kind === 'attack';
+  if (needsD20) targets.forEach((target, i) => fields.push({ id: `d20:${i}`, i, what: 'to hit', target, dice: '1d20', add: 0, min: 1, max: 20 }));
+  targets.forEach((target, i) => {
+    if (kind === 'area' && i > 0) return;                              // one damage roll for everyone in it
+    if (needsD20 && (typed[`d20:${i}`] == null || typed[`d20:${i}`] === 1)) return;   // to hit first; a natural 1 has no damage
+    const d = lineDamage(ctx, line.sc, target), dmg = splitDice(d.expr), spell = splitDice(d.spell);
+    const who = kind === 'area' ? null : target;
+    if (dmg.sig) fields.push({ id: `dmg:${i}`, i, what: heal ? 'healing' : 'damage', target: who, dice: dmg.sig, add: dmg.flat, min: 0, max: null });
+    if (spell.sig) fields.push({ id: `spell:${i}`, i, what: 'spell', target: who, dice: spell.sig, add: spell.flat, min: 0, max: null });
+  });
+  return fields;
+}
+// What a field's text is worth: a whole number the die can show, else null
+function typedValue(field, text) {
+  const t = String(text ?? '').trim();
+  if (!/^\d+$/.test(t)) return null;
+  const n = parseInt(t, 10);
+  return n < field.min || (field.max != null && n > field.max) ? null : n;
+}
+// "Roll 1d8 (we'll add 2) · damage", kept apart so a bonus isn't counted twice
+function typedPrompt(field, many = false) {
+  const extra = field.add > 0 ? ` (we’ll add ${field.add})` : field.add < 0 ? ` (we’ll take off ${-field.add})` : '';
+  const who = many && field.target ? ` vs ${field.target.label}` : '';
+  return { dice: field.dice, text: `${extra} · ${field.what}${who}` };
+}
+// A line's roll from what's been typed: null until there's something to show. An
+// attack needs its d20s first; damage not typed yet is the state a changed size
+// leaves it in (dmgStale), so the DM's page treats it the same.
+function typedRoll(ctx, line, typed = {}, rand = Math.random) {
+  const kind = lineKind(ctx, line.sc), targets = targetsOf(line);
+  if (kind === 'attack' && targets.some((t, i) => typed[`d20:${i}`] == null)) return null;
+  if (kind !== 'attack' && !Object.keys(typed).some(k => typed[k] != null)) return null;
+  const dice = (target, i) => {
+    const d = lineDamage(ctx, line.sc, target), dmg = splitDice(d.expr).sig, spell = splitDice(d.spell).sig;
+    const a = typed[`dmg:${i}`], b = typed[`spell:${i}`];
+    return {
+      dmgSig: a != null ? dmg : '', dmgDice: a != null ? a : null, dmgFaces: null,
+      spellSig: b != null ? spell : '', spellDice: b != null ? b : null, spellFaces: null,
+    };
+  };
+  const shared = kind === 'area' ? dice(targets[0], 0) : null;
+  const each = targets.map((target, i) => {
+    const raw = { target, d20: null, pct: null };
+    if (kind === 'attack') {
+      raw.d20 = typed[`d20:${i}`];
+      raw.pct = raw.d20 === 20 || raw.d20 === 1 ? 1 + Math.floor(rand() * 100) : null;   // the DM's Good Hits and Bad Misses tables
+    }
+    if (raw.d20 === 1) return Object.assign(raw, { dmgSig: '', dmgDice: null, spellSig: '', spellDice: null });
+    return Object.assign(raw, shared || dice(target, i));
+  });
+  return scoreRoll(ctx, line, { kind, heal: isHealing(ctx, line.sc), typed: true, each });
+}
 // A roll with the sheet's current numbers: change an effect (Bless off) or the
 // conditions after rolling and the THAC0, AC hit and damage follow, until it's
 // sent to the DM (frozen). If the damage dice themselves changed (another
@@ -2717,7 +2777,7 @@ function scoreRoll(ctx, line, raw) {
       thac0: e.d20 != null ? thac0 : null, hitsAC: e.d20 != null && thac0 != null ? thac0 - e.d20 : null,
     };
   });
-  return { kind: raw.kind || lineKind(ctx, line.sc), heal: !!raw.heal, saveNote: lineSaveNote(ctx, line.sc), each: scored, dmgStale: scored.some(e => e.dmgStale) };
+  return { kind: raw.kind || lineKind(ctx, line.sc), heal: !!raw.heal, ...(raw.typed ? { typed: true } : {}), saveNote: lineSaveNote(ctx, line.sc), each: scored, dmgStale: scored.some(e => e.dmgStale) };
 }
 // Rolls the damage dice again where they changed, keeping the d20s (after dmgStale)
 function rerollDamage(ctx, line, raw, rand = Math.random) {
@@ -2759,7 +2819,7 @@ function lineSay(line) {
   return `${line.label}: ${parts.join('; ')}`;
 }
 
-return { ROUND_MODS, MOVE_MULTS, newRound, roundQueue, queueAttack, unqueueAttack, plainAttack, attackSpeed, roundLines, lineToHit, roundACPenalty, actOn, rollDice, lineTHAC0, splitDice, hasRoll, isHealing, lineKind, rollFaces, lineName, lineSaveNote, rollLine, scoreRoll, rerollDamage, judgeRoll, lineSay };
+return { ROUND_MODS, MOVE_MULTS, newRound, roundQueue, queueAttack, unqueueAttack, plainAttack, attackSpeed, roundLines, lineToHit, roundACPenalty, actOn, rollDice, lineTHAC0, splitDice, hasRoll, isHealing, lineKind, rollFaces, lineName, lineSaveNote, rollLine, typedFields, typedValue, typedPrompt, typedRoll, scoreRoll, rerollDamage, judgeRoll, lineSay };
 })();
 // ── ui/round-ui ──
 __m["ui/round-ui"] = (() => {
@@ -2893,7 +2953,7 @@ function hitRoll(line, fresh, onReroll, judge) {
     const facesText = (faces, flat) => !faces || !faces.length ? ''
       : faces.map((v, n) => (n ? (v < 0 ? `− ${-v}` : `+ ${v}`) : String(v))).join(' ') + (flat ? ` ${flat > 0 ? '+' : '−'} ${Math.abs(flat)}` : '');
     const dmgDice = facesText(r.dmgFaces, r.dmgFlat), spellDice = facesText(r.spellFaces, r.spellFlat);
-    const dmgSub = r.dmgStale ? 'the damage dice changed'
+    const dmgSub = r.dmgStale ? (roll.typed ? 'not rolled yet' : 'the damage dice changed')
       : esc([r.dmgExpr ? `${r.dmgExpr}${dmgDice ? `: ${dmgDice}` : ''}` : '', r.spell != null ? `+ spell ${r.spell}${spellDice ? ` (${spellDice})` : ''}` : ''].filter(Boolean).join(' '));
     const dmgCls = 'is-dmg' + (moved('dmg') ? ' is-updated' : '');
     const tag = whoText ? `<span class="hit-who">${esc(whoText)}</span>` : '';
@@ -4064,10 +4124,13 @@ const cloudSession = async (client = cloudClient()) => {
     const { data } = await client.auth.getSession();
     const user = data && data.session && data.session.user;
     if (!user) return null;
-    const [{ data: prof }, { data: rows }] = await Promise.all([
-      client.from('profiles').select('display_name, is_admin').eq('id', user.id).maybeSingle(),
+    const profile = cols => client.from('profiles').select(cols).eq('id', user.id).maybeSingle();
+    const [mine, { data: rows }] = await Promise.all([
+      profile('display_name, is_admin, dice_mode'),
       client.from('campaign_members').select('campaign_id, role, campaigns(name)').eq('user_id', user.id),
     ]);
+    // Before supabase/migrations/20261104180000_dice_mode.sql: no dice_mode yet
+    const { data: prof } = mine.error ? await profile('display_name, is_admin') : mine;
     const m = (rows || [])[0] || null;
     const role = m ? m.role : null;
     return {
@@ -4075,6 +4138,8 @@ const cloudSession = async (client = cloudClient()) => {
       campaignId: m ? m.campaign_id : null, campaignName: m && m.campaigns ? m.campaigns.name : '', role,
       // The role: player (has characters), dm (runs the game) or both
       isDM: role === 'dm' || role === 'both', isPlayer: role === 'player' || role === 'both',
+      // How they roll: 'assisted' (the app rolls) or 'own' (real dice, typed in)
+      diceMode: prof && prof.dice_mode === 'own' ? 'own' : 'assisted',
     };
   } catch (e) { return null; }
 };
@@ -4293,12 +4358,19 @@ async function setEmail(client, email) {
   const now = data && data.user && data.user.email;
   return { changed: !!now && now.toLowerCase() === email.toLowerCase() };
 }
+// How they roll: 'assisted' or 'own'. A refused save changes nothing and says
+// nothing, so ask for the row back to know it went.
+async function setDiceMode(client, userId, mode) {
+  const { data, error } = await client.from('profiles').update({ dice_mode: mode }).eq('id', userId).select('id');
+  if (error) throw error;
+  if (!data || !data.length) throw new Error('That couldn’t be saved.');
+}
 async function setDisplayName(client, userId, name) {
   const { error } = await client.from('profiles').update({ display_name: name }).eq('id', userId);
   if (error) throw error;
 }
 
-return { MIN_PASSWORD, passwordProblem, setPassword, setEmail, setDisplayName };
+return { MIN_PASSWORD, passwordProblem, setPassword, setEmail, setDiceMode, setDisplayName };
 })();
 // ── characters ──
 __m["characters"] = (() => {

@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { scenarioContext, scenarioSpell, scenarioDamage, spellCardStats, saveNote, saveShort } from '../src/rules/scenarios.js';
-import { lineName, lineSaveNote, newRound, roundLines, lineTHAC0, judgeRoll, actOn, rollLine, rollDice, lineToHit, roundACPenalty, queueAttack, unqueueAttack, roundQueue, rerollDamage, lineSay, lineKind, hasRoll, isHealing, plainAttack } from '../src/rules/round.js';
+import { typedFields, typedValue, typedPrompt, typedRoll, lineName, lineSaveNote, newRound, roundLines, lineTHAC0, judgeRoll, actOn, rollLine, rollDice, lineToHit, roundACPenalty, queueAttack, unqueueAttack, roundQueue, rerollDamage, lineSay, lineKind, hasRoll, isHealing, plainAttack } from '../src/rules/round.js';
 import { createRoundSync } from '../src/round-sync.js';
 
 const load = f => JSON.parse(readFileSync(new URL(`./fixtures/characters/${f}`, import.meta.url)));
@@ -269,4 +269,50 @@ test('the DM sees the chosen weapon or spell, and the scenario name when it says
   assert.equal(lineName(ctx, { name: 'Spell slot', attackType: 'spell', spellId: null }), 'Spell slot');
   assert.equal(lineName(ctx, { name: 'Arrow trick', attackType: 'spellarrow', spellId: 'f', weaponId: 'w' }), 'Spellarrow: Fireball (Arrow trick)');
   assert.equal(lineName(ctx, { name: 'Fireball', attackType: 'spellarrow', spellId: 'f', weaponId: 'w' }), 'Spellarrow: Fireball');
+});
+
+test('real dice: the sheet asks for each roll, and adds the bonuses itself', () => {
+  const ctx = { classes: [{ name: 'Wizard', group: 'wizard', level: '5' }], level: 5, catalog, ammo: [], effects: [], str: { hit: 0, dmg: 0 }, dexMissile: 0, racialHit: () => 0,
+    weapons: [{ id: 'w', name: 'Long Sword', dmgSM: '1d8', dmgL: '1d12', dmgAdj: '2', speed: 5 }],
+    spells: [{ id: 'f', name: 'Fireball', level: 3, type: 'wizard' }, { id: 'm', name: 'Magic Missile', level: 1, type: 'wizard' }] };
+  const e1 = { id: 'E1', label: 'E1', size: 'sm' }, e2 = { id: 'E2', label: 'E2', size: 'sm' };
+  const fire = { sc: { name: 'Slot', attackType: 'spell', spellId: 'f' }, set: { targets: [e1, e2] } };
+  let f = typedFields(ctx, fire);
+  assert.deepEqual(f.map(x => [x.id, x.dice, x.add]), [['dmg:0', '5d6', 0]]);   // one roll for an area
+  assert.equal(typedRoll(ctx, fire, {}), null);
+  let r = typedRoll(ctx, fire, { 'dmg:0': 19 });
+  assert.deepEqual([r.kind, r.typed, r.each.map(e => e.dmg), r.dmgStale, r.saveNote], ['area', true, [19, 19], false, 'Save for ½ damage']);
+  const missile = { sc: { name: 'M', attackType: 'spell', spellId: 'm' }, set: { targets: [e1, e2] } };
+  f = typedFields(ctx, missile);
+  assert.deepEqual(f.map(x => [x.id, x.dice, x.add, x.target.label]), [['dmg:0', '1d4', 1, 'E1'], ['dmg:1', '1d4', 1, 'E2']]);   // one each
+  assert.equal(typedPrompt(f[0], true).text, ' (we’ll add 1) · damage vs E1');
+  r = typedRoll(ctx, missile, { 'dmg:0': 3 });
+  assert.deepEqual([r.each[0].dmg, r.each[1].dmg, r.dmgStale], [4, null, true]);   // the other's still to come
+  assert.deepEqual([typedPrompt({ dice: '5d6', add: -5, what: 'damage' }).text], [' (we’ll take off 5) · damage']);
+});
+
+test('real dice: an attack wants its d20, and natural rolls still count', () => {
+  const ctx = { ...ctxR };
+  const scenario = scenarios => scenarios.find(s => s.weaponId);
+  const sc = scenario(rifiyr.__scenarios) || { name: 'Test', attackType: 'melee', weaponId: ctx.weapons[0].id };
+  const line = { sc: { ...sc, attackType: 'melee', weaponId: ctx.weapons[0].id }, set: { targets: [orc] } };
+  assert.deepEqual(typedFields(ctx, line).map(x => x.id), ['d20:0']);
+  assert.equal(typedRoll(ctx, line, {}), null);
+  const after = typedFields(ctx, line, { 'd20:0': 11 });
+  assert.equal(after[1].id, 'dmg:0');
+  let r = typedRoll(ctx, line, { 'd20:0': 11 });
+  assert.deepEqual([r.each[0].d20, r.each[0].hitsAC != null, r.each[0].dmg, r.dmgStale], [11, true, null, true]);   // to hit known, damage to come
+  r = typedRoll(ctx, line, { 'd20:0': 11, 'dmg:0': 5 });
+  assert.equal(r.dmgStale, false);
+  assert.ok(r.each[0].dmg >= 5);
+  assert.deepEqual(typedFields(ctx, line, { 'd20:0': 1 }).map(x => x.id), ['d20:0']);   // a natural 1 has no damage
+  r = typedRoll(ctx, line, { 'd20:0': 1 }, () => 0.5);
+  assert.deepEqual([r.each[0].miss, r.each[0].pct, r.dmgStale], [true, 51, false]);
+  assert.equal(typedRoll(ctx, line, { 'd20:0': 20 }, () => 0.5).each[0].pct, 51);
+});
+
+test('real dice: impossible numbers are refused', () => {
+  const d20 = { min: 1, max: 20 }, dmg = { min: 0, max: null };
+  assert.deepEqual(['20', ' 1 ', '0', '21', 'x', '', '5.5', '-1'].map(t => typedValue(d20, t)), [20, 1, null, null, null, null, null, null]);
+  assert.deepEqual(['0', '40', '-1'].map(t => typedValue(dmg, t)), [0, 40, null]);
 });

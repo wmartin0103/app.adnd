@@ -245,6 +245,66 @@ export function rollLine(ctx, line, rand = Math.random) {
   });
   return scoreRoll(ctx, line, { kind, heal: isHealing(ctx, line.sc), each });
 }
+// ── Rolling real dice ──
+// For someone who rolls their own (the account's Dice setting): what a line needs
+// them to roll, and a roll made from what they type. They type the dice alone, and
+// the bonuses are added here, as they are for a rolled one. Each field:
+//   { id: 'd20:0' | 'dmg:0' | 'spell:0', i, what, target, dice: '1d8', add: 2, min, max }
+export function typedFields(ctx, line, typed = {}) {
+  const kind = lineKind(ctx, line.sc), targets = targetsOf(line), fields = [];
+  const heal = isHealing(ctx, line.sc);
+  const needsD20 = kind === 'attack';
+  if (needsD20) targets.forEach((target, i) => fields.push({ id: `d20:${i}`, i, what: 'to hit', target, dice: '1d20', add: 0, min: 1, max: 20 }));
+  targets.forEach((target, i) => {
+    if (kind === 'area' && i > 0) return;                              // one damage roll for everyone in it
+    if (needsD20 && (typed[`d20:${i}`] == null || typed[`d20:${i}`] === 1)) return;   // to hit first; a natural 1 has no damage
+    const d = lineDamage(ctx, line.sc, target), dmg = splitDice(d.expr), spell = splitDice(d.spell);
+    const who = kind === 'area' ? null : target;
+    if (dmg.sig) fields.push({ id: `dmg:${i}`, i, what: heal ? 'healing' : 'damage', target: who, dice: dmg.sig, add: dmg.flat, min: 0, max: null });
+    if (spell.sig) fields.push({ id: `spell:${i}`, i, what: 'spell', target: who, dice: spell.sig, add: spell.flat, min: 0, max: null });
+  });
+  return fields;
+}
+// What a field's text is worth: a whole number the die can show, else null
+export function typedValue(field, text) {
+  const t = String(text ?? '').trim();
+  if (!/^\d+$/.test(t)) return null;
+  const n = parseInt(t, 10);
+  return n < field.min || (field.max != null && n > field.max) ? null : n;
+}
+// "Roll 1d8 (we'll add 2) · damage", kept apart so a bonus isn't counted twice
+export function typedPrompt(field, many = false) {
+  const extra = field.add > 0 ? ` (we’ll add ${field.add})` : field.add < 0 ? ` (we’ll take off ${-field.add})` : '';
+  const who = many && field.target ? ` vs ${field.target.label}` : '';
+  return { dice: field.dice, text: `${extra} · ${field.what}${who}` };
+}
+// A line's roll from what's been typed: null until there's something to show. An
+// attack needs its d20s first; damage not typed yet is the state a changed size
+// leaves it in (dmgStale), so the DM's page treats it the same.
+export function typedRoll(ctx, line, typed = {}, rand = Math.random) {
+  const kind = lineKind(ctx, line.sc), targets = targetsOf(line);
+  if (kind === 'attack' && targets.some((t, i) => typed[`d20:${i}`] == null)) return null;
+  if (kind !== 'attack' && !Object.keys(typed).some(k => typed[k] != null)) return null;
+  const dice = (target, i) => {
+    const d = lineDamage(ctx, line.sc, target), dmg = splitDice(d.expr).sig, spell = splitDice(d.spell).sig;
+    const a = typed[`dmg:${i}`], b = typed[`spell:${i}`];
+    return {
+      dmgSig: a != null ? dmg : '', dmgDice: a != null ? a : null, dmgFaces: null,
+      spellSig: b != null ? spell : '', spellDice: b != null ? b : null, spellFaces: null,
+    };
+  };
+  const shared = kind === 'area' ? dice(targets[0], 0) : null;
+  const each = targets.map((target, i) => {
+    const raw = { target, d20: null, pct: null };
+    if (kind === 'attack') {
+      raw.d20 = typed[`d20:${i}`];
+      raw.pct = raw.d20 === 20 || raw.d20 === 1 ? 1 + Math.floor(rand() * 100) : null;   // the DM's Good Hits and Bad Misses tables
+    }
+    if (raw.d20 === 1) return Object.assign(raw, { dmgSig: '', dmgDice: null, spellSig: '', spellDice: null });
+    return Object.assign(raw, shared || dice(target, i));
+  });
+  return scoreRoll(ctx, line, { kind, heal: isHealing(ctx, line.sc), typed: true, each });
+}
 // A roll with the sheet's current numbers: change an effect (Bless off) or the
 // conditions after rolling and the THAC0, AC hit and damage follow, until it's
 // sent to the DM (frozen). If the damage dice themselves changed (another
@@ -274,7 +334,7 @@ export function scoreRoll(ctx, line, raw) {
       thac0: e.d20 != null ? thac0 : null, hitsAC: e.d20 != null && thac0 != null ? thac0 - e.d20 : null,
     };
   });
-  return { kind: raw.kind || lineKind(ctx, line.sc), heal: !!raw.heal, saveNote: lineSaveNote(ctx, line.sc), each: scored, dmgStale: scored.some(e => e.dmgStale) };
+  return { kind: raw.kind || lineKind(ctx, line.sc), heal: !!raw.heal, ...(raw.typed ? { typed: true } : {}), saveNote: lineSaveNote(ctx, line.sc), each: scored, dmgStale: scored.some(e => e.dmgStale) };
 }
 // Rolls the damage dice again where they changed, keeping the d20s (after dmgStale)
 export function rerollDamage(ctx, line, raw, rand = Math.random) {
