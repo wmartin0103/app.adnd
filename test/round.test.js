@@ -316,3 +316,15 @@ test('real dice: impossible numbers are refused', () => {
   assert.deepEqual(['20', ' 1 ', '0', '21', 'x', '', '5.5', '-1'].map(t => typedValue(d20, t)), [20, 1, null, null, null, null, null, null]);
   assert.deepEqual(['0', '40', '-1'].map(t => typedValue(dmg, t)), [0, 40, null]);
 });
+
+test('real dice: an Enemy\'s attack, typed by the DM, scores like a rolled one', () => {
+  const claw = { ...plainAttack('Claw', 18, '1d6', 1, 4), id: 'e1-a1' };
+  const jaqueT = { id: 'pc:Jaque', label: 'Jaque', size: 'sm' }, rifT = { id: 'pc:Rifiyr', label: 'Rifiyr', size: 'sm' };
+  const line = { key: 'bd1-a1', label: 'Attack 1', sc: claw, set: { targets: [jaqueT, rifT] } };
+  assert.deepEqual(typedFields(null, line).map(f => f.id), ['d20:0', 'd20:1']);
+  assert.equal(typedRoll(null, line, { 'd20:0': 14 }), null);      // both to-hit rolls first
+  const roll = typedRoll(null, line, { 'd20:0': 14, 'd20:1': 1, 'dmg:0': 4 });
+  assert.deepEqual([roll.each[0].d20, roll.each[0].dmg, roll.each[0].hitsAC], [14, 5, 4]);   // 1d6 of 4, +1; THAC0 18 − 14
+  assert.equal(roll.each[1].dmg, null);                            // a natural 1 has no damage
+  assert.deepEqual(typedFields(null, line, { 'd20:0': 14, 'd20:1': 1 }).map(f => f.id), ['d20:0', 'd20:1', 'dmg:0']);
+});

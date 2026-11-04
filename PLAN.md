@@ -648,4 +648,4 @@ can grow over time.
 - [x] The DM Helper's combat lines name the chosen weapon or spell, with the scenario's name when it differs (2026-11-04). Whether the scenario's name earns its place is to be decided later
 - [x] Duplicate names: no two in play in a campaign share one (migration), the sheet warns while typing, a save that fails says so and retries, and name lookups never pick a random match (2026-11-04). Still by name: the DM Helper's rounds, to move to character ids later
 - [x] Dice setting, part 1: Account has Assisted dice rolls or Roll my own dice, and the sheet's rolls follow it (2026-11-04)
-- [ ] Dice setting, part 2: the DM Helper's rolls follow it too
+- [x] Dice setting, part 2: the DM Helper's rolls follow it too (2026-11-04)
