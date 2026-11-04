@@ -21,6 +21,25 @@ export function summary(data) {
 // from a sheet that wasn't saved yet): only a name
 export const isBlank = data => !data || Object.keys(data).every(k => k === 'name');
 
+// The minimum before a sheet can go into play (decided 2026-11-04): a name, a
+// class with a level, and all six ability scores. What's still missing, in words
+// ([] when it's ready). Saving is never held up by this, only going into play.
+const SCORES = { str: 'Strength', dex: 'Dexterity', con: 'Constitution', int: 'Intelligence', wis: 'Wisdom', cha: 'Charisma' };
+export function missingForPlay(data) {
+  const d = data || {}, out = [];
+  if (!String(d.name || '').trim()) out.push('a name');
+  const classes = Array.isArray(d.__classes) ? d.__classes : [];
+  if (!classes.some(c => c && String(c.name || '').trim() && parseInt(c.level, 10) >= 1)) out.push('a class with a level');
+  Object.keys(SCORES).forEach(k => { if (!(parseInt(d[k], 10) > 0)) out.push(SCORES[k]); });
+  return out;
+}
+// "Strength, Wisdom and a class with a level"; all six scores read as one
+export function missingText(items) {
+  const scores = Object.values(SCORES), all = scores.every(s => items.includes(s));
+  const parts = all ? [...items.filter(i => !scores.includes(i)), 'all six ability scores'] : items;
+  return parts.length < 2 ? parts.join('') : `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
+}
+
 // The file name the sheet exports: "jaque_10-26.json"
 export function fileName(data, now = new Date()) {
   const name = String((data && data.name) || 'character').trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || 'character';
@@ -61,7 +80,8 @@ export async function listCharacters(client, session) {
 
 // A new character in the campaign, yours; In play if you have none, else a backup
 export async function createCharacter(client, session, data, { mine = [], status } = {}) {
-  const st = status || (mine.some(c => c.status === 'play') ? 'backup' : 'play');
+  // Your first goes into play, once it has the minimum; until then, to Backups
+  const st = status || (mine.some(c => c.status === 'play') || missingForPlay(data).length ? 'backup' : 'play');
   const name = String((data && data.name) || '').trim() || 'New character';
   const { data: row, error } = await client.from('characters')
     .insert({ campaign_id: session.campaignId, owner_id: session.user.id, name, data: data || { name: '' }, status: st })
@@ -149,6 +169,9 @@ export async function setShares(client, session, id, before, after) {
 // Moves a character; into play, the one in play now goes to `others` (dead
 // or backup) first, as only one may be in play
 export async function setStatus(client, mine, id, status, others = 'backup') {
+  const row = status === 'play' ? mine.find(c => c.id === id) : null;
+  const short = row && 'data' in row ? missingForPlay(row.data) : [];
+  if (short.length) throw new Error(`To bring ${row.name || 'this character'} into play, add ${missingText(short)}.`);
   const cur = status === 'play' ? mine.find(c => c.status === 'play' && c.id !== id) : null;
   if (cur) {
     const r = await client.from('characters').update({ status: others }).eq('id', cur.id);

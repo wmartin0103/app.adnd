@@ -649,3 +649,4 @@ can grow over time.
 - [x] Duplicate names: no two in play in a campaign share one (migration), the sheet warns while typing, a save that fails says so and retries, and name lookups never pick a random match (2026-11-04). Still by name: the DM Helper's rounds, to move to character ids later
 - [x] Dice setting, part 1: Account has Assisted dice rolls or Roll my own dice, and the sheet's rolls follow it (2026-11-04)
 - [x] Dice setting, part 2: the DM Helper's rolls follow it too (2026-11-04)
+- [x] The minimum before play: a name, a class with a level and six ability scores; an unfinished first character starts in Backups (2026-11-04)
