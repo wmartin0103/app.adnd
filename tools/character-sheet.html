@@ -5964,6 +5964,30 @@ const num = v => {
 };
 const ORDINAL = ['1st', '2nd', '3rd', '4th', '5th', '6th'];
 
+// The DM Helper builds a dropdown for each ability score, and only knows scores
+// from 3 to 25. A sheet can be unfinished, or hold a typo, so a score that's
+// blank or out of range becomes one the page can show, and the DM is told. 10
+// carries no bonus or penalty on any ability's table.
+const ABILITIES = { str: 'Strength', dex: 'Dexterity', con: 'Constitution', int: 'Intelligence', wis: 'Wisdom', cha: 'Charisma' };
+const SCORE_MIN = 3, SCORE_MAX = 25, NEUTRAL_SCORE = 10;
+function abilityScore(save, key, review) {
+  const score = num(save[key]);
+  if (score <= 0) {
+    review.push(`${ABILITIES[key]} isn't filled in on the sheet; shows as ${NEUTRAL_SCORE} here until it is`);
+    return NEUTRAL_SCORE;
+  }
+  const shown = Math.min(SCORE_MAX, Math.max(SCORE_MIN, score));
+  if (shown !== score) review.push(`${ABILITIES[key]} is ${score} on the sheet, outside ${SCORE_MIN}–${SCORE_MAX}; shows as ${shown} here`);
+  return shown;
+}
+// Exceptional Strength: "00" is 100; past 100 the DM Helper has no bracket for it
+function strengthPercent(pct, review) {
+  const value = pct === '00' ? 100 : num(pct);
+  if (value <= 100) return value;
+  review.push(`Strength percentile is ${value} on the sheet, past 100; shows as 18/100 here`);
+  return 100;
+}
+
 // What a weapon breaks as, for the DM Helper's item saves (crits and fumbles),
 // following the DM's existing convention: blades are metal, hafted weapons
 // thick wood, bows thin wood, slings leather.
@@ -6083,8 +6107,9 @@ function toDMHelper(save, dmSettings = {}, { catalog = null } = {}) {
   });
   const groups = (save.__classes || []).map(c => [c.group, num(c.level)]);
   const thac0s = groups.map(([g, l]) => baseTHAC0(g, l)).filter(t => t !== null);
-  const stats = Object.fromEntries(['str', 'dex', 'con', 'int', 'wis', 'cha'].map(k => [k, num(save[k])]));
+  const stats = Object.fromEntries(Object.keys(ABILITIES).map(k => [k, abilityScore(save, k, review)]));
   const pct = String(save['str-pct'] ?? '').trim();
+  const strPct = stats.str === 18 && pct ? strengthPercent(pct, review) : 0;
   const caster = (save.__spells || []).length > 0 || groups.some(([g]) => g === 'wizard' || g === 'priest');
   const quickness = (save.__nwps || []).some(p => /^quickness$/i.test((p.name || '').trim()));
   const { actions: dmActions, ...dmRest } = dmSettings;
@@ -6095,7 +6120,7 @@ function toDMHelper(save, dmSettings = {}, { catalog = null } = {}) {
     baseTHAC0: thac0s.length ? Math.min(...thac0s) : 20,
     initBonus: 0,
     stats,
-    ...(stats.str === 18 && pct ? { strPct: pct === '00' ? 100 : num(pct) } : {}),
+    ...(stats.str === 18 && pct ? { strPct } : {}),
     ...(caster ? {} : { caster: false }),
     ...(quickness ? { quickness: { bonus: -2 } } : {}),
     weapons,
@@ -6111,6 +6136,7 @@ function toDMHelper(save, dmSettings = {}, { catalog = null } = {}) {
   }));
   const thief = Object.fromEntries(thiefSkills(sheet).filter(s => s.value > 0).map(s => [s.name, s.value]));
   const saves = savingThrows(sheet);
+  if (!saves) review.push('No saving throws yet: the sheet needs a class with a level');
 
   return {
     name,

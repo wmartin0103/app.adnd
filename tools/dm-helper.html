@@ -3837,6 +3837,30 @@ const num = v => {
 };
 const ORDINAL = ['1st', '2nd', '3rd', '4th', '5th', '6th'];
 
+// The DM Helper builds a dropdown for each ability score, and only knows scores
+// from 3 to 25. A sheet can be unfinished, or hold a typo, so a score that's
+// blank or out of range becomes one the page can show, and the DM is told. 10
+// carries no bonus or penalty on any ability's table.
+const ABILITIES = { str: 'Strength', dex: 'Dexterity', con: 'Constitution', int: 'Intelligence', wis: 'Wisdom', cha: 'Charisma' };
+const SCORE_MIN = 3, SCORE_MAX = 25, NEUTRAL_SCORE = 10;
+function abilityScore(save, key, review) {
+  const score = num(save[key]);
+  if (score <= 0) {
+    review.push(`${ABILITIES[key]} isn't filled in on the sheet; shows as ${NEUTRAL_SCORE} here until it is`);
+    return NEUTRAL_SCORE;
+  }
+  const shown = Math.min(SCORE_MAX, Math.max(SCORE_MIN, score));
+  if (shown !== score) review.push(`${ABILITIES[key]} is ${score} on the sheet, outside ${SCORE_MIN}–${SCORE_MAX}; shows as ${shown} here`);
+  return shown;
+}
+// Exceptional Strength: "00" is 100; past 100 the DM Helper has no bracket for it
+function strengthPercent(pct, review) {
+  const value = pct === '00' ? 100 : num(pct);
+  if (value <= 100) return value;
+  review.push(`Strength percentile is ${value} on the sheet, past 100; shows as 18/100 here`);
+  return 100;
+}
+
 // What a weapon breaks as, for the DM Helper's item saves (crits and fumbles),
 // following the DM's existing convention: blades are metal, hafted weapons
 // thick wood, bows thin wood, slings leather.
@@ -3956,8 +3980,9 @@ function toDMHelper(save, dmSettings = {}, { catalog = null } = {}) {
   });
   const groups = (save.__classes || []).map(c => [c.group, num(c.level)]);
   const thac0s = groups.map(([g, l]) => baseTHAC0(g, l)).filter(t => t !== null);
-  const stats = Object.fromEntries(['str', 'dex', 'con', 'int', 'wis', 'cha'].map(k => [k, num(save[k])]));
+  const stats = Object.fromEntries(Object.keys(ABILITIES).map(k => [k, abilityScore(save, k, review)]));
   const pct = String(save['str-pct'] ?? '').trim();
+  const strPct = stats.str === 18 && pct ? strengthPercent(pct, review) : 0;
   const caster = (save.__spells || []).length > 0 || groups.some(([g]) => g === 'wizard' || g === 'priest');
   const quickness = (save.__nwps || []).some(p => /^quickness$/i.test((p.name || '').trim()));
   const { actions: dmActions, ...dmRest } = dmSettings;
@@ -3968,7 +3993,7 @@ function toDMHelper(save, dmSettings = {}, { catalog = null } = {}) {
     baseTHAC0: thac0s.length ? Math.min(...thac0s) : 20,
     initBonus: 0,
     stats,
-    ...(stats.str === 18 && pct ? { strPct: pct === '00' ? 100 : num(pct) } : {}),
+    ...(stats.str === 18 && pct ? { strPct } : {}),
     ...(caster ? {} : { caster: false }),
     ...(quickness ? { quickness: { bonus: -2 } } : {}),
     weapons,
@@ -3984,6 +4009,7 @@ function toDMHelper(save, dmSettings = {}, { catalog = null } = {}) {
   }));
   const thief = Object.fromEntries(thiefSkills(sheet).filter(s => s.value > 0).map(s => [s.name, s.value]));
   const saves = savingThrows(sheet);
+  if (!saves) review.push('No saving throws yet: the sheet needs a class with a level');
 
   return {
     name,
@@ -6766,7 +6792,7 @@ function showConfigReview(only){
       <tr><td class="name">Stats</td><td colspan="5">Str ${strL} · Dex ${st.dex} · Con ${st.con} · Int ${st.int} · Wis ${st.wis} · Cha ${st.cha} (reaction ${fmt(chaReact(st.cha))})</td></tr>
       ${c.effects&&c.effects.length?`<tr><td class="name">Effects on</td><td colspan="5">${c.effects.map(esc).join(' · ')} <span class="meta">(counted in the THAC0s and AC)</span></td></tr>`:''}
       <tr><td class="name">Armor Class</td><td colspan="5">AC ${c.armor?c.armor.ac:'—'}${c.shield?` · shieldless ${c.armor.shieldless}`:''} · surprised ${c.armor?c.armor.surprised:'—'}</td></tr>
-      <tr><td class="name">Saves</td><td colspan="5">PPD ${sv.base.PPD} · RSW ${sv.base.RSW} · Pet/Poly ${sv.base.PP} · Breath ${sv.base.BW} · Spell ${sv.base.Spell}${Object.keys(sv.mods).length?' · '+Object.keys(sv.mods).map(k=>`${k} ${fmt(sv.mods[k])}`).join(', '):''}${sv.note?` · <i>${esc(sv.note)}</i>`:''}</td></tr>
+      <tr><td class="name">Saves</td><td colspan="5">${sv.base.PPD===undefined?'None yet':`PPD ${sv.base.PPD} · RSW ${sv.base.RSW} · Pet/Poly ${sv.base.PP} · Breath ${sv.base.BW} · Spell ${sv.base.Spell}`}${Object.keys(sv.mods).length?' · '+Object.keys(sv.mods).map(k=>`${k} ${fmt(sv.mods[k])}`).join(', '):''}${sv.note?` · <i>${esc(sv.note)}</i>`:''}</td></tr>
       <tr><td class="name">Reactions</td><td colspan="5">${(rx.mods||[]).map(e=>`${rxLabel(e.types)} ${fmt(e.mod)} (${e.why}${e.culture?', own culture':''})`).join(' · ')||'Charisma only'}${rx.appeal?' · Romantic Appeal: women & single-sex save 16 (crowd fails → one step friendlier); men in coed save 12 (they save → one step less friendly)':''}</td></tr>
     </tbody></table>`;
     // weapons

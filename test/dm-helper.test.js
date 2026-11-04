@@ -313,6 +313,49 @@ test('a weapon with an unrevealed bonus is flagged, and its damage leaves the "?
   assert.ok(r.review.some(m => /Leprechaun.*isn't revealed/.test(m)));
 });
 
+// An unfinished sheet must not stop the DM Helper: its page builds a dropdown
+// from each score, and only knows 3 to 25
+test('an unfinished sheet: missing scores show as 10, and the DM is told which', () => {
+  const r = toDMHelper({ name: 'Newbie', 'race-group': 'elf', __classes: [{ name: 'Fighter', group: 'warrior', level: '' }] });
+  assert.deepEqual(r.character.stats, { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 });
+  assert.equal(r.character.strPct, undefined);
+  assert.deepEqual(r.review.filter(m => /isn't filled in/.test(m)).map(m => m.split(' ')[0]),
+    ['Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom', 'Charisma']);
+  // No class level yet, so no saves to show: the DM is told that too
+  assert.equal(r.saves, null);
+  assert.ok(r.review.includes('No saving throws yet: the sheet needs a class with a level'));
+});
+
+const fighter = [{ name: 'Fighter', group: 'warrior', level: '1' }];
+
+test('a partly filled sheet keeps the scores it has', () => {
+  const r = toDMHelper({ name: 'Newbie', str: '16', dex: '', con: '0', int: 'abc', wis: 12, __classes: fighter });
+  assert.deepEqual(r.character.stats, { str: 16, dex: 10, con: 10, int: 10, wis: 12, cha: 10 });
+  assert.equal(r.review.length, 4);
+  assert.ok(!r.review.some(m => /Strength|Wisdom/.test(m)));
+});
+
+test('a score the DM Helper can\'t show comes into range, and the DM is told', () => {
+  const r = toDMHelper({ name: 'Typo', str: '2', dex: '30', con: '3', int: '25', wis: '10', cha: '10', __classes: fighter });
+  assert.deepEqual([r.character.stats.str, r.character.stats.dex, r.character.stats.con, r.character.stats.int], [3, 25, 3, 25]);
+  assert.deepEqual(r.review, ['Strength is 2 on the sheet, outside 3–25; shows as 3 here', 'Dexterity is 30 on the sheet, outside 3–25; shows as 25 here']);
+});
+
+test('exceptional Strength: "00" is 100, and past 100 is flagged', () => {
+  const pct = v => toDMHelper({ name: 'Str', str: '18', 'str-pct': v, dex: '10', con: '10', int: '10', wis: '10', cha: '10', __classes: fighter });
+  assert.equal(pct('00').character.strPct, 100);
+  assert.equal(pct('67').character.strPct, 67);
+  assert.deepEqual(pct('67').review, []);
+  assert.equal(pct('150').character.strPct, 100);
+  assert.deepEqual(pct('150').review, ['Strength percentile is 150 on the sheet, past 100; shows as 18/100 here']);
+});
+
+test('a finished sheet\'s scores are untouched, with nothing new to check', () => {
+  const r = toDMHelper(effectsOff(current), {}, { catalog });
+  for (const k of ['str', 'dex', 'con', 'int', 'wis', 'cha']) assert.equal(r.character.stats[k], Number(current[k]));
+  assert.ok(!r.review.some(m => /isn't filled in|outside 3–25|past 100/.test(m)));
+});
+
 test('the paste block runs and fills the DM Helper\'s tables', () => {
   const text = formatDMHelperConfig([toDMHelper(current, {}, { catalog })]);
   const tables = { CHARACTERS: {}, SKILLS: {}, THIEF: {}, SAVES: {}, DAMAGE: {}, CRIT_TYPES: {}, WEAPON_MATERIAL: {} };
