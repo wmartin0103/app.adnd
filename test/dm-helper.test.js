@@ -332,7 +332,7 @@ test('own-race reactions read the race on the sheet, as the NPC list spells it',
 test('the DM Helper page has no character name in it, so no rule can hang on one', () => {
   const page = readFileSync(new URL('../tools/dm-helper.html', import.meta.url), 'utf8');
   for (const name of ['Tig', 'Tighkar', 'Jaque', 'Rifiyr', 'Goroth', 'Nandun', 'Atteroak', 'Hanspeter', 'Borsun', 'Nebish']) {
-    assert.ok(!new RegExp('\b' + name + '\b').test(page), name);
+    assert.ok(!new RegExp('\\b' + name + '\\b').test(page), name);
   }
 });
 

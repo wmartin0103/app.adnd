@@ -6639,7 +6639,7 @@ function isActive(name){ const c=CHARACTERS[name]; if(!c) return false; if(c.pla
 (function noteParty(){   // who isn't on the page, and why
   const waiting=(PARTY ? PARTY.chars : []).filter(c=>!c.save || (SHEET_REVIEW[c.name]||{}).error).map(c=>c.name);
   const say=[];
-  if(!PCS.length && !waiting.length) say.push('No party loaded. Sign in to bring in each player\'s character in play; Enemies work without one.');
+  if(!PCS.length && !waiting.length) say.push(PARTY ? 'Nobody is in play in this campaign yet; Enemies work without a party.' : 'No party loaded. Sign in to bring in each player\'s character in play; Enemies work without one.');
   if(waiting.length) say.push(`No saved sheet to read yet: ${waiting.join(', ')}.`);
   if(!say.length) return;
   document.getElementById('noPartyText').textContent=say.join(' ');
@@ -7070,7 +7070,7 @@ function renderLight(){
         if(lineNeedsSave(l)) rows.push({save:{key:`${round}|${name}|${l.key}`, whos:judged.map(j=>j.who)}});
         return rows;
       });
-      paintLightDetail(lr, {conds: sv.you||[], acts: [{t: `From the sheet: ${syncedDoing(sv)}`}, ...acts]});
+      paintLightDetail(lr, {conds: [...(sv.you||[]), ...(b.parryBox && b.parryBox.checked ? ['Parry'] : [])], acts: [{t: `From the sheet: ${syncedDoing(sv)}`}, ...acts]});
       const trs=[lr.tr, lr.detailTr];
       paintTurn(lr, b, name, trs);
       entries.push({name, act: sv.actOn==null ? 1e9 : sv.actOn, trs});
