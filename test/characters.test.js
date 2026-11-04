@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { summary, isBlank, fileName, listCharacters, createCharacter, setStatus, loadCharacter, saveSheet, deleteCharacter, isSheetSave, listParty, listMembers, createCharacterFor, assignCharacter, listShares, setShares, isNameTaken, campaignNames } from '../src/characters.js';
+import { readdirSync, readFileSync } from 'node:fs';
+import { missingForPlay, missingText, summary, isBlank, fileName, listCharacters, createCharacter, setStatus, loadCharacter, saveSheet, deleteCharacter, isSheetSave, listParty, listMembers, createCharacterFor, assignCharacter, listShares, setShares, isNameTaken, campaignNames } from '../src/characters.js';
 
 // A stand-in for the Supabase client: the tables and calls used here, with
 // the database's one-in-play rule
@@ -79,9 +80,10 @@ test('characters: yours, newest first, and the ones given to you', async () => {
   assert.deepEqual(await listCharacters(fakeClient(t), { user: { id: 'x' }, campaignId: null }), { mine: [], given: [] });
 });
 
-test('characters: a new one is in play if you have none, else a backup', async () => {
+test('characters: a new one with the minimum is in play if you have none, else a backup', async () => {
   const t = { characters: [] }, c = fakeClient(t);
-  const first = await createCharacter(c, me, sheet('Brannoc'), { mine: [] });
+  const ready = { ...sheet('Brannoc'), __classes: [{ name: 'Fighter', level: '1' }], str: 15, dex: 12, con: 14, int: 10, wis: 9, cha: 8 };
+  const first = await createCharacter(c, me, ready, { mine: [] });
   assert.equal(first.status, 'play');
   assert.equal(t.characters[0].name, 'Brannoc');
   const second = await createCharacter(c, me, null, { mine: [{ status: 'play' }] });
@@ -214,4 +216,28 @@ test('characters: bringing one in that the database refuses puts the old one bac
   await assert.rejects(setStatus(c, t.characters, 'new', 'play'), e => /name_in_play/.test(e.message));
   assert.equal(t.characters.find(x => x.id === 'cur').status, 'play');
   assert.equal(t.characters.find(x => x.id === 'new').status, 'backup');
+});
+
+test('the minimum before play: a name, a class with a level, and six ability scores', () => {
+  const ready = { name: 'Kess', __classes: [{ name: 'Bard', level: '3' }], str: '10', dex: 12, con: '9', int: '14', wis: '8', cha: '16' };
+  assert.deepEqual(missingForPlay(ready), []);
+  assert.deepEqual(missingForPlay({ ...ready, str: '', wis: '0' }), ['Strength', 'Wisdom']);
+  assert.deepEqual(missingForPlay({ ...ready, name: '  ' }), ['a name']);
+  assert.deepEqual(missingForPlay({ ...ready, __classes: [{ name: 'Bard', level: '' }] }), ['a class with a level']);
+  assert.deepEqual(missingForPlay({ ...ready, __classes: [{ name: '', level: '3' }, { name: 'Bard', level: '2' }] }), []);
+  assert.equal(missingForPlay(null).length, 8);
+  assert.equal(missingText(missingForPlay({ name: 'Kess' })), 'a class with a level and all six ability scores');
+  assert.equal(missingText(['Strength', 'Wisdom', 'Charisma']), 'Strength, Wisdom and Charisma');
+  assert.equal(missingText(['Dexterity']), 'Dexterity');
+  // Every real character passes
+  for (const f of readdirSync('test/fixtures/characters')) assert.deepEqual(missingForPlay(JSON.parse(readFileSync(`test/fixtures/characters/${f}`, 'utf8'))), [], f);
+});
+
+test('an unfinished first character starts in Backups, and can not be brought into play', async () => {
+  const ready = { name: 'Kess', __classes: [{ name: 'Bard', level: '3' }], str: 10, dex: 12, con: 9, int: 14, wis: 8, cha: 16 };
+  const client = fakeClient({ characters: [] });
+  const session = { user: { id: 'u1' }, campaignId: 'k' };
+  assert.equal((await createCharacter(client, session, { name: '' }, { mine: [] })).status, 'backup');
+  assert.equal((await createCharacter(client, session, ready, { mine: [] })).status, 'play');
+  await assert.rejects(setStatus(client, [{ id: 'c9', name: 'Tam', status: 'backup', data: { name: 'Tam' } }], 'c9', 'play'), /To bring Tam into play, add a class with a level and all six ability scores/);
 });
