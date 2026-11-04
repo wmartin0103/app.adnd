@@ -598,12 +598,6 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     /* View only: no buttons to press (a toggle's state, like Main / Off, still shows) */
     body.is-view-only main.sheet :is(.ui-button, .ui-qty > button, .add-scenario-btn) { display: none !important; }
     /* Real dice: what to roll, and a field for the result */
-    .typed-dice { flex-basis: 100%; display: grid; gap: 6px; justify-items: start; }
-    .typed-field { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
-    .typed-prompt { font-size: 14px; color: var(--color-text-muted); }
-    .typed-prompt b { color: var(--color-accent-text); font-weight: 700; }
-    .typed-field input { width: 4rem; }
-    .typed-field input.is-bad { border-color: var(--color-danger); }
     /* A name another character in the campaign is using */
     .name-warning { margin: 4px 0 0; font-size: 14px; color: var(--color-danger-text); }
     /* Changes that didn't reach the account: stays until they do */
@@ -4950,7 +4944,7 @@ return { ROUND_MODS, MOVE_MULTS, newRound, roundQueue, queueAttack, unqueueAttac
 })();
 // ── ui/round-ui ──
 __m["ui/round-ui"] = (() => {
-const {lineSay} = __m["rules/round"];
+const {lineSay, typedValue} = __m["rules/round"];
 // ── ROUND UI ────────────────────────────────────────────────────
 // The pieces of a combat round's screen that the character sheet and the DM
 // Helper share, with their styles: a select whose list holds checkboxes (with a
@@ -4961,7 +4955,7 @@ const {lineSay} = __m["rules/round"];
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-const STYLES = "/* Shared tokens: the character sheet's palette and type, under names of their\n   own (each tool keeps its own token names for the rest of its page) */\n:root { --ui-ink: var(--color-text); --ui-muted: var(--color-text-muted); --ui-faint: var(--color-text-faint); --ui-rule: var(--color-divider); --ui-accent: var(--color-accent-text); --ui-accent-dark: color-mix(in oklab, var(--color-accent-text) 82%, var(--toward));\n  --ui-surface: var(--color-surface); --ui-page: var(--color-bg); --ui-gold: var(--color-accent); --ui-radius: var(--radius-ctl); --ui-ctl-h: 2.1rem;\n  --ui-display: var(--font-serif); --ui-body: var(--font-sans); }\n/* A label over a control, the control, a button */\n.ui-field { display: inline-flex; flex-direction: column; gap: 0.15rem; }\n.ui-label { font-family: var(--ui-display); font-size: 0.65rem; letter-spacing: 0.13em; text-transform: uppercase; color: var(--ui-muted); }\n/* Looks like a field (src/ui/components.js): the select with checkboxes sits among selects */\n.ui-control { box-sizing: border-box; height: var(--field-h, var(--ui-ctl-h)); padding: 0 var(--field-px, 0.5rem); font: 500 var(--field-fs, 0.95rem) var(--ui-body); color: var(--ui-ink);\n  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--ui-radius); cursor: pointer; }\n.ui-control:hover { border-color: var(--color-text-muted); }\n.ui-control:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-color: var(--color-focus); }\n.ui-btn { box-sizing: border-box; height: var(--ui-ctl-h); display: inline-flex; align-items: center; gap: 0.4rem; padding: 0 0.8rem;\n  font-family: var(--ui-display); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap;\n  background: var(--ui-accent); color: var(--ui-surface); border: 1px solid var(--ui-accent); border-radius: var(--ui-radius); cursor: pointer; }\n.ui-btn:hover, .ui-btn:focus-visible { background: var(--ui-accent-dark); }\n/* A select with checkboxes in its list */\n.round-multi { position: relative; }\n.round-multi .round-multi-btn { width: auto; min-width: 9.5rem; max-width: 16rem; overflow: hidden; text-overflow: ellipsis; text-align: left; padding-right: 1.9rem; position: relative; white-space: nowrap; }\n.round-multi-btn::after { content: ''; position: absolute; right: 0.65rem; top: 50%; width: 0.4rem; height: 0.4rem; margin-top: -0.3rem;\n  border-right: 1.5px solid var(--ui-muted); border-bottom: 1.5px solid var(--ui-muted); transform: rotate(45deg); }\n.round-multi.is-open .round-multi-btn { border-color: var(--ui-accent); }\n.round-multi.is-open .round-multi-btn::after { transform: rotate(-135deg); margin-top: -0.1rem; }\n.round-multi-list { position: absolute; top: 100%; left: 0; z-index: 30; margin-top: 0.25rem; min-width: 100%; width: max-content; max-width: 18rem;\n  background: var(--color-raised); border: 1px solid var(--color-divider); border-radius: var(--radius-inner); box-shadow: var(--shadow-raised), inset 0 1px 0 var(--edge-top); padding: 0.3rem; }\n.round-multi-opt { display: flex; align-items: flex-start; gap: 0.55rem; padding: 0.45rem 0.55rem; border-radius: var(--ui-radius); cursor: pointer; font-size: 0.95rem; }\n.round-multi-opt:hover, .round-multi-opt:focus-within { background: var(--ui-page); }\n.round-multi-opt input { accent-color: var(--ui-accent); margin-top: 0.2rem; }\n.round-multi-opt small { display: block; font-size: 0.8rem; color: var(--ui-muted); }\n/* A read-only value in a line, the height of the controls beside it */\n.round-read-value { display: inline-flex; align-items: center; height: var(--field-h, var(--ui-ctl-h)); font-size: 0.95rem; color: var(--ui-ink); white-space: nowrap; }\n.round-read.is-key .round-read-value { font-family: var(--ui-display); font-weight: 700; font-size: 1.05rem; color: var(--ui-accent); }\n/* A rolled line: one strip, same type throughout, pieces split by dividers */\n.round-summary { display: flex; flex-wrap: wrap; align-items: center; min-height: var(--ui-ctl-h); font-size: 0.95rem; color: var(--ui-ink); }\n.round-summary > span { padding: 0 0.75rem; border-left: 1px solid var(--ui-rule); line-height: 1.3; }\n.round-summary > span:first-child { padding-left: 0; border-left: 0; }\n.round-summary > .is-key { font-family: var(--ui-display); font-weight: 700; color: var(--ui-accent); }\n/* The hit roll: the round's big moment */\n.roll-hit-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; padding: 0.4rem 0.85rem 0.4rem 0.6rem; box-shadow: 0 2px 0 color-mix(in oklab, var(--ui-accent) 55%, #000); }\n.roll-hit-btn svg { width: 1.15rem; height: 1.15rem; }\n.roll-hit-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 color-mix(in oklab, var(--ui-accent) 55%, #000); }\n.hit-rolls { flex-basis: 100%; display: grid; gap: 0.45rem; justify-items: start; }\n.hit-rolls > .hit-roll { width: 100%; box-sizing: border-box; }\n.hit-who { font-family: var(--ui-display); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ui-muted); min-width: 4.5rem; }\n.hit-roll { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1.5rem; padding: 0.55rem 0.9rem; border-radius: var(--radius-inner);\n  background: var(--color-sunken); border: 1px solid transparent; box-shadow: var(--shadow-well); }\n.hit-die { position: relative; width: 3.4rem; height: 3.4rem; flex: none; color: var(--ui-accent); }\n.hit-die svg { position: absolute; inset: 0; width: 100%; height: 100%; }\n.hit-die-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding-top: 0.15rem;\n  font-family: var(--ui-display); font-weight: 700; font-size: 1.35rem; color: var(--ui-ink); }\n.hit-stat { display: flex; flex-direction: column; line-height: 1; }\n.hit-stat-label { font-family: var(--ui-display); font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ui-muted); margin-bottom: 0.25rem; }\n.hit-stat-value { font-family: var(--ui-display); font-weight: 700; font-size: 2rem; color: var(--ui-accent); display: flex; align-items: flex-end; height: 2rem; }\n/* every value the same line (a smaller one sits on its bottom), so the columns line up */\n.hit-stat-sub { font-size: 0.8rem; color: var(--ui-muted); margin-top: 0.15rem; }\n.hit-stat.is-dmg .hit-stat-value { color: var(--ui-ink); font-size: 1.6rem; }\n.hit-stat.is-miss .hit-stat-value { color: var(--ui-muted); }\n.hit-stat.is-updated .hit-stat-value { border-radius: var(--ui-radius); }\n@media (prefers-reduced-motion: no-preference) {\n  .hit-stat.is-updated .hit-stat-value { animation: hit-update 1.2s ease-out; }\n}\n@keyframes hit-update { 0% { background: color-mix(in oklab, var(--color-accent) 45%, transparent); } 100% { background: transparent; } }\n.hit-nat { font-family: var(--ui-display); font-weight: 700; font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; padding: 0.25rem 0.55rem; border-radius: 999px; }\n.hit-roll.is-crit { background: linear-gradient(100deg, color-mix(in oklab, var(--color-highlight) 22%, var(--color-sunken)), var(--color-sunken) 75%); border-color: var(--color-success-text); box-shadow: var(--shadow-well), 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); }\n.hit-roll.is-crit .hit-die { color: var(--color-success-text); }\n.hit-roll.is-crit .hit-nat { background: var(--color-highlight); color: var(--color-on-highlight); }\n.hit-roll.is-fumble { background: linear-gradient(100deg, color-mix(in oklab, var(--ui-muted) 12%, var(--color-sunken)), var(--color-sunken) 75%); border-color: var(--ui-faint); }\n.hit-roll.is-fumble .hit-die, .hit-roll.is-fumble .hit-stat-value { color: var(--ui-muted); }\n.hit-roll.is-fumble .hit-stat.is-miss .hit-stat-value { color: var(--ui-ink); }\n.hit-roll.is-fumble .hit-nat { background: var(--ui-ink); color: var(--ui-surface); }\n@media (prefers-reduced-motion: no-preference) {\n  .hit-roll.is-fresh .hit-die svg { animation: hit-tumble 0.55s cubic-bezier(.2,.8,.3,1); }\n  .hit-roll.is-fresh .hit-die-num, .hit-roll.is-fresh .hit-stat-value { animation: hit-pop 0.45s 0.3s cubic-bezier(.2,1.4,.4,1) both; }\n  .hit-roll.is-fresh.is-crit { animation: hit-glow 1.2s 0.5s ease-out; }\n}\n@keyframes hit-tumble { from { transform: rotate(-200deg) scale(0.6); } to { transform: none; } }\n@keyframes hit-pop { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: none; } }\n@keyframes hit-glow { 0% { box-shadow: var(--shadow-well), 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); } 30% { box-shadow: var(--shadow-well), 0 0 0 8px color-mix(in oklab, var(--color-highlight) 50%, transparent); } 100% { box-shadow: var(--shadow-well), 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); } }";
+const STYLES = "/* Shared tokens: the character sheet's palette and type, under names of their\n   own (each tool keeps its own token names for the rest of its page) */\n:root { --ui-ink: var(--color-text); --ui-muted: var(--color-text-muted); --ui-faint: var(--color-text-faint); --ui-rule: var(--color-divider); --ui-accent: var(--color-accent-text); --ui-accent-dark: color-mix(in oklab, var(--color-accent-text) 82%, var(--toward));\n  --ui-surface: var(--color-surface); --ui-page: var(--color-bg); --ui-gold: var(--color-accent); --ui-radius: var(--radius-ctl); --ui-ctl-h: 2.1rem;\n  --ui-display: var(--font-serif); --ui-body: var(--font-sans); }\n/* A label over a control, the control, a button */\n.ui-field { display: inline-flex; flex-direction: column; gap: 0.15rem; }\n.ui-label { font-family: var(--ui-display); font-size: 0.65rem; letter-spacing: 0.13em; text-transform: uppercase; color: var(--ui-muted); }\n/* Looks like a field (src/ui/components.js): the select with checkboxes sits among selects */\n.ui-control { box-sizing: border-box; height: var(--field-h, var(--ui-ctl-h)); padding: 0 var(--field-px, 0.5rem); font: 500 var(--field-fs, 0.95rem) var(--ui-body); color: var(--ui-ink);\n  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--ui-radius); cursor: pointer; }\n.ui-control:hover { border-color: var(--color-text-muted); }\n.ui-control:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-color: var(--color-focus); }\n.ui-btn { box-sizing: border-box; height: var(--ui-ctl-h); display: inline-flex; align-items: center; gap: 0.4rem; padding: 0 0.8rem;\n  font-family: var(--ui-display); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap;\n  background: var(--ui-accent); color: var(--ui-surface); border: 1px solid var(--ui-accent); border-radius: var(--ui-radius); cursor: pointer; }\n.ui-btn:hover, .ui-btn:focus-visible { background: var(--ui-accent-dark); }\n/* A select with checkboxes in its list */\n.round-multi { position: relative; }\n.round-multi .round-multi-btn { width: auto; min-width: 9.5rem; max-width: 16rem; overflow: hidden; text-overflow: ellipsis; text-align: left; padding-right: 1.9rem; position: relative; white-space: nowrap; }\n.round-multi-btn::after { content: ''; position: absolute; right: 0.65rem; top: 50%; width: 0.4rem; height: 0.4rem; margin-top: -0.3rem;\n  border-right: 1.5px solid var(--ui-muted); border-bottom: 1.5px solid var(--ui-muted); transform: rotate(45deg); }\n.round-multi.is-open .round-multi-btn { border-color: var(--ui-accent); }\n.round-multi.is-open .round-multi-btn::after { transform: rotate(-135deg); margin-top: -0.1rem; }\n.round-multi-list { position: absolute; top: 100%; left: 0; z-index: 30; margin-top: 0.25rem; min-width: 100%; width: max-content; max-width: 18rem;\n  background: var(--color-raised); border: 1px solid var(--color-divider); border-radius: var(--radius-inner); box-shadow: var(--shadow-raised), inset 0 1px 0 var(--edge-top); padding: 0.3rem; }\n.round-multi-opt { display: flex; align-items: flex-start; gap: 0.55rem; padding: 0.45rem 0.55rem; border-radius: var(--ui-radius); cursor: pointer; font-size: 0.95rem; }\n.round-multi-opt:hover, .round-multi-opt:focus-within { background: var(--ui-page); }\n.round-multi-opt input { accent-color: var(--ui-accent); margin-top: 0.2rem; }\n.round-multi-opt small { display: block; font-size: 0.8rem; color: var(--ui-muted); }\n/* A read-only value in a line, the height of the controls beside it */\n.round-read-value { display: inline-flex; align-items: center; height: var(--field-h, var(--ui-ctl-h)); font-size: 0.95rem; color: var(--ui-ink); white-space: nowrap; }\n.round-read.is-key .round-read-value { font-family: var(--ui-display); font-weight: 700; font-size: 1.05rem; color: var(--ui-accent); }\n/* A rolled line: one strip, same type throughout, pieces split by dividers */\n.round-summary { display: flex; flex-wrap: wrap; align-items: center; min-height: var(--ui-ctl-h); font-size: 0.95rem; color: var(--ui-ink); }\n.round-summary > span { padding: 0 0.75rem; border-left: 1px solid var(--ui-rule); line-height: 1.3; }\n.round-summary > span:first-child { padding-left: 0; border-left: 0; }\n.round-summary > .is-key { font-family: var(--ui-display); font-weight: 700; color: var(--ui-accent); }\n/* The hit roll: the round's big moment */\n.roll-hit-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; padding: 0.4rem 0.85rem 0.4rem 0.6rem; box-shadow: 0 2px 0 color-mix(in oklab, var(--ui-accent) 55%, #000); }\n.roll-hit-btn svg { width: 1.15rem; height: 1.15rem; }\n.roll-hit-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 color-mix(in oklab, var(--ui-accent) 55%, #000); }\n.hit-rolls { flex-basis: 100%; display: grid; gap: 0.45rem; justify-items: start; }\n.hit-rolls > .hit-roll { width: 100%; box-sizing: border-box; }\n.hit-who { font-family: var(--ui-display); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ui-muted); min-width: 4.5rem; }\n.hit-roll { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1.5rem; padding: 0.55rem 0.9rem; border-radius: var(--radius-inner);\n  background: var(--color-sunken); border: 1px solid transparent; box-shadow: var(--shadow-well); }\n.hit-die { position: relative; width: 3.4rem; height: 3.4rem; flex: none; color: var(--ui-accent); }\n.hit-die svg { position: absolute; inset: 0; width: 100%; height: 100%; }\n.hit-die-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding-top: 0.15rem;\n  font-family: var(--ui-display); font-weight: 700; font-size: 1.35rem; color: var(--ui-ink); }\n.hit-stat { display: flex; flex-direction: column; line-height: 1; }\n.hit-stat-label { font-family: var(--ui-display); font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ui-muted); margin-bottom: 0.25rem; }\n.hit-stat-value { font-family: var(--ui-display); font-weight: 700; font-size: 2rem; color: var(--ui-accent); display: flex; align-items: flex-end; height: 2rem; }\n/* every value the same line (a smaller one sits on its bottom), so the columns line up */\n.hit-stat-sub { font-size: 0.8rem; color: var(--ui-muted); margin-top: 0.15rem; }\n.hit-stat.is-dmg .hit-stat-value { color: var(--ui-ink); font-size: 1.6rem; }\n.hit-stat.is-miss .hit-stat-value { color: var(--ui-muted); }\n.hit-stat.is-updated .hit-stat-value { border-radius: var(--ui-radius); }\n@media (prefers-reduced-motion: no-preference) {\n  .hit-stat.is-updated .hit-stat-value { animation: hit-update 1.2s ease-out; }\n}\n@keyframes hit-update { 0% { background: color-mix(in oklab, var(--color-accent) 45%, transparent); } 100% { background: transparent; } }\n.hit-nat { font-family: var(--ui-display); font-weight: 700; font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; padding: 0.25rem 0.55rem; border-radius: 999px; }\n.hit-roll.is-crit { background: linear-gradient(100deg, color-mix(in oklab, var(--color-highlight) 22%, var(--color-sunken)), var(--color-sunken) 75%); border-color: var(--color-success-text); box-shadow: var(--shadow-well), 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); }\n.hit-roll.is-crit .hit-die { color: var(--color-success-text); }\n.hit-roll.is-crit .hit-nat { background: var(--color-highlight); color: var(--color-on-highlight); }\n.hit-roll.is-fumble { background: linear-gradient(100deg, color-mix(in oklab, var(--ui-muted) 12%, var(--color-sunken)), var(--color-sunken) 75%); border-color: var(--ui-faint); }\n.hit-roll.is-fumble .hit-die, .hit-roll.is-fumble .hit-stat-value { color: var(--ui-muted); }\n.hit-roll.is-fumble .hit-stat.is-miss .hit-stat-value { color: var(--ui-ink); }\n.hit-roll.is-fumble .hit-nat { background: var(--ui-ink); color: var(--ui-surface); }\n@media (prefers-reduced-motion: no-preference) {\n  .hit-roll.is-fresh .hit-die svg { animation: hit-tumble 0.55s cubic-bezier(.2,.8,.3,1); }\n  .hit-roll.is-fresh .hit-die-num, .hit-roll.is-fresh .hit-stat-value { animation: hit-pop 0.45s 0.3s cubic-bezier(.2,1.4,.4,1) both; }\n  .hit-roll.is-fresh.is-crit { animation: hit-glow 1.2s 0.5s ease-out; }\n}\n@keyframes hit-tumble { from { transform: rotate(-200deg) scale(0.6); } to { transform: none; } }\n@keyframes hit-pop { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: none; } }\n/* A field for one roll of real dice */\n.typed-dice { flex-basis: 100%; display: grid; gap: 6px; justify-items: start; }\n.typed-field { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-family: var(--ui-body); font-size: 14px; letter-spacing: 0; text-transform: none; }\n.typed-prompt { font-size: 14px; color: var(--color-text-muted); }\n.typed-prompt b { color: var(--color-accent-text); font-weight: 700; }\n.typed-field input { width: 4rem; }\n.typed-field.is-bare input { width: 3.25rem; text-align: center; }\n.typed-field input.is-bad { border-color: var(--color-danger); }\n@keyframes hit-glow { 0% { box-shadow: var(--shadow-well), 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); } 30% { box-shadow: var(--shadow-well), 0 0 0 8px color-mix(in oklab, var(--color-highlight) 50%, transparent); } 100% { box-shadow: var(--shadow-well), 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); } }";
 function ensureStyles(doc = document) {
   if (doc.getElementById('round-ui-styles')) return;
   const st = doc.createElement('style'); st.id = 'round-ui-styles'; st.textContent = STYLES;
@@ -5047,6 +5041,63 @@ function readField(label, value, cls = '') {
   f.append(l, v); return f;
 }
 
+// ── A field for one roll of real dice (the account's Dice setting) ──
+// "Roll 1d8 (we'll add 2) · damage" and a box; prompt.bare leaves the words out,
+// for a table whose column says what to roll. Tab and Enter carry on to the next
+// field after the page redraws; an impossible number is marked and changes nothing.
+// A redraw (a player's sheet sending something) keeps what's half typed, and focus.
+let typedNext = null, typedFocus = null;
+const typedDrafts = {};
+function typedField(field, prompt, value, onValue, key) {
+  const label = document.createElement('label'); label.className = 'typed-field' + (prompt.bare ? ' is-bare' : '');
+  if (!prompt.bare) {
+    const say = document.createElement('span'); say.className = 'typed-prompt';
+    const dice = document.createElement('b'); dice.textContent = prompt.dice;
+    say.append('Roll ', dice, prompt.text || '');
+    label.appendChild(say);
+  }
+  const input = document.createElement('input');
+  input.type = 'text'; input.inputMode = 'numeric'; input.className = 'size-sm'; input.autocomplete = 'off';
+  const draft = typedDrafts[key];
+  input.value = draft ?? (value == null ? '' : value);
+  input.dataset.typed = key;
+  input.setAttribute('aria-label', `${prompt.dice}${prompt.text || ''}`);
+  const mark = bad => { input.classList.toggle('is-bad', bad); input.setAttribute('aria-invalid', String(bad)); };
+  if (draft != null && draft.trim() && typedValue(field, draft) == null) mark(true);
+  const visible = () => [...document.querySelectorAll('[data-typed]')].filter(x => x.offsetParent !== null);
+  input.addEventListener('input', () => { typedDrafts[key] = input.value; });
+  input.addEventListener('focus', () => { typedFocus = key; });
+  input.addEventListener('blur', () => setTimeout(() => { if (input.isConnected && typedFocus === key) typedFocus = null; }, 0));
+  input.addEventListener('keydown', ev => {
+    if ((ev.key === 'Tab' && !ev.shiftKey) || ev.key === 'Enter') {
+      const all = visible();
+      typedNext = { from: key, after: all.slice(all.indexOf(input) + 1).map(x => x.dataset.typed) };
+      if (ev.key === 'Enter') { ev.preventDefault(); input.blur(); }
+    }
+  });
+  input.addEventListener('change', () => {
+    const text = input.value.trim();
+    const v = typedValue(field, text);
+    const bad = !!text && v == null;
+    mark(bad);
+    if (bad) { typedNext = null; return; }
+    delete typedDrafts[key];
+    onValue(v);
+    // The page has redrawn: on to the next field that's there, or a new one
+    const wanted = typedNext; typedNext = null;
+    if (!wanted || wanted.from !== key) return;
+    const here = visible();
+    const at = here.findIndex(x => x.dataset.typed === wanted.from);
+    (here[at + 1] || here.find(x => wanted.after.includes(x.dataset.typed)))?.focus();
+  });
+  label.appendChild(input);
+  if (typedFocus === key) setTimeout(() => {
+    const a = document.activeElement;
+    if (input.isConnected && (!a || a === document.body)) input.focus({ preventScroll: true });
+  }, 0);
+  return label;
+}
+
 // ── The roll result panel ──
 // The d20 on a die, the AC it hits, the damage and each die; one panel per
 // target (one for an area spell). The rolled dice stay; the numbers follow the
@@ -5121,7 +5172,7 @@ function hitRoll(line, fresh, onReroll, judge) {
   return wrap;
 }
 
-return { STYLES, ensureStyles, multi, readField, D20_SVG, ROLL_ICON, DUPLICATE_ICON, hitRoll };
+return { STYLES, ensureStyles, multi, readField, typedField, D20_SVG, ROLL_ICON, DUPLICATE_ICON, hitRoll };
 })();
 // ── ui/tokens ──
 __m["ui/tokens"] = (() => {
@@ -6732,7 +6783,7 @@ window.SheetScenarios = { modNum: __m["rules/scenarios"].modNum, signed: __m["ru
 window.SheetKits = { HOUSE_KITS: __m["rules/kits"].HOUSE_KITS, classKit: __m["rules/kits"].classKit };
 window.SheetRound = { typedFields: __m["rules/round"].typedFields, typedValue: __m["rules/round"].typedValue, typedPrompt: __m["rules/round"].typedPrompt, typedRoll: __m["rules/round"].typedRoll, lineName: __m["rules/round"].lineName, ROUND_MODS: __m["rules/round"].ROUND_MODS, MOVE_MULTS: __m["rules/round"].MOVE_MULTS, newRound: __m["rules/round"].newRound, roundQueue: __m["rules/round"].roundQueue, queueAttack: __m["rules/round"].queueAttack, unqueueAttack: __m["rules/round"].unqueueAttack, roundLines: __m["rules/round"].roundLines, lineToHit: __m["rules/round"].lineToHit, roundACPenalty: __m["rules/round"].roundACPenalty, lineTHAC0: __m["rules/round"].lineTHAC0, judgeRoll: __m["rules/round"].judgeRoll, actOn: __m["rules/round"].actOn, attackSpeed: __m["rules/round"].attackSpeed, rollLine: __m["rules/round"].rollLine, scoreRoll: __m["rules/round"].scoreRoll, rerollDamage: __m["rules/round"].rerollDamage, lineKind: __m["rules/round"].lineKind, hasRoll: __m["rules/round"].hasRoll, isHealing: __m["rules/round"].isHealing, lineSay: __m["rules/round"].lineSay };
 window.RoundSync = { createRoundSync: __m["round-sync"].createRoundSync };
-window.RoundUI = { STYLES: __m["ui/round-ui"].STYLES, ensureStyles: __m["ui/round-ui"].ensureStyles, multi: __m["ui/round-ui"].multi, readField: __m["ui/round-ui"].readField, hitRoll: __m["ui/round-ui"].hitRoll, D20_SVG: __m["ui/round-ui"].D20_SVG, ROLL_ICON: __m["ui/round-ui"].ROLL_ICON, DUPLICATE_ICON: __m["ui/round-ui"].DUPLICATE_ICON };
+window.RoundUI = { STYLES: __m["ui/round-ui"].STYLES, ensureStyles: __m["ui/round-ui"].ensureStyles, multi: __m["ui/round-ui"].multi, readField: __m["ui/round-ui"].readField, hitRoll: __m["ui/round-ui"].hitRoll, typedField: __m["ui/round-ui"].typedField, D20_SVG: __m["ui/round-ui"].D20_SVG, ROLL_ICON: __m["ui/round-ui"].ROLL_ICON, DUPLICATE_ICON: __m["ui/round-ui"].DUPLICATE_ICON };
 window.Cloud = { cloudClient: __m["cloud"].cloudClient, cloudSession: __m["cloud"].cloudSession, createCloudRoundSync: __m["cloud"].createCloudRoundSync, mountCloud: __m["cloud"].mountCloud };
 window.SheetRules = { PHB_WEAPONS: __m["rules/weapons"].PHB_WEAPONS };
 window.SheetGuess = { guessCategory: __m["rules/migrate"].guessCategory };
@@ -8577,44 +8628,7 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
     });
     // Rolls real dice and types the result (the account's Dice setting)
     const rollsOwnDice = () => !!(cloudSess && cloudSess.diceMode === 'own');
-    // A field for one roll. Tab and Enter carry on to the next field after the page
-    // redraws; an impossible number is marked and changes nothing.
-    let typedNext = null;
-    function typedField(field, prompt, value, onValue, key) {
-      const label = document.createElement('label'); label.className = 'typed-field';
-      const say = document.createElement('span'); say.className = 'typed-prompt';
-      const dice = document.createElement('b'); dice.textContent = prompt.dice;
-      say.append('Roll ', dice, prompt.text);
-      const input = document.createElement('input');
-      input.type = 'text'; input.inputMode = 'numeric'; input.className = 'size-sm'; input.autocomplete = 'off';
-      input.value = value == null ? '' : value;
-      input.dataset.typed = key;
-      input.setAttribute('aria-label', `${prompt.dice}${prompt.text}`);
-      input.addEventListener('keydown', ev => {
-        if ((ev.key === 'Tab' && !ev.shiftKey) || ev.key === 'Enter') {
-          const all = [...document.querySelectorAll('[data-typed]')];
-          typedNext = { from: key, after: all.slice(all.indexOf(input) + 1).map(x => x.dataset.typed) };
-          if (ev.key === 'Enter') { ev.preventDefault(); input.blur(); }
-        }
-      });
-      input.addEventListener('change', () => {
-        const text = input.value.trim();
-        const v = SheetRound.typedValue(field, text);
-        const bad = !!text && v == null;
-        input.classList.toggle('is-bad', bad);
-        input.setAttribute('aria-invalid', String(bad));
-        if (bad) { typedNext = null; return; }
-        onValue(v);
-        // The page has redrawn: on to the next field that's there, or a new one
-        const wanted = typedNext; typedNext = null;
-        if (!wanted) return;
-        const here = [...document.querySelectorAll('[data-typed]')];
-        const at = here.findIndex(x => x.dataset.typed === wanted.from);
-        (here[at + 1] || here.find(x => wanted.after.includes(x.dataset.typed)))?.focus();
-      });
-      label.append(say, input);
-      return label;
-    }
+    const typedField = (...args) => RoundUI.typedField(...args);
     const charName = () => (document.getElementById('char-name')?.value || '').trim() || 'Unnamed';
     const roundState = () => { const s = roundSync(); return s ? s.state() : { round: 1, foes: [], records: {} }; };
     const dmLive = () => !!roundState().dmAt;

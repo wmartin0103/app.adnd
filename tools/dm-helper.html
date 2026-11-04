@@ -541,6 +541,14 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   .moveafter{display:flex;align-items:center;gap:6px;padding:7px 14px;font-family:var(--serif);font-size:.82rem;border-top:1px solid var(--edge)}
   .rbtn,.res{display:none}
   .rbtn:disabled{opacity:.35;cursor:default}
+  /* Real dice (the account's Dice setting): no roll buttons; the fields take their place (important: .ui-button's own display is deliberately strong) */
+  body.own-dice #rollInit, body.own-dice .initbtn, body.own-dice #rollProfs, body.own-dice #rollSavesAll, body.own-dice #rxRoll, body.own-dice #lcCrit, body.own-dice #lcFumble, body.own-dice .chead .reroll.is-icon, body.own-dice #encRoll svg{display:none !important}
+  .own-fields{display:inline-flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
+  .encask{margin:4px 0}
+  .ocard .lightdetail .typed-prompt b{font:inherit;font-weight:700;letter-spacing:0;text-transform:none;color:var(--color-accent-text)}
+  .bd-crit .typed-field{display:flex;margin:6px 0 2px}
+  td.tgt.pass .typed-field input{color:var(--color-success-text)}
+  td.tgt.fail .typed-field input{color:var(--color-danger-text)}
   .ldsave{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;margin:4px 0 8px;font:inherit}
   /* A save roll: who, the d20 icon, the roll in bold */
   .ldsave-roll{display:inline-flex;align-items:center;gap:6px}
@@ -1105,6 +1113,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       <div class="card-head"><h3>Crits &amp; fumbles</h3><span class="hint">Good Hits &amp; Bad Misses</span></div>
       <div class="line">
         <label class="gclabel">Weapon <select id="lcType"><option value="B">Blunt</option><option value="P">Piercing</option><option value="S">Slashing</option><option value="A">Animal</option></select></label>
+        <span id="lcFields" class="own-fields"></span>
         <button class="ui-button is-primary" id="lcCrit">Crit</button>
         <button class="ui-button is-secondary" id="lcFumble">Fumble</button>
         <button class="ui-button is-link" id="lcClear">Clear</button>
@@ -1167,6 +1176,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
       </div>
       <div class="line">
         <button class="ui-button is-primary size-sm rollbtn-all" id="rxRoll">Roll for all</button>
+        <span id="rxFields" class="own-fields"></span>
         <button class="ui-button is-link size-sm" id="rxClear">Clear</button>
       </div>
       <div id="rxResults" class="gcresults hidden"></div>
@@ -2823,7 +2833,7 @@ return { ROUND_MODS, MOVE_MULTS, newRound, roundQueue, queueAttack, unqueueAttac
 })();
 // ── ui/round-ui ──
 __m["ui/round-ui"] = (() => {
-const {lineSay} = __m["rules/round"];
+const {lineSay, typedValue} = __m["rules/round"];
 // ── ROUND UI ────────────────────────────────────────────────────
 // The pieces of a combat round's screen that the character sheet and the DM
 // Helper share, with their styles: a select whose list holds checkboxes (with a
@@ -2834,7 +2844,7 @@ const {lineSay} = __m["rules/round"];
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-const STYLES = "/* Shared tokens: the character sheet's palette and type, under names of their\n   own (each tool keeps its own token names for the rest of its page) */\n:root { --ui-ink: var(--color-text); --ui-muted: var(--color-text-muted); --ui-faint: var(--color-text-faint); --ui-rule: var(--color-divider); --ui-accent: var(--color-accent-text); --ui-accent-dark: color-mix(in oklab, var(--color-accent-text) 82%, var(--toward));\n  --ui-surface: var(--color-surface); --ui-page: var(--color-bg); --ui-gold: var(--color-accent); --ui-radius: var(--radius-ctl); --ui-ctl-h: 2.1rem;\n  --ui-display: var(--font-serif); --ui-body: var(--font-sans); }\n/* A label over a control, the control, a button */\n.ui-field { display: inline-flex; flex-direction: column; gap: 0.15rem; }\n.ui-label { font-family: var(--ui-display); font-size: 0.65rem; letter-spacing: 0.13em; text-transform: uppercase; color: var(--ui-muted); }\n/* Looks like a field (src/ui/components.js): the select with checkboxes sits among selects */\n.ui-control { box-sizing: border-box; height: var(--field-h, var(--ui-ctl-h)); padding: 0 var(--field-px, 0.5rem); font: 500 var(--field-fs, 0.95rem) var(--ui-body); color: var(--ui-ink);\n  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--ui-radius); cursor: pointer; }\n.ui-control:hover { border-color: var(--color-text-muted); }\n.ui-control:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-color: var(--color-focus); }\n.ui-btn { box-sizing: border-box; height: var(--ui-ctl-h); display: inline-flex; align-items: center; gap: 0.4rem; padding: 0 0.8rem;\n  font-family: var(--ui-display); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap;\n  background: var(--ui-accent); color: var(--ui-surface); border: 1px solid var(--ui-accent); border-radius: var(--ui-radius); cursor: pointer; }\n.ui-btn:hover, .ui-btn:focus-visible { background: var(--ui-accent-dark); }\n/* A select with checkboxes in its list */\n.round-multi { position: relative; }\n.round-multi .round-multi-btn { width: auto; min-width: 9.5rem; max-width: 16rem; overflow: hidden; text-overflow: ellipsis; text-align: left; padding-right: 1.9rem; position: relative; white-space: nowrap; }\n.round-multi-btn::after { content: ''; position: absolute; right: 0.65rem; top: 50%; width: 0.4rem; height: 0.4rem; margin-top: -0.3rem;\n  border-right: 1.5px solid var(--ui-muted); border-bottom: 1.5px solid var(--ui-muted); transform: rotate(45deg); }\n.round-multi.is-open .round-multi-btn { border-color: var(--ui-accent); }\n.round-multi.is-open .round-multi-btn::after { transform: rotate(-135deg); margin-top: -0.1rem; }\n.round-multi-list { position: absolute; top: 100%; left: 0; z-index: 30; margin-top: 0.25rem; min-width: 100%; width: max-content; max-width: 18rem;\n  background: var(--color-raised); border: 1px solid var(--color-divider); border-radius: var(--radius-inner); box-shadow: var(--shadow-raised), inset 0 1px 0 var(--edge-top); padding: 0.3rem; }\n.round-multi-opt { display: flex; align-items: flex-start; gap: 0.55rem; padding: 0.45rem 0.55rem; border-radius: var(--ui-radius); cursor: pointer; font-size: 0.95rem; }\n.round-multi-opt:hover, .round-multi-opt:focus-within { background: var(--ui-page); }\n.round-multi-opt input { accent-color: var(--ui-accent); margin-top: 0.2rem; }\n.round-multi-opt small { display: block; font-size: 0.8rem; color: var(--ui-muted); }\n/* A read-only value in a line, the height of the controls beside it */\n.round-read-value { display: inline-flex; align-items: center; height: var(--field-h, var(--ui-ctl-h)); font-size: 0.95rem; color: var(--ui-ink); white-space: nowrap; }\n.round-read.is-key .round-read-value { font-family: var(--ui-display); font-weight: 700; font-size: 1.05rem; color: var(--ui-accent); }\n/* A rolled line: one strip, same type throughout, pieces split by dividers */\n.round-summary { display: flex; flex-wrap: wrap; align-items: center; min-height: var(--ui-ctl-h); font-size: 0.95rem; color: var(--ui-ink); }\n.round-summary > span { padding: 0 0.75rem; border-left: 1px solid var(--ui-rule); line-height: 1.3; }\n.round-summary > span:first-child { padding-left: 0; border-left: 0; }\n.round-summary > .is-key { font-family: var(--ui-display); font-weight: 700; color: var(--ui-accent); }\n/* The hit roll: the round's big moment */\n.roll-hit-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; padding: 0.4rem 0.85rem 0.4rem 0.6rem; box-shadow: 0 2px 0 color-mix(in oklab, var(--ui-accent) 55%, #000); }\n.roll-hit-btn svg { width: 1.15rem; height: 1.15rem; }\n.roll-hit-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 color-mix(in oklab, var(--ui-accent) 55%, #000); }\n.hit-rolls { flex-basis: 100%; display: grid; gap: 0.45rem; justify-items: start; }\n.hit-rolls > .hit-roll { width: 100%; box-sizing: border-box; }\n.hit-who { font-family: var(--ui-display); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ui-muted); min-width: 4.5rem; }\n.hit-roll { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1.5rem; padding: 0.55rem 0.9rem; border-radius: var(--radius-inner);\n  background: var(--color-sunken); border: 1px solid transparent; box-shadow: var(--shadow-well); }\n.hit-die { position: relative; width: 3.4rem; height: 3.4rem; flex: none; color: var(--ui-accent); }\n.hit-die svg { position: absolute; inset: 0; width: 100%; height: 100%; }\n.hit-die-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding-top: 0.15rem;\n  font-family: var(--ui-display); font-weight: 700; font-size: 1.35rem; color: var(--ui-ink); }\n.hit-stat { display: flex; flex-direction: column; line-height: 1; }\n.hit-stat-label { font-family: var(--ui-display); font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ui-muted); margin-bottom: 0.25rem; }\n.hit-stat-value { font-family: var(--ui-display); font-weight: 700; font-size: 2rem; color: var(--ui-accent); display: flex; align-items: flex-end; height: 2rem; }\n/* every value the same line (a smaller one sits on its bottom), so the columns line up */\n.hit-stat-sub { font-size: 0.8rem; color: var(--ui-muted); margin-top: 0.15rem; }\n.hit-stat.is-dmg .hit-stat-value { color: var(--ui-ink); font-size: 1.6rem; }\n.hit-stat.is-miss .hit-stat-value { color: var(--ui-muted); }\n.hit-stat.is-updated .hit-stat-value { border-radius: var(--ui-radius); }\n@media (prefers-reduced-motion: no-preference) {\n  .hit-stat.is-updated .hit-stat-value { animation: hit-update 1.2s ease-out; }\n}\n@keyframes hit-update { 0% { background: color-mix(in oklab, var(--color-accent) 45%, transparent); } 100% { background: transparent; } }\n.hit-nat { font-family: var(--ui-display); font-weight: 700; font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; padding: 0.25rem 0.55rem; border-radius: 999px; }\n.hit-roll.is-crit { background: linear-gradient(100deg, color-mix(in oklab, var(--color-highlight) 22%, var(--color-sunken)), var(--color-sunken) 75%); border-color: var(--color-success-text); box-shadow: var(--shadow-well), 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); }\n.hit-roll.is-crit .hit-die { color: var(--color-success-text); }\n.hit-roll.is-crit .hit-nat { background: var(--color-highlight); color: var(--color-on-highlight); }\n.hit-roll.is-fumble { background: linear-gradient(100deg, color-mix(in oklab, var(--ui-muted) 12%, var(--color-sunken)), var(--color-sunken) 75%); border-color: var(--ui-faint); }\n.hit-roll.is-fumble .hit-die, .hit-roll.is-fumble .hit-stat-value { color: var(--ui-muted); }\n.hit-roll.is-fumble .hit-stat.is-miss .hit-stat-value { color: var(--ui-ink); }\n.hit-roll.is-fumble .hit-nat { background: var(--ui-ink); color: var(--ui-surface); }\n@media (prefers-reduced-motion: no-preference) {\n  .hit-roll.is-fresh .hit-die svg { animation: hit-tumble 0.55s cubic-bezier(.2,.8,.3,1); }\n  .hit-roll.is-fresh .hit-die-num, .hit-roll.is-fresh .hit-stat-value { animation: hit-pop 0.45s 0.3s cubic-bezier(.2,1.4,.4,1) both; }\n  .hit-roll.is-fresh.is-crit { animation: hit-glow 1.2s 0.5s ease-out; }\n}\n@keyframes hit-tumble { from { transform: rotate(-200deg) scale(0.6); } to { transform: none; } }\n@keyframes hit-pop { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: none; } }\n@keyframes hit-glow { 0% { box-shadow: var(--shadow-well), 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); } 30% { box-shadow: var(--shadow-well), 0 0 0 8px color-mix(in oklab, var(--color-highlight) 50%, transparent); } 100% { box-shadow: var(--shadow-well), 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); } }";
+const STYLES = "/* Shared tokens: the character sheet's palette and type, under names of their\n   own (each tool keeps its own token names for the rest of its page) */\n:root { --ui-ink: var(--color-text); --ui-muted: var(--color-text-muted); --ui-faint: var(--color-text-faint); --ui-rule: var(--color-divider); --ui-accent: var(--color-accent-text); --ui-accent-dark: color-mix(in oklab, var(--color-accent-text) 82%, var(--toward));\n  --ui-surface: var(--color-surface); --ui-page: var(--color-bg); --ui-gold: var(--color-accent); --ui-radius: var(--radius-ctl); --ui-ctl-h: 2.1rem;\n  --ui-display: var(--font-serif); --ui-body: var(--font-sans); }\n/* A label over a control, the control, a button */\n.ui-field { display: inline-flex; flex-direction: column; gap: 0.15rem; }\n.ui-label { font-family: var(--ui-display); font-size: 0.65rem; letter-spacing: 0.13em; text-transform: uppercase; color: var(--ui-muted); }\n/* Looks like a field (src/ui/components.js): the select with checkboxes sits among selects */\n.ui-control { box-sizing: border-box; height: var(--field-h, var(--ui-ctl-h)); padding: 0 var(--field-px, 0.5rem); font: 500 var(--field-fs, 0.95rem) var(--ui-body); color: var(--ui-ink);\n  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--ui-radius); cursor: pointer; }\n.ui-control:hover { border-color: var(--color-text-muted); }\n.ui-control:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-color: var(--color-focus); }\n.ui-btn { box-sizing: border-box; height: var(--ui-ctl-h); display: inline-flex; align-items: center; gap: 0.4rem; padding: 0 0.8rem;\n  font-family: var(--ui-display); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap;\n  background: var(--ui-accent); color: var(--ui-surface); border: 1px solid var(--ui-accent); border-radius: var(--ui-radius); cursor: pointer; }\n.ui-btn:hover, .ui-btn:focus-visible { background: var(--ui-accent-dark); }\n/* A select with checkboxes in its list */\n.round-multi { position: relative; }\n.round-multi .round-multi-btn { width: auto; min-width: 9.5rem; max-width: 16rem; overflow: hidden; text-overflow: ellipsis; text-align: left; padding-right: 1.9rem; position: relative; white-space: nowrap; }\n.round-multi-btn::after { content: ''; position: absolute; right: 0.65rem; top: 50%; width: 0.4rem; height: 0.4rem; margin-top: -0.3rem;\n  border-right: 1.5px solid var(--ui-muted); border-bottom: 1.5px solid var(--ui-muted); transform: rotate(45deg); }\n.round-multi.is-open .round-multi-btn { border-color: var(--ui-accent); }\n.round-multi.is-open .round-multi-btn::after { transform: rotate(-135deg); margin-top: -0.1rem; }\n.round-multi-list { position: absolute; top: 100%; left: 0; z-index: 30; margin-top: 0.25rem; min-width: 100%; width: max-content; max-width: 18rem;\n  background: var(--color-raised); border: 1px solid var(--color-divider); border-radius: var(--radius-inner); box-shadow: var(--shadow-raised), inset 0 1px 0 var(--edge-top); padding: 0.3rem; }\n.round-multi-opt { display: flex; align-items: flex-start; gap: 0.55rem; padding: 0.45rem 0.55rem; border-radius: var(--ui-radius); cursor: pointer; font-size: 0.95rem; }\n.round-multi-opt:hover, .round-multi-opt:focus-within { background: var(--ui-page); }\n.round-multi-opt input { accent-color: var(--ui-accent); margin-top: 0.2rem; }\n.round-multi-opt small { display: block; font-size: 0.8rem; color: var(--ui-muted); }\n/* A read-only value in a line, the height of the controls beside it */\n.round-read-value { display: inline-flex; align-items: center; height: var(--field-h, var(--ui-ctl-h)); font-size: 0.95rem; color: var(--ui-ink); white-space: nowrap; }\n.round-read.is-key .round-read-value { font-family: var(--ui-display); font-weight: 700; font-size: 1.05rem; color: var(--ui-accent); }\n/* A rolled line: one strip, same type throughout, pieces split by dividers */\n.round-summary { display: flex; flex-wrap: wrap; align-items: center; min-height: var(--ui-ctl-h); font-size: 0.95rem; color: var(--ui-ink); }\n.round-summary > span { padding: 0 0.75rem; border-left: 1px solid var(--ui-rule); line-height: 1.3; }\n.round-summary > span:first-child { padding-left: 0; border-left: 0; }\n.round-summary > .is-key { font-family: var(--ui-display); font-weight: 700; color: var(--ui-accent); }\n/* The hit roll: the round's big moment */\n.roll-hit-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; padding: 0.4rem 0.85rem 0.4rem 0.6rem; box-shadow: 0 2px 0 color-mix(in oklab, var(--ui-accent) 55%, #000); }\n.roll-hit-btn svg { width: 1.15rem; height: 1.15rem; }\n.roll-hit-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 color-mix(in oklab, var(--ui-accent) 55%, #000); }\n.hit-rolls { flex-basis: 100%; display: grid; gap: 0.45rem; justify-items: start; }\n.hit-rolls > .hit-roll { width: 100%; box-sizing: border-box; }\n.hit-who { font-family: var(--ui-display); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ui-muted); min-width: 4.5rem; }\n.hit-roll { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1.5rem; padding: 0.55rem 0.9rem; border-radius: var(--radius-inner);\n  background: var(--color-sunken); border: 1px solid transparent; box-shadow: var(--shadow-well); }\n.hit-die { position: relative; width: 3.4rem; height: 3.4rem; flex: none; color: var(--ui-accent); }\n.hit-die svg { position: absolute; inset: 0; width: 100%; height: 100%; }\n.hit-die-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding-top: 0.15rem;\n  font-family: var(--ui-display); font-weight: 700; font-size: 1.35rem; color: var(--ui-ink); }\n.hit-stat { display: flex; flex-direction: column; line-height: 1; }\n.hit-stat-label { font-family: var(--ui-display); font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ui-muted); margin-bottom: 0.25rem; }\n.hit-stat-value { font-family: var(--ui-display); font-weight: 700; font-size: 2rem; color: var(--ui-accent); display: flex; align-items: flex-end; height: 2rem; }\n/* every value the same line (a smaller one sits on its bottom), so the columns line up */\n.hit-stat-sub { font-size: 0.8rem; color: var(--ui-muted); margin-top: 0.15rem; }\n.hit-stat.is-dmg .hit-stat-value { color: var(--ui-ink); font-size: 1.6rem; }\n.hit-stat.is-miss .hit-stat-value { color: var(--ui-muted); }\n.hit-stat.is-updated .hit-stat-value { border-radius: var(--ui-radius); }\n@media (prefers-reduced-motion: no-preference) {\n  .hit-stat.is-updated .hit-stat-value { animation: hit-update 1.2s ease-out; }\n}\n@keyframes hit-update { 0% { background: color-mix(in oklab, var(--color-accent) 45%, transparent); } 100% { background: transparent; } }\n.hit-nat { font-family: var(--ui-display); font-weight: 700; font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; padding: 0.25rem 0.55rem; border-radius: 999px; }\n.hit-roll.is-crit { background: linear-gradient(100deg, color-mix(in oklab, var(--color-highlight) 22%, var(--color-sunken)), var(--color-sunken) 75%); border-color: var(--color-success-text); box-shadow: var(--shadow-well), 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); }\n.hit-roll.is-crit .hit-die { color: var(--color-success-text); }\n.hit-roll.is-crit .hit-nat { background: var(--color-highlight); color: var(--color-on-highlight); }\n.hit-roll.is-fumble { background: linear-gradient(100deg, color-mix(in oklab, var(--ui-muted) 12%, var(--color-sunken)), var(--color-sunken) 75%); border-color: var(--ui-faint); }\n.hit-roll.is-fumble .hit-die, .hit-roll.is-fumble .hit-stat-value { color: var(--ui-muted); }\n.hit-roll.is-fumble .hit-stat.is-miss .hit-stat-value { color: var(--ui-ink); }\n.hit-roll.is-fumble .hit-nat { background: var(--ui-ink); color: var(--ui-surface); }\n@media (prefers-reduced-motion: no-preference) {\n  .hit-roll.is-fresh .hit-die svg { animation: hit-tumble 0.55s cubic-bezier(.2,.8,.3,1); }\n  .hit-roll.is-fresh .hit-die-num, .hit-roll.is-fresh .hit-stat-value { animation: hit-pop 0.45s 0.3s cubic-bezier(.2,1.4,.4,1) both; }\n  .hit-roll.is-fresh.is-crit { animation: hit-glow 1.2s 0.5s ease-out; }\n}\n@keyframes hit-tumble { from { transform: rotate(-200deg) scale(0.6); } to { transform: none; } }\n@keyframes hit-pop { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: none; } }\n/* A field for one roll of real dice */\n.typed-dice { flex-basis: 100%; display: grid; gap: 6px; justify-items: start; }\n.typed-field { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-family: var(--ui-body); font-size: 14px; letter-spacing: 0; text-transform: none; }\n.typed-prompt { font-size: 14px; color: var(--color-text-muted); }\n.typed-prompt b { color: var(--color-accent-text); font-weight: 700; }\n.typed-field input { width: 4rem; }\n.typed-field.is-bare input { width: 3.25rem; text-align: center; }\n.typed-field input.is-bad { border-color: var(--color-danger); }\n@keyframes hit-glow { 0% { box-shadow: var(--shadow-well), 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); } 30% { box-shadow: var(--shadow-well), 0 0 0 8px color-mix(in oklab, var(--color-highlight) 50%, transparent); } 100% { box-shadow: var(--shadow-well), 0 0 0 2px color-mix(in oklab, var(--color-highlight) 35%, transparent); } }";
 function ensureStyles(doc = document) {
   if (doc.getElementById('round-ui-styles')) return;
   const st = doc.createElement('style'); st.id = 'round-ui-styles'; st.textContent = STYLES;
@@ -2920,6 +2930,63 @@ function readField(label, value, cls = '') {
   f.append(l, v); return f;
 }
 
+// ── A field for one roll of real dice (the account's Dice setting) ──
+// "Roll 1d8 (we'll add 2) · damage" and a box; prompt.bare leaves the words out,
+// for a table whose column says what to roll. Tab and Enter carry on to the next
+// field after the page redraws; an impossible number is marked and changes nothing.
+// A redraw (a player's sheet sending something) keeps what's half typed, and focus.
+let typedNext = null, typedFocus = null;
+const typedDrafts = {};
+function typedField(field, prompt, value, onValue, key) {
+  const label = document.createElement('label'); label.className = 'typed-field' + (prompt.bare ? ' is-bare' : '');
+  if (!prompt.bare) {
+    const say = document.createElement('span'); say.className = 'typed-prompt';
+    const dice = document.createElement('b'); dice.textContent = prompt.dice;
+    say.append('Roll ', dice, prompt.text || '');
+    label.appendChild(say);
+  }
+  const input = document.createElement('input');
+  input.type = 'text'; input.inputMode = 'numeric'; input.className = 'size-sm'; input.autocomplete = 'off';
+  const draft = typedDrafts[key];
+  input.value = draft ?? (value == null ? '' : value);
+  input.dataset.typed = key;
+  input.setAttribute('aria-label', `${prompt.dice}${prompt.text || ''}`);
+  const mark = bad => { input.classList.toggle('is-bad', bad); input.setAttribute('aria-invalid', String(bad)); };
+  if (draft != null && draft.trim() && typedValue(field, draft) == null) mark(true);
+  const visible = () => [...document.querySelectorAll('[data-typed]')].filter(x => x.offsetParent !== null);
+  input.addEventListener('input', () => { typedDrafts[key] = input.value; });
+  input.addEventListener('focus', () => { typedFocus = key; });
+  input.addEventListener('blur', () => setTimeout(() => { if (input.isConnected && typedFocus === key) typedFocus = null; }, 0));
+  input.addEventListener('keydown', ev => {
+    if ((ev.key === 'Tab' && !ev.shiftKey) || ev.key === 'Enter') {
+      const all = visible();
+      typedNext = { from: key, after: all.slice(all.indexOf(input) + 1).map(x => x.dataset.typed) };
+      if (ev.key === 'Enter') { ev.preventDefault(); input.blur(); }
+    }
+  });
+  input.addEventListener('change', () => {
+    const text = input.value.trim();
+    const v = typedValue(field, text);
+    const bad = !!text && v == null;
+    mark(bad);
+    if (bad) { typedNext = null; return; }
+    delete typedDrafts[key];
+    onValue(v);
+    // The page has redrawn: on to the next field that's there, or a new one
+    const wanted = typedNext; typedNext = null;
+    if (!wanted || wanted.from !== key) return;
+    const here = visible();
+    const at = here.findIndex(x => x.dataset.typed === wanted.from);
+    (here[at + 1] || here.find(x => wanted.after.includes(x.dataset.typed)))?.focus();
+  });
+  label.appendChild(input);
+  if (typedFocus === key) setTimeout(() => {
+    const a = document.activeElement;
+    if (input.isConnected && (!a || a === document.body)) input.focus({ preventScroll: true });
+  }, 0);
+  return label;
+}
+
 // ── The roll result panel ──
 // The d20 on a die, the AC it hits, the damage and each die; one panel per
 // target (one for an area spell). The rolled dice stay; the numbers follow the
@@ -2994,7 +3061,7 @@ function hitRoll(line, fresh, onReroll, judge) {
   return wrap;
 }
 
-return { STYLES, ensureStyles, multi, readField, D20_SVG, ROLL_ICON, DUPLICATE_ICON, hitRoll };
+return { STYLES, ensureStyles, multi, readField, typedField, D20_SVG, ROLL_ICON, DUPLICATE_ICON, hitRoll };
 })();
 // ── ui/tokens ──
 __m["ui/tokens"] = (() => {
@@ -4601,9 +4668,9 @@ async function campaignNames(client, campaignId) {
 return { STATUSES, STATUS_LABEL, summary, isBlank, fileName, listCharacters, createCharacter, isSheetSave, listParty, listMembers, createCharacterFor, assignCharacter, listShares, setShares, setStatus, deleteCharacter, loadCharacter, saveSheet, isNameTaken, campaignNames };
 })();
 window.SheetConverter = { toDMHelper: __m["adapters/dm-helper"].toDMHelper };
-window.SheetRound = { ROUND_MODS: __m["rules/round"].ROUND_MODS, MOVE_MULTS: __m["rules/round"].MOVE_MULTS, newRound: __m["rules/round"].newRound, roundQueue: __m["rules/round"].roundQueue, queueAttack: __m["rules/round"].queueAttack, unqueueAttack: __m["rules/round"].unqueueAttack, roundLines: __m["rules/round"].roundLines, lineToHit: __m["rules/round"].lineToHit, roundACPenalty: __m["rules/round"].roundACPenalty, lineTHAC0: __m["rules/round"].lineTHAC0, judgeRoll: __m["rules/round"].judgeRoll, actOn: __m["rules/round"].actOn, attackSpeed: __m["rules/round"].attackSpeed, rollLine: __m["rules/round"].rollLine, scoreRoll: __m["rules/round"].scoreRoll, rerollDamage: __m["rules/round"].rerollDamage, lineKind: __m["rules/round"].lineKind, hasRoll: __m["rules/round"].hasRoll, isHealing: __m["rules/round"].isHealing, lineSay: __m["rules/round"].lineSay, plainAttack: __m["rules/round"].plainAttack };
+window.SheetRound = { typedFields: __m["rules/round"].typedFields, typedValue: __m["rules/round"].typedValue, typedPrompt: __m["rules/round"].typedPrompt, typedRoll: __m["rules/round"].typedRoll, ROUND_MODS: __m["rules/round"].ROUND_MODS, MOVE_MULTS: __m["rules/round"].MOVE_MULTS, newRound: __m["rules/round"].newRound, roundQueue: __m["rules/round"].roundQueue, queueAttack: __m["rules/round"].queueAttack, unqueueAttack: __m["rules/round"].unqueueAttack, roundLines: __m["rules/round"].roundLines, lineToHit: __m["rules/round"].lineToHit, roundACPenalty: __m["rules/round"].roundACPenalty, lineTHAC0: __m["rules/round"].lineTHAC0, judgeRoll: __m["rules/round"].judgeRoll, actOn: __m["rules/round"].actOn, attackSpeed: __m["rules/round"].attackSpeed, rollLine: __m["rules/round"].rollLine, scoreRoll: __m["rules/round"].scoreRoll, rerollDamage: __m["rules/round"].rerollDamage, lineKind: __m["rules/round"].lineKind, hasRoll: __m["rules/round"].hasRoll, isHealing: __m["rules/round"].isHealing, lineSay: __m["rules/round"].lineSay, plainAttack: __m["rules/round"].plainAttack };
 window.RoundSync = { createRoundSync: __m["round-sync"].createRoundSync };
-window.RoundUI = { STYLES: __m["ui/round-ui"].STYLES, ensureStyles: __m["ui/round-ui"].ensureStyles, multi: __m["ui/round-ui"].multi, readField: __m["ui/round-ui"].readField, hitRoll: __m["ui/round-ui"].hitRoll, D20_SVG: __m["ui/round-ui"].D20_SVG, ROLL_ICON: __m["ui/round-ui"].ROLL_ICON, DUPLICATE_ICON: __m["ui/round-ui"].DUPLICATE_ICON };
+window.RoundUI = { STYLES: __m["ui/round-ui"].STYLES, ensureStyles: __m["ui/round-ui"].ensureStyles, multi: __m["ui/round-ui"].multi, readField: __m["ui/round-ui"].readField, hitRoll: __m["ui/round-ui"].hitRoll, typedField: __m["ui/round-ui"].typedField, D20_SVG: __m["ui/round-ui"].D20_SVG, ROLL_ICON: __m["ui/round-ui"].ROLL_ICON, DUPLICATE_ICON: __m["ui/round-ui"].DUPLICATE_ICON };
 window.Cloud = { cloudClient: __m["cloud"].cloudClient, cloudSession: __m["cloud"].cloudSession, createCloudRoundSync: __m["cloud"].createCloudRoundSync, mountCloud: __m["cloud"].mountCloud };
 window.Theme = { mountThemeToggle: __m["ui/theme"].mountThemeToggle, currentTheme: __m["ui/theme"].currentTheme, setTheme: __m["ui/theme"].setTheme };
 window.Characters = { isBlank: __m["characters"].isBlank, isSheetSave: __m["characters"].isSheetSave, listParty: __m["characters"].listParty, listMembers: __m["characters"].listMembers, createCharacterFor: __m["characters"].createCharacterFor };
@@ -5097,6 +5164,18 @@ const tracker=document.getElementById('tracker');
 const blocks={};
 const d20=()=>Math.floor(Math.random()*20)+1;
 const d100=()=>Math.floor(Math.random()*100)+1;
+// The account's Dice setting: on 'own' the DM rolls real dice and types the results
+let ownDice=false;
+const D20={min:1,max:20}, D100={min:1,max:100}, D100_NOT_00={min:1,max:98};
+const appD20=()=> ownDice ? null : d20();
+const appD100=()=> ownDice ? null : d100();
+// A field in text that becomes the page's innerHTML: a slot, then fillRollSlots
+const rollSlots=new Map();
+function rollSlot(field, prompt, value, onValue, key){
+  rollSlots.set(key, ()=>RoundUI.typedField(field, prompt, value, onValue, key));
+  return `<span data-roll-slot="${key.replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}"></span>`;
+}
+function fillRollSlots(host){ host.querySelectorAll('[data-roll-slot]').forEach(s=>{ const make=rollSlots.get(s.dataset.rollSlot); if(make) s.replaceWith(make()); }); }
 
 function loadStore(){ try{return JSON.parse(localStorage.getItem(STORE_KEY))||{};}catch(e){return {};} }
 function saveStore(s){ try{localStorage.setItem(STORE_KEY, JSON.stringify(s));}catch(e){} }
@@ -5199,15 +5278,25 @@ function fumbleLine(pct, sub, dexVal, critFn, wname){
   if(/DEX or less/i.test(txt)){
     txt += (dexVal==null) ? ' <i>(roll DEX)</i>' : ` <i>(DEX check: d20 ${sub.dex} vs ${dexVal} — ${sub.dex<=dexVal?'passed':'failed'})</i>`;
   }
-  if(/^Critical hit, (self|friend)/.test(txt)) txt+=` → d% ${pctLbl(sub.crit)}: ${critFn(sub.crit)}`;
+  if(/^Critical hit, (self|friend)/.test(txt)) txt+= sub.crit==null ? ' → roll the critical' : ` → d% ${pctLbl(sub.crit)}: ${critFn(sub.crit)}`;
   return txt;
 }
 function fumbleBlock(o, dexVal, critFn, wname){   // o: {pct, sub}; wname: weapon (null = unknown, e.g. an Enemy)
   let html=`d% ${pctLbl(o.pct)}: ${fumbleLine(o.pct, o.sub, dexVal, critFn, wname)}`;
   const n = o.pct===99 ? 2 : o.pct===100 ? 3 : 0;
-  for(let i=0;i<n;i++){ const e=o.sub.extra[i]; html+=`<br>&nbsp;&nbsp;↳ d% ${pctLbl(e)}: ${fumbleLine(e, o.sub, dexVal, critFn, wname)}`; }
+  for(let i=0;i<n;i++){ const e=o.sub.extra[i]; if(e==null) continue; html+=`<br>&nbsp;&nbsp;↳ d% ${pctLbl(e)}: ${fumbleLine(e, o.sub, dexVal, critFn, wname)}`; }
   return html+`<br>&nbsp;&nbsp;<i>No more actions this round.</i>`;
 }
+// Real dice: the fields a Bad Miss goes on to ask for (99 and 100 roll again; a
+// critical on yourself or a friend rolls for it). typed holds them by id.
+function fumbleFollowUps(pct, typed, onValue, keyBase){
+  const n = pct===99 ? 2 : pct===100 ? 3 : 0, out=[];
+  for(let i=0;i<n;i++) out.push(RoundUI.typedField(D100_NOT_00, {dice:'1d100', text:' · Bad Miss again, skipping 99 and 00'}, typed['extra:'+i], v=>onValue('extra:'+i, v), `${keyBase}|extra:${i}`));
+  const rolled=[pct, ...Array.from({length:n},(_,i)=>typed['extra:'+i])].filter(x=>x!=null);
+  if(rolled.some(p=>/^Critical hit, (self|friend)/.test(tableLookup(FUMBLE_TABLE, p)))) out.push(RoundUI.typedField(D100, {dice:'1d100', text:' · the critical'}, typed.crit, v=>onValue('crit', v), `${keyBase}|crit`));
+  return out;
+}
+const typedSub = typed => ({extra:[typed['extra:0'], typed['extra:1'], typed['extra:2']], crit:typed.crit});
 /* character rows */
 function critHTML(r){
   const t = r.animal ? 'A' : critTypeOf(r);
@@ -5679,7 +5768,26 @@ function enemyTargetAC(name, a, t){                            // the AC this at
 }
 function enemyTargetText(a, t){ return t.pc ? t.label : `Other (AC ${fmtAC(parseInt(a.otherAC,10))})`; }
 const fmtAC=n=> n<0 ? '−'+Math.abs(n) : String(n);
-function clearEnemyRolls(b){ b.attacks.forEach(a=>{ a.roll=null; a.subs=null; }); }
+function clearEnemyRolls(b){ b.attacks.forEach(a=>{ a.roll=null; a.subs=null; a.typed=null; }); }
+// Real dice: the fields for an attack, and what typing in one does
+function enemyTyped(name, a, i, id, v){
+  const typed={...(a.typed||{})}; if(v==null) delete typed[id]; else typed[id]=v;
+  a.typed=typed;
+  const was=!!a.roll;
+  a.roll=SheetRound.typedRoll(null, enemyLine(name, a, i), typed);
+  a.fresh=!was && !!a.roll;
+  update();
+}
+function enemyTypedFields(name, a, i, line){
+  const typed=a.typed||{}, box=document.createElement('div'); box.className='typed-dice';
+  const many=a.set.targets.length>1;
+  // To hit first, then damage only on a hit: this page knows each target's AC
+  const missed=k=>{ const r=line.roll && line.roll.each[k]; if(!r) return false; const ac=enemyTargetAC(name, a, r.target); return ac!=null && !SheetRound.judgeRoll(r, ac).hit; };
+  SheetRound.typedFields(null, line, typed).filter(f=> f.id.startsWith('d20:') || (a.roll && !missed(f.i))).forEach(f=>{
+    box.appendChild(RoundUI.typedField(f, SheetRound.typedPrompt(f, many), typed[f.id], v=>enemyTyped(name, a, i, f.id, v), `${line.key}:${f.id}`));
+  });
+  return box;
+}
 function rollEnemyAttack(name, a, i){
   a.roll=SheetRound.rollLine(null, enemyLine(name, a, i));
   // A natural 1: the dice the Bad Misses table may call for
@@ -5713,7 +5821,7 @@ function renderEnemyAttacks(name){
     }
     // Dice and Bonus lead the line of fields (the header is just the attack's name and its buttons)
     const dicePicks = a.roll ? [] : [
-      uiPick(`${id}-dice`, 'Dice', BD_DICE.map(x=>[x,x]), a.dice, v=>{ a.dice=v; update(); }),
+      uiPick(`${id}-dice`, 'Dice', BD_DICE.map(x=>[x,x]), a.dice, v=>{ a.dice=v; a.typed=null; update(); }),
       uiPick(`${id}-bonus`, 'Bonus', Array.from({length:11},(_,n)=>[String(n), n?'+'+n:'0']), String(a.bonus), v=>{ a.bonus=parseInt(v,10)||0; update(); })];
     const btns=document.createElement('span'); btns.className='bd-atk-btns';
     { const d=btn('Duplicate', 'another attack with the same dice, targets and conditions (not rolled)', ()=>{ b.attacks.splice(i+1, 0, newEnemyAttack(a)); update(); });
@@ -5732,6 +5840,7 @@ function renderEnemyAttacks(name){
        st.other ? 'Other '+fmt(st.other) : ''].filter(Boolean).forEach(p=>{ const sp=document.createElement('span'); sp.textContent=p; sum.appendChild(sp); });
       const k=document.createElement('span'); k.className='is-key'; k.textContent=`THAC0 ${thac0}`; sum.appendChild(k);
       row.appendChild(sum);
+      if(ownDice) row.appendChild(enemyTypedFields(name, a, i, line));
       row.appendChild(RoundUI.hitRoll(line, !!a.fresh, null, r=>{
         const ac=enemyTargetAC(name, a, r.target); if(ac==null) return null;
         return {...SheetRound.judgeRoll(r, ac), ac};
@@ -5742,6 +5851,20 @@ function renderEnemyAttacks(name){
         const ac=enemyTargetAC(name, a, r.target); if(ac==null) return;
         const j=SheetRound.judgeRoll(r, ac), who=r.target ? enemyTargetText(a, r.target) : '';
         let html='';
+        if(ownDice && (j.crit || j.fumble)){                     // the table's d% (and what a Bad Miss asks for next), by hand
+          const typed=a.typed||{}, pct=typed['pct:'+k], base=`${id}:t${k}`, sub=typed['sub:'+k]||{};
+          const d=document.createElement('div'); d.className='bd-crit';
+          d.appendChild(RoundUI.typedField(D100, {dice:'1d100', text:(j.crit?' · critical hit':' · Bad Miss')+(line.roll.each.length>1&&who?' vs '+who:'')}, pct, v=>enemyTyped(name, a, i, 'pct:'+k, v), `${base}:pct`));
+          if(pct!=null){
+            if(j.fumble) fumbleFollowUps(pct, sub, (fid, v)=>{ const n={...sub}; if(v==null) delete n[fid]; else n[fid]=v; enemyTyped(name, a, i, 'sub:'+k, n); }, base).forEach(el=>d.appendChild(el));
+            const out=document.createElement('div');
+            out.innerHTML = j.crit ? `<span class="crit"><b>Critical hit${r.target && r.target.pc ? ' vs PC' : ''}</b>${who?' · '+who:''} · d% ${pctLbl(pct)}<br>&nbsp;&nbsp;${critAllText(pct, !!(r.target && r.target.pc))}</span>`
+              : `<span class="fumble"><b>Fumble</b>${who?' · vs '+who:''} · ${fumbleBlock({pct, sub:typedSub(sub)}, null, p=>critAllText(p, false), null)}</span>`;
+            d.appendChild(out);
+          }
+          row.appendChild(d);
+          return;
+        }
         if(j.crit && r.pct) html=`<span class="crit"><b>Critical hit${r.target && r.target.pc ? ' vs PC' : ''}</b>${who?' · '+who:''} · d% ${pctLbl(r.pct)}<br>&nbsp;&nbsp;${critAllText(r.pct, !!(r.target && r.target.pc))}</span>`;
         else if(j.fumble && r.pct && a.subs && a.subs[k]) html=`<span class="fumble"><b>Fumble</b>${who?' · vs '+who:''} · ${fumbleBlock({pct:r.pct, sub:a.subs[k]}, null, p=>critAllText(p, false), null)}</span>`;
         if(html){ const d=document.createElement('div'); d.className='bd-crit'; d.innerHTML=html; row.appendChild(d); }
@@ -5755,6 +5878,7 @@ function renderEnemyAttacks(name){
       ], (key, v)=>{
         const keep=st.targets.filter(t=>t.id!==key);
         st.targets = v ? [...keep, key==='other' ? {id:'other', label:'Other'} : {id:key, label:key.slice(3), pc:key.slice(3)}] : keep;
+        a.typed=null;
         update();
       }));
       if(chosen.includes('other')) row.appendChild(uiPick(`${id}-oac`, 'Other AC', BD_AC_OPTS, String(a.otherAC), v=>{ a.otherAC=parseInt(v,10); update(); }));
@@ -5767,11 +5891,16 @@ function renderEnemyAttacks(name){
         ], (key, v)=>{ st[key]=v; update(); }),
         uiPick(`${id}-other`, 'Other', BD_OTHER_OPTS, String(st.other), v=>{ st.other=parseInt(v,10)||0; update(); }),
         RoundUI.readField('THAC0', String(thac0), 'is-key'));
-      const rb=document.createElement('button'); rb.type='button'; rb.className='ui-btn round-btn roll-hit-btn ui-button is-primary';
-      rb.innerHTML=`${RoundUI.ROLL_ICON}<span>Roll to hit</span>`;
-      if(!st.targets.length){ rb.disabled=true; rb.title='Pick a target first'; }
-      rb.addEventListener('click', ()=>{ rollEnemyAttack(name, a, i); update(); });
-      row.appendChild(rb);
+      if(ownDice){
+        if(st.targets.length) row.appendChild(enemyTypedFields(name, a, i, line));
+        else { const n=document.createElement('div'); n.className='typed-dice'; n.innerHTML='<span class="typed-prompt">Pick a target, then roll to hit.</span>'; row.appendChild(n); }
+      }else{
+        const rb=document.createElement('button'); rb.type='button'; rb.className='ui-btn round-btn roll-hit-btn ui-button is-primary';
+        rb.innerHTML=`${RoundUI.ROLL_ICON}<span>Roll to hit</span>`;
+        if(!st.targets.length){ rb.disabled=true; rb.title='Pick a target first'; }
+        rb.addEventListener('click', ()=>{ rollEnemyAttack(name, a, i); update(); });
+        row.appendChild(rb);
+      }
     }
     item.appendChild(row);
     wrap.appendChild(item);
@@ -6121,7 +6250,14 @@ function lineEntries(line){
   if(r.each) return r.each.map(e=>({target:e.target, roll:e, kind:r.kind, heal:r.heal}));
   return [{target:targets[0], roll:r}];
 }
-function judgeLine(line, bdAC){ return lineEntries(line).map(e=>judgeOne(e.target, e.roll, e.heal ? 'heal' : e.kind, line, bdAC)); }
+// Real dice: the d% the DM rolled for a player's critical or Bad Miss, by round, character, line and target
+const dmTable=new Map();
+const tableKey=(who, line, i)=>`${syncState?syncState.round:0}|${who}|${line.key}|${i}`;
+function judgeLine(line, bdAC, who){ return lineEntries(line).map((e, i)=>judgeOne(e.target, e.roll, e.heal ? 'heal' : e.kind, line, bdAC, dmTable.get(tableKey(who, line, i)))); }
+function tableField(j, who, line, i){
+  const key=tableKey(who, line, i);
+  return {field:D100, prompt:{dice:'1d100', text:` · ${j.table==='crit'?'critical hit':'Bad Miss'} vs ${j.who}`}, value:dmTable.get(key), set:v=>{ if(v==null) dmTable.delete(key); else dmTable.set(key, v); update(); }, key:'tbl|'+key};
+}
 // A spell line's save in words (a sheet from before saveNote says less)
 function lineSaveNote(line){ return line.saveNote || (line.roll && line.roll.saveNote) || ''; }
 function lineSaveText(line, kind){
@@ -6138,7 +6274,7 @@ function rollSaves(key, whos){
   update();
   document.querySelector(`[data-savekey="${CSS.escape(key)}"]`)?.focus();
 }
-function judgeOne(target, r, kind, line, bdAC){
+function judgeOne(target, r, kind, line, bdAC, tablePct){
   const fb = target && !/^other/.test(target.id) ? foeBlock(target.id) : null;
   const who = fb ? `${fb.b.nameInput.value||fb.name} [${fb.b.bdId}]` : (target ? target.label : 'no target');
   // A spell with nothing to roll (Charm Person, Sleep): cast; the DM resolves it
@@ -6151,14 +6287,16 @@ function judgeOne(target, r, kind, line, bdAC){
   if(ac==null || isNaN(ac)) return {who, text:`d20 ${r.d20}${r.d20===20?' · <b>Natural 20</b>: critical if it hits':''} · hits AC ${r.hitsAC} or worse · ${r.dmg??'—'} dmg`, cls: r.d20===20?'crit':''};
   const j = SheetRound.judgeRoll(r, ac);
   const t = CRIT_TYPES[line.scenario]; const ct = Array.isArray(t) ? t[0] : (t||'P');
-  if(j.crit) return {who, text:`d20 20 · <b>Critical hit</b> (Good Hit) · ${r.dmg??'—'} dmg before your crit rule · ${critText(ct, r.pct, false)}`, cls:'crit'};
-  if(j.fumble) return {who, text:`d20 1 · Bad Miss · ${tableLookup(FUMBLE_TABLE, r.pct)}`, cls:'fumble'};
+  const pct = ownDice ? tablePct : r.pct, table = pct!=null;
+  if(j.crit) return {who, text:`d20 20 · <b>Critical hit</b> (Good Hit) · ${r.dmg??'—'} dmg before your crit rule${table?` · ${critText(ct, pct, false)}`:''}`, cls:'crit', table:'crit'};
+  if(j.fumble) return {who, text:`d20 1 · Bad Miss${table?` · ${tableLookup(FUMBLE_TABLE, pct)}`:''}`, cls:'fumble', table:'fumble'};
   return {who, text:`d20 ${r.d20} vs ${j.need} (AC ${ac}) · ${j.hit ? `hit · ${r.dmg??'—'} dmg${r.spell!=null?` + spell ${r.spell}`:''}` : 'miss'}`, cls: j.hit ? 'hit' : 'miss'};
 }
-function lineHTML(line, bdAC, prefix){
+function lineHTML(line, bdAC, prefix, name){
   const tags = line.tags && line.tags.length ? ` · ${line.tags.join(', ')}` : '';
-  return judgeLine(line, bdAC).map((j, i) =>
-    `<div class="spline"><span class="splabel">${i ? '' : esc(prefix||line.label)}</span><span>vs ${esc(j.who)}${esc(tags)}${line.thac0!=null?` · THAC0 ${line.thac0}`:''}</span><span class="${j.cls}">${j.text}</span></div>`).join('');
+  return judgeLine(line, bdAC, name).map((j, i) =>
+    `<div class="spline"><span class="splabel">${i ? '' : esc(prefix||line.label)}</span><span>vs ${esc(j.who)}${esc(tags)}${line.thac0!=null?` · THAC0 ${line.thac0}`:''}</span><span class="${j.cls}">${j.text}</span></div>`
+    + (ownDice && j.table ? (f=>rollSlot(f.field, f.prompt, f.value, f.set, f.key))(tableField(j, name, line, i)) : '')).join('');
 }
 // Until the player sends their attacks, the sheet sends only the initiative roll
 const syncedDoing = v => v.pending ? (v.initRoll==null ? 'not rolled yet' : `rolled ${v.initRoll}, waiting for actions`) : (v.attack||'no attack chosen');
@@ -6167,7 +6305,7 @@ function renderSynced(b, name, v, bdAC){
   const timing = (syncState && syncState.timing) || 'end';
   const lines = (v.lines||[]).filter(l => timing==='turn' || !l.extra);
   const extras = [v.you && v.you.length ? v.you.join(', ') : '', v.initAdj ? `initiative ${v.initAdj>0?'+':'−'}${Math.abs(v.initAdj)} (player's adjustment)` : '', v.acPenalty ? `AC ${v.acPenalty} worse (charging)` : ''].filter(Boolean).join(' · ');
-  b.syncPanel.innerHTML = `<div class="sphead">From ${esc(name)}'s sheet · ${esc(syncedDoing(v))}${extras?` · ${esc(extras)}`:''}</div>` + lines.map(l=>lineHTML(l, bdAC)).join('')
+  b.syncPanel.innerHTML = `<div class="sphead">From ${esc(name)}'s sheet · ${esc(syncedDoing(v))}${extras?` · ${esc(extras)}`:''}</div>` + lines.map(l=>lineHTML(l, bdAC, null, name)).join('')
     + (timing==='end' && (v.lines||[]).some(l=>l.extra) ? `<div class="sphead">Extra attacks: at the end of the order</div>` : '');
 }
 let extraBlock=null;
@@ -6176,16 +6314,17 @@ function baddyACs(){ const o={}; Object.keys(blocks).forEach(n=>{ const b=blocks
 let lightExtraTr=null;
 function lightExtrasRow(){
   const timing=(syncState&&syncState.timing)||'end', ac=baddyACs(), rows=[];
-  if(timing==='end') PCS.forEach(name=>{ const v=syncedView(name); if(!v||!isActive(name)) return; (v.lines||[]).filter(l=>l.extra).forEach(l=>rows.push(lineHTML(l, ac, `${name} · ${l.label}`))); });
+  if(timing==='end') PCS.forEach(name=>{ const v=syncedView(name); if(!v||!isActive(name)) return; (v.lines||[]).filter(l=>l.extra).forEach(l=>rows.push(lineHTML(l, ac, `${name} · ${l.label}`, name))); });
   if(!rows.length) return null;
   if(!lightExtraTr){ lightExtraTr=document.createElement('tr'); lightExtraTr.className='extrarow'; const td=document.createElement('td'); td.colSpan=4; lightExtraTr.appendChild(td); }
   lightExtraTr.firstChild.innerHTML=`<div class="syncpanel"><div class="sphead">End of the round: extra attacks</div>${rows.join('')}</div>`;
+  fillRollSlots(lightExtraTr);
   return lightExtraTr;
 }
 function renderExtras(bdAC, n){
   const timing = (syncState && syncState.timing) || 'end';
   const rows=[];
-  if(timing==='end') PCS.forEach(name=>{ const v=syncedView(name); if(!v||!isActive(name)) return; (v.lines||[]).filter(l=>l.extra).forEach(l=>rows.push(lineHTML(l, bdAC, `${name} · ${l.label}`))); });
+  if(timing==='end') PCS.forEach(name=>{ const v=syncedView(name); if(!v||!isActive(name)) return; (v.lines||[]).filter(l=>l.extra).forEach(l=>rows.push(lineHTML(l, bdAC, `${name} · ${l.label}`, name))); });
   if(!rows.length){ if(extraBlock){ extraBlock.remove(); extraBlock=null; } return; }
   if(!extraBlock){ extraBlock=document.createElement('div'); extraBlock.className='char extrablock'; tracker.appendChild(extraBlock); }
   extraBlock.style.order = n + 1;
@@ -6233,7 +6372,22 @@ async function syncParty(sess){
 document.getElementById('partyReload').addEventListener('click', ()=> location.reload());
 document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible' && Date.now()-partyCheckedAt > 30000) syncParty(partySession); });
 renderGive(null);
-if(window.Cloud) Cloud.mountCloud(document.getElementById('cloudBar'), s => { connectRound(s); syncParty(s); renderGive(s); });
+if(window.Cloud) Cloud.mountCloud(document.getElementById('cloudBar'), s => { applyDiceMode(s); connectRound(s); syncParty(s); renderGive(s); });
+// The account's Dice setting. Rolls made ahead of time (proficiencies, saves) go
+// the way of the setting, so real dice start with empty fields.
+function applyDiceMode(sess){
+  const own=!!(sess && sess.diceMode==='own');
+  if(own===ownDice) return;
+  ownDice=own;
+  document.body.classList.toggle('own-dice', own);
+  saveRolls.clear(); dmTable.clear(); surTyped={}; lcTyped={}; encTyped=null; rxParty=null;
+  Object.keys(gcRolls).forEach(n=>{ delete gcRolls[n]; });
+  document.getElementById('surpriseBar').style.display='none';
+  document.getElementById('encOut').style.display='none'; document.getElementById('lcOut').style.display='none';
+  baddies.forEach(n=>{ if(blocks[n]) clearEnemyRolls(blocks[n]); });
+  rollSkills(); Object.keys(SAVES).forEach(rollSavesFor);
+  renderSaves(); renderReaction(); renderLightTables(); update();
+}
 document.getElementById('nextRoundSync').addEventListener('click', ()=>{
   if(!ROUND) return;
   syncState = ROUND.sendDM({round: (syncState ? syncState.round : 1) + 1});
@@ -6308,7 +6462,7 @@ function addCheckRow(tb, name, label, baseFn, src){
   const cells=[];
   DIFFICULTY.forEach(d=>{ const td=document.createElement('td'); td.className='tgt num'; tr.appendChild(td); cells.push({td, mod:d.mod}); });
   tb.appendChild(tr);
-  skillRows.push({name, roll:d20(), rollTd, baseTd, cells, baseFn});
+  skillRows.push({name, label, roll:d20(), rollTd, baseTd, cells, baseFn});
 }
 
 function liveStat(name, k){
@@ -6365,6 +6519,12 @@ function recolorAbilities(){
   abilityChecks.forEach(a=>{
     const val=liveStat(a.name, a.key);
     a.valEl.textContent = a.key==='str' ? strLabel(a.name) : val;
+    if(ownDice){
+      a.rollEl.classList.toggle('pass', a.roll!=null && a.roll<=val);
+      a.rollEl.classList.toggle('fail', a.roll!=null && a.roll>val);
+      a.rollEl.replaceChildren(RoundUI.typedField(D20, {dice:'1d20', text:` · ${a.name} ${a.label}`, bare:true}, a.roll, v=>{ a.roll=v; recolorSkills(); }, `ab|${a.name}|${a.key}`));
+      return;
+    }
     const pass = a.roll<=val;
     a.rollEl.textContent=`(${a.roll})`;
     a.rollEl.classList.toggle('pass', pass);
@@ -6377,8 +6537,10 @@ function recolorSkills(){
   skillRows.forEach(r=>{
     const base=r.baseFn();
     r.baseTd.textContent=base;
-    r.rollTd.textContent=r.roll;
+    if(ownDice) r.rollTd.replaceChildren(RoundUI.typedField(D20, {dice:'1d20', text:` · ${r.name} ${r.label}`, bare:true}, r.roll, v=>{ r.roll=v; recolorSkills(); }, `sk|${r.name}|${r.label}`));
+    else r.rollTd.textContent=r.roll;
     r.cells.forEach(c=>{
+      if(r.roll==null){ c.td.textContent=''; c.td.title=''; c.td.classList.remove('pass','fail','crit','critfail'); return; }
       const t=base+c.mod, delta=t-r.roll, pass=delta>=0;
       const crit = delta>=15, critFail = delta<=-15;
       c.td.textContent = delta===0 ? '0' : fmt(delta);
@@ -6389,10 +6551,10 @@ function recolorSkills(){
   });
   renderGroup();
 }
-function rollSkills(){ skillRows.forEach(r=> r.roll=d20()); abilityChecks.forEach(a=> a.roll=d20()); recolorSkills(); if(document.getElementById('gcSkill').value) rollGroup(); }
+function rollSkills(){ skillRows.forEach(r=> r.roll=appD20()); abilityChecks.forEach(a=> a.roll=appD20()); recolorSkills(); if(document.getElementById('gcSkill').value) rollGroup(); }
 function rollSkillsFor(name){
-  skillRows.forEach(r=>{ if(r.name===name) r.roll=d20(); });
-  abilityChecks.forEach(a=>{ if(a.name===name) a.roll=d20(); });
+  skillRows.forEach(r=>{ if(r.name===name) r.roll=appD20(); });
+  abilityChecks.forEach(a=>{ if(a.name===name) a.roll=appD20(); });
   recolorSkills();
 }
 
@@ -6428,7 +6590,7 @@ function skillTarget(name, sk){
 }
 function rollGroup(){
   const pct=isPct(document.getElementById('gcSkill').value);
-  Object.keys(SKILLS).forEach(n=> gcRolls[n]= pct ? Math.floor(Math.random()*100)+1 : d20());   // each character rolls their own
+  Object.keys(SKILLS).forEach(n=> gcRolls[n]= pct ? appD100() : appD20());   // each character rolls their own
   renderGroup();
 }
 function renderGroup(){
@@ -6440,7 +6602,7 @@ function renderGroup(){
   let html=`<table class="acts gctable"><thead><tr><th class="l">${sk}</th><th>Target</th><th>${die}</th></tr></thead><tbody>`;
   Object.keys(SKILLS).sort().forEach(name=>{
     if(!isActive(name)) return;
-    if(gcRolls[name]===undefined) gcRolls[name]=d20();
+    if(gcRolls[name]===undefined) gcRolls[name]=appD20();
     const st=skillTarget(name, sk);
     if(!st || st.na){
       const why = (st&&st.na) ? 'proficient only — no untrained roll' : 'no definition for this skill';
@@ -6450,9 +6612,16 @@ function renderGroup(){
     const np = st.prof ? '' : `<span class="np" title="non-proficient: ${st.ab.toUpperCase()} ${st.abVal} ${fmt(st.mod)} ${fmt(NONPROF)}">np</span>`;
     const tgt = st.pct ? `${st.t}%` : (st.show!==undefined ? st.show : st.t);
     const tip = st.pct ? `STR ${st.strLabel} → ${st.t}%` : (st.strLabel ? `STR ${st.strLabel} → ${st.t}` : '');
-    html+=`<tr><td class="name">${name}${np}</td><td class="stgt num" title="${tip}">${tgt}</td><td class="tgt num ${pass?'pass':'fail'}" title="${die} ${roll} vs ${tgt} → ${pass?'success':'fail'}">${roll}</td></tr>`;
+    html+=`<tr><td class="name">${name}${np}</td><td class="stgt num" title="${tip}">${tgt}</td>${ownDice
+      ? dieCell(`gc|${name}`, pct?D100:D20, die, roll, pass, `${name} ${sk}`, v=>{ gcRolls[name]=v; renderGroup(); })
+      : `<td class="tgt num ${pass?'pass':'fail'}" title="${die} ${roll} vs ${tgt} → ${pass?'success':'fail'}">${roll}</td>`}</tr>`;
   });
   host.innerHTML=html+'</tbody></table>';
+  fillRollSlots(host);
+}
+// Real dice: a table's die cell as a field
+function dieCell(key, field, die, roll, pass, label, onValue){
+  return `<td class="tgt num ${roll==null?'':pass?'pass':'fail'}">${rollSlot(field, {dice:die, text:` · ${label}`, bare:true}, roll, onValue, key)}</td>`;
 }
 
 /* ---------------- Saving Throws tab ---------------- */
@@ -6483,16 +6652,16 @@ function isLumped(name, g){ const ts=g.cats.map(cn=>saveTarget(name, catByName(c
 function rollSavesFor(name){
   svRolls[name]=svRolls[name]||{};
   SAVE_GROUPS.forEach(g=>{
-    if(isLumped(name,g)){ const r=d20(); g.cats.forEach(cn=> svRolls[name][cn]=r); }
-    else g.cats.forEach(cn=> svRolls[name][cn]=d20());
+    if(isLumped(name,g)){ const r=appD20(); g.cats.forEach(cn=> svRolls[name][cn]=r); }
+    else g.cats.forEach(cn=> svRolls[name][cn]=appD20());
   });
 }
 function rollSaveCat(catName){   // each character rolls their own
-  if(isConSave(catName)){ Object.keys(SAVES).forEach(n=>{ svRolls[n]=svRolls[n]||{}; svRolls[n][catName]=d100(); }); return; }
+  if(isConSave(catName)){ Object.keys(SAVES).forEach(n=>{ svRolls[n]=svRolls[n]||{}; svRolls[n][catName]=appD100(); }); return; }
   const g=groupOf(catName);
   Object.keys(SAVES).forEach(n=>{
     svRolls[n]=svRolls[n]||{};
-    const r=d20();
+    const r=appD20();
     if(isLumped(n,g)) g.cats.forEach(cn=> svRolls[n][cn]=r); else svRolls[n][catName]=r;
   });
 }
@@ -6521,11 +6690,14 @@ function renderSaves(){
     let html=`<table class="acts gctable"><thead><tr><th class="l">${catName}</th><th>Target</th><th>d100</th></tr></thead><tbody>`;
     visible.forEach(name=>{
       const con=liveStat(name,'con'), t=conPct(catName,con);
-      svRolls[name]=svRolls[name]||{}; if(svRolls[name][catName]===undefined) svRolls[name][catName]=d100();
+      svRolls[name]=svRolls[name]||{}; if(svRolls[name][catName]===undefined) svRolls[name][catName]=appD100();
       const roll=svRolls[name][catName], pass=roll<=t;
-      html+=`<tr><td class="name">${name}</td><td class="stgt num" title="CON ${con}">${t}%</td><td class="tgt num ${pass?'pass':'fail'}" title="d100 ${roll} vs ${t}% → ${pass?'survived':'failed'}">${roll}</td></tr>`;
+      html+=`<tr><td class="name">${name}</td><td class="stgt num" title="CON ${con}">${t}%</td>${ownDice
+        ? dieCell(`svc|${name}`, D100, 'd100', roll, pass, `${name} ${catName}`, v=>{ svRolls[name][catName]=v; renderSaves(); })
+        : `<td class="tgt num ${pass?'pass':'fail'}" title="d100 ${roll} vs ${t}% → ${pass?'survived':'failed'}">${roll}</td>`}</tr>`;
     });
     host.innerHTML=html+'</tbody></table>';
+    fillRollSlots(host);
   }
   else if(!cat){ host.classList.add('hidden'); host.innerHTML=''; }
   else{
@@ -6534,9 +6706,12 @@ function renderSaves(){
     visible.forEach(name=>{
       const st=saveTarget(name, cat), roll=svRolls[name][cat.name], pass=roll>=st.t;
       const bon = st.bonus ? `<span class="np" title="base ${st.base}, bonus ${fmt(st.bonus)}">${fmt(st.bonus)}</span>` : '';
-      html+=`<tr><td class="name">${name}${bon}</td><td class="stgt num">${st.t}</td><td class="tgt num ${pass?'pass':'fail'}" title="d20 ${roll} vs ${st.t} → ${pass?'saved':'failed'}">${roll}</td></tr>`;
+      html+=`<tr><td class="name">${name}${bon}</td><td class="stgt num">${st.t}</td>${ownDice
+        ? dieCell(`svg|${name}`, D20, 'd20', roll, pass, `${name} ${cat.name}`, v=>{ (isLumped(name, groupOf(cat.name)) ? groupOf(cat.name).cats : [cat.name]).forEach(cn=>{ svRolls[name][cn]=v; }); renderSaves(); })
+        : `<td class="tgt num ${pass?'pass':'fail'}" title="d20 ${roll} vs ${st.t} → ${pass?'saved':'failed'}">${roll}</td>`}</tr>`;
     });
     host.innerHTML=html+'</tbody></table>';
+    fillRollSlots(host);
   }
 
   // one block per character: save · modifier · target · d20
@@ -6562,11 +6737,14 @@ function renderSaves(){
             +`<td class="num basecell">${st.base}</td>`
             +`<td class="num modcell">${st.bonus?fmt(st.bonus):'—'}</td>`
             +`<td class="stgt num">${st.t}</td>`
-            +`<td class="tgt num ${pass?'pass':'fail'}" title="d20 ${roll} vs ${st.t} → ${pass?'saved':'failed'}">${roll}</td></tr>`;
+            +(ownDice
+              ? dieCell(`svb|${name}|${row.label}`, D20, 'd20', roll, pass, `${name} ${row.label}`, v=>{ row.cats.forEach(cn=>{ svRolls[name][cn]=v; }); renderSaves(); })
+              : `<td class="tgt num ${pass?'pass':'fail'}" title="d20 ${roll} vs ${st.t} → ${pass?'saved':'failed'}">${roll}</td>`)+'</tr>';
       });
     });
     const tbl=document.createElement('table'); tbl.className='acts svtable';
     tbl.innerHTML=html.replace('<table class="acts svtable">','')+'</tbody>';
+    fillRollSlots(tbl);
     block.appendChild(tbl);
     blocksHost.appendChild(block);
   });
@@ -6615,6 +6793,8 @@ function buildReaction(){
 function renderReaction(){
   const visible=Object.keys(REACTION_MODS).sort().filter(isActive);
   const {race,occ,cul}=rxSel();
+  const rxf=document.getElementById('rxFields'); rxf.replaceChildren();
+  if(ownDice) rxf.appendChild(RoundUI.typedField({min:2,max:20}, {dice:'2d10', text:' · reaction'}, rxParty ? rxParty.d : null, v=>{ rxParty = v==null ? null : {d:v, appeal:(rxParty&&rxParty.appeal)||{}}; renderReaction(); }, 'rx|party'));
   const host=document.getElementById('rxResults');
   if(!rxParty){ host.classList.add('hidden'); host.innerHTML=''; }
   else{
@@ -6629,7 +6809,9 @@ function renderReaction(){
         const r=rxResult(name, v.extra, v.key); if(!r) return;
         const tip=[...rxEntries(name).map(e=>`${fmt(e.mod)} ${e.why}`), ...(r.shift?[`Romantic Appeal: ${r.base} → ${r.res}`]:[])].join(' · ');
         if(!m.split || v===variants[0]) partyRows.push(r);                // Party average counts each character once (Tig's base row)
-        const apTxt = (REACTION_MODS[name]||{}).appeal ? ` <button class="reroll small quick appealbtn ui-button is-secondary size-sm ${r.appeal?(r.appeal.ok?'ok':'bad'):''}" data-appeal data-name="${name}" data-key="${v.key}" title="${r.appeal?`Romantic Appeal: needs ${r.appeal.need} to save, d20 ${r.appeal.roll} → ${r.appeal.ok?'the response shifts one step (click to clear)':'no effect (click to roll again)'}`:'Romantic Appeal: roll this group\'s Paralysis save'}">${r.appeal?`⚄ ${r.appeal.roll} · ${r.appeal.ok?(r.appeal.when==='save'?'Saved ↓':'Appeal ✓'):(r.appeal.when==='save'?'Failed':'Saved ✗')}`:'⚄ Appeal'}</button> <select class="apsave" data-apsave data-key="${v.key}" title="the Paralysis save this group needs (1 HD humanoids)">${Array.from({length:20},(_,n)=>n+1).map(n=>`<option value="${n}"${n===appealNeed(name,v.key)?' selected':''}>${n}${n===REACTION_MODS[name].appeal.need[v.key]?' · 1 HD':''}</option>`).join('')}</select>` : '';
+        const apSel = (REACTION_MODS[name]||{}).appeal ? ` <select class="apsave" data-apsave data-key="${v.key}" title="the Paralysis save this group needs (1 HD humanoids)">${Array.from({length:20},(_,n)=>n+1).map(n=>`<option value="${n}"${n===appealNeed(name,v.key)?' selected':''}>${n}${n===REACTION_MODS[name].appeal.need[v.key]?' · 1 HD':''}</option>`).join('')}</select>` : '';
+        const apOwn = ownDice && (REACTION_MODS[name]||{}).appeal ? ` ${rollSlot(D20, {dice:'1d20', text:' · Romantic Appeal'}, r.appeal ? r.appeal.roll : null, x=>{ rxParty.appeal=rxParty.appeal||{}; rxParty.appeal[v.key]=x; renderReaction(); }, `rxa|${v.key}`)}${r.appeal?` ${r.appeal.ok?(r.appeal.when==='save'?'Saved ↓':'Appeal ✓'):(r.appeal.when==='save'?'Failed':'Saved ✗')}`:''}${apSel}` : '';
+        const apTxt = ownDice ? apOwn : (REACTION_MODS[name]||{}).appeal ? ` <button class="reroll small quick appealbtn ui-button is-secondary size-sm ${r.appeal?(r.appeal.ok?'ok':'bad'):''}" data-appeal data-name="${name}" data-key="${v.key}" title="${r.appeal?`Romantic Appeal: needs ${r.appeal.need} to save, d20 ${r.appeal.roll} → ${r.appeal.ok?'the response shifts one step (click to clear)':'no effect (click to roll again)'}`:'Romantic Appeal: roll this group\'s Paralysis save'}">${r.appeal?`⚄ ${r.appeal.roll} · ${r.appeal.ok?(r.appeal.when==='save'?'Saved ↓':'Appeal ✓'):(r.appeal.when==='save'?'Failed':'Saved ✗')}`:'⚄ Appeal'}</button>${apSel}` : '';
         html+=`<tr><td class="name">${v.label}</td><td class="num modcell">${r.chaAdj?fmt(r.chaAdj):'—'}</td><td class="num modcell" title="${tip}">${r.mod?fmt(r.mod):'—'}</td><td class="stgt num" title="${r.d} − CHA ${fmt(r.chaAdj)} − mods ${fmt(r.mod)}${r.rep?` − rep ${fmt(r.rep)}`:''} = ${r.modRoll}">${r.modRoll}</td>`
             +`<td class="rxres ${RX_CLASS[r.res]}">${r.res}${apTxt}</td></tr>`;
       });
@@ -6643,6 +6825,7 @@ function renderReaction(){
       html+=`<tr class="partyrow"><td class="name">Party</td><td class="num modcell">${avgCha?fmt(+f1(avgCha)):'—'}</td><td class="num modcell" title="average of everyone's modifiers">${avgMod?fmt(+f1(avgMod)):'—'}</td><td class="stgt num" title="average of the ${n} modified rolls above = ${f1(avg)}, read as ${rounded}">${f1(avg)}</td><td class="rxres ${RX_CLASS[res]}">${res}</td></tr>`;
     }
     host.innerHTML=html+'</tbody></table>';
+    fillRollSlots(host);
     host.querySelectorAll('[data-appeal]').forEach(btn=> btn.addEventListener('click', ()=>{   // first click rolls; after a success it clears, after a failure it re-rolls
       const g=btn.dataset.key, cur=rxParty.appeal&&rxParty.appeal[g];
       rxParty.appeal=rxParty.appeal||{};
@@ -6822,6 +7005,7 @@ function showConfigReview(only){
 /* ---------------- Surprise ---------------- */
 const SURPRISE_RACE_BONUS={};            // house-rule knob, e.g. {Jaque:1, Rifiyr:1}; core 2E gives elves no bonus to their own roll
 const SURPRISE_THRESHOLD=3;              // PHB: d10 of 1–3 = surprised
+let surTyped={};                         // real dice: name -> {d10, ds}
 function rollSurprise(){
   const out=[];
   const sit=['surParty','surLight','surCond','surEnc','surMod'].reduce((t,id)=> t+(parseInt(document.getElementById(id).value,10)||0), 0);   // DMG Table 60 + DM's own
@@ -6833,19 +7017,30 @@ function rollSurprise(){
     if(SKILLS[name] && SKILLS[name]['Alertness']){ m+=1; mods.push('Alertness +1'); }
     if(SURPRISE_RACE_BONUS[name]){ m+=SURPRISE_RACE_BONUS[name]; mods.push(`race ${fmt(SURPRISE_RACE_BONUS[name])}`); }
     if(sit){ m+=sit; mods.push(`situation ${fmt(sit)}`); }
-    const d10=Math.floor(Math.random()*10)+1; const total=d10+m;
+    const typed=surTyped[name]||(surTyped[name]={});
+    const d10=ownDice ? typed.d10 : Math.floor(Math.random()*10)+1;
+    if(d10==null){ out.push({name, d10:null, m, mods}); return; }
+    const total=d10+m;
     let surprised = total<=SURPRISE_THRESHOLD; let ds=null;
     if(surprised && SKILLS[name] && SKILLS[name]['Danger Sense']){
-      const t=skT(SKILLS[name]['Danger Sense']); const r=d20(); ds={roll:r, t, ok:r<=t}; if(ds.ok) surprised=false;
+      const t=skT(SKILLS[name]['Danger Sense']); const r=ownDice ? typed.ds : d20(); ds={roll:r, t, ok:r!=null && r<=t}; if(ds.ok) surprised=false;
     }
     out.push({name, d10, m, mods, total, surprised, ds});
   });
   const wrap=document.getElementById('surpriseWrap');
   wrap.innerHTML = `<div class="surhead">Surprise · d10, 1–${SURPRISE_THRESHOLD} surprised${sit?` · situation ${fmt(sit)}`:''}</div>` + out.map(o=>{
+    if(ownDice){
+      const set=(k, v)=>{ surTyped[o.name][k]=v; rollSurprise(); };
+      const field=rollSlot({min:1,max:10}, {dice:'1d10', text:o.mods.length?` (${o.mods.join(', ')})`:''}, o.d10, v=>set('d10', v), `sur|${o.name}`);
+      const dsField=o.ds ? ' '+rollSlot(D20, {dice:'1d20', text:` · Danger Sense vs ${o.ds.t}`}, o.ds.roll, v=>set('ds', v), `surds|${o.name}`) : '';
+      const said=o.d10==null ? '' : o.surprised ? '<span class="fumble"><b>SURPRISED</b></span>' : '<span class="crit"><b>not surprised</b></span>';
+      return `<div class="surrow"><span class="surname">${o.name}</span><span class="surroll">${field}${o.d10!=null&&o.mods.length?' = '+o.total:''}</span><span>${said}${dsField}</span></div>`;
+    }
     const res = o.surprised ? '<span class="fumble"><b>SURPRISED</b></span>' : '<span class="crit"><b>not surprised</b></span>';
     const dsTxt = o.ds ? ` · Danger Sense d20 ${o.ds.roll} vs ${o.ds.t} → ${o.ds.ok?'senses it, not surprised':'fails'}` : '';
     return `<div class="surrow"><span class="surname">${o.name}</span><span class="surroll">d10 ${o.d10}${o.mods.length?' ('+o.mods.join(', ')+') = '+o.total:''}</span><span>${res}${dsTxt}</span></div>`;
   }).join('');
+  fillRollSlots(wrap);
   document.getElementById('surpriseBar').style.display='';
 }
 /* multi-pick panels (Weather, Foe): checkboxes whose values add up; a 'camo' box reads its level picker */
@@ -6861,7 +7056,7 @@ document.querySelectorAll('select.sursel').forEach(sel=>{
   sel.title='surprise modifier (DMG Table 60)';
   collapse();
 });
-document.getElementById('surpriseClear').addEventListener('click', ()=>{ document.getElementById('surpriseBar').style.display='none'; document.querySelectorAll('select.sursel').forEach(sel=>{ if(sel.id==='surMod') sel.value='0'; else sel.selectedIndex=0; [...sel.options].forEach(o=> o.textContent = o.selected ? o.dataset.short : o.dataset.full); }); });
+document.getElementById('surpriseClear').addEventListener('click', ()=>{ surTyped={}; document.getElementById('surpriseBar').style.display='none'; document.querySelectorAll('select.sursel').forEach(sel=>{ if(sel.id==='surMod') sel.value='0'; else sel.selectedIndex=0; [...sel.options].forEach(o=> o.textContent = o.selected ? o.dataset.short : o.dataset.full); }); });
 
 /* ---------------- Light tracker: chosen actions + conditions, read from the full cards ---------------- */
 function outText(o){                                          // what happened on an attack, for the DM
@@ -6930,6 +7125,24 @@ function paintLightDetail(lr, d){
   if(d.acts.length){
     const h=document.createElement('div'); h.className='ldhead'; const b=document.createElement('b'); b.textContent='Actions'; h.appendChild(b); box.appendChild(h);
     d.acts.forEach(a=>{
+      if(a.roll){                                               // real dice: the d% for a player's critical or Bad Miss
+        const ln=document.createElement('div'); ln.className='ldsave';
+        ln.appendChild(RoundUI.typedField(a.roll.field, a.roll.prompt, a.roll.value, a.roll.set, a.roll.key));
+        box.appendChild(ln);
+        return;
+      }
+      if(a.save && ownDice){                                    // real dice: a field per target
+        const ln=document.createElement('div'); ln.className='ldsave'; const got=saveRolls.get(a.save.key)||[];
+        a.save.whos.forEach((who, i)=>{
+          ln.appendChild(RoundUI.typedField(D20, {dice:'1d20', text:` · ${who} save`}, got[i] ? got[i].d20 : null, v=>{
+            const cur=saveRolls.get(a.save.key)||[];
+            saveRolls.set(a.save.key, a.save.whos.map((w, n)=>({who:w, d20:n===i ? v : (cur[n] ? cur[n].d20 : null)})));
+            update();
+          }, `save|${a.save.key}|${i}`));
+        });
+        box.appendChild(ln);
+        return;
+      }
       if(a.save){
         const ln=document.createElement('div'); ln.className='ldsave';
         const rolled=saveRolls.get(a.save.key);
@@ -6970,7 +7183,25 @@ function lightFumble(){
 }
 document.getElementById('lcCrit').addEventListener('click', lightCrit);
 document.getElementById('lcFumble').addEventListener('click', lightFumble);
-document.getElementById('lcClear').addEventListener('click', ()=>{ const o=document.getElementById('lcOut'); o.style.display='none'; o.innerHTML=''; });
+document.getElementById('lcClear').addEventListener('click', ()=>{ const o=document.getElementById('lcOut'); o.style.display='none'; o.innerHTML=''; lcTyped={}; renderLightTables(); });
+// Real dice: the d% for each, typed; the result reads off the same tables
+let lcTyped={};
+function renderLightTables(){
+  const f=document.getElementById('lcFields'), out=document.getElementById('lcOut');
+  f.replaceChildren();
+  document.getElementById('lcType').oninput = ownDice ? renderLightTables : null;
+  if(!ownDice) return;
+  const setT=(k, v)=>{ lcTyped={...lcTyped}; if(v==null) delete lcTyped[k]; else lcTyped[k]=v; renderLightTables(); };
+  f.append(RoundUI.typedField(D100, {dice:'1d100', text:' · critical hit'}, lcTyped.pctC, v=>setT('pctC', v), 'lc|crit'),
+    RoundUI.typedField(D100, {dice:'1d100', text:' · Bad Miss'}, lcTyped.pctF, v=>setT('pctF', v), 'lc|fumble'));
+  out.textContent='';
+  const t=document.getElementById('lcType').value, html=[];
+  if(lcTyped.pctC!=null){ const x=tableLookup(critTable(t,false), lcTyped.pctC); html.push(`<span class="crit"><b>Critical hit</b> · ${CRIT_SHORT[t]||t} · d% ${pctLbl(lcTyped.pctC)}<br>&nbsp;&nbsp;${x}${healNote(x)}</span>`); }
+  if(lcTyped.pctF!=null) html.push(`<span class="fumble"><b>Fumble</b> · ${CRIT_SHORT[t]||t}<br>&nbsp;&nbsp;${fumbleBlock({pct:lcTyped.pctF, sub:typedSub(lcTyped)}, null, p=>{ const x=tableLookup(critTable(t,false), p); return x+healNote(x); }, null)}</span>`);
+  out.style.display=html.length?'':'none';
+  html.forEach(h=>{ const d=document.createElement('div'); d.innerHTML=h; out.appendChild(d); });
+  if(lcTyped.pctF!=null) fumbleFollowUps(lcTyped.pctF, lcTyped, setT, 'lc').forEach(el=>{ const d=document.createElement('div'); d.className='encask'; d.appendChild(el); out.appendChild(d); });
+}
 
 /* ---------------- Light tracker ---------------- */
 /* default Speed in the light tracker: the weapon each usually leads with */
@@ -7066,8 +7297,8 @@ function renderLight(){
       const timing=(syncState&&syncState.timing)||'end', ac=baddyACs();
       const round=document.getElementById('roundNo').textContent || document.getElementById('roundNo').value;
       const acts=(sv.lines||[]).filter(l=>timing==='turn'||!l.extra).flatMap(l=>{
-        const judged=judgeLine(l, ac);
-        const rows=judged.map(j=>({t:`${l.label} vs ${j.who}${l.tags&&l.tags.length?' · '+l.tags.join(', '):''}: ${j.text.replace(/<[^>]+>/g,' ')}`, cls:j.cls}));
+        const judged=judgeLine(l, ac, name);
+        const rows=judged.flatMap((j, i)=>[{t:`${l.label} vs ${j.who}${l.tags&&l.tags.length?' · '+l.tags.join(', '):''}: ${j.text.replace(/<[^>]+>/g,' ')}`, cls:j.cls}, ...(ownDice && j.table ? [{roll:tableField(j, name, l, i)}] : [])]);
         if(lineNeedsSave(l)) rows.push({save:{key:`${round}|${name}|${l.key}`, whos:judged.map(j=>j.who)}});
         return rows;
       });
@@ -7535,13 +7766,60 @@ function encCheck(){
   const head=`<div class="enccheck ${hit?'hit':'miss'}">Encounter check: d6 ${r} vs ${chance} in 6 → <b>${hit?'ENCOUNTER':'no encounter'}</b></div>`;
   encShow(hit ? encRoll(head) : head);
 }
+// Real dice: the same steps, each asking for its die before the next
+let encTyped=null;
+function encOwn(){
+  const T=encTyped, setting=document.getElementById('encSetting').value, time=document.getElementById('encTime').value, tname=time==='night'?'Night':'Day';
+  const ask=(id, dice, text, field)=>`<div class="encask">${rollSlot(field, {dice, text}, T[id], v=>{ if(v==null) delete T[id]; else T[id]=v; encOwn(); }, 'enc|'+id)}</div>`;
+  let html='';
+  const done=()=>{ encShow(html); fillRollSlots(document.getElementById('encWrap')); };
+  if(T.check){
+    const chance=parseInt(document.getElementById('encChance').value,10);
+    html+=ask('d6', '1d6', ' · encounter check', {min:1,max:6});
+    if(T.d6==null) return done();
+    const hit=T.d6<=chance;
+    html+=`<div class="enccheck ${hit?'hit':'miss'}">Encounter check: d6 ${T.d6} vs ${chance} in 6 → <b>${hit?'ENCOUNTER':'no encounter'}</b></div>`;
+    if(!hit) return done();
+  }
+  if(document.getElementById('encCreatures').checked){
+    const pct=ENC_CREATURE_PCT[setting][time];
+    html+=ask('pct', '1d100', ` · a creature on ${pct} or less`, D100);
+    if(T.pct==null) return done();
+    if(T.pct<=pct){
+      html+=`<div class="encpre">d% ${T.pct}: creature (on ${pct} or less)</div>`+ask('two', '2d6', ' · which creature', {min:2,max:12});
+      if(T.two==null) return done();
+      const e=ENC_CREATURES[setting][time][T.two-2], q=parseDmg(e[1]);
+      let n=q.flat;
+      if(q.dice.length){
+        const sig=q.dice.map(([c,s])=>`${c}d${s}`).join(' + ');
+        html+=ask('num', sig, `${q.flat?` (we’ll add ${q.flat})`:''} · how many`, {min:q.dice.reduce((t,[c])=>t+c,0), max:q.dice.reduce((t,[c,s])=>t+c*s,0)});
+        if(T.num==null) return done();
+        n+=T.num;
+      }
+      let why=e[2];
+      if(!why){
+        html+=ask('state', '1d6', ' · their state', {min:1,max:6});
+        if(T.state==null) return done();
+        why=`State: ${ENC_STATES[time][T.state-1]}.`;
+      }
+      html+=`<div class="enchead">${setting} · ${tname} · creature · 2d6 ${T.two}</div><div class="encwhat">${n>1 ? `${e[0]} × ${n}` : e[0]}</div><div class="encwhy">${why}</div>`;
+      return done();
+    }
+    html+=`<div class="encpre">d% ${T.pct}: no creature (on ${pct} or less)</div>`;
+  }
+  html+=ask('d20', '1d20', ' · the encounter', D20);
+  if(T.d20==null) return done();
+  const e=ENCOUNTERS[setting][time][T.d20-1];
+  html+=`<div class="enchead">${setting} · ${tname} · d20 ${T.d20}</div><div class="encwhat">${e[0]}</div><div class="encwhy">${e[1]}</div>`;
+  done();
+}
 { const sel=document.getElementById('encSetting'); Object.keys(ENCOUNTERS).forEach(k=> sel.appendChild(opt(k,k))); sel.value='Road / Farm';
   const ch=document.getElementById('encChance'); for(let n=1;n<=5;n++) ch.appendChild(opt(n, n+' in 6')); ch.value=String(encDefaultChance());
   const resync=()=>{ ch.value=String(encDefaultChance()); };
   sel.addEventListener('input', resync); document.getElementById('encTime').addEventListener('input', resync);
-  document.getElementById('encCheck').addEventListener('click', encCheck);
-  document.getElementById('encRoll').addEventListener('click', ()=> encShow(encRoll()));
-  document.getElementById('encClear').addEventListener('click', ()=>{ document.getElementById('encOut').style.display='none'; document.getElementById('encWrap').innerHTML=''; });
+  document.getElementById('encCheck').addEventListener('click', ()=>{ if(ownDice){ encTyped={check:true}; encOwn(); } else encCheck(); });
+  document.getElementById('encRoll').addEventListener('click', ()=>{ if(ownDice){ encTyped={}; encOwn(); } else encShow(encRoll()); });
+  document.getElementById('encClear').addEventListener('click', ()=>{ encTyped=null; document.getElementById('encOut').style.display='none'; document.getElementById('encWrap').innerHTML=''; });
 }
 
 /* ---------------- Tabs & wiring ---------------- */
@@ -7581,7 +7859,7 @@ function resetEncounter(){
   resetPartyCombat();
   resetBaddies();
   document.getElementById('surpriseBar').style.display='none';
-  saveRolls.clear();
+  saveRolls.clear(); dmTable.clear(); surTyped={};
   if(ROUND){ lastFoes=''; syncState = ROUND.sendDM({round:1, reset:true}); showRound(); }
   displayOrder=[]; reorderPending=false;
   update();
@@ -7622,7 +7900,7 @@ function resetAll(){
   document.getElementById('gcSkill').value=''; document.getElementById('svCat').value=''; document.getElementById('rxRep').value='0';
   try{ localStorage.removeItem(STORE_KEY); localStorage.removeItem(ORDER_KEY); }catch(e){}
   document.getElementById('surpriseBar').style.display='none';
-  saveRolls.clear();
+  saveRolls.clear(); dmTable.clear(); surTyped={};
   displayOrder=[]; reorderPending=false;
   resetBaddies();
   // The shared round starts over too: round 1, every player's round cleared
