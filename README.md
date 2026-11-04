@@ -1,7 +1,10 @@
 # app.adnd
 
 Web app for our homegrown AD&D 2e campaign: a shared character sheet and the
-DM's combat helper, moving from two standalone HTML pages to one private site.
+DM's combat helper, with sign-in and saves on Supabase. It's live at
+https://wmartin0103.github.io/app.adnd/.
+
+**Working on it, as a person or an agent? Start with [`AGENTS.md`](AGENTS.md).**
 
 - **The plan:** [`PLAN.md`](PLAN.md)
 - **Combat data design:** [`docs/combat-data-spec.md`](docs/combat-data-spec.md)
@@ -12,6 +15,10 @@ DM's combat helper, moving from two standalone HTML pages to one private site.
 | Folder | Contents |
 |---|---|
 | `tools/` | The character sheet and DM Helper (published at `sheet/` and `dm/`) |
+| `site/` | Home and Account |
+| `data/` | The spell catalog |
+| `supabase/` | Database migrations and admin queries |
+| `docs/` | The design system, house rules and how the site is deployed |
 | `src/rules/` | Game math as plain functions: attacks, saves, thief skills, proficiencies, old-save conversion |
 | `src/adapters/` | Converters between tools (sheet → DM Helper) |
 | `scripts/` | Command-line helpers |
@@ -29,13 +36,14 @@ npm test
 
 ## Update the DM Helper from character sheets
 
-**Easiest:** in the DM Helper, open the **Config** tab and use **Import sheets…**
-to pick players' exported `.json` saves. Their stats replace the hand-typed
-ones and stay in that browser until removed (re-import a newer save to update).
-The DM's own settings (parry, armor spell, virtue, hidden by default, init
-bonus, turning) are kept. Each sheet lists anything worth checking.
+Signed in, the DM Helper's party comes from the campaign: each player's character
+in play, read from their saved sheet. A sheet's changes reach it from there, so
+there's nothing to import.
 
-**Or as a paste-in block:**
+The **Config** tab's **Import character** puts a sheet file into a player's
+Backups, for a character the DM has prepared.
+
+**For the hand-typed characters in the DM Helper's code, as a paste-in block:**
 
 ```
 node scripts/dm-helper-config.mjs path/to/save.json [more saves…]
@@ -58,8 +66,7 @@ output (`prototypes/*.html`) opens straight in a browser.
 
 ## After changing anything in `src/`
 
-The DM Helper carries its own copy of the converter so it still opens straight
-from disk. Refresh it with:
+The pages carry their own copies of that code. Refresh them with:
 
 ```
 node scripts/build-tools.mjs

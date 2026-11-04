@@ -1,5 +1,11 @@
 # AD&D Campaign App — Handoff
 
+> **This is a record from 2026-10-09, not how to work now.** Since then, accounts
+> and cloud saves went live, the tools moved to `tools/`, and `main` became the
+> protected live branch. It's still useful for why things are as they are. For how
+> to work today, read [`AGENTS.md`](AGENTS.md); for what's open, the Status section
+> of [`PLAN.md`](PLAN.md).
+
 As of 2026-10-09. Written for whoever picks this up next, in a local Claude Code
 session or by hand. The same content (with a drawn diagram) is in the shared
 doc "AD&D Campaign App — Handoff":
@@ -77,13 +83,13 @@ Derived files built from these:
 
 ## Where everything lives
 
-All work is on GitHub in the private repo `wmartin0103/app.adnd`, branch
-`claude/vibrant-wozniak-gjkyjd`. No pull request has been opened.
+All work is on GitHub in the repo `wmartin0103/app.adnd`, branch `main` (the
+public, protected live branch, since 2026-11-03).
 
 | What | Where |
 | --- | --- |
-| Repo | https://github.com/wmartin0103/app.adnd (private) |
-| Working branch | `claude/vibrant-wozniak-gjkyjd` |
+| Repo | https://github.com/wmartin0103/app.adnd (public) |
+| Live branch | `main` |
 | Clickable preview (Sheet + DM tabs) | https://claude.ai/artifact/8z3m1DfqCeoDmuB27kwxaV (private to the owner; built from `prototypes/app-shell.html`, with `data/spell-catalog.js` published beside it) |
 | Handoff doc | https://claude.ai/code/artifact/1d9e5fb7-fc59-4166-86b5-4bef2667b01d |
 | Cloud session | `session_01QtRv7WZwg5JMdLQxsfSbPS` (for `claude --teleport`) |
@@ -92,8 +98,7 @@ All work is on GitHub in the private repo `wmartin0103/app.adnd`, branch
 **Run it locally**
 
 1. Install Node.js (LTS) and Claude Code: `npm install -g @anthropic-ai/claude-code`.
-2. `git clone https://github.com/wmartin0103/app.adnd.git`, `cd app.adnd`,
-   `git checkout claude/vibrant-wozniak-gjkyjd`.
+2. `git clone https://github.com/wmartin0103/app.adnd.git`, `cd app.adnd`.
 3. Open `tools/character-sheet.html` or `tools/dm-helper.html` straight from
    disk. Keep the `data/` folder beside `tools/`: both load
    `../data/spell-catalog.js`.
@@ -103,7 +108,7 @@ All work is on GitHub in the private repo `wmartin0103/app.adnd`, branch
 **Build and test** (Node 20+, no install step)
 
 - `npm test` runs 81 tests (node --test).
-- `node scripts/build-tools.mjs` copies `src/` into both legacy tools between
+- `node scripts/build-tools.mjs` copies `src/` into both tools between
   the "sheet converter" markers and regenerates `data/spell-catalog.js`. Run
   after any change in `src/` or the catalog JSON; a test fails if you forget.
 - `node scripts/build-prototype.mjs` rebuilds `prototypes/*.html` from the
@@ -543,8 +548,7 @@ changes when a design would hurt semantic, accessible markup.
   markers. The spell catalog is edited as JSON, then rebuilt.
 - **Copyright.** Store mechanics, short summaries and links; never book or wiki
   description text.
-- **Git.** Work on `claude/vibrant-wozniak-gjkyjd`; push after each finished
-  change; no pull request unless asked. Commit messages end with the
-  Co-Authored-By and Claude-Session lines; no model names in commits or files.
+- **Git.** Replaced on 2026-11-03: every change is its own branch and pull
+  request into `main`. See `AGENTS.md`.
 - **Data is the owner's.** Don't guess character facts (which weapons are
   magic, Str 18/00); ask, and leave saves unchanged until told.
