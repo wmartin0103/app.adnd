@@ -1,6 +1,8 @@
 # Publishes the site to GitHub Pages on every push to main:
 # runs the tests, builds dist/ (the landing page, the two tools and the spell
 # catalog; nothing else from the repo), and deploys it.
+# It also publishes a copy at /staging/: of main after a merge, or of any branch
+# when the owner presses Run workflow here (docs/deploy.md).
 # One-time setup in the repo: Settings → Pages → Source: GitHub Actions.
 name: Pages
 
@@ -8,6 +10,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      staging_branch:
+        description: Branch to publish at /staging/ (the live site stays on main)
+        required: true
+        default: main
 
 permissions:
   contents: read
@@ -20,10 +27,18 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
+  # The branch's code runs here with read access only, and only for the owner
+  # (triggering_actor: someone else re-running the owner's run doesn't count)
+  staging:
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.actor == github.repository_owner && github.triggering_actor == github.repository_owner))
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.staging_branch || 'main' }}
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -31,6 +46,33 @@ jobs:
         run: npm test
       - name: Build
         run: npm run build
+      # Without this a page at /staging/ would use the live campaign
+      - name: Check the branch knows about staging
+        run: |
+          grep -q 'staging-banner' dist/index.html || { echo "This branch is older than the staging site. Bring main into it first."; exit 1; }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: staging
+          path: dist
+
+  build:
+    needs: staging
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Test
+        run: npm test
+      - name: Build
+        run: npm run build
+      - uses: actions/download-artifact@v4
+        with:
+          name: staging
+          path: dist/staging
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

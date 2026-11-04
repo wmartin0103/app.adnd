@@ -111,6 +111,11 @@ export function tokensCSS() {
 }
 
 // Runs in <head> before the page draws: a choice made with the toggle wins
+// On a page at /staging/: its browser storage kept apart from the live site's
+// (they share an address), and a banner saying where you are. The workflow checks
+// a branch has this ('staging-banner') before publishing it there.
+export const stagingInitScript = () =>
+  `if (/\\/staging(\\/|$)/.test(location.pathname)) { var P = Storage.prototype, G = P.getItem, S = P.setItem, R = P.removeItem; P.getItem = function (k) { return G.call(this, 'staging:' + k); }; P.setItem = function (k, v) { S.call(this, 'staging:' + k, v); }; P.removeItem = function (k) { R.call(this, 'staging:' + k); }; addEventListener('DOMContentLoaded', function () { var b = document.createElement('div'); b.id = 'staging-banner'; b.setAttribute('role', 'note'); b.textContent = 'Staging: a test copy of the site. Only the test campaign shows here.'; b.style.cssText = 'padding:6px 16px;text-align:center;font:600 14px var(--font-sans);background:var(--color-accent);color:var(--color-on-accent,#111)'; document.body.prepend(b); }); }`;
 export const THEME_KEY = 'adnd-theme';
 export const themeInitScript = () =>
   `try { var t = localStorage.getItem('${THEME_KEY}'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) { /* storage blocked: follow the system */ }`;

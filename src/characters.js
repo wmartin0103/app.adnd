@@ -64,7 +64,7 @@ export async function listCharacters(client, session) {
   const ids = (eds.data || []).map(e => e.character_id);
   let given = [];
   if (ids.length) {
-    const g = await client.from('characters').select(COLS).in('id', ids);
+    const g = await client.from('characters').select(COLS).in('id', ids).eq('campaign_id', session.campaignId);
     if (g.error) throw g.error;
     const others = (g.data || []).filter(r => r.owner_id !== me);
     const owners = {};
@@ -196,7 +196,7 @@ export async function deleteCharacter(client, id) {
 
 // The sheet: one character's saved data, and saving it
 export async function loadCharacter(client, id) {
-  const { data, error } = await client.from('characters').select('id, name, owner_id, status, data').eq('id', id).maybeSingle();
+  const { data, error } = await client.from('characters').select('id, campaign_id, name, owner_id, status, data').eq('id', id).maybeSingle();
   if (error) throw error;
   return data;
 }
