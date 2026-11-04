@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createCloudRoundSync } from '../src/cloud.js';
+import { STAGING_CAMPAIGN, isStaging, campaignFor, createCloudRoundSync } from '../src/cloud.js';
 
 // A stand-in for the Supabase client: tables in memory, the calls the round
 // sync makes, and realtime that reaches every sync on the same "database"
@@ -102,4 +102,17 @@ test('cloud round: quick saves land in order (a slow save never undoes a newer o
   await new Promise(r => setTimeout(r, 120));
   assert.equal(db.tables.round_records[0].record.lines.q1.roll.d20, 17);
   assert.equal(sheet.state().records.Rifiyr.lines.q1.roll.d20, 17);
+});
+
+test('staging and the live site never show each other\'s campaign', () => {
+  const real = { campaign_id: 'r', campaigns: { name: 'The Gnoll Hills' } }, test_ = { campaign_id: 't', campaigns: { name: STAGING_CAMPAIGN } };
+  assert.equal(campaignFor([test_, real], false), real);
+  assert.equal(campaignFor([test_, real], true), test_);
+  assert.equal(campaignFor([real], true), null);        // on staging, a real campaign never stands in
+  assert.equal(campaignFor([test_], false), null);
+  assert.equal(campaignFor(null, false), null);
+  assert.equal(isStaging('/app.adnd/staging/sheet/'), true);
+  assert.equal(isStaging('/app.adnd/staging'), true);
+  assert.equal(isStaging('/app.adnd/sheet/'), false);
+  assert.equal(isStaging('/app.adnd/stagingx/'), false);
 });

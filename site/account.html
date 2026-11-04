@@ -490,6 +490,7 @@ dialog.ui-overlay:not(#\#) { border-radius: var(--radius-card); }
 dialog.ui-overlay::backdrop { background: var(--scrim); }
 
 </style>
+<script>if (/\/staging(\/|$)/.test(location.pathname)) { var P = Storage.prototype, G = P.getItem, S = P.setItem, R = P.removeItem; P.getItem = function (k) { return G.call(this, 'staging:' + k); }; P.setItem = function (k, v) { S.call(this, 'staging:' + k, v); }; P.removeItem = function (k) { R.call(this, 'staging:' + k); }; addEventListener('DOMContentLoaded', function () { var b = document.createElement('div'); b.id = 'staging-banner'; b.setAttribute('role', 'note'); b.textContent = 'Staging: a test copy of the site. Only the test campaign shows here.'; b.style.cssText = 'padding:6px 16px;text-align:center;font:600 14px var(--font-sans);background:var(--color-accent);color:var(--color-on-accent,#111)'; document.body.prepend(b); }); }</script>
 <script>try { var t = localStorage.getItem('adnd-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) { /* storage blocked: follow the system */ }</script>
 <!-- end design tokens -->
   <style>
@@ -724,11 +725,16 @@ function tokensCSS() {
 }
 
 // Runs in <head> before the page draws: a choice made with the toggle wins
+// On a page at /staging/: its browser storage kept apart from the live site's
+// (they share an address), and a banner saying where you are. The workflow checks
+// a branch has this ('staging-banner') before publishing it there.
+const stagingInitScript = () =>
+  `if (/\\/staging(\\/|$)/.test(location.pathname)) { var P = Storage.prototype, G = P.getItem, S = P.setItem, R = P.removeItem; P.getItem = function (k) { return G.call(this, 'staging:' + k); }; P.setItem = function (k, v) { S.call(this, 'staging:' + k, v); }; P.removeItem = function (k) { R.call(this, 'staging:' + k); }; addEventListener('DOMContentLoaded', function () { var b = document.createElement('div'); b.id = 'staging-banner'; b.setAttribute('role', 'note'); b.textContent = 'Staging: a test copy of the site. Only the test campaign shows here.'; b.style.cssText = 'padding:6px 16px;text-align:center;font:600 14px var(--font-sans);background:var(--color-accent);color:var(--color-on-accent,#111)'; document.body.prepend(b); }); }`;
 const THEME_KEY = 'adnd-theme';
 const themeInitScript = () =>
   `try { var t = localStorage.getItem('${THEME_KEY}'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) { /* storage blocked: follow the system */ }`;
 
-return { COLORS, TAGS, CONSTANTS, FONTS_URL, tokensCSS, THEME_KEY, themeInitScript };
+return { COLORS, TAGS, CONSTANTS, FONTS_URL, tokensCSS, stagingInitScript, THEME_KEY, themeInitScript };
 })();
 // ── ui/theme ──
 __m["ui/theme"] = (() => {
@@ -795,12 +801,21 @@ __m["cloud"] = (() => {
 const CLOUD_URL = 'https://fslhlebezckjzpycrava.supabase.co';
 const CLOUD_KEY = 'sb_publishable_qDPlezMIAsuQYfFuNDMcwg_f9iMsXA0';
 
+// ── Staging ──
+// The same site published at /staging/ for trying a branch (docs/deploy.md). It
+// shares the live database, so it shows only the test campaign, and the live site
+// never shows that one.
+const STAGING_CAMPAIGN = 'Staging test';
+const isStaging = (path = globalThis.location && globalThis.location.pathname) => /\/staging(\/|$)/.test(path || '');
+const campaignFor = (rows, staging = isStaging()) =>
+  (rows || []).find(r => ((r.campaigns && r.campaigns.name) === STAGING_CAMPAIGN) === staging) || null;
+
 let clientCache = null;
 function cloudClient() {
   if (clientCache) return clientCache;
   try {
     const lib = globalThis.supabase;
-    if (lib && lib.createClient) clientCache = lib.createClient(CLOUD_URL, CLOUD_KEY);
+    if (lib && lib.createClient) clientCache = lib.createClient(CLOUD_URL, CLOUD_KEY, isStaging() ? { auth: { storageKey: 'staging-auth' } } : undefined);
   } catch (e) { clientCache = null; }
   return clientCache;
 }
@@ -825,7 +840,7 @@ const cloudSession = async (client = cloudClient()) => {
     ]);
     // Before supabase/migrations/20261104180000_dice_mode.sql: no dice_mode yet
     const { data: prof } = mine.error ? await profile('display_name, is_admin') : mine;
-    const m = (rows || [])[0] || null;
+    const m = campaignFor(rows);
     const role = m ? m.role : null;
     return {
       user, name: (prof && prof.display_name) || user.email, isAdmin: !!(prof && prof.is_admin), newPassword: needsNewPassword(user),
@@ -1022,7 +1037,7 @@ function mountCloud(el, onChange) {
   paint();
 }
 
-return { CLOUD_URL, CLOUD_KEY, cloudClient, needsNewPassword, cloudSession, createCloudRoundSync, mountCloud };
+return { CLOUD_URL, CLOUD_KEY, STAGING_CAMPAIGN, isStaging, campaignFor, cloudClient, needsNewPassword, cloudSession, createCloudRoundSync, mountCloud };
 })();
 // ── account ──
 __m["account"] = (() => {

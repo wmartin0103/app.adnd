@@ -10,12 +10,21 @@
 export const CLOUD_URL = 'https://fslhlebezckjzpycrava.supabase.co';
 export const CLOUD_KEY = 'sb_publishable_qDPlezMIAsuQYfFuNDMcwg_f9iMsXA0';
 
+// ── Staging ──
+// The same site published at /staging/ for trying a branch (docs/deploy.md). It
+// shares the live database, so it shows only the test campaign, and the live site
+// never shows that one.
+export const STAGING_CAMPAIGN = 'Staging test';
+export const isStaging = (path = globalThis.location && globalThis.location.pathname) => /\/staging(\/|$)/.test(path || '');
+export const campaignFor = (rows, staging = isStaging()) =>
+  (rows || []).find(r => ((r.campaigns && r.campaigns.name) === STAGING_CAMPAIGN) === staging) || null;
+
 let clientCache = null;
 export function cloudClient() {
   if (clientCache) return clientCache;
   try {
     const lib = globalThis.supabase;
-    if (lib && lib.createClient) clientCache = lib.createClient(CLOUD_URL, CLOUD_KEY);
+    if (lib && lib.createClient) clientCache = lib.createClient(CLOUD_URL, CLOUD_KEY, isStaging() ? { auth: { storageKey: 'staging-auth' } } : undefined);
   } catch (e) { clientCache = null; }
   return clientCache;
 }
@@ -40,7 +49,7 @@ export const cloudSession = async (client = cloudClient()) => {
     ]);
     // Before supabase/migrations/20261104180000_dice_mode.sql: no dice_mode yet
     const { data: prof } = mine.error ? await profile('display_name, is_admin') : mine;
-    const m = (rows || [])[0] || null;
+    const m = campaignFor(rows);
     const role = m ? m.role : null;
     return {
       user, name: (prof && prof.display_name) || user.email, isAdmin: !!(prof && prof.is_admin), newPassword: needsNewPassword(user),

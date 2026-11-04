@@ -5,8 +5,9 @@ group: a character sheet for players and a helper for the DM, with sign-in and
 saves on Supabase.
 
 `main` is the live site: **whatever merges there reaches the players within
-minutes**, and there's no staging site yet. A GitHub rule requires a pull
-request, passing tests and the owner's review for every change to `main`.
+minutes**. The owner can publish a branch at `/staging/` to try it first
+(`docs/deploy.md`). A GitHub rule requires a pull request, passing tests and the
+owner's review for every change to `main`.
 
 The owner isn't a developer. They decide whether a change is right for the
 game, and have the code reviewed for them. So explain changes by what they do
