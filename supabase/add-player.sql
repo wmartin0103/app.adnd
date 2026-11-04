@@ -87,10 +87,11 @@ begin
         values (v_camp, v_user, ch, jsonb_build_object('name', ch), 'backup');
     end if;
   end loop;
-  -- One character in play each: the first named, unless they already have one
+  -- One character in play each: the first named, unless they already have one,
+  -- or it's only a name so far (the player brings it in once it's filled in)
   if array_length(v_names, 1) > 0
      and not exists (select 1 from public.characters where campaign_id = v_camp and owner_id = v_user and status = 'play') then
-    update public.characters set status = 'play' where campaign_id = v_camp and owner_id = v_user and name = v_names[1];
+    update public.characters set status = 'play' where campaign_id = v_camp and owner_id = v_user and name = v_names[1] and data - 'name' <> '{}'::jsonb;
   end if;
 end $$;
 

@@ -553,6 +553,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     .what.blank { color: var(--ink-faint); font-style: italic; }
     .meta { margin: 0; font-size: 0.9rem; color: var(--ink-faint); }
     .card .actions { margin-top: 4px; }
+    .needs { margin: 2px 0 0; font-size: 0.95rem; color: var(--ink-muted); }
     .card .more { margin-left: auto; min-width: 2.2rem; padding: 0 8px; font-size: 1.1rem; letter-spacing: 0; font-family: var(--font-body); }
     .badge { font-family: var(--font-display); font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; justify-self: start; }
     .badge.play { background: var(--color-accent2); color: var(--color-on-accent2); }
@@ -1105,6 +1106,25 @@ function summary(data) {
 // from a sheet that wasn't saved yet): only a name
 const isBlank = data => !data || Object.keys(data).every(k => k === 'name');
 
+// The minimum before a sheet can go into play (decided 2026-11-04): a name, a
+// class with a level, and all six ability scores. What's still missing, in words
+// ([] when it's ready). Saving is never held up by this, only going into play.
+const SCORES = { str: 'Strength', dex: 'Dexterity', con: 'Constitution', int: 'Intelligence', wis: 'Wisdom', cha: 'Charisma' };
+function missingForPlay(data) {
+  const d = data || {}, out = [];
+  if (!String(d.name || '').trim()) out.push('a name');
+  const classes = Array.isArray(d.__classes) ? d.__classes : [];
+  if (!classes.some(c => c && String(c.name || '').trim() && parseInt(c.level, 10) >= 1)) out.push('a class with a level');
+  Object.keys(SCORES).forEach(k => { if (!(parseInt(d[k], 10) > 0)) out.push(SCORES[k]); });
+  return out;
+}
+// "Strength, Wisdom and a class with a level"; all six scores read as one
+function missingText(items) {
+  const scores = Object.values(SCORES), all = scores.every(s => items.includes(s));
+  const parts = all ? [...items.filter(i => !scores.includes(i)), 'all six ability scores'] : items;
+  return parts.length < 2 ? parts.join('') : `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
+}
+
 // The file name the sheet exports: "jaque_10-26.json"
 function fileName(data, now = new Date()) {
   const name = String((data && data.name) || 'character').trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || 'character';
@@ -1145,7 +1165,8 @@ async function listCharacters(client, session) {
 
 // A new character in the campaign, yours; In play if you have none, else a backup
 async function createCharacter(client, session, data, { mine = [], status } = {}) {
-  const st = status || (mine.some(c => c.status === 'play') ? 'backup' : 'play');
+  // Your first goes into play, once it has the minimum; until then, to Backups
+  const st = status || (mine.some(c => c.status === 'play') || missingForPlay(data).length ? 'backup' : 'play');
   const name = String((data && data.name) || '').trim() || 'New character';
   const { data: row, error } = await client.from('characters')
     .insert({ campaign_id: session.campaignId, owner_id: session.user.id, name, data: data || { name: '' }, status: st })
@@ -1233,6 +1254,9 @@ async function setShares(client, session, id, before, after) {
 // Moves a character; into play, the one in play now goes to `others` (dead
 // or backup) first, as only one may be in play
 async function setStatus(client, mine, id, status, others = 'backup') {
+  const row = status === 'play' ? mine.find(c => c.id === id) : null;
+  const short = row && 'data' in row ? missingForPlay(row.data) : [];
+  if (short.length) throw new Error(`To bring ${row.name || 'this character'} into play, add ${missingText(short)}.`);
   const cur = status === 'play' ? mine.find(c => c.status === 'play' && c.id !== id) : null;
   if (cur) {
     const r = await client.from('characters').update({ status: others }).eq('id', cur.id);
@@ -1279,11 +1303,11 @@ async function campaignNames(client, campaignId) {
   return data || [];
 }
 
-return { STATUSES, STATUS_LABEL, summary, isBlank, fileName, listCharacters, createCharacter, isSheetSave, listParty, listMembers, createCharacterFor, assignCharacter, listShares, setShares, setStatus, deleteCharacter, loadCharacter, saveSheet, isNameTaken, campaignNames };
+return { STATUSES, STATUS_LABEL, summary, isBlank, missingForPlay, missingText, fileName, listCharacters, createCharacter, isSheetSave, listParty, listMembers, createCharacterFor, assignCharacter, listShares, setShares, setStatus, deleteCharacter, loadCharacter, saveSheet, isNameTaken, campaignNames };
 })();
 window.Cloud = { cloudClient: __m["cloud"].cloudClient, cloudSession: __m["cloud"].cloudSession };
 window.Theme = { mountThemeToggle: __m["ui/theme"].mountThemeToggle, currentTheme: __m["ui/theme"].currentTheme, setTheme: __m["ui/theme"].setTheme };
-window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m["characters"].summary, isBlank: __m["characters"].isBlank, fileName: __m["characters"].fileName, listCharacters: __m["characters"].listCharacters, createCharacter: __m["characters"].createCharacter, setStatus: __m["characters"].setStatus, saveSheet: __m["characters"].saveSheet, deleteCharacter: __m["characters"].deleteCharacter, listParty: __m["characters"].listParty, listMembers: __m["characters"].listMembers, assignCharacter: __m["characters"].assignCharacter, listShares: __m["characters"].listShares, setShares: __m["characters"].setShares, isNameTaken: __m["characters"].isNameTaken };
+window.Characters = { missingForPlay: __m["characters"].missingForPlay, missingText: __m["characters"].missingText, STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m["characters"].summary, isBlank: __m["characters"].isBlank, fileName: __m["characters"].fileName, listCharacters: __m["characters"].listCharacters, createCharacter: __m["characters"].createCharacter, setStatus: __m["characters"].setStatus, saveSheet: __m["characters"].saveSheet, deleteCharacter: __m["characters"].deleteCharacter, listParty: __m["characters"].listParty, listMembers: __m["characters"].listMembers, assignCharacter: __m["characters"].assignCharacter, listShares: __m["characters"].listShares, setShares: __m["characters"].setShares, isNameTaken: __m["characters"].isNameTaken };
 })();
 /* ── end sheet converter ── */
 
@@ -1376,7 +1400,7 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
         if (blank) {
           id = blank.id; status = blank.status;
           await Characters.saveSheet(client, id, data);
-          if (status !== 'play' && !list.mine.some(c => c.status === 'play')) { await Characters.setStatus(client, list.mine, id, 'play'); status = 'play'; }
+          if (status !== 'play' && !list.mine.some(c => c.status === 'play') && !Characters.missingForPlay(data).length) { await Characters.setStatus(client, list.mine, id, 'play'); status = 'play'; }
         } else ({ id, status } = await Characters.createCharacter(client, session, data, { mine: list.mine }));
         if (!keepLocal) { try { localStorage.setItem(MOVED, id); } catch (e) { /* storage blocked */ } }
         await reload(); say(`${data.name} is saved to your account, ${placeText(status)}.`);
@@ -1495,8 +1519,12 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
       open.href = sheetUrl(c.id) + (opts.view ? '&view=1' : '');
       open.setAttribute('aria-label', opts.view ? `View ${c.name}’s sheet (read only)` : `Open ${c.name}’s sheet`);
       a.appendChild(open);
+      // What this sheet still needs before it can go into play (a player's own, not in play)
+      const short = !given && !opts.view && !opts.dm && c.status !== 'play' ? Characters.missingForPlay(c.data) : [];
       if (!given && !opts.view && !opts.dm && c.status !== 'play') {   // a player's own; not a Party card or a DM's backup
         const b = el('button', 'btn quiet small ui-button is-secondary size-sm', c.status === 'dead' ? 'Return to play' : 'Bring into play'); b.type = 'button';
+        b.disabled = !!short.length;
+        if (short.length) b.setAttribute('aria-describedby', 'needs-' + c.id);
         b.addEventListener('click', () => bringIn(c)); a.appendChild(b);
       }
       if (!given) {                                                     // a Party card's sheet is view only; its menu only shares
@@ -1506,13 +1534,14 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
         a.appendChild(m);
       }
       k.appendChild(a);
+      if (short.length) { const n = el('p', 'needs', `To bring ${c.name} into play, add ${Characters.missingText(short)}.`); n.id = 'needs-' + c.id; k.appendChild(n); }
       if (openMenu === c.id) {
         const menu = el('div', 'menu ui-menu'); menu.setAttribute('role', 'menu');
         const item = (t, fn) => { const b = el('button', '', t); b.type = 'button'; b.setAttribute('role', 'menuitem'); b.addEventListener('click', () => { openMenu = null; render(); fn(); }); menu.appendChild(b); };
         if (opts.view) { item('Share\u2026', () => share(c)); k.appendChild(menu); return k; }
         if (asDM() && (opts.dm || c.status !== 'play')) item('Assign to player\u2026', () => assign(c));
         if (!opts.dm) {
-          if (c.status !== 'play') item('Bring into play', () => bringIn(c));
+          if (c.status !== 'play' && !short.length) item('Bring into play', () => bringIn(c));
           if (c.status !== 'backup') item('Move to Backups', () => move(c, 'backup').then(ok => ok && say(`${c.name} moved to Backups.`)));
           if (c.status !== 'dead') item('Mark as dead', () => move(c, 'dead').then(ok => ok && say(`${c.name} is marked as dead.`)));
           item('Share\u2026', () => share(c));
@@ -1604,7 +1633,7 @@ window.Characters = { STATUS_LABEL: __m["characters"].STATUS_LABEL, summary: __m
         const play = mine.filter(c => c.status === 'play');
         const s1 = section('In play', 0, add), c1 = el('div', 'cards');
         if (play.length) c1.appendChild(card(play[0]));
-        else { const slot = el('div', 'slot'); slot.append(el('b', '', 'No character in play'), el('span', '', 'Bring in a backup, or start a new character.')); c1.appendChild(slot); }
+        else { const slot = el('div', 'slot'); slot.append(el('b', '', 'No character in play yet'), el('span', '', 'You’re not in the party, and your DM can’t see you until you bring one in.')); c1.appendChild(slot); }
         s1.appendChild(c1); wrap.appendChild(s1);
         const back = mine.filter(c => c.status === 'backup');
         const s2 = section('Backups', back.length, null, back.length ? 'Ready for the next session, if your character in play falls.' : 'None yet. A backup is ready for the next session, if your character in play falls.');
