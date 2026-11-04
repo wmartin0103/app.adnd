@@ -594,7 +594,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     .ss-row:disabled { cursor: default; }
     .ss-row:disabled .ss-name { color: var(--ink-muted); }
     .ss-added { font-size: 0.82rem; color: var(--ink-muted); white-space: nowrap; }
-    body.is-view-only .spell-dupes { display: none; }
+    body.is-view-only :is(.spell-dupes, .spell-grip, .spell-view) { display: none; }
     /* View only: no buttons to press (a toggle's state, like Main / Off, still shows) */
     body.is-view-only main.sheet :is(.ui-button, .ui-qty > button, .add-scenario-btn) { display: none !important; }
     .view-note { margin: -1.5rem 0 1.5rem; padding: 10px 14px; font-size: 14px; color: var(--color-text); }
@@ -11172,6 +11172,10 @@ if (!window.SheetSpellCatalog) { try { if (window.parent !== window) window.Shee
       const el = document.getElementById('char-player');
       if (el) el.value = owner;
     }
+    // The tab follows the name as it's typed
+    document.getElementById('char-name')?.addEventListener('input', () => {
+      if (CLOUD_ID && cloudLoaded && !isViewOnly()) document.title = `${charName()} · Character Sheet`;
+    });
     async function cloudLoad(sess) {
       const client = window.Cloud && Cloud.cloudClient();
       if (!CLOUD_ID || !sess || !client || !window.Characters || cloudLoaded) return;
