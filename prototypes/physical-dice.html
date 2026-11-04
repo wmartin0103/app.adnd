@@ -616,7 +616,9 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
     if (dice === 'app') {
       return '<button type="button" class="ui-button ' + (has ? 'is-secondary' : 'is-primary') + ' size-sm" data-roll="' + key + '" data-sides="' + (sides || '') + '" data-what="' + (what || '') + '">' + ROLL + '<span>' + (has ? 'Re-roll' : 'Roll') + ' ' + label + '</span></button>';
     }
-    return '<label class="pd-field"><span class="pd-label">Roll <b>' + what + '</b>' + (label ? ' · ' + label : '') + '</span>'
+    // What to roll, apart from what the app adds, so a bonus isn't counted twice
+    const parts = String(what).split('+');
+    return '<label class="pd-field"><span class="pd-label">Roll <b>' + parts[0] + '</b>' + (parts[1] ? ' (we’ll add ' + parts[1] + ')' : '') + (label ? ' · ' + label : '') + '</span>'
       + '<input class="size-sm" type="text" inputmode="numeric" data-key="' + key + '" data-sides="' + (sides || '') + '" value="' + (has ? state[key] : '') + '" aria-label="' + what + ' ' + label + '"></label>';
   }
   const res = (label, value, cls) => '<span class="hit-stat ' + (cls || '') + '"><span class="hit-stat-label">' + label + '</span><span class="hit-stat-value">' + value + '</span></span>';
@@ -644,7 +646,7 @@ dialog.ui-overlay::backdrop { background: var(--scrim); }
   }
   function account() {
     const opt = (v, t, d) => '<label class="pd-opt"><input type="radio" name="dice" value="' + v + '"' + (dice === v ? ' checked' : '') + '><span><b>' + t + '</b><small>' + d + '</small></span></label>';
-    return '<h2 class="pd-h">On Account</h2><section class="ui-card pd-account"><h3>Dice</h3>' + opt('app', 'Roll for me', 'Roll buttons on your sheet and the DM Helper.') + opt('own', 'I’ll roll my own', 'The app says what to roll, and you type the result. It adds your bonuses.') + '</section>';
+    return '<h2 class="pd-h">On Account</h2><section class="ui-card pd-account"><h3>Dice</h3>' + opt('app', 'Assisted dice rolls', 'Roll buttons on your sheet and the DM Helper.') + opt('own', 'Roll my own dice', 'The app says what to roll, and you type the result. It adds your bonuses.') + '</section>';
   }
   function render() {
     const f = document.activeElement && document.activeElement.dataset && document.activeElement.dataset.key;
