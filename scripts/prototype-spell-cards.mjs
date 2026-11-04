@@ -45,7 +45,7 @@ function slotRows(d) {
 }
 const castsFrom = c => [c.group === 'wizard' || /bard/i.test(c.name || '') ? 'wizard' : '', c.group === 'priest' || /paladin|ranger/i.test(c.name || '') ? 'priest' : ''].filter(Boolean);
 const CHARS = ['rifiyr_10-12', 'jaque_10-09', 'hanspeter_10-09', 'tig_10-09'].map(file => {
-  const d = JSON.parse(readFileSync(`samples/${file}.json`, 'utf8'));
+  const d = JSON.parse(readFileSync(`test/fixtures/characters/${file}.json`, 'utf8'));
   const ctx = { classes: d.__classes || [] };
   const rows = slotRows(d), level = { wizard: casterLevel(ctx, {}, 'wizard'), priest: casterLevel(ctx, {}, 'priest') };
   return {

@@ -5,7 +5,7 @@ import { scenarioContext, scenarioSpell, scenarioDamage, spellCardStats, saveNot
 import { lineSaveNote, newRound, roundLines, lineTHAC0, judgeRoll, actOn, rollLine, rollDice, lineToHit, roundACPenalty, queueAttack, unqueueAttack, roundQueue, rerollDamage, lineSay, lineKind, hasRoll, isHealing, plainAttack } from '../src/rules/round.js';
 import { createRoundSync } from '../src/round-sync.js';
 
-const load = f => JSON.parse(readFileSync(new URL(`../samples/${f}`, import.meta.url)));
+const load = f => JSON.parse(readFileSync(new URL(`./fixtures/characters/${f}`, import.meta.url)));
 const catalog = JSON.parse(readFileSync(new URL('../data/spell-catalog.json', import.meta.url)));
 const rifiyr = load('rifiyr_10-12.json');
 const jaque = load('jaque_10-09.json');

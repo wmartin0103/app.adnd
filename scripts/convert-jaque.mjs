@@ -6,10 +6,10 @@
 //     Spin are stances; a Bless from Atteroak shows a temporary effect
 // Signature Weapon (dagger): +1 hit, +2 dmg. Duelist's Precision: Dex instead
 // of Str to hit in melee (Dex 19 missile adj. +3, entered as Hit Mod there).
-// Output: samples/jaque_10-09.json
+// Output: test/fixtures/characters/jaque_10-09.json
 import { readFileSync, writeFileSync } from 'node:fs';
 
-const s = JSON.parse(readFileSync('samples/jaque_09-23.json', 'utf8'));
+const s = JSON.parse(readFileSync('test/fixtures/characters/jaque_09-23.json', 'utf8'));
 s.__thiefSkillAlloc.kit = { ...s.__thiefSkillAlloc.kit, ol: 20, frt: 0 };
 // The Blade kit, chosen in the class settings (not read from the name)
 s.__classes[0].kit = 'blade';
@@ -43,5 +43,5 @@ s.__stances = [
   st({ id: 'st-3', name: 'Bless', on: true, temporary: true, from: 'Atteroak', rounds: '6', options: [opt({ hit: '1' })] }),
 ];
 s.__stanceCounter = 4;
-writeFileSync('samples/jaque_10-09.json', JSON.stringify(s, null, 2) + '\n');
-console.log('Wrote samples/jaque_10-09.json');
+writeFileSync('test/fixtures/characters/jaque_10-09.json', JSON.stringify(s, null, 2) + '\n');
+console.log('Wrote test/fixtures/characters/jaque_10-09.json');

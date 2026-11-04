@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { migrateV1toV2, guessCategory, sheetWeaponToV2, sheetProficiencies } from '../src/rules/migrate.js';
 import { computeAttack, listAttacks } from '../src/rules/attacks.js';
 
-const jaqueV1 = JSON.parse(readFileSync(new URL('../samples/jaque_09-23.json', import.meta.url)));
+const jaqueV1 = JSON.parse(readFileSync(new URL('./fixtures/characters/jaque_09-23.json', import.meta.url)));
 
 test('guesses PHB categories from the party\'s real weapon names', () => {
   const cases = {

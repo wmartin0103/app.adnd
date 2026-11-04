@@ -1,6 +1,6 @@
 # Character survey: what five saves say about the rules
 
-Saves: `samples/jaque_09-23.json` (rebuilt by hand in the sheet) and four
+Saves: `test/fixtures/characters/jaque_09-23.json` (rebuilt by hand in the sheet) and four
 converted from the Advanced D&D (Rev.) Excel sheet: `atteroak.json`,
 `hanspeter.json`, `nandun.json`, `tig.json`.
 

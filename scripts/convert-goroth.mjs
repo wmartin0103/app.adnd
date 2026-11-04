@@ -1,4 +1,4 @@
-// Goroth's current save: the converted Excel save (samples/nandun.json) with
+// Goroth's current save: the converted Excel save (test/fixtures/characters/nandun.json) with
 // corrections agreed since.
 //   • 10-13: his name is Goroth (the Excel sheet had "Nandun Goroth"), so the
 //     DM Helper's import replaces its hand-typed Goroth
@@ -13,11 +13,11 @@
 // Club proficient (Clubbing tight group), Maul expertise, Harpoon proficient,
 // Dagger and Spear not proficient (warrior −2). Unarmed is Wild Brawl, 1d6.
 // The Maul's other +2 to hit has no stated source; kept as Hit Mod.
-// Output: samples/goroth_10-09.json
+// Output: test/fixtures/characters/goroth_10-09.json
 import { readFileSync, writeFileSync } from 'node:fs';
 import { tidyProficiencyNames } from './tidy-names.mjs';
 
-const s = JSON.parse(readFileSync('samples/nandun.json', 'utf8'));
+const s = JSON.parse(readFileSync('test/fixtures/characters/nandun.json', 'utf8'));
 // 10-13: proficiency names without the Excel sheet's group codes and book references
 tidyProficiencyNames(s);
 s.name = 'Goroth';
@@ -63,5 +63,5 @@ s.__scenarios = [
   sc({ id: 'sc-7', name: 'Wrestling', weaponId: byName('Wrestling*').id, attackType: 'melee' }),
 ];
 s.__scenarioCounter = 7;
-writeFileSync('samples/goroth_10-09.json', JSON.stringify(s, null, 2) + '\n');
-console.log('Wrote samples/goroth_10-09.json');
+writeFileSync('test/fixtures/characters/goroth_10-09.json', JSON.stringify(s, null, 2) + '\n');
+console.log('Wrote test/fixtures/characters/goroth_10-09.json');

@@ -13,10 +13,10 @@
 //   • A Spellarrow: Shocking Grasp on the long bow.
 //   • Flight and sheaf arrows as separate scenarios for each bow. (His rows'
 //     "1d8 / 1d6" were sheaf / flight, not S-M / L.)
-// Output: samples/rifiyr_10-12.json
+// Output: test/fixtures/characters/rifiyr_10-12.json
 import { readFileSync, writeFileSync } from 'node:fs';
 
-const s = JSON.parse(readFileSync('samples/rifiyr.json', 'utf8'));
+const s = JSON.parse(readFileSync('test/fixtures/characters/rifiyr.json', 'utf8'));
 for (const sp of s.__spells) if (sp.name === 'Magic Missle') sp.name = 'Magic Missile';
 // The Bowcaster kit, chosen in the class settings (not read from the name)
 s.__classes[0].kit = 'bowcaster';
@@ -55,5 +55,5 @@ s.__abilitiesCards = [
   card(6, 'Casting without an arrow', 'Casting time +3 and −1 damage per die (at least 1 per die). Counted in the spell scenarios.'),
 ];
 s.__abilitiesCardsCounter = 6;
-writeFileSync('samples/rifiyr_10-12.json', JSON.stringify(s, null, 2) + '\n');
-console.log('Wrote samples/rifiyr_10-12.json');
+writeFileSync('test/fixtures/characters/rifiyr_10-12.json', JSON.stringify(s, null, 2) + '\n');
+console.log('Wrote test/fixtures/characters/rifiyr_10-12.json');

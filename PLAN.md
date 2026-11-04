@@ -486,7 +486,7 @@ Helper pick from (see section 9).
     off-hand / one weapon; switched on always, per attack or for the whole
     round). This replaces the Jaque-specific rules (`__combatBonuses`,
     `__combatOptions`, `__combatRules`); Jaque's save is converted
-    (`samples/jaque_10-09.json`). Off-hand is open to any weapon row.
+    (`test/fixtures/characters/jaque_10-09.json`). Off-hand is open to any weapon row.
 22. **Abilities are reminders, not rules (decided; replaces the combat
     modifiers in 21 and the "In combat" roles in 17):** ability and
     fighting-style cards get one "Show in Combat" checkbox. Combat lists the

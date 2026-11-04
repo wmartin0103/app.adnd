@@ -21,13 +21,13 @@ const rules = bundle(RULES_FILES, {
     Migrate: ['rules/migrate', ['migrateV1toV2', 'sheetWeaponToV2', 'sheetProficiencies']],
   },
 });
-const v1 = readFileSync('samples/jaque_09-23.json', 'utf8');
+const v1 = readFileSync('test/fixtures/characters/jaque_09-23.json', 'utf8');
 const v2 = readFileSync('test/fixtures/jaque-v2.json', 'utf8');
 const spellCatalog = readFileSync('data/spell-catalog.json', 'utf8');
 
 // Jaque's current sheet save: weapon rows as totals, with combat modifiers
 // (scripts/convert-jaque.mjs)
-const current = JSON.parse(readFileSync('samples/jaque_10-09.json', 'utf8'));
+const current = JSON.parse(readFileSync('test/fixtures/characters/jaque_10-09.json', 'utf8'));
 // …and Sound Bubble memorized, to show a spell whose catalog entry needs details
 const bubble = current.__spells.find(sp => sp.name === 'Sound Bubble' && !sp.isMemorized);
 if (bubble) current.__spells.push({ ...bubble, id: 'spl-90', isMemorized: true, sourceId: bubble.id });

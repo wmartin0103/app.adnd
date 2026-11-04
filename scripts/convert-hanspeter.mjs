@@ -3,11 +3,11 @@
 //     Wizard), and his spell class is Priest. Light is both a druid and a
 //     wizard spell; assumed druid until the player confirms (flagged in its notes).
 // Weapons are unchanged for now: two rows are unnamed (likely animal forms).
-// Output: samples/hanspeter_10-09.json
+// Output: test/fixtures/characters/hanspeter_10-09.json
 import { readFileSync, writeFileSync } from 'node:fs';
 import { tidyProficiencyNames } from './tidy-names.mjs';
 
-const s = JSON.parse(readFileSync('samples/hanspeter.json', 'utf8'));
+const s = JSON.parse(readFileSync('test/fixtures/characters/hanspeter.json', 'utf8'));
 // 10-13: proficiency names without the Excel sheet's group codes and book references
 tidyProficiencyNames(s);
 s.__spellClass = 'priest';
@@ -22,5 +22,5 @@ for (const p of s.__nwps) {
   if (p.name.startsWith('Persuasion')) p.adj = '-2';
   if (p.name.startsWith('Foraging')) p.adj = '-2';
 }
-writeFileSync('samples/hanspeter_10-09.json', JSON.stringify(s, null, 2) + '\n');
-console.log('Wrote samples/hanspeter_10-09.json');
+writeFileSync('test/fixtures/characters/hanspeter_10-09.json', JSON.stringify(s, null, 2) + '\n');
+console.log('Wrote test/fixtures/characters/hanspeter_10-09.json');
